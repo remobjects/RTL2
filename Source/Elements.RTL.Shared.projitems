@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <HasSharedItems>true</HasSharedItems>
+        <SharedGUID>ABEC8ACC-B076-406C-871B-581E8AF0A453</SharedGUID>
+    </PropertyGroup>
+    <PropertyGroup Label="Configuration">
+        <Import_RootNamespace>Elements.RTL.Shared</Import_RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="$(MSBuildThisFileDirectory)String.pas">
+            <VirtualFolder>String</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)StringBuilder.pas">
+            <VirtualFolder>String</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)StringFormatter.pas">
+            <VirtualFolder>String</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Url.pas">
+            <VirtualFolder>Files and Paths</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Binary.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas">
+            <VirtualFolder>String</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)TimeZone.pas">
+            <VirtualFolder>Dates &amp; Co</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Exceptions.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Locale.pas">
+            <VirtualFolder>Dates &amp; Co</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)TimeSpan.pas">
+            <VirtualFolder>Dates &amp; Co</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Object (Extensions).pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Math.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Environment.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)File.pas">
+            <VirtualFolder>Files and Paths</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)FileHandle.pas">
+            <VirtualFolder>Files and Paths</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)FileUtils.pas">
+            <VirtualFolder>Files and Paths</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Folder.pas">
+            <VirtualFolder>Files and Paths</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)FolderUtils.pas">
+            <VirtualFolder>Files and Paths</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Path.pas">
+            <VirtualFolder>Files and Paths</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)DateTime.pas">
+            <VirtualFolder>Dates &amp; Co</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)DateFormatter.pas">
+            <VirtualFolder>Dates &amp; Co</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)List.pas">
+            <VirtualFolder>Collections</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)String (Path).pas">
+            <VirtualFolder>Files and Paths</VirtualFolder>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Files and Paths">
+            <Virtual>True</Virtual>
+        </Folder>
+        <Folder Include="String">
+            <Virtual>True</Virtual>
+        </Folder>
+        <Folder Include="Collections">
+            <Virtual>True</Virtual>
+        </Folder>
+        <Folder Include="Dates &amp; Co">
+            <Virtual>True</Virtual>
+        </Folder>
+    </ItemGroup>
+</Project>
