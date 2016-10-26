@@ -364,10 +364,10 @@ end;
 method ListHelpers.FindIndex<T>(aSelf: List<T>;StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
 begin
   if StartIndex > aSelf.Count then
-    raise new ArgumentOutOfRangeException(ErrorMessage.ARG_OUT_OF_RANGE_ERROR, "StartIndex");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, "StartIndex");
 
   if (aCount < 0) or (StartIndex > aSelf.Count - aCount) then
-    raise new ArgumentOutOfRangeException(ErrorMessage.ARG_OUT_OF_RANGE_ERROR, "Count");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, "Count");
 
   if Match = nil then
     raise new ArgumentNullException("Match");

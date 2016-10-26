@@ -59,9 +59,9 @@ type
     method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
 
     {$IF COOPER}
-    method ToString: java.lang.String; override;
+    method ToString: PlatformString; override;
     {$ELSEIF ECHOES}
-    method ToString: System.String; override;
+    method ToString: PlatformString; override;
     {$ELSEIF TOFFEE}
     method description: NSString; override; inline;
     {$ENDIF}    
@@ -189,9 +189,9 @@ end;
 //
 
 {$IF COOPER}
-method DateTime.ToString: java.lang.String;
+method DateTime.ToString: PlatformString;
 {$ELSEIF ECHOES}
-method DateTime.ToString: System.String;
+method DateTime.ToString: PlatformString;
 {$ELSEIF TOFFEE}
 method DateTime.description: NSString;
 {$ENDIF}
@@ -210,8 +210,8 @@ begin
   var lFormatter := if String.IsNullOrEmpty(Culture) then
                       new java.text.SimpleDateFormat(DateFormatter.Format(Format))
                     else    
-                      new java.text.SimpleDateFormat(DateFormatter.Format(Format), Sugar.Cooper.LocaleUtils.ForLanguageTag(Culture));
-  lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
+                      new java.text.SimpleDateFormat(DateFormatter.Format(Format), Elements.RTL.Cooper.LocaleUtils.ForLanguageTag(Culture));
+  lFormatter.TimeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
   if Format = "" then

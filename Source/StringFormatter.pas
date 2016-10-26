@@ -4,7 +4,7 @@
 // This file is ported from the Mono project
 //
 // Original File:
-//   System.String.cs
+//   PlatformString.cs
 // Original Mono Authors:
 //   Patrik Torstensson
 //   Jeffrey Stedfast (fejj@ximian.com)
@@ -105,7 +105,7 @@ begin
         inc(ptr);
     end
     else if c = '}' then begin
-      raise new FormatException(ErrorMessage.FORMAT_ERROR);
+      raise new FormatException(RTLErrorMessages.FORMAT_ERROR);
     end;
   end;
   if start < aFormat.Length then sb.Append(aFormat, start, aFormat.Length - start);
@@ -121,7 +121,7 @@ begin
   // where:
   // N = argument number (non-negative integer)
   n := ParseDecimal(aString, var ptr);
-  if n < 0 then raise new FormatException(ErrorMessage.FORMAT_ERROR);
+  if n < 0 then raise new FormatException(RTLErrorMessages.FORMAT_ERROR);
   // M = width (non-negative integer)
   if (ptr < max) and (aString[ptr] = ',') then begin
     // White space between ',' and number or sign.
@@ -132,7 +132,7 @@ begin
     left_align := ((ptr < max) and (aString[ptr] = '-'));
     if left_align then inc(ptr);
     width := ParseDecimal(aString, var ptr);
-    if width < 0 then raise new FormatException(ErrorMessage.FORMAT_ERROR)
+    if width < 0 then raise new FormatException(RTLErrorMessages.FORMAT_ERROR)
   end
   else begin
     width := 0;
@@ -151,7 +151,7 @@ begin
     aFormat := nil;
   end;
   if ((ptr >= max)) or (aString[ptr] ≠ '}') then 
-    raise new FormatException(ErrorMessage.FORMAT_ERROR); 
+    raise new FormatException(RTLErrorMessages.FORMAT_ERROR); 
   inc(ptr);
 end;
 

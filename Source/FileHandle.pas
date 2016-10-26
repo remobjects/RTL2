@@ -84,7 +84,7 @@ begin
   exit Windows.Storage.StorageFile(aFile).OpenAsync(lMode).Await.AsStream;
   {$ELSEIF ECHOES}
   var lMode: System.IO.FileAccess := if Mode = FileOpenMode.ReadOnly then System.IO.FileAccess.Read else System.IO.FileAccess.ReadWrite;
-  exit new System.IO.FileStream(System.String(aFile), System.IO.FileMode.Open, lMode);
+  exit new System.IO.FileStream(PlatformString(aFile), System.IO.FileMode.Open, lMode);
   {$ELSEIF TOFFEE}
   case Mode of
     FileOpenMode.ReadOnly: exit NSFileHandle.fileHandleForReadingAtPath(aFile);
@@ -125,10 +125,10 @@ begin
     raise new ArgumentNullException("Buffer");
 
   if Offset < 0 then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Offset");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Offset");
 
   if Count < 0 then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Count");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Count");
 
   if Count = 0 then
     exit;
@@ -136,13 +136,13 @@ begin
   var BufferLength := RemObjects.Oxygene.System.length(Buffer); 
 
   if Offset >= BufferLength then
-    raise new ArgumentOutOfRangeException(ErrorMessage.ARG_OUT_OF_RANGE_ERROR, "Offset");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, "Offset");
 
   if Count > BufferLength then
-    raise new ArgumentOutOfRangeException(ErrorMessage.ARG_OUT_OF_RANGE_ERROR, "Count");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, "Count");
 
   if Offset + Count > BufferLength then
-    raise new ArgumentOutOfRangeException(ErrorMessage.OUT_OF_RANGE_ERROR, Offset, Count, BufferLength);
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.OUT_OF_RANGE_ERROR, Offset, Count, BufferLength);
 end;
 
 method FileHandle.Read(Buffer: array of Byte; Offset: Integer; Count: Integer): Integer;

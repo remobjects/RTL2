@@ -36,11 +36,11 @@ end;
 class method FolderUtils.Create(FolderName: String);
 begin
   if Exists(FolderName) then
-    raise new IOException(ErrorMessage.FOLDER_EXISTS, FolderName);
+    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, FolderName);
 
   {$IF COOPER}  
   if not (new java.io.File(FolderName).mkdir) then
-    raise new IOException(ErrorMessage.FOLDER_CREATE_ERROR, FolderName);
+    raise new IOException(RTLErrorMessages.FOLDER_CREATE_ERROR, FolderName);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   var ParentFolder := GetFolder(Path.GetParentDirectory(FolderName));
   FolderName := Path.GetFileName(FolderName);
@@ -64,14 +64,14 @@ begin
   end;
 
   if not Item.delete then
-    raise new IOException(ErrorMessage.FOLDER_DELETE_ERROR, Item.Name);  
+    raise new IOException(RTLErrorMessages.FOLDER_DELETE_ERROR, Item.Name);  
 end;
 {$ENDIF}
 
 class method FolderUtils.Delete(FolderName: String);
 begin
   if not Exists(FolderName) then
-    raise new IOException(ErrorMessage.FOLDER_NOTFOUND, FolderName);
+    raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, FolderName);
 
   {$IF COOPER}  
   RecursiveDelete(new java.io.File(FolderName));
@@ -111,7 +111,7 @@ end;
 class method FolderUtils.ListItems(FolderName: java.io.File; AllFolders: Boolean; FilesOnly: Boolean): array of String;
 begin
   var Elements := FolderName.listFiles;
-  var Items := new .Collections.List<String>;
+  var Items := new List<String>;
 
   for Element in Elements do begin
     if (FilesOnly and Element.isFile) or ((not FilesOnly) and Element.isDirectory) then
@@ -152,7 +152,7 @@ end;
 class method FolderUtils.GetFiles(FolderName: String; AllFolders: Boolean): array of String;
 begin
   if not Exists(FolderName) then
-    raise new IOException(ErrorMessage.FOLDER_NOTFOUND, FolderName);
+    raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, FolderName);
 
   {$IF COOPER}
   exit ListItems(new java.io.File(FolderName), AllFolders, true);
@@ -182,7 +182,7 @@ end;
 class method FolderUtils.GetFolders(FolderName: String; AllFolders: Boolean): array of String;
 begin
   if not Exists(FolderName) then
-    raise new IOException(ErrorMessage.FOLDER_NOTFOUND, FolderName);
+    raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, FolderName);
 
   {$IF COOPER}
   exit ListItems(new java.io.File(FolderName), AllFolders, false);

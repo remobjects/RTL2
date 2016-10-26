@@ -1,7 +1,7 @@
 ﻿namespace Elements.RTL;
 
 {$IF COOPER}
-extension method java.lang.Object.«ToString»: java.lang.String;
+extension method java.lang.Object.«ToString»: PlatformString;
 begin
   result := «toString»();
 end;
@@ -16,7 +16,7 @@ begin
   result := hashCode;
 end;
 {$ELSEIF TOFFEE}
-extension method Foundation.NSObject.ToString: Foundation.NSString;
+extension method Foundation.NSObject.ToString: PlatformString;
 begin
   result := description;
 end;

@@ -27,7 +27,7 @@ type
       {$ENDIF}
     end;
 
-    property Scheme: String read {$IF COOPER}mapped.Protocol{$ELSEIF ECHOES}mapped.Scheme;{$ELSEIF TOFFEE}mapped.scheme{$ENDIF};
+    property Scheme: String read {$IF COOPER}mapped.Protocol{$ELSEIF ECHOES}mapped.Scheme{$ELSEIF TOFFEE}mapped.scheme{$ENDIF};
     property Host: String read mapped.Host;
     property Port: Int32 read {$IF COOPER}mapped.Port{$ELSEIF ECHOES}GetPort(){$ELSEIF TOFFEE}GetPort(){$ENDIF};
     property Path: String read {$IF COOPER}mapped.Path{$ELSEIF ECHOES}mapped.AbsolutePath{$ELSEIF TOFFEE}mapped.path{$ENDIF};

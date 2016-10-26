@@ -2,21 +2,12 @@
 
 interface
 
-/*uses
-  {$IF WINDOWS_PHONE OR NETFX_CORE}  
-  System.IO,
-  {$ELSEIF COOPER}
-  {$ELSEIF ECHOES}
-  {$ELSEIF TOFFEE}
-  {$ENDIF}
-  
-  ,
-  {$IF COOPER}
-  com.remobjects.elements.linq,
-  {$ENDIF};*/
+{$IF COOPER}
+uses com.remobjects.elements.linq;
+{$ENDIF}
 
 type
-  Folder = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFolder{$ELSEIF ECHOES}System.String{$ELSEIF COOPER}java.lang.String{$ELSEIF TOFFEE}Foundation.NSString{$ENDIF}
+  Folder = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFolder{$ELSEIF ECHOES}PlatformString{$ELSEIF COOPER}PlatformString{$ELSEIF TOFFEE}PlatformString{$ENDIF}
   private
     class method GetSeparator: Char;
     {$IF COOPER}
@@ -244,7 +235,7 @@ begin
 
   if System.IO.File.Exists(NewFileName) then begin
     if FailIfExists then
-      raise new IOException(ErrorMessage.FILE_EXISTS, FileName);
+      raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
 
     exit NewFileName;
   end;
@@ -263,7 +254,7 @@ method Folder.Create(FailIfExists: Boolean := false);
 begin
   if System.IO.Directory.Exists(mapped) then begin
     if FailIfExists then
-      raise new IOException(ErrorMessage.FOLDER_EXISTS, mapped);
+      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
   end
   else begin
     System.IO.Directory.CreateDirectory(mapped);
@@ -299,7 +290,7 @@ begin
   var TopLevel := System.IO.Path.GetDirectoryName(mapped);
   var FolderName := System.IO.Path.Combine(TopLevel, NewName);
   if System.IO.Directory.Exists(FolderName) then
-    raise new IOException(ErrorMessage.FOLDER_EXISTS, NewName);
+    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
 
   System.IO.Directory.Move(mapped, FolderName);
   result := FolderName;
@@ -310,7 +301,7 @@ begin
   var lNewFile := new java.io.File(mapped, FileName);
   if lNewFile.exists then begin
     if FailIfExists then
-      raise new IOException(ErrorMessage.FILE_EXISTS, FileName);
+      raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
 
     exit lNewFile.path;
   end
@@ -345,12 +336,12 @@ begin
   var lFile := JavaFile;
   if lFile.exists then begin
     if FailIfExists then
-      raise new IOException(ErrorMessage.FOLDER_EXISTS, mapped);
+      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
     exit;
   end
   else begin
     if not lFile.mkdir then
-      raise new IOException(ErrorMessage.FOLDER_CREATE_ERROR, mapped);
+      raise new IOException(RTLErrorMessages.FOLDER_CREATE_ERROR, mapped);
   end;
 end;
 
@@ -362,18 +353,18 @@ begin
       DeleteFolder(new java.io.File(Value, Item));
 
     if not Value.delete then
-      raise new IOException(ErrorMessage.FOLDER_DELETE_ERROR, Value.Name);
+      raise new IOException(RTLErrorMessages.FOLDER_DELETE_ERROR, Value.Name);
   end
   else
     if not Value.delete then
-      raise new IOException(ErrorMessage.FOLDER_DELETE_ERROR, Value.Name);
+      raise new IOException(RTLErrorMessages.FOLDER_DELETE_ERROR, Value.Name);
 end;
 
 method Folder.Delete;
 begin
   var lFile := JavaFile;
   if not lFile.exists then
-    raise new IOException(ErrorMessage.FOLDER_NOTFOUND, mapped);
+    raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, mapped);
 
   FolderHelper.DeleteFolder(lFile);
 end;
@@ -402,10 +393,10 @@ begin
   var lFile := JavaFile;
   var NewFolder := new java.io.File(lFile.ParentFile, NewName);
   if NewFolder.exists then
-    raise new IOException(ErrorMessage.FOLDER_EXISTS, NewName);
+    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
 
   if not lFile.renameTo(NewFolder) then
-    raise new IOException(ErrorMessage.IO_RENAME_ERROR, mapped, NewName);
+    raise new IOException(RTLErrorMessages.IO_RENAME_ERROR, mapped, NewName);
 
   result := NewName;
 end;
@@ -416,7 +407,7 @@ begin
   var Manager := NSFileManager.defaultManager;
   if Manager.fileExistsAtPath(NewFileName) then begin
     if FailIfExists then
-      raise new IOException(ErrorMessage.FILE_EXISTS, FileName);
+      raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
 
     exit File(NewFileName);
   end;
@@ -452,9 +443,9 @@ begin
   var isDirectory := false;
   if NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) then begin
     if isDirectory and FailIfExists then
-      raise new IOException(ErrorMessage.FOLDER_EXISTS, mapped);
+      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
     if not isDirectory then
-      raise new IOException(ErrorMessage.FILE_EXISTS, mapped);
+      raise new IOException(RTLErrorMessages.FILE_EXISTS, mapped);
   end
   else begin
     var lError: NSError := nil;
@@ -521,7 +512,7 @@ begin
   var Manager := NSFileManager.defaultManager;
 
   if Manager.fileExistsAtPath(NewFolderName) then
-    raise new IOException(ErrorMessage.FOLDER_EXISTS, NewName);
+    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
 
   var lError: NSError := nil; 
   if not Manager.moveItemAtPath(mapped) toPath(NewFolderName) error(var lError) then

@@ -61,19 +61,19 @@ end;
 class method RangeHelper.Validate(aRange: Range; BufferSize: Integer);
 begin
   if aRange.Location < 0 then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Location");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Location");
 
   if aRange.Length < 0 then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Length");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Length");
 
   if aRange.Location >= BufferSize then
-    raise new ArgumentOutOfRangeException(ErrorMessage.ARG_OUT_OF_RANGE_ERROR, "Location");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, "Location");
 
   if aRange.Length > BufferSize then
-    raise new ArgumentOutOfRangeException(ErrorMessage.ARG_OUT_OF_RANGE_ERROR, "Length");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, "Length");
 
   if aRange.Location + aRange.Length > BufferSize then
-    raise new ArgumentOutOfRangeException(ErrorMessage.OUT_OF_RANGE_ERROR, aRange.Location, aRange.Length, BufferSize);
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.OUT_OF_RANGE_ERROR, aRange.Location, aRange.Length, BufferSize);
 end;
 
 { Binary }

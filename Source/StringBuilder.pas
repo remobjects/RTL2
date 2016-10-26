@@ -35,7 +35,7 @@ implementation
 method StringBuilder.Append(Value: Char; RepeatCount: Integer): StringBuilder;
 begin
   if RepeatCount < 0 then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Number of repeats");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Number of repeats");
 
   {$IF COOPER}
   for i: Int32 := 1 to RepeatCount do 
@@ -74,7 +74,7 @@ begin
     exit;
 
   if (StartIndex < 0) or (Count < 0) then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Start index and count");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Start index and count");
 
   {$IF COOPER}
   exit mapped.append(Value, startIndex, startIndex + count);
@@ -146,7 +146,7 @@ end;
 method StringBuilder.get_Chars(&Index: Integer): Char;
 begin
   if &Index  < 0 then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Index");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Index");
 
   {$IF COOPER}
   exit mapped.charAt(&Index);
@@ -192,7 +192,7 @@ end;
 method StringBuilder.set_Chars(&Index: Integer; Value: Char);
 begin
   if &Index  < 0 then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Index");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Index");
 
   {$IF COOPER}
   mapped.setCharAt(&Index,Value);
@@ -231,7 +231,7 @@ end;
 method StringBuilder.Substring(StartIndex: Integer; Count: Integer): String;
 begin
   if (StartIndex < 0) or (Count < 0) then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Start index and count");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Start index and count");
 
   {$IF COOPER}
   exit mapped.substring(StartIndex, StartIndex + Count);

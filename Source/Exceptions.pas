@@ -1,7 +1,17 @@
 ﻿namespace Elements.RTL;
 
 type 
-  Exception = public class({$IF TOFFEE}Foundation.NSException{$ELSE}Exception{$ENDIF})
+  /*{$IF ECHOES}
+  PlatformException = public System.Exception;
+  {$ELSEIF TOFFEE}
+  PlatformException = public Foundation.NSException;
+  {$ELSEIF COOPER}
+  PlatformException = public java.lang.Exception;
+  {$ELSEIF ISLAND}
+  PlatformException = public RemObjects.Elements.System.Exception;
+  {$ENDIF}*/
+
+  RTLException = public class(Exception)
   public
   
     constructor;
@@ -12,7 +22,7 @@ type
     constructor(aMessage: String);
     begin
       {$IF TOFFEE}
-      inherited initWithName('Exception') reason(aMessage) userInfo(nil);
+      result := initWithName('Exception') reason(aMessage) userInfo(nil);
       {$ELSE}
       inherited constructor(aMessage);
       {$ENDIF}
@@ -26,7 +36,7 @@ type
     {$IF TOFFEE}
     constructor withError(aError: NSError);
     begin
-      inherited initWithName('Exception') reason(aError.description) userInfo(nil);
+      result := initWithName('Exception') reason(aError.description) userInfo(nil);
     end;
     
     property Message: String read reason;
@@ -34,18 +44,18 @@ type
     
   end;
   
-  NotImplementedException = public class(Exception);
+  NotImplementedException = public class(RTLException);
 
-  NotSupportedException = public class (Exception);
+  NotSupportedException = public class(RTLException);
 
-  ArgumentException = public class (Exception);
+  ArgumentException = public class(RTLException);
 
   ArgumentNullException = public class(ArgumentException)
   public
   
     constructor(aMessage: String);
     begin
-      inherited constructor(ErrorMessage.ARG_NULL_ERROR, aMessage)
+      inherited constructor(RTLErrorMessages.ARG_NULL_ERROR, aMessage)
     end;
     
     class method RaiseIfNil(Value: Object; Name: String);
@@ -58,9 +68,21 @@ type
   
   ArgumentOutOfRangeException = public class (ArgumentException);
 
-  FormatException = public class(Exception);
+  FormatException = public class(RTLException)
+  public
+    constructor(aMessage: String);
+    begin
+      inherited constructor(aMessage);
+    end;
+    
+    constructor();
+    begin
+      inherited constructor(RTLErrorMessages.FORMAT_ERROR);
+    end;
+    
+  end;
 
-  IOException = public class(Exception);
+  IOException = public class(RTLException);
 
   /*HttpException = public class(SugarException)
   assembly
@@ -74,46 +96,46 @@ type
     property Response: nullable HttpResponse; readonly;   
   end;*/
   
-  FileNotFoundException = public class (Exception)
+  FileNotFoundException = public class (RTLException)
   public
   
     property FileName: String read write; readonly;
 
     constructor (aFileName: String);
     begin
-      inherited constructor (ErrorMessage.FILE_NOTFOUND, aFileName);
+      inherited constructor (RTLErrorMessages.FILE_NOTFOUND, aFileName);
       FileName := aFileName;
     end;
     
   end;
 
-  StackEmptyException = public class (Exception);
+  StackEmptyException = public class (RTLException);
 
-  InvalidOperationException = public class (Exception);
+  InvalidOperationException = public class (RTLException);
 
-  KeyNotFoundException = public class (Exception)
+  KeyNotFoundException = public class (RTLException)
   public
   
     constructor;
     begin
-      inherited constructor(ErrorMessage.KEY_NOTFOUND);
+      inherited constructor(RTLErrorMessages.KEY_NOTFOUND);
     end;
     
   end;
 
-  /*AppContextMissingException = public class (Exception)
+  /*AppContextMissingException = public class (RTLException)
   public
   
     class method RaiseIfMissing;
     begin
       if Environment.ApplicationContext = nil then
-        raise new AppContextMissingException(ErrorMessage.APP_CONTEXT_MISSING);
+        raise new AppContextMissingException(RTLErrorMessages.APP_CONTEXT_MISSING);
     end;
     
   end;*/
 
   {$IF TOFFEE}
-  NSErrorException = public class(Exception)
+  NSErrorException = public class(RTLException)
   public
   
     constructor(Error: Foundation.NSError);
@@ -124,7 +146,7 @@ type
   end;
   {$ENDIF}
 
-  ErrorMessage = /*unit*/ assembly static class
+  RTLErrorMessages = /*unit*/ assembly static class
   public
     class const FORMAT_ERROR = "Input string was not in a correct format";
     class const OUT_OF_RANGE_ERROR = "Range ({0},{1}) exceeds data length {2}";

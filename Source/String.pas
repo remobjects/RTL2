@@ -3,7 +3,15 @@
 interface
 
 type
-  PlatformString = public {$IF ECHOES}System.String{$ELSEIF TOFFEE}Foundation.NSString{$ELSEIF COOPER}java.lang.String{$ELSEIF ISLAND}RemObjects.Elements.System.String{$ENDIF};
+  {$IF ECHOES}
+  PlatformString = public System.String;
+  {$ELSEIF TOFFEE}
+  PlatformString = public Foundation.NSString;
+  {$ELSEIF COOPER}
+  PlatformString = public java.lang.String;
+  {$ELSEIF ISLAND}
+  PlatformString = public RemObjects.Elements.System.String;
+  {$ENDIF}
 
   [assembly:DefaultStringType("Elements.RTL", typeOf(Elements.RTL.String))]
 
@@ -106,11 +114,13 @@ begin
     raise new ArgumentNullException("Value");
 
   {$IF COOPER}
-  exit new java.lang.String(Value);
+  result := new PlatformString(Value);
   {$ELSEIF ECHOES}
-  exit new System.String(Value);
+  result := new PlatformString(Value);
+  {$ELSEIF ISLAND}
+  result := PlatformString.FromCharArray(Value);
   {$ELSEIF TOFFEE}
-  exit new Foundation.NSString withCharacters(Value) length(length(Value));
+  result := new PlatformString withCharacters(Value) length(length(Value));
   {$ENDIF}
 end;
 
@@ -125,11 +135,13 @@ begin
   RangeHelper.Validate(Range.MakeRange(Offset, Count), Value.Length);
 
   {$IF COOPER}
-  exit new java.lang.String(Value, Offset, Count);
+  result := new PlatformString(Value, Offset, Count);
   {$ELSEIF ECHOES}
-  exit new System.String(Value, Offset, Count);
+  result := new PlatformString(Value, Offset, Count);
+  {$ELSEIF ISLAND}
+  //result := PlatformString.FromChars(@[Value]+Offset*sizeOf(Char), Count);
   {$ELSEIF TOFFEE}
-  exit new Foundation.NSString withCharacters(@Value[Offset]) length(Count);
+  result := new PlatformString withCharacters(@Value[Offset]) length(Count);
   {$ENDIF}
 end;
 
@@ -139,22 +151,24 @@ begin
   var chars := new Char[aCount];
   for i: Integer := 0 to aCount-1 do
     chars[i] := aChar;
-  result := new java.lang.String(chars);
+  result := new PlatformString(chars);
   {$ELSEIF ECHOES}
-  result := new System.String(aChar, aCount);
+  result := new PlatformString(aChar, aCount);
+  {$ELSEIF ISLAND}
+  //result := PlatformString.FromChar(aChar, aCount);
   {$ELSEIF TOFFEE}
-  result := Foundation.NSString("").stringByPaddingToLength(aCount) withString(Foundation.NSString.stringWithFormat("%c", aChar)) startingAtIndex(0);
+  result := PlatformString("").stringByPaddingToLength(aCount) withString(PlatformString.stringWithFormat("%c", aChar)) startingAtIndex(0);
   {$ENDIF}
 end;
 
 method String.get_Chars(aIndex: Int32): Char;
 begin
   if aIndex < 0 then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "Index");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Index");
 
   {$IF COOPER}
   result := mapped.charAt(aIndex);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   result := mapped[aIndex];
   {$ELSEIF TOFFEE}
   result := mapped.characterAtIndex(aIndex);
@@ -163,13 +177,7 @@ end;
 
 class operator String.Add(Value1: String; Value2: String): not nullable String;
 begin
-  {$IF COOPER}
-  result := (java.lang.String(Value1)+java.lang.String(Value2)) as not nullable;
-  {$ELSEIF ECHOES}
-  result := (System.String(Value1)+System.String(Value2)) as not nullable;
-  {$ELSEIF TOFFEE}
-  result := (NSString(Value1) + NSString(Value2)) as not nullable;
-  {$ENDIF}
+  result := (PlatformString(Value1)+PlatformString(Value2)) as not nullable;
 end;
 
 class operator String.Add(Value1: String; Value2: Object): not nullable String;
@@ -185,9 +193,11 @@ end;
 class operator String.Implicit(Value: Char): String;
 begin
   {$IF COOPER}
-  exit new java.lang.String(Value);
+  exit new PlatformString(Value);
   {$ELSEIF ECHOES}
-  exit new System.String(Value, 1);
+  exit new PlatformString(Value, 1);
+  {$ELSEIF ISLAND}
+  exit PlatformString.FromChar(Value);
   {$ELSEIF TOFFEE}
   if Value = #0 then
     exit NSString.stringWithFormat(#0) as not nullable;
@@ -198,8 +208,8 @@ end;
 
 class method String.Compare(Value1: String; Value2: String): Integer;
 begin
-  var First := {$IF COOPER}java.lang.String{$ELSEIF ECHOES}System.String{$ELSEIF TOFFEE}Foundation.NSString{$ENDIF}(Value1);
-  var Second := {$IF COOPER}java.lang.String{$ELSEIF ECHOES}System.String{$ELSEIF TOFFEE}Foundation.NSString{$ENDIF}(Value2);
+  var First := PlatformString(Value1);
+  var Second := PlatformString(Value2);
 
   if (First = nil) and (Second = nil) then
     exit 0;
@@ -210,13 +220,19 @@ begin
   if not assigned(Second) then
     exit 1;
 
-  exit {$IF COOPER}First.compareTo(Second){$ELSEIF ECHOES}First.CompareTo(Second){$ELSEIF TOFFEE}First.compare(Second){$ENDIF};
+  {$IF COOPER}
+  exit First.compareTo(Second);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit First.CompareTo(Second);
+  {$ELSEIF TOFFEE}
+  exit First.compare(Second);
+  {$ENDIF}  
 end;
 
 class operator String.Equal(Value1: String; Value2: String): Boolean;
 begin
-  var First := {$IF COOPER}java.lang.String{$ELSEIF ECHOES}System.String{$ELSEIF TOFFEE}Foundation.NSString{$ENDIF}(Value1);
-  var Second := {$IF COOPER}java.lang.String{$ELSEIF ECHOES}System.String{$ELSEIF TOFFEE}Foundation.NSString{$ENDIF}(Value2);
+  var First := PlatformString(Value1);
+  var Second := PlatformString(Value2);
 
   if (First = nil) and (Second = nil) then
     exit true;
@@ -224,7 +240,13 @@ begin
   if (First = nil) or (Second = nil) then
     exit false;
 
-  exit {$IF COOPER}First.compareTo(Second){$ELSEIF ECHOES}First.CompareTo(Second){$ELSEIF TOFFEE}First.compare(Second){$ENDIF} = 0;  
+  {$IF COOPER}
+  exit First.compareTo(Second) = 0;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit First.CompareTo(Second) = 0;
+  {$ELSEIF TOFFEE}
+  exit First.compare(Second) = 0;
+  {$ENDIF}  
 end;
 
 class operator String.NotEqual(Value1: String; Value2: String): Boolean;
@@ -261,7 +283,7 @@ class method String.CharacterIsWhiteSpace(Value: Char): Boolean;
 begin
   {$IF COOPER}
   result := java.lang.Character.isWhitespace(Value);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   result := Char.IsWhiteSpace(Value);
   {$ELSEIF TOFFEE}
   result := Foundation.NSCharacterSet.whitespaceAndNewlineCharacterSet.characterIsMember(Value);
@@ -374,7 +396,7 @@ begin
   if Value.Length = 0 then
     exit true;
 
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Contains(Value);
   {$ELSEIF TOFFEE}
   exit mapped.rangeOfString(Value).location <> NSNotFound;
@@ -393,8 +415,8 @@ end;
 
 method String.IndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES}
-  result := mapped.indexOf(Value, StartIndex);
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
   {$ENDIF}
@@ -408,8 +430,8 @@ begin
   if Value.Length = 0 then
     exit 0;
 
-  {$IF COOPER OR ECHOES}
-  result := mapped.indexOf(Value, StartIndex);
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
   result := if r.location = NSNotFound then -1 else r.location;
@@ -420,7 +442,7 @@ method String.IndexOfAny(const AnyOf: array of Char): Integer;
 begin
   {$IF COOPER OR TOFFEE}
   result := IndexOfAny(AnyOf, 0);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   result := mapped.IndexOfAny(AnyOf);
   {$ENDIF}
 end;
@@ -435,10 +457,10 @@ begin
      end;
   end;
   result := -1;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   result := mapped.IndexOfAny(AnyOf, StartIndex);
   {$ELSEIF TOFFEE}
-  var lChars := NSCharacterSet.characterSetWithCharactersInString(new Foundation.NSString withCharacters(AnyOf) length(AnyOf.length));
+  var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
   var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
   result := if r.location = NSNotFound then -1 else r.location;
   {$ENDIF}
@@ -446,7 +468,7 @@ end;
 
 method String.LastIndexOf(Value: Char): Integer;
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   result := mapped.lastIndexOf(Value);
   {$ELSEIF TOFFEE}
   result := LastIndexOf(NSString.stringWithFormat("%c", Value));
@@ -461,7 +483,7 @@ begin
   if Value.Length = 0 then
     exit mapped.length - 1;
 
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.LastIndexOf(Value);
   {$ELSEIF TOFFEE}
   var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSBackwardsSearch);
@@ -471,8 +493,8 @@ end;
 
 method String.LastIndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES}
-  result := mapped.lastIndexOf(Value, StartIndex);
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := mapped.LastIndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   result := LastIndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
   {$ENDIF}
@@ -493,7 +515,7 @@ end;
 method String.Substring(StartIndex: Int32): not nullable String;
 begin
   if (StartIndex < 0) then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "StartIndex");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "StartIndex");
 
   {$IF COOPER OR ECHOES}
   exit mapped.Substring(StartIndex) as not nullable;
@@ -505,7 +527,7 @@ end;
 method String.Substring(StartIndex: Int32; aLength: Int32): not nullable String;
 begin
   if (StartIndex < 0) or (aLength < 0) then
-    raise new ArgumentOutOfRangeException(ErrorMessage.NEGATIVE_VALUE_ERROR, "StartIndex and Length");
+    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "StartIndex and Length");
 
   {$IF COOPER}
   exit mapped.substring(StartIndex, StartIndex + aLength) as not nullable;
@@ -708,7 +730,7 @@ begin
   {$ELSEIF ECHOES}
   result := mapped.Trim(TrimChars) as not nullable;
   {$ELSEIF TOFFEE}
-  result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.characterSetWithCharactersInString(new Foundation.NSString withCharacters(TrimChars) length(TrimChars.length)));
+  result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length)));
   {$ENDIF}
 end;
 
@@ -736,7 +758,7 @@ begin
   {$ELSEIF ECHOES}
   result := mapped.TrimEnd(TrimChars) as not nullable;
   {$ELSEIF TOFFEE}
-  var lCharacters := NSCharacterSet.characterSetWithCharactersInString(new Foundation.NSString withCharacters(TrimChars) length(TrimChars.length));
+  var lCharacters := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
   var lLastWanted := mapped.rangeOfCharacterFromSet(lCharacters.invertedSet) options(NSStringCompareOptions.NSBackwardsSearch);                                                               
   result := if lLastWanted.location = NSNotFound then self else mapped.substringToIndex(lLastWanted.location + 1) as not nullable;
   {$ENDIF}
@@ -755,7 +777,7 @@ begin
   {$ELSEIF ECHOES}
   result := mapped.TrimStart(TrimChars) as not nullable;
   {$ELSEIF TOFFEE}
-  var lCharacters := NSCharacterSet.characterSetWithCharactersInString(new Foundation.NSString withCharacters(TrimChars) length(TrimChars.length));
+  var lCharacters := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
   var lFirstWanted := mapped.rangeOfCharacterFromSet(lCharacters.invertedSet);  
   result := if lFirstWanted.location = NSNotFound then self else mapped.substringFromIndex(lFirstWanted.location);
   {$ENDIF}
@@ -865,7 +887,7 @@ begin
   end;
   result := sb.toString;
   {$ELSEIF ECHOES}
-  result := System.String.Join(Separator, Values);
+  result := PlatformString.Join(Separator, Values);
   {$ELSEIF TOFFEE}
   var lArray := new NSMutableArray(Values.length);
   for i: Integer := 0 to Values.length - 1 do

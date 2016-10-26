@@ -59,7 +59,7 @@ begin
     raise new FileNotFoundException(SourceFileName);
 
   if Exists(DestFileName) then
-    raise new IOException(ErrorMessage.FILE_EXISTS, DestFileName);
+    raise new IOException(RTLErrorMessages.FILE_EXISTS, DestFileName);
 
   {$IF COOPER}
   using Origin := new java.io.File(SourceFileName) do begin
@@ -88,7 +88,7 @@ end;
 class method FileUtils.Create(FileName: String);
 begin
   if Exists(FileName) then
-    raise new IOException(ErrorMessage.FILE_EXISTS, FileName);
+    raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
 
   {$IF COOPER}
   new java.io.File(FileName).createNewFile;
@@ -144,7 +144,7 @@ begin
     raise new FileNotFoundException(SourceFileName);
 
   if Exists(DestFileName) then
-    raise new IOException(ErrorMessage.FILE_EXISTS, DestFileName);
+    raise new IOException(RTLErrorMessages.FILE_EXISTS, DestFileName);
 
   {$IF COOPER}
   &Copy(SourceFileName, DestFileName);

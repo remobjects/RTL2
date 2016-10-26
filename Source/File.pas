@@ -3,7 +3,7 @@
 interface
 
 type
-  File = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFile{$ELSEIF ECHOES}System.String{$ELSEIF COOPER}java.lang.String{$ELSEIF TOFFEE}NSString{$ENDIF}
+  File = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFile{$ELSE}PlatformString{$ENDIF}
   private
     method getDateModified: DateTime;
     method getDateCreated: DateTime;    
@@ -71,7 +71,7 @@ begin
   {$ELSE}
   var lNewFile := File(Path.Combine(Destination, NewName));
   if lNewFile.Exists then
-    raise new IOException(ErrorMessage.FILE_EXISTS, NewName);
+    raise new IOException(RTLErrorMessages.FILE_EXISTS, NewName);
 
   {$IF COOPER}  
   new java.io.File(lNewFile).createNewFile;
@@ -132,7 +132,7 @@ end;
 method File.Move(NewPathAndName: not nullable File): not nullable File;
 begin
   if NewPathAndName.Exists then
-    raise new IOException(ErrorMessage.FILE_EXISTS, NewPathAndName);
+    raise new IOException(RTLErrorMessages.FILE_EXISTS, NewPathAndName);
   {$IF COOPER}  
   result := &Copy(NewPathAndName) as not nullable;
   JavaFile.delete;
