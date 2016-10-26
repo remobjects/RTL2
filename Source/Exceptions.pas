@@ -62,18 +62,16 @@ type
 
   IOException = public class(Exception);
 
-  /*HttpException = public class(Exception)
+  /*HttpException = public class(SugarException)
   assembly
-  
-    constructor(aMessage: String; aResponse: HttpResponse);
+    constructor(aMessage: String; aResponse: nullable HttpResponse := nil);
     begin
       inherited constructor(aMessage);
       Response := aResponse;
     end;
-    
+
   public
-    property Response: HttpResponse; readonly;
-   
+    property Response: nullable HttpResponse; readonly;   
   end;*/
   
   FileNotFoundException = public class (Exception)
