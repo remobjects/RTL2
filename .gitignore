@@ -1,4 +1,4 @@
 bin
 obj
-.user
-.cache
+*.user
+*.cache
