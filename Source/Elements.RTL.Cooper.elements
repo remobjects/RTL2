@@ -8,6 +8,7 @@
         <AllowLegacyCreate>False</AllowLegacyCreate>
         <AllowLegacyOutParams>False</AllowLegacyOutParams>
         <CrossPlatform>True</CrossPlatform>
+        <DefaultUses>com.remobjects.elements.linq</DefaultUses>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>false</Optimize>

@@ -117,7 +117,7 @@ end;
 
 method Folder.DoGetFiles(aFolder: Folder; aList: List<File>);
 begin
-  aList.AddRange(aFolder.GetFiles);
+  aList.Add(aFolder.GetFiles);
   for each f in aFolder.GetSubFolders() do
     DoGetFiles(f, aList);
 end;

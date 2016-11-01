@@ -2,32 +2,31 @@
 
 interface
 
-uses
-  {$IF ECHOES}
-  System.Linq
-  {$ELSEIF COOPER}
-  com.remobjects.elements.linq
-  {$ELSEIF TOFFEE}
-  RemObjects.Elements.Linq
-  {$ENDIF};
-
 type  
-  List<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray where T is class;{$ENDIF}
+  List<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray where T is class;{$ENDIF}
   private
-  public
     method SetItem(&Index: Integer; Value: T);
     method GetItem(&Index: Integer): T;
+
+  public
     
     constructor; mapped to constructor();
     constructor(Items: List<T>);
     constructor(anArray: array of T);
 
-    method &Add(anItem: T);
-    method AddRange(Items: List<T>);
-    method AddRange(Items: array of T);
-    method Clear;
-    method Contains(anItem: T): Boolean;
+    method &Add(aItem: T);
+    method &Add(Items: List<T>);
+    method &Add(Items: array of T);
+    method Add(Items: sequence of T);
 
+    method &Remove(aItem: T): Boolean;
+    method &Remove(aItems: List<T>);
+    method &Remove(aItems: sequence of T);
+    method RemoveAll;
+    method RemoveAt(aIndex: Integer);
+    method RemoveRange(aIndex: Integer; aCount: Integer);
+
+    method Contains(aItem: T): Boolean;
     method Exists(Match: Predicate<T>): Boolean;
     method FindIndex(Match: Predicate<T>): Integer;
     method FindIndex(StartIndex: Integer; Match: Predicate<T>): Integer;
@@ -38,26 +37,25 @@ type
     method TrueForAll(Match: Predicate<T>): Boolean;
     method ForEach(Action: Action<T>);
 
-    method IndexOf(anItem: T): Integer; 
-    method Insert(&Index: Integer; anItem: T);
+    method IndexOf(aItem: T): Integer; 
+    method Insert(&Index: Integer; aItem: T);
     method InsertRange(&Index: Integer; Items: List<T>);
     method InsertRange(&Index: Integer; Items: array of T);
-    method LastIndexOf(anItem: T): Integer;
-
-    method &Remove(anItem: T): Boolean;
-    method RemoveAt(&Index: Integer);
-    method RemoveRange(&Index: Integer; aCount: Integer);
+    method LastIndexOf(aItem: T): Integer;
 
     method Sort(Comparison: Comparison<T>);
 
     method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
     
-    property Count: Integer read {$IF COOPER}mapped.Size{$ELSEIF ECHOES}mapped.Count{$ELSEIF TOFFEE}mapped.count{$ENDIF};
+    property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF};
     property Item[i: Integer]: T read GetItem write SetItem; default;
 
     {$IF TOFFEE}
     operator Implicit(aArray: NSArray<T>): List<T>;
     {$ENDIF}
+  end;
+  
+  ImmutableListProxy<T> = public class
   end;
   
   Predicate<T> = public block (Obj: T): Boolean;
@@ -71,7 +69,7 @@ type
   end;
   {$ENDIF}
 
-  ListHelpers = public static class
+  ListHelpers = assembly static class
   public
     method AddRange<T>(aSelf: List<T>; aArr: array of T);
     method FindIndex<T>(aSelf: List<T>;StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
@@ -87,7 +85,6 @@ type
     {$ENDIF}
     {$IFDEF COOPER}
     method ToArrayReverse<T>(aSelf: java.util.Vector<T>; aDest: array of T): array of T;
-
     {$ENDIF}
   end;
 
@@ -99,6 +96,8 @@ begin
   result := new java.util.ArrayList<T>(Items);
   {$ELSEIF ECHOES}
   exit new System.Collections.Generic.List<T>(Items);
+  {$ELSEIF ISLAND}
+  exit new RemObjects.Elements.System.List<T>(Items);
   {$ELSEIF TOFFEE}
   result := new Foundation.NSMutableArray withArray(Items);
   {$ENDIF}
@@ -115,12 +114,12 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.Add(anItem: T);
+method List<T>.Add(aItem: T);
 begin
-  {$IF COOPER OR ECHOES}
-  mapped.Add(anItem);
+  {$IF COOPER OR ECHOES OR ISLAND}
+  mapped.Add(aItem);
   {$ELSEIF TOFFEE}
-  mapped.addObject(NullHelper.ValueOf(anItem));
+  mapped.addObject(NullHelper.ValueOf(aItem));
   {$ENDIF}
 end;
 
@@ -142,41 +141,54 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.AddRange(Items: List<T>);
+method List<T>.Add(Items: List<T>);
 begin
   {$IF COOPER}
   mapped.AddAll(Items);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.AddRange(Items);
   {$ELSEIF TOFFEE}
   mapped.addObjectsFromArray(Items);
   {$ENDIF}
 end;
 
-method List<T>.AddRange(Items: array of T);
+method List<T>.Add(Items: sequence of T);
+begin
+  {$IF COOPER}
+  mapped.AddAll(Items.ToList());
+  {$ELSEIF ECHOES}
+  mapped.AddRange(Items);
+  {$ELSEIF ISLAND}
+  mapped.AddRange(Items.ToList());
+  {$ELSEIF TOFFEE}
+  mapped.addObjectsFromArray(Items.array());
+  {$ENDIF}
+end;
+
+method List<T>.Add(Items: array of T);
 begin
   ListHelpers.AddRange(self, Items);
 end;
 
-method List<T>.Clear;
+method List<T>.RemoveAll;
 begin
   {$IF COOPER}
   mapped.Clear;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Clear;
   {$ELSEIF TOFFEE}
   mapped.RemoveAllObjects;
   {$ENDIF}
 end;
 
-method List<T>.Contains(anItem: T): Boolean;
+method List<T>.Contains(aItem: T): Boolean;
 begin
   {$IF COOPER}
-  exit mapped.Contains(anItem);
-  {$ELSEIF ECHOES}
-  exit mapped.Contains(anItem);
+  exit mapped.Contains(aItem);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Contains(aItem);
   {$ELSEIF TOFFEE}
-  exit mapped.ContainsObject(NullHelper.ValueOf(anItem));
+  exit mapped.ContainsObject(NullHelper.ValueOf(aItem));
   {$ENDIF}
 end;
 
@@ -220,26 +232,26 @@ begin
   ListHelpers.ForEach(self, Action);
 end;
 
-method List<T>.IndexOf(anItem: T): Integer;
+method List<T>.IndexOf(aItem: T): Integer;
 begin
   {$IF COOPER}
-  exit mapped.IndexOf(anItem);
-  {$ELSEIF ECHOES}
-  exit mapped.IndexOf(anItem);
+  exit mapped.IndexOf(aItem);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.IndexOf(aItem);
   {$ELSEIF TOFFEE}
-  var lIndex := mapped.indexOfObject(NullHelper.ValueOf(anItem));
+  var lIndex := mapped.indexOfObject(NullHelper.ValueOf(aItem));
   exit if lIndex = NSNotFound then -1 else Integer(lIndex);
   {$ENDIF}
 end;
 
-method List<T>.Insert(&Index: Integer; anItem: T);
+method List<T>.Insert(&Index: Integer; aItem: T);
 begin
   {$IF COOPER}
-  mapped.Add(&Index, anItem);
-  {$ELSEIF ECHOES}
-  mapped.Insert(&Index, anItem);
+  mapped.Add(&Index, aItem);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Insert(&Index, aItem);
   {$ELSEIF TOFFEE}
-  mapped.insertObject(NullHelper.ValueOf(anItem)) atIndex(&Index);
+  mapped.insertObject(NullHelper.ValueOf(aItem)) atIndex(&Index);
   {$ENDIF}
 end;
 
@@ -247,7 +259,7 @@ method List<T>.InsertRange(&Index: Integer; Items: List<T>);
 begin
   {$IF COOPER}
   mapped.AddAll(&Index, Items);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.InsertRange(&Index, Items);
   {$ELSEIF TOFFEE}
   mapped.insertObjects(Items) atIndexes(new NSIndexSet withIndexesInRange(NSMakeRange(&Index, Items.Count)));
@@ -259,25 +271,25 @@ begin
   ListHelpers.InsertRange(self, &Index, Items);
 end;
 
-method List<T>.LastIndexOf(anItem: T): Integer;
+method List<T>.LastIndexOf(aItem: T): Integer;
 begin  
   {$IF COOPER}
-  exit mapped.LastIndexOf(anItem);
-  {$ELSEIF ECHOES}
-  exit mapped.LastIndexOf(anItem);
+  exit mapped.LastIndexOf(aItem);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.LastIndexOf(aItem);
   {$ELSEIF TOFFEE}
-  exit ListHelpers.LastIndexOf(self, anItem);
+  exit ListHelpers.LastIndexOf(self, aItem);
   {$ENDIF}
 end;
 
-method List<T>.Remove(anItem: T): Boolean;
+method List<T>.Remove(aItem: T): Boolean;
 begin
   {$IF COOPER}
-  exit mapped.Remove(Object(anItem));
-  {$ELSEIF ECHOES}
-  exit mapped.Remove(anItem);
+  exit mapped.Remove(Object(aItem));
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Remove(aItem);
   {$ELSEIF TOFFEE}
-  var lIndex := IndexOf(anItem);
+  var lIndex := IndexOf(aItem);
   if lIndex <> -1 then begin
     RemoveAt(lIndex);
     exit true;
@@ -287,25 +299,41 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.RemoveAt(&Index: Integer);
+method List<T>.RemoveAt(aIndex: Integer);
 begin
   {$IF COOPER}
-  mapped.remove(&Index);
-  {$ELSEIF ECHOES}
-  mapped.RemoveAt(&Index);
+  mapped.remove(aIndex);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.RemoveAt(aIndex);
   {$ELSEIF TOFFEE}
-  mapped.removeObjectAtIndex(&Index);
+  mapped.removeObjectAtIndex(aIndex);
   {$ENDIF}
 end;
 
-method List<T>.RemoveRange(&Index: Integer; aCount: Integer);
+method List<T>.Remove(aItems: List<T>);
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  for each i in aItems do
+    &Remove(i);
+  {$ELSEIF TOFFEE}
+  mapped.removeObjectsInArray(aItems);
+  {$ENDIF}
+end;
+
+method List<T>.Remove(aItems: sequence of T);
+begin
+  for each i in aItems do
+    &Remove(i);
+end;
+
+method List<T>.RemoveRange(aIndex: Integer; aCount: Integer);
 begin
   {$IF COOPER}
-  mapped.subList(&Index, &Index+aCount).clear;
-  {$ELSEIF ECHOES}
-  mapped.RemoveRange(&Index, aCount);
+  mapped.subList(aIndex, aIndex+aCount).clear;
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.RemoveRange(aIndex, aCount);
   {$ELSEIF TOFFEE}
-  mapped.removeObjectsInRange(Foundation.NSMakeRange(&Index, aCount));
+  mapped.removeObjectsInRange(Foundation.NSMakeRange(aIndex, aCount));
   {$ENDIF}
 end;
 
@@ -313,13 +341,18 @@ method List<T>.Sort(Comparison: Comparison<T>);
 begin
   {$IF COOPER}  
   java.util.Collections.sort(mapped, new class java.util.Comparator<T>(compare := (x, y) -> Comparison(x, y)));
-  {$ELSEIF ECHOES} 
+  {$ELSEIF ECHOES OR ISLAND} 
   mapped.Sort((x, y) -> Comparison(x, y));
   {$ELSEIF TOFFEE}
   mapped.sortUsingComparator((x, y) -> begin
-                                         var lResult := Comparison(x, y);
-                                         exit if lResult < 0 then NSComparisonResult.NSOrderedAscending else if lResult = 0 then NSComparisonResult.NSOrderedSame else NSComparisonResult.NSOrderedDescending;
-                                       end);
+    var lResult := Comparison(x, y);
+    exit if lResult < 0 then
+           NSComparisonResult.NSOrderedAscending
+         else if lResult = 0 then
+           NSComparisonResult.NSOrderedSame
+         else
+           NSComparisonResult.NSOrderedDescending;
+  end);
   {$ENDIF}
 end;
 
@@ -327,7 +360,7 @@ method List<T>.ToArray: array of T;
 begin
   {$IF COOPER}
   exit mapped.toArray(new T[mapped.size()]); 
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToArray;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArray<T>(self);

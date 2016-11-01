@@ -118,7 +118,7 @@ begin
       Items.Add(Element.AbsolutePath);
 
     if AllFolders then
-      Items.AddRange(ListItems(Element, AllFolders, FilesOnly));
+      Items.Add(ListItems(Element, AllFolders, FilesOnly));
   end;
 
   exit Items.ToArray;

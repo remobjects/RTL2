@@ -4,7 +4,7 @@
         <RootNamespace>Elements.RTL</RootNamespace>
         <ProjectGuid>58D52FE5-E87E-4D9C-8FBB-280980F6762B</ProjectGuid>
         <OutputType>StaticLibrary</OutputType>
-        <AssemblyName>Elements.RTL.Toffee.macOS</AssemblyName>
+        <AssemblyName>Elements</AssemblyName>
         <AllowGlobals>False</AllowGlobals>
         <AllowLegacyWith>False</AllowLegacyWith>
         <AllowLegacyOutParams>False</AllowLegacyOutParams>
@@ -14,8 +14,9 @@
         <SDK>macOS</SDK>
         <MangleTypeNames>True</MangleTypeNames>
         <CreateHeaderFile>True</CreateHeaderFile>
-        <DefaultUses>Foundation</DefaultUses>
+        <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
         <CrossPlatform>True</CrossPlatform>
+        <DeploymentTargetVersion>10.10</DeploymentTargetVersion>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>false</Optimize>
