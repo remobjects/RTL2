@@ -7,7 +7,7 @@ uses com.remobjects.elements.linq;
 {$ENDIF}
 
 type
-  Folder = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFolder{$ELSEIF ECHOES}PlatformString{$ELSEIF COOPER}PlatformString{$ELSEIF TOFFEE}PlatformString{$ENDIF}
+  Folder = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFolder{$ELSE}PlatformString{$ENDIF}
   private
     class method GetSeparator: Char;
     {$IF COOPER}
