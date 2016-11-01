@@ -9,16 +9,18 @@ type
 
   Environment = public static class
   private
-    class method GetNewLine: String;
-    class method GetUserName: String;
-    class method GetOS: OperatingSystem;
-    class method GetOSName: String;
-    class method GetOSVersion: String;
+    method GetNewLine: String;
+    method GetUserName: String;
+    method GetOS: OperatingSystem;
+    method GetOSName: String;
+    method GetOSVersion: String;
+    method GetEnvironmentVariable(Name: String): String;
+    method GetCurrentDirectory: String;
     
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport("libc")]
-    class method uname(buf: IntPtr): Integer; external;
-    class method unameWrapper: String;
+    method uname(buf: IntPtr): Integer; external;
+    method unameWrapper: String;
     class var unameResult: String;
     {$ENDIF}
   public
@@ -29,13 +31,13 @@ type
     property OSVersion: String read GetOSVersion;
     property ApplicationContext: ApplicationContext read write;
 
-    method GetEnvironmentVariable(Name: String): String;
-    method CurrentDirectory: String;
+    property EnvironmentVariable[Name: String]: String read GetEnvironmentVariable;
+    property CurrentDirectory: String read GetCurrentDirectory;
   end;
 
 implementation
 
-class method Environment.GetEnvironmentVariable(Name: String): String;
+method Environment.GetEnvironmentVariable(Name: String): String;
 begin
   {$IF COOPER}
   exit System.getenv(Name); 
@@ -43,23 +45,27 @@ begin
   raise new NotSupportedException("GetEnvironmentVariable not supported on this platfrom");
   {$ELSEIF ECHOES}
   exit System.Environment.GetEnvironmentVariable(Name);
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.Environment.GetEnvironmentVariable(Name);
   {$ELSEIF TOFFEE}
   exit Foundation.NSProcessInfo.processInfo:environment:objectForKey(Name);
   {$ENDIF}
 end;
 
-class method Environment.GetNewLine: String;
+method Environment.GetNewLine: String;
 begin
   {$IF COOPER}
   exit System.getProperty("line.separator");
   {$ELSEIF ECHOES}
   exit System.Environment.NewLine;
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.Environment.NewLine;
   {$ELSEIF TOFFEE}
   exit String(#10);
   {$ENDIF}
 end;
 
-class method Environment.GetUserName: String;
+method Environment.GetUserName: String;
 begin
   {$IF ANDROID}
   {$HINT need to do this w/o depending on android.jar somehow}
@@ -80,21 +86,25 @@ begin
   exit Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
   {$ELSEIF ECHOES}
   exit System.Environment.UserName;
-  {$ELSEIF OSX}
-  exit Foundation.NSUserName;
-  {$ELSEIF IOS}
-  exit UIKit.UIDevice.currentDevice.name;
-  {$ELSEIF WATCHOS}
-  exit "Apple Watch";
-  {$ELSEIF tvOS}
-  exit "Apple TV";
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.Environment.UserName;
+  {$ELSEIF TOFFEE}
+    {$IF OSX}
+    exit Foundation.NSUserName;
+    {$ELSEIF IOS}
+    exit UIKit.UIDevice.currentDevice.name;
+    {$ELSEIF WATCHOS}
+    exit "Apple Watch";
+    {$ELSEIF TVOS}
+    exit "Apple TV";
+    {$ENDIF}
   {$ENDIF}
 end;
 
-class method Environment.GetOS: OperatingSystem;
+method Environment.GetOS: OperatingSystem;
 begin
   {$IF COOPER}
-  {$HINT how to detect android? i dont wanan build RTL separately}
+  {$HINT how to detect android? i don't wanna build RTL separately}
   var lOSName := String(System.getProperty("os.name")):ToLowerInvariant;
   if lOSName.Contains("windows") then exit OperatingSystem.Windows
   else if lOSName.Contains("linux") then exit OperatingSystem.Linux
@@ -118,6 +128,14 @@ begin
                      end;
     else exit OperatingSystem.Unknown;
   end;
+  {$ELSEIF ISLAND}
+    {$IF LINUX}
+    exit OperatingSystem.Linux;
+    {$ELSEIF WINDOWS}
+    exit OperatingSystem.WIndows;
+    {$ELSE}
+      {$ERROR Unsupported Island platform}
+    {$ENDIF}
   {$ELSEIF TOFFEE}
     {$IF OSX}
     exit OperatingSystem.macOS;
@@ -127,18 +145,14 @@ begin
     exit OperatingSystem.watchOS;
     {$ELSEIF TVOS}
     exit OperatingSystem.tvOS;
-    {$ENDIF}
-  {$ELSEIF ISLAND}
-    {$IF WINDOWS}
-    exit OperatingSystem.Windows;
-    {$ELSEIF IOS}
-    exit OperatingSystem.Linux;
+    {$ELSE}
+      {$ERROR Unsupported Island platform}
     {$ENDIF}
   {$ENDIF}
 end;
 
 {$IF ECHOES}
-class method Environment.unameWrapper: String;
+method Environment.unameWrapper: String;
 begin
   if not assigned(unameResult) then begin
     var lBuffer := IntPtr.Zero;
@@ -156,7 +170,7 @@ begin
 end;
 {$ENDIF}
 
-class method Environment.GetOSName: String;
+method Environment.GetOSName: String;
 begin
   {$IF COOPER}
   exit System.getProperty("os.name");
@@ -166,6 +180,8 @@ begin
   exit "Microsoft Windows NT 6.2";
   {$ELSEIF ECHOES}
   exit System.Environment.OSVersion.Platform.ToString();
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.Environment.OSName;
   {$ELSEIF TOFFEE}
     {$IF OSX}
     exit "macOS";
@@ -175,17 +191,13 @@ begin
     exit "watchOS";
     {$ELSEIF TVOS}
     exit "tvOS";
-    {$ENDIF}
-  {$ELSEIF ISLAND}
-    {$IF WINDOWS}
-    exit "Windows";
-    {$ELSEIF IOS}
-    exit "Linux";
+    {$ELSE}
+      {$ERROR Unsupported Toffee platform}
     {$ENDIF}
   {$ENDIF}
 end;
 
-class method Environment.GetOSVersion: String;
+method Environment.GetOSVersion: String;
 begin
   {$IF COOPER}  
   System.getProperty("os.version");
@@ -195,12 +207,14 @@ begin
   exit "6.2";
   {$ELSEIF ECHOES}
   exit System.Environment.OSVersion.Version.ToString;
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.Environment.OSVersion;
   {$ELSEIF TOFFEE}
   exit NSProcessInfo.processInfo.operatingSystemVersionString;
   {$ENDIF}
 end;
 
-class method Environment.CurrentDirectory(): String;
+method Environment.GetCurrentDirectory(): String;
 begin
   {$IF COOPER}
   exit System.getProperty("user.dir");
@@ -210,6 +224,8 @@ begin
   exit System.Environment.CurrentDirectory; 
   {$ELSEIF ECHOES}
   exit System.Environment.CurrentDirectory;
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.Environment.CurrentDirectory;
   {$ELSEIF TOFFEE}
   exit Foundation.NSFileManager.defaultManager().currentDirectoryPath;
   {$ENDIF}
