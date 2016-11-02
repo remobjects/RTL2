@@ -3,7 +3,7 @@
 interface
 
 type
-  TimeZone = public class mapped to {$IFDEF ECHOES}System.TimeZoneInfo{$ELSEIF TOFFEE}NSTimeZone{$ELSEIF COOPER}java.util.TimeZone{$ENDIF}
+  TimeZone = public class {$IFDEF ECHOES}mapped to System.TimeZoneInfo{$ELSEIF TOFFEE}mapped to NSTimeZone{$ELSEIF COOPER}mapped to java.util.TimeZone{$ENDIF}
   private
     class method get_LocalTimeZone: not nullable TimeZone; 
     class method get_UtcTimeZone: not nullable TimeZone;
@@ -28,6 +28,10 @@ type
     property Identifier: String read mapped.Id;
     {$ENDIF}
     property OffsetToUTC: TimeSpan read mapped.BaseUtcOffset;
+    {$ELSEIF ISLAND}
+    property Name: String read nil; {$WARNING Not Implemented
+    property Identifier: String read nil; {$WARNING Not Implemented
+    property OffsetToUTC: TimeSpan read nil; {$WARNING Not Implemented}
     {$ELSEIF TOFFEE}
     property Name: String read mapped.name;
     property Identifier: String read mapped.abbreviation;
@@ -36,11 +40,6 @@ type
   end;
 
 implementation
-
-{$IF ECHOES}
-uses
-  System.Linq;
-{$ENDIF}
 
 class method TimeZone.get_TimeZoneNames: not nullable sequence of String;
 begin

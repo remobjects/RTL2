@@ -75,7 +75,7 @@ constructor TimeSpan(aTicks: Int64);
 begin
   {$IFDEF ECHOES}
   exit new System.TimeSpan(aTicks);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit aTicks / 1000;
   {$ELSEIF TOFFEE}
   exit aTicks / Double(TicksPerSecond);
@@ -118,7 +118,7 @@ method TimeSpan.get_Ticks: Int64;
 begin
   {$IFDEF ECHOES}
   exit mapped.Ticks;
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit mapped * 1000;
   {$ELSEIF TOFFEE}
   exit Int64(mapped * TicksPerSecond);
@@ -156,7 +156,7 @@ method TimeSpan.Add(ts: TimeSpan): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit mapped + System.TimeSpan(ts);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit mapped + Int64(ts);
   {$ELSEIF TOFFEE}
   exit mapped + NSTimeInterval(ts);
@@ -169,7 +169,7 @@ method TimeSpan.Subtract(ts: TimeSpan): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit mapped - System.TimeSpan(ts);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit mapped - Int64(ts);
   {$ELSEIF TOFFEE}
   exit mapped - NSTimeInterval(ts);
@@ -182,7 +182,7 @@ method TimeSpan.Negate: TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit - mapped;
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit - mapped;
   {$ELSEIF TOFFEE}
   exit - mapped;
@@ -220,7 +220,7 @@ class method TimeSpan.FromTicks(d: Int64): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan.FromTicks(d);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit d / 1000;
   {$ELSEIF TOFFEE}
   exit double(d) / TicksPerSecond;
@@ -233,7 +233,7 @@ operator TimeSpan.Equal(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) = System.TimeSpan(b);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit Int64(a) = Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) = NSTimeInterval(b);
@@ -246,7 +246,7 @@ operator TimeSpan.NotEqual(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) <> System.TimeSpan(b);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit Int64(a) <> Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) <> NSTimeInterval(b);
@@ -259,7 +259,7 @@ operator TimeSpan.Add(a: TimeSpan; b: TimeSpan): TimeSpan;
 begin
 {$IFDEF ECHOES}
   exit System.TimeSpan(a) + System.TimeSpan(b);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit Int64(a) + Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) + NSTimeInterval(b);
@@ -272,7 +272,7 @@ operator TimeSpan.Subtract(a: TimeSpan; b: TimeSpan): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) - System.TimeSpan(b);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit Int64(a) - Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) - NSTimeInterval(b);
@@ -290,7 +290,7 @@ operator TimeSpan.Minus(a: TimeSpan): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit -System.TimeSpan(a);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit -Int64(a);
   {$ELSEIF TOFFEE}
   exit -NSTimeInterval(a);
@@ -303,7 +303,7 @@ operator TimeSpan.Less(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) < System.TimeSpan(b);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit Int64(a) < Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) < NSTimeInterval(b);
@@ -316,7 +316,7 @@ operator TimeSpan.LessOrEqual(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) <= System.TimeSpan(b);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit Int64(a) <= Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) <= NSTimeInterval(b);
@@ -329,7 +329,7 @@ operator TimeSpan.Greater(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) > System.TimeSpan(b);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit Int64(a) > Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) > NSTimeInterval(b);
@@ -342,7 +342,7 @@ operator TimeSpan.GreaterOrEqual(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) >= System.TimeSpan(b);
-  {$ELSEIF COOPER}
+  {$ELSEIF COOPER OR ISLAND}
   exit Int64(a) >= Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) >= NSTimeInterval(b);
