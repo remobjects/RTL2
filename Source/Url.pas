@@ -3,52 +3,50 @@
 interface
 
 type
-  Url = public class mapped to {$IF COOPER}java.net.URL{$ELSEIF ECHOES}System.Uri{$ELSEIF TOFFEE}Foundation.NSURL{$ENDIF}
-
+  Url = public class// {$IF COOPER}mapped to java.net.URL{$ELSEIF ECHOES}mapped to System.Uri{$ELSEIF TOFFEE}mapped to Foundation.NSURL{$ENDIF}
   private
-    {$IF ECHOES}
-    method GetPort: Integer;
-    method GetFragment: String;
-    method GetUserInfo: String;
-    method GetQueryString: String;
-    {$ENDIF}
-    {$IF TOFFEE}
-    method GetUserInfo: String;
-    method GetPort: Integer;
-    {$ENDIF}
-    
+    var fScheme, fHost, fPath, fQueryString, fFragment, fUser: String;
+    var fPort: nullable Int32;
+
+    method Parse(aUrlString: not nullable String);
+    method GetHostNameAndPort: nullable String;
+    method GetPathAndQueryString: nullable String;
+    method CopyWithPath(aPath: not nullable String): not nullable Url;
+
+    method GetFilePath: nullable String;
+    method GetWindowsFilePath: nullable String;
+    method GetUnixFilePath: nullable String;
+    method GetCanonicalVersion(): Url;
+
+    constructor; empty;
+    constructor(aScheme: not nullable String; aHost: String; aPath: String);
+    constructor(aUrlString: not nullable String);
   public
-    constructor(UriString: String);
     
-    class method UrlWithFilePath(aPath: String; aIsDirectory: Boolean := false): Url;
-    begin
-      {$IF TOFFEE}
-      exit NSURL.fileURLWithPath(aPath) isDirectory(aIsDirectory);
-      {$ENDIF}
-    end;
+    class method UrlWithString(aUrlString: not nullable String): Url;
+    class method UrlWithFilePath(aPath: not nullable String; aIsDirectory: Boolean := false): Url;
 
-    property Scheme: String read {$IF COOPER}mapped.Protocol{$ELSEIF ECHOES}mapped.Scheme{$ELSEIF TOFFEE}mapped.scheme{$ENDIF};
-    property Host: String read mapped.Host;
-    property Port: Int32 read {$IF COOPER}mapped.Port{$ELSEIF ECHOES}GetPort(){$ELSEIF TOFFEE}GetPort(){$ENDIF};
-    property Path: String read {$IF COOPER}mapped.Path{$ELSEIF ECHOES}mapped.AbsolutePath{$ELSEIF TOFFEE}mapped.path{$ENDIF};
-    property QueryString: String read {$IF COOPER}mapped.Query{$ELSEIF ECHOES}GetQueryString(){$ELSEIF TOFFEE}mapped.query{$ENDIF};
-    property Fragment: String read {$IF COOPER}mapped.toURI.Fragment{$ELSEIF ECHOES}GetFragment(){$ELSEIF TOFFEE}mapped.fragment{$ENDIF};
-    property UserInfo: String read {$IF COOPER}mapped.UserInfo{$ELSE}GetUserInfo{$ENDIF};
+    property Scheme: String read fScheme;
+    property Host: String read fHost;
+    property Port: nullable Integer read fPort;
+    property Path: String read fPath;
+    property QueryString: String read fQueryString;
+    property Fragment: String read fFragment;
+    property User: String read fUser;
 
-    {$IF NOUGAT}
-    /*[ToString] // ASPE ToString method cannot have any parameters
-                 // E178 Cannot find a suitable method in the base class to override with signature "class method ToString(&self: Url): NSString"
-    method ToString: NSString; override;
-    begin
-      exit mapped.absoluteString;
-    end;*/
-    {$ENDIF}
+    property FilePath: String read GetFilePath;
+    property WindowsFilePath: String read GetWindowsFilePath;
+    property UnixFilePath: String read GetUnixFilePath;
+
+    [ToString]
+    method ToString: String; override;
 
     class method UrlEncodeString(aString: String): String;
 
     method GetParentUrl(): Url;
     method GetSubUrl(aName: String): Url;
     
+    property CanonicalVersion: Url read GetCanonicalVersion;
     property IsFileUrl: Boolean read Scheme = "file";
     property FileExists: Boolean read IsFileUrl and File.Exists(Path);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(Path);
@@ -63,134 +61,222 @@ type
     end;
     
   end;
-    
+  
 implementation
 
-{$IF TOFFEE}
-method Url.GetUserInfo: String;
+constructor Url(aUrlString: not nullable String);
 begin
-  if mapped.user = nil then
-    exit nil;
+  Parse(aUrlString);
+end;
 
-  if mapped.password <> nil then
-    exit mapped.user + ":" + mapped.password
+constructor Url(aScheme: not nullable String; aHost: String; aPath: String);
+begin
+  fScheme := aScheme;
+  fHost := aHost;
+  fPath := aPath;
+end;
+
+class method Url.UrlWithString(aUrlString: not nullable String): Url;
+begin
+  result := new Url(aUrlString);
+end;
+
+class method Url.UrlWithFilePath(aPath: not nullable String; aIsDirectory: Boolean := false): Url;
+begin
+  if aIsDirectory and not aPath.EndsWith("/") then
+    aPath := aPath+"/";
+  result := new Url("file", nil, aPath);
+end;
+
+//
+// Parse & Print
+//
+
+method Url.Parse(aUrlString: not nullable String);
+begin
+  var lProtocolPosition := aUrlString.IndexOf('://');
+  if lProtocolPosition ≥ 0 then begin
+    fScheme := aUrlString.Substring(0, lProtocolPosition);
+    aUrlString := aUrlString.Substring(lProtocolPosition + 3); /* skip over :// */
+  end;
+  
+  var lHostAndPort: String;
+  lProtocolPosition := aUrlString.IndexOf('/');
+  if lProtocolPosition = -1 then begin
+    lProtocolPosition := aUrlString.IndexOf('?');
+  end;
+  if lProtocolPosition ≥ 0 then begin
+    lHostAndPort := aUrlString.Substring(0, lProtocolPosition);
+    aUrlString := aUrlString.Substring(lProtocolPosition);
+  end
+  else begin
+    lHostAndPort := aUrlString;
+    aUrlString := '';
+  end;
+  
+  if lHostAndPort.StartsWith('[') then begin
+    lProtocolPosition := lHostAndPort.IndexOf(']');
+    if lProtocolPosition > 0 then begin
+      fHost := lHostAndPort.Substring(1, lProtocolPosition - 1);
+      var lRest: String := lHostAndPort.Substring(lProtocolPosition + 1).Trim();
+      if lRest.StartsWith(':') then begin
+        var lPort: String := lRest.Substring(1);
+        fPort := Convert.TryToInt32(lPort);
+        if not assigned(fPort) then
+          raise new UrlParserException(String.Format("Invalid Port specification '{0}'", lPort));
+      end;
+    end
+    else begin
+      raise new UrlParserException(String.Format("Invalid IPv6 host name specification '{0}'", lHostAndPort));
+    end;
+  end
+  else begin
+    lProtocolPosition := lHostAndPort.IndexOf(':');
+    if lProtocolPosition ≥ 0 then begin
+      fHost := lHostAndPort.Substring(0, lProtocolPosition);
+      var lPort: String := lHostAndPort.Substring(lProtocolPosition + 1);
+      fPort := Convert.TryToInt32(lPort);
+      if not assigned(fPort) then
+        raise new UrlParserException(String.Format("Invalid Port specification '{0}'", lPort));
+    end
+    else begin
+      fHost := lHostAndPort;
+      fPort := nil;
+    end;
+  end;
+  lProtocolPosition := aUrlString.IndexOf(#63);
+  if lProtocolPosition ≥ 0 then begin
+    fPath := aUrlString.Substring(0, lProtocolPosition);
+    fQueryString := aUrlString.Substring(lProtocolPosition + 1);
+  end
+  else begin
+    if aUrlString.Length = 0 then begin
+      aUrlString := '/';
+    end;
+    fPath := aUrlString;
+    fQueryString := nil;
+  end;
+end;
+
+method Url.ToString: String;
+begin
+  result := fScheme;
+  result := result+"://";
+  if length(fUser) > 0 then
+    result := result+fUser+"@";
+  result := result+GetHostNameAndPort();
+  result := result+GetPathAndQueryString();
+end;
+
+method Url.GetHostNameAndPort: nullable String;
+begin
+  if length(fHost) > 0 then
+    result := if fHost.Contains(':') then '['+fHost+']' else fHost;
+  if assigned(fPort) then
+    result := result+':'+fPort.ToString();
+end;
+
+method Url.GetPathAndQueryString: nullable String;
+begin
+  if length(fPath) > 0 then
+    result := fPath;
+  if length(fQueryString) > 0 then
+    result := result+'?'+fQueryString;
+  if length(fFragment) > 0 then
+    result := result+'#'+fFragment;
+end;
+
+method Url.GetFilePath: nullable String;
+begin
+  if IsFileUrl then
+    result := fPath:Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+end;
+
+method Url.GetWindowsFilePath: nullable String;
+begin
+  if IsFileUrl then
+    result := fPath:Replace('/', '\');
+end;
+
+method Url.GetUnixFilePath: nullable String;
+begin
+  if IsFileUrl then
+    result := fPath;
+end;
+
+//
+// Modifications
+//
+
+method Url.CopyWithPath(aPath: not nullable String): not nullable Url;
+begin
+  result := new Url();
+  fScheme := fScheme;
+  fHost := fHost;
+  fPath := aPath;
+  fQueryString := fQueryString;
+  fFragment := fFragment;
+  fUser := fUser;
+  fPort := fPort;
+end;
+
+method Url.GetParentUrl(): nullable Url;
+begin
+  if fPath = '/' then
+    result := nil;
+    
+  var lNewPath := fPath;
+  if Path.EndsWith('/') then
+    lNewPath := lNewPath.Substring(0, length(lNewPath)-1);
+  var p := lNewPath.IndexOf('/');
+  if p > -1 then begin
+    {$HINT check and compensate for for weirdness with windows file paths}
+    result := CopyWithPath(lNewPath.Substring(0,p+1)); // include the trailing "/"
+  end;
+  result := CopyWithPath('/')
+end;
+
+method Url.GetSubUrl(aName: String): Url;
+begin
+  var lNewPath := fPath;
+  if length(lNewPath) = 0 then
+    lNewPath := '/';
+  if not lNewPath.EndsWith('/') then
+    lNewPath := lNewPath+'/';
+  result := CopyWithPath(lNewPath+aName);
+  {$HINT handle "wrong" stuff. like, what if aName starts with `/`? do we fail? do we use the absolute path}
+end;
+
+method Url.GetCanonicalVersion(): Url;
+begin
+  var lNewPath := fPath;
+  {$HINT implement}
+  if lNewPath ≠ fPath then
+    result := CopyWithPath(lNewPath)
   else
-    exit mapped.user;
+    result := self;
 end;
 
-method Url.GetPort: Integer;
-begin
-  exit if mapped.port = nil then -1 else mapped.port.intValue;
-end;
-{$ENDIF}
-
-{$IF ECHOES}
-method Url.GetPort: Integer;
-begin
-  if mapped.IsDefaultPort then
-    exit -1;
-
-  exit mapped.Port;
-end;
-
-method Url.GetFragment: String;
-begin
-  if mapped.Fragment.Length = 0 then
-    exit nil;
-
-  if mapped.Fragment.StartsWith("#") then
-    exit mapped.Fragment.Substring(1);
-
-  exit mapped.Fragment;
-end;
-
-method Url.GetQueryString: String;
-begin
-  if mapped.Query.Length = 0 then
-    exit nil;
-
-  if mapped.Query.StartsWith("?") then
-    exit mapped.Query.Substring(1);
-
-  exit mapped.Query;
-end;
-
-method Url.GetUserInfo: String;
-begin
-  if mapped.UserInfo.Length = 0 then
-    exit nil;
-
-  exit mapped.UserInfo;
-end;
-{$ENDIF}
-
-constructor Url(UriString: String);
-begin
-  if String.IsNullOrEmpty(UriString) then
-    raise new ArgumentNullException("UriString");
-
-  {$IF COOPER}
-  exit new java.net.URI(UriString).toURL; //URI performs validation
-  {$ELSEIF ECHOES}
-  exit new System.Uri(UriString);
-  {$ELSEIF TOFFEE}
-  var Value := Foundation.NSURL.URLWithString(UriString);
-  if Value = nil then
-    raise new ArgumentException("Url was not in correct format");
-
-  var Req := Foundation.NSURLRequest.requestWithURL(Value);
-  if not Foundation.NSURLConnection.canHandleRequest(Req) then
-    raise new ArgumentException("Url was not in correct format");
-
-  exit Value as not nullable;
-  {$ENDIF}
-end;
+//
+// Helper APIs
+//
 
 class method Url.UrlEncodeString(aString: String): String;
 begin
   {$IF COOPER}
   exit java.net.URLEncoder.Encode(aString, 'utf-8');
   {$ELSEIF ECHOES}
-  {$IF WINDOWS_PHONE}
-  result := System.Net.HttpUtility.UrlEncode(aString);
-  {$ELSEIF NETFX_CORE}
-  result := System.Net.WebUtility.UrlEncode(aString);
-  {$ELSE}
-  result := System.Web.HttpUtility.UrlEncode(aString);
-  {$ENDIF}
+    {$IF WINDOWS_PHONE}
+    result := System.Net.HttpUtility.UrlEncode(aString);
+    {$ELSEIF NETFX_CORE}
+    result := System.Net.WebUtility.UrlEncode(aString);
+    {$ELSE}
+    result := System.Web.HttpUtility.UrlEncode(aString);
+    {$ENDIF}
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented}
   {$ELSEIF TOFFEE}
   result := NSString(aString).stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.alphanumericCharacterSet);
-  {$ENDIF}
-end;
-
-method Url.GetParentUrl(): nullable Url;
-begin
-  if Path = '/' then
-    result := nil
-  {$IF COOPER}
-  else if Path.EndsWith('/') then
-    result := mapped.toURI.resolve('..').toURL
-  else
-    result := mapped.toURI.resolve('.').toURL;
-  {$ELSEIF ECHOES}
-  else if Path.EndsWith('/') then
-    result := new Uri(mapped, '..')
-  else
-    result := new Uri(mapped, '.');
-  {$ELSEIF TOFFEE}
-  else
-    result := mapped.URLByDeletingLastPathComponent;
-  {$ENDIF}
-end;
-
-method Url.GetSubUrl(aName: String): Url;
-begin
-  {$IF COOPER}
-  result := mapped.toURI.resolve(aName).toURL
-  {$ELSEIF ECHOES}
-  result := new Uri(mapped, aName);
-  {$ELSEIF TOFFEE}
-  result := mapped.URLByAppendingPathComponent(aName);
   {$ENDIF}
 end;
 

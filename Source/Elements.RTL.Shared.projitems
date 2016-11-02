@@ -69,6 +69,7 @@
             <VirtualFolder>Files and Paths</VirtualFolder>
         </Compile>
         <None Include="$(MSBuildThisFileDirectory)XmlDocument.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Convert.pas"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Files and Paths">

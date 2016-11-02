@@ -45,10 +45,9 @@ type
   end;
   
   NotImplementedException = public class(RTLException);
-
   NotSupportedException = public class(RTLException);
-
   ArgumentException = public class(RTLException);
+  UrlParserException = public class(RTLException);
 
   ArgumentNullException = public class(ArgumentException)
   public
