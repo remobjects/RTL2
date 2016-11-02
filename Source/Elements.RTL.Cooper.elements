@@ -9,6 +9,7 @@
         <AllowLegacyOutParams>False</AllowLegacyOutParams>
         <CrossPlatform>True</CrossPlatform>
         <DefaultUses>com.remobjects.elements.linq</DefaultUses>
+        <RootNamespace>Elements.RTL</RootNamespace>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>false</Optimize>

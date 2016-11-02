@@ -70,6 +70,13 @@
         </Compile>
         <None Include="$(MSBuildThisFileDirectory)XmlDocument.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Convert.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Broadcasts.swift"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Dictionary.pas">
+            <VirtualFolder>Collections</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Dictionary_KeyValuePair.pas">
+            <VirtualFolder>Collections</VirtualFolder>
+        </Compile>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Files and Paths">
