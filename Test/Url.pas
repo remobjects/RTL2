@@ -47,7 +47,7 @@ type
       Assert.IsFalse(lUrl.IsAbsoluteUnixFileURL);
       Assert.IsTrue(lUrl.IsAbsoluteWindowsFileURL);
       Assert.AreEqual(lUrl.Path, "C:/Program%20Files/Test/Test.txt"); // should path be decoded too?
-      Assert.AreEqual(lUrl.ToAbsoluteString, "file://C:/Program%20Files/Test/Test.txt"); // final
+      Assert.AreEqual(lUrl.ToAbsoluteString, "file://C:/Program%20Files/Test/Test.txt");
 
       if Environment.OS in [OperatingSystem.macOS, OperatingSystem.Linux] then
         Assert.AreEqual(lUrl.FilePath, PATH.Replace("\","/")); // FilePath always has `/` on Unix
@@ -65,6 +65,13 @@ type
 
       var lUrl3 := lUrl.GetParentUrl.GetSubUrl("Test2.txt");
       Assert.AreEqual(lUrl3.ToAbsoluteString, "file://C:/Program%20Files/Test/Test2.txt");
+    end;
+
+    method TestEncodings();
+    begin
+      var PATH := "C:\Program Files\Tëst\Tést.txt";
+      var lUrl := Url.UrlWithFilePath(PATH);
+      Assert.AreEqual(lUrl.ToAbsoluteString, "file://C:/Program%20Files/T%C3%ABst/T%C3%A9st.txt");
     end;
 
   end;

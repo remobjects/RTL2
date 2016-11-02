@@ -68,6 +68,8 @@ type
     method ToBoolean(aValue: Int64): Boolean;
     method ToBoolean(aValue: Byte): Boolean;
     method ToBoolean(aValue: not nullable String): Boolean;
+
+    method ToUtf8Bytes(aValue: not nullable String): array of Byte;
     
     //method ToHexString(aValue: Int32; aWidth: Integer := 0): not nullable String;
     method ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
@@ -715,6 +717,24 @@ begin
   
   raise new FormatException(RTLErrorMessages.FORMAT_ERROR);
 end;
+
+method Convert.ToUtf8Bytes(aValue: not nullable String): array of Byte;
+begin
+  {$IF COOPER}
+  {$WARNING Not Implemented}
+  {$ELSEIF ECHOES}
+  result := new System.Text.UTF8Encoding(/*BOM:*/false).GetBytes(aValue) // todo check order  
+  {$ELSEIF ISLAND}
+  result := TextConvert.StringToUTF8(aValue, /*BOM:*/false); // todo check order  
+  {$ELSEIF COCOA}
+  var utf8 := aValue.dataUsingEncoding(NSStringEncoding.NSUTF8StringEncoding); // todo check order
+  if not assigned(utf8) then
+    raise new ConvertExcertion("Encoding of String to UTF8 failed.")
+  result := new array of byte[](utf8.length);
+  utf8.getBytes(stringData, length: utf8.length);
+  {$ENDIF}
+end;
+
 
 {$IF TOFFEE}
 method Convert.TryParseNumber(aValue: not nullable String; aLocale: Locale := nil): NSNumber;

@@ -293,10 +293,11 @@ begin
   var lResult := new StringBuilder();
   for each ch in aString do begin
     var c: UInt16 := ord(ch);
-    if (c < 46) or (58 < c < 65) or (90 < c < 95) or (95 < c < 97) or (123 < c < 256) then
-      lResult.Append("%"+Convert.ToHexString(ord(c), 2))
-    else if c ≥ 256 then
-      lResult.Append("??")
+    if (c < 46) or (58 < c < 65) or (90 < c < 95) or (95 < c < 97) or (123 < c) then begin
+      var lBytes := Convert.ToUtf8Bytes(ch);
+      for each b in lBytes do 
+        lResult.Append("%"+Convert.ToHexString(ord(b), 2));
+    end
     else
       lResult.Append(ch);
   end;
@@ -316,9 +317,13 @@ begin
       end
       else if (i < length(aString)-2) and (aString[i+1] in ['0'..'9']) and (aString[i+2] in ['0'..'9']) then begin
         var c := Convert.HexStringToInt32(aString[i+1]+aString[i+2]);
+        {$HINT handle UTF-8 pairs}
         lResult.Append(chr(c));
         inc(i, 2);
       end;
+    end
+    else if ch = '+' then begin
+      lResult.Append(' ');
     end
     else begin
       lResult.Append(ch);
