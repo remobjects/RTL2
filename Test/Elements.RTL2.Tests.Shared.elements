@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0" DefaultTargets="Build">
+    <PropertyGroup Label="Globals">
+        <ProjectGuid>9EAFE57A-81AB-42B5-A0FA-2FD186093D91</ProjectGuid>
+    </PropertyGroup>
+    <PropertyGroup>
+        <RootNamespace>Elements.RTL2.Tests.Shared</RootNamespace>
+    </PropertyGroup>
+    <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared"/>
+    <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.SharedProject.targets"/>
+    <PropertyGroup>
+        <PreBuildEvent/>
+    </PropertyGroup>
+</Project>

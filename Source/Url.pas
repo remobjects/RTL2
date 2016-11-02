@@ -42,6 +42,8 @@ type
     method ToString: String; override;
     method ToAbsoluteString: String;
 
+    class method UrlEncodePath(aString: String): String;
+    class method UrlDecodePath(aString: String): String;
     class method UrlEncodeString(aString: String): String;
 
     method GetParentUrl(): Url;
@@ -51,7 +53,7 @@ type
     property IsFileUrl: Boolean read Scheme = "file";
     property FileExists: Boolean read IsFileUrl and File.Exists(Path);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(Path);
-    property IsAbsoluteWindowsFileURL: Boolean read IsFileUrl and (Path:Length ≥ 3) and (Path[2] = ':');
+    property IsAbsoluteWindowsFileURL: Boolean read IsFileUrl and (Path:Length ≥ 3) and (Path[1] = ':');
     property IsAbsoluteUnixFileURL: Boolean read IsFileUrl and (Path:StartsWith("/"));
     
     /*method CrossPlatformPath: String;
@@ -95,9 +97,13 @@ end;
 
 class method Url.UrlWithFilePath(aPath: not nullable String; aIsDirectory: Boolean := false): Url;
 begin
+  if aPath.IsWindowsPath then begin
+    aPath := aPath.Replace("\", "/")
+  end;
+  
   if aIsDirectory and not aPath.EndsWith("/") then
     aPath := aPath+"/";
-  result := new Url("file", nil, aPath);
+  result := new Url("file", nil, UrlEncodePath(aPath));
 end;
 
 //
@@ -205,14 +211,14 @@ end;
 
 method Url.GetFilePath: nullable String;
 begin
-  if IsFileUrl then
-    result := fPath:Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+  if IsFileUrl and assigned(fPath) then
+    result := UrlDecodePath(fPath).Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
 end;
 
 method Url.GetWindowsFilePath: nullable String;
 begin
-  if IsFileUrl then
-    result := fPath:Replace('/', '\');
+  if IsFileUrl and assigned(fPath) then
+    result := UrlDecodePath(fPath).Replace('/', '\');
 end;
 
 method Url.GetUnixFilePath: nullable String;
@@ -228,27 +234,31 @@ end;
 method Url.CopyWithPath(aPath: not nullable String): not nullable Url;
 begin
   result := new Url();
-  fScheme := fScheme;
-  fHost := fHost;
-  fPath := aPath;
-  fQueryString := fQueryString;
-  fFragment := fFragment;
-  fUser := fUser;
-  fPort := fPort;
+  result.fScheme := fScheme;
+  result.fHost := fHost;
+  result.fPath := aPath;
+  result.fQueryString := fQueryString;
+  result.fFragment := fFragment;
+  result.fUser := fUser;
+  result.fPort := fPort;
 end;
 
 method Url.GetParentUrl(): nullable Url;
 begin
   if fPath = '/' then
-    result := nil;
+    exit nil;
+  if (length(fPath) = 2) and (fPath[1] = ':') then
+    exit nil;
+  if (length(fPath) = 3) and (fPath[1] = ':') and (fPath[2] = '/') then
+    exit nil;
     
   var lNewPath := fPath;
   if Path.EndsWith('/') then
     lNewPath := lNewPath.Substring(0, length(lNewPath)-1);
-  var p := lNewPath.IndexOf('/');
+  var p := lNewPath.LastIndexOf('/');
   if p > -1 then begin
-    {$HINT check and compensate for for weirdness with windows file paths}
-    result := CopyWithPath(lNewPath.Substring(0,p+1)); // include the trailing "/"
+    {$HINT check and compensate for for weirdness with windows file paths?}
+    exit CopyWithPath(lNewPath.Substring(0,p+1)); // include the trailing "/"
   end;
   result := CopyWithPath('/')
 end;
@@ -277,6 +287,46 @@ end;
 //
 // Helper APIs
 //
+
+class method Url.UrlEncodePath(aString: String): String;
+begin
+  var lResult := new StringBuilder();
+  for each ch in aString do begin
+    var c: UInt16 := ord(ch);
+    if (c < 46) or (58 < c < 65) or (90 < c < 95) or (95 < c < 97) or (123 < c < 256) then
+      lResult.Append("%"+Convert.ToHexString(ord(c), 2))
+    else if c ≥ 256 then
+      lResult.Append("??")
+    else
+      lResult.Append(ch);
+  end;
+  result := lResult.ToString()
+end;
+
+class method Url.UrlDecodePath(aString: String): String;
+begin
+  var lResult := new StringBuilder();
+  var i := 0;
+  while i < length(aString) do begin
+    var ch := aString[i];
+    if ch = '%' then begin
+      if (i < length(aString)-1) and (aString[i+1] = '%') then begin
+        lResult.Append(ch);
+        inc(i);
+      end
+      else if (i < length(aString)-2) and (aString[i+1] in ['0'..'9']) and (aString[i+2] in ['0'..'9']) then begin
+        var c := Convert.HexStringToInt32(aString[i+1]+aString[i+2]);
+        lResult.Append(chr(c));
+        inc(i, 2);
+      end;
+    end
+    else begin
+      lResult.Append(ch);
+    end;
+    inc(i);
+  end;
+  result := lResult.ToString()
+end;
 
 class method Url.UrlEncodeString(aString: String): String;
 begin
