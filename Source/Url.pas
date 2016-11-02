@@ -40,6 +40,7 @@ type
 
     [ToString]
     method ToString: String; override;
+    method ToAbsoluteString: String;
 
     class method UrlEncodeString(aString: String): String;
 
@@ -53,12 +54,23 @@ type
     property IsAbsoluteWindowsFileURL: Boolean read IsFileUrl and (Path:Length ≥ 3) and (Path[2] = ':');
     property IsAbsoluteUnixFileURL: Boolean read IsFileUrl and (Path:StartsWith("/"));
     
-    method CrossPlatformPath: String;
+    /*method CrossPlatformPath: String;
     begin
       result := Path;
       if (IsAbsoluteWindowsFileURL) then
         result := result.Substring(1).windowsPathFromUnixPath;
-    end;
+    end;*/
+    
+    {$IF COOPER}
+    operator Implicit(aUrl: java.net.URL): Url;
+    operator Implicit(aUrl: Url): java.net.URL;
+    {$ELSEIF ECHOES}
+    operator Implicit(aUrl: System.Uri): Url;
+    operator Implicit(aUrl: Url): System.Uri;
+    {$ELSEIF TOFFEE}
+    operator Implicit(aUrl: Foundation.NSURL): Url;
+    operator Implicit(aUrl: Url): Foundation.NSURL;
+    {$ENDIF}
     
   end;
   
@@ -159,6 +171,11 @@ begin
 end;
 
 method Url.ToString: String;
+begin
+  result := ToAbsoluteString;
+end;
+
+method Url.ToAbsoluteString: String;
 begin
   result := fScheme;
   result := result+"://";
@@ -279,5 +296,48 @@ begin
   result := NSString(aString).stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.alphanumericCharacterSet);
   {$ENDIF}
 end;
+
+//
+// Casts
+//
+
+{$IF COOPER}
+operator Url.Implicit(aUrl: java.net.URL): Url;
+begin
+  if assigned(aUrl) then
+    result := Url.UrlWithString(aUrl.toString());
+end;
+
+operator Url.Implicit(aUrl: Url): java.net.URL;
+begin
+  if assigned(aUrl) then
+    result := new java.net.URI(aUrl.ToAbsoluteString).toURL;
+end;
+{$ELSEIF ECHOES}
+operator Url.Implicit(aUrl: System.Uri): Url;
+begin
+  if assigned(aUrl) then
+    result := Url.UrlWithString(aUrl.AbsoluteUri);
+end;
+
+operator Url.Implicit(aUrl: Url): System.Uri;
+begin
+  if assigned(aUrl) then
+    result := new System.Uri(aUrl.ToAbsoluteString);
+end;
+{$ELSEIF TOFFEE}
+operator Url.Implicit(aUrl: Foundation.NSURL): Url;
+begin
+  if assigned(aUrl) then
+    result := Url.UrlWithString(aUrl.absoluteString);
+end;
+
+operator Url.Implicit(aUrl: Url): Foundation.NSURL;
+begin
+  if assigned(aUrl) then
+    result := Foundation.NSURL.URLWithString(aUrl.ToAbsoluteString);
+end;
+{$ENDIF}
+
 
 end.
