@@ -6,21 +6,14 @@ type
   KeyValuePair<T, U> = public class
   public
     constructor(aKey: T; aValue: U);
-    method {$IF TOFFEE}isEqual(obj: id){$ELSE}&Equals(Obj: Object){$ENDIF}: Boolean; override;    
-    method {$IF COOPER}ToString: java.lang.String{$ELSEIF ECHOES}ToString: System.String{$ELSEIF TOFFEE}description: Foundation.NSString{$ENDIF}; override;
-    method {$IF COOPER}hashCode: Integer{$ELSEIF ECHOES}GetHashCode: Integer{$ELSEIF TOFFEE}hash: Foundation.NSUInteger{$ENDIF}; override;
+    method {$IF TOFFEE}isEqual(obj: id){$ELSE}&Equals(Obj: Object){$ENDIF}: Boolean; override;
+    [ToString] method ToString: PlatformString; override;
+    method {$IF COOPER}hashCode: Integer{$ELSEIF ECHOES OR ISLAND}GetHashCode: Integer{$ELSEIF TOFFEE}hash: Foundation.NSUInteger{$ENDIF}; override;
 
     property Key: T read write; readonly;
     property Value: U read write; readonly;
-    
-    method GetTuple: tuple of (T,U);
+    property &Tuple: tuple of (T,U) read (Key, Value);
   end;
-
-  {$IF Cooper}
-  {$ELSE}
-  [Obsolete('Use KeyValuePair<T, U> class instead.')]
-  {$ENDIF}
-  KeyValue<T, U> = public class(KeyValuePair<T,U>);
 
 implementation
 
@@ -35,29 +28,21 @@ end;
 
 method KeyValuePair<T, U>.{$IF TOFFEE}isEqual(obj: id){$ELSE}&Equals(Obj: Object){$ENDIF}: Boolean;
 begin
-  if Obj = nil then
-    exit false;
-
-  if not (Obj is KeyValuePair<T,U>) then
+  if not assigned(Obj) or (Obj is not KeyValuePair<T,U>) then
     exit false;
 
   var Item := KeyValuePair<T, U>(Obj);
   result := Key.Equals(Item.Key) and ( ((Value = nil) and (Item.Value = nil)) or ((Value <> nil) and Value.Equals(Item.Value)));
 end;
 
-method KeyValuePair<T, U>.{$IF COOPER}hashCode: Integer{$ELSEIF ECHOES}GetHashCode: Integer{$ELSEIF TOFFEE}hash: Foundation.NSUInteger{$ENDIF};
+method KeyValuePair<T, U>.{$IF COOPER}hashCode: Integer{$ELSEIF ECHOES OR ISLAND}GetHashCode: Integer{$ELSEIF TOFFEE}hash: Foundation.NSUInteger{$ENDIF};
 begin
   result := Key.GetHashCode + Value:GetHashCode;
 end;
 
-method KeyValuePair<T, U>.{$IF COOPER}ToString: java.lang.String{$ELSEIF ECHOES}ToString: System.String{$ELSEIF TOFFEE}description: Foundation.NSString{$ENDIF};
+method KeyValuePair<T, U>.ToString: PlatformString;
 begin
-  result := String.Format("Key: {0} Value: {1}", Key, Value);
-end;
-
-method KeyValuePair<T, U>.GetTuple: tuple of (T,U);
-begin
-  result := (Key, Value);
+  result := String.Format("<Key: {0} Value: {1}>", Key, Value);
 end;
 
 end.
