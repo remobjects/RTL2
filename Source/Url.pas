@@ -291,7 +291,8 @@ end;
 class method Url.UrlEncodePath(aString: String): String;
 begin
   var lResult := new StringBuilder();
-  for each ch in aString do begin
+  for i: Int32 := 0 to length(aString)-1 do begin
+    var ch := aString[i];
     var c: UInt16 := ord(ch);
     if (c < 46) or (58 < c < 65) or (90 < c < 95) or (95 < c < 97) or (123 < c) then begin
       var lBytes := Convert.ToUtf8Bytes(ch);

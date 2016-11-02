@@ -721,17 +721,17 @@ end;
 method Convert.ToUtf8Bytes(aValue: not nullable String): array of Byte;
 begin
   {$IF COOPER}
-  {$WARNING Not Implemented}
+  result := PlatformString(aValue).getBytes("UTF-8");
   {$ELSEIF ECHOES}
   result := new System.Text.UTF8Encoding(/*BOM:*/false).GetBytes(aValue) // todo check order  
   {$ELSEIF ISLAND}
   result := TextConvert.StringToUTF8(aValue, /*BOM:*/false); // todo check order  
   {$ELSEIF COCOA}
-  var utf8 := aValue.dataUsingEncoding(NSStringEncoding.NSUTF8StringEncoding); // todo check order
+  var utf8 := PlatformString(aValue).dataUsingEncoding(NSStringEncoding.NSUTF8StringEncoding); // todo check order
   if not assigned(utf8) then
-    raise new ConvertExcertion("Encoding of String to UTF8 failed.")
-  result := new array of byte[](utf8.length);
-  utf8.getBytes(stringData, length: utf8.length);
+    raise new ConversionException("Encoding of String to UTF8 failed.");
+  result := new Byte[utf8.length];
+  utf8.getBytes(result) length(utf8.length);
   {$ENDIF}
 end;
 
