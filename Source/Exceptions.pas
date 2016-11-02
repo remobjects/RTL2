@@ -48,6 +48,7 @@ type
   NotSupportedException = public class(RTLException);
   ArgumentException = public class(RTLException);
   UrlParserException = public class(RTLException);
+  ConversionException = public class(RTLException);
 
   ArgumentNullException = public class(ArgumentException)
   public
@@ -69,16 +70,22 @@ type
 
   FormatException = public class(RTLException)
   public
-    constructor(aMessage: String);
-    begin
-      inherited constructor(aMessage);
-    end;
-    
+  
     constructor();
     begin
       inherited constructor(RTLErrorMessages.FORMAT_ERROR);
     end;
     
+    constructor(aMessage: String);
+    begin
+      inherited constructor(aMessage);
+    end;
+    
+    constructor(aFormat: String; params aParams: array of Object);
+    begin
+      inherited constructor(aFormat, aParams);
+    end;
+
   end;
 
   IOException = public class(RTLException);
