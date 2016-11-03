@@ -46,7 +46,7 @@ type
       Assert.IsTrue(lUrl.IsFileUrl);
       Assert.IsFalse(lUrl.IsAbsoluteUnixFileURL);
       Assert.IsTrue(lUrl.IsAbsoluteWindowsFileURL);
-      Assert.AreEqual(lUrl.Path, "C:/Program%20Files/Test/Test.txt"); // should path be decoded too?
+      Assert.AreEqual(lUrl.Path, "C:/Program Files/Test/Test.txt"); 
       Assert.AreEqual(lUrl.ToAbsoluteString, "file://C:/Program%20Files/Test/Test.txt");
 
       if Environment.OS in [OperatingSystem.macOS, OperatingSystem.Linux] then
@@ -69,11 +69,39 @@ type
 
     method TestEncodings();
     begin
-      var PATH := "C:\Program Files\Tëst\Tést.txt";
-      var lUrl := Url.UrlWithFilePath(PATH);
+      var lUrl := Url.UrlWithFilePath("C:\Program Files\Tëst\Tést.txt");
       Assert.AreEqual(lUrl.ToAbsoluteString, "file://C:/Program%20Files/T%C3%ABst/T%C3%A9st.txt");
-    end;
 
+      lUrl := Url.UrlWithString("file://C:/Program%20Files/T%C3%ABst/T%C3%A9st.txt");
+      Assert.AreEqual(lUrl.ToAbsoluteString, "file://C:/Program%20Files/T%C3%ABst/T%C3%A9st.txt");
+      Assert.AreEqual(lUrl.UnixPath, "C:/Program Files/Tëst/Tést.txt");
+      Assert.AreEqual(lUrl.WindowsPath, "C:\Program Files\Tëst\Tést.txt");
+    end;
+    
+    method TestPathComponents();
+    begin
+      var lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/Test.txt");
+      
+      Assert.AreEqual(lUrl.PathExtension, ".txt");
+      Assert.AreEqual(lUrl.LastPathComponent, "Test.txt");
+      
+      if Environment.OS in [OperatingSystem.macOS, OperatingSystem.Linux] then
+        Assert.AreEqual(lUrl.FilePathWithoutLastComponent, "/Users/mh/Desktop/");
+      if Environment.OS in [OperatingSystem.Windows] then
+        Assert.AreEqual(lUrl.FilePathWithoutLastComponent, "/Users/mh/Desktop/");
+
+      Assert.AreEqual(lUrl.WindowsPathWithoutLastComponent, "\Users\mh\Desktop\");
+      Assert.AreEqual(lUrl.UnixPathWithoutLastComponent, "/Users/mh/Desktop/");
+      
+      Assert.AreEqual(lUrl.UrlWithoutLastComponent.ToAbsoluteString, "file:///Users/mh/Desktop/");
+      
+      lUrl := Url.UrlWithFilePath("C:\Program Files\Tést.txt");
+      Assert.AreEqual(lUrl.PathExtension, ".txt");
+      Assert.AreEqual(lUrl.LastPathComponent, "Tést.txt");
+      Assert.AreEqual(lUrl.FilePathWithoutLastComponent, "C:/Program Files/");
+      Assert.AreEqual(lUrl.UrlWithoutLastComponent.ToAbsoluteString, "file://C:/Program%20Files/");    
+    end;
+    
   end;
 
 end.
