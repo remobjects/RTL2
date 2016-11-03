@@ -10,7 +10,7 @@ type
   
     method TestUnixFileUrls();
     begin
-      var PATH := "/Users/mh/Desktop/test.txt";
+      var PATH: String := "/Users/mh/Desktop/test.txt";
       var lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/test.txt");
       Assert.IsTrue(lUrl.IsFileUrl);
       Assert.IsTrue(lUrl.IsAbsoluteUnixFileURL);
@@ -41,7 +41,7 @@ type
   
     method TestWindowsFileUrls();
     begin
-      var PATH := "C:\Program Files\Test\Test.txt";
+      var PATH: String := "C:\Program Files\Test\Test.txt";
       var lUrl := Url.UrlWithFilePath(PATH);
       Assert.IsTrue(lUrl.IsFileUrl);
       Assert.IsFalse(lUrl.IsAbsoluteUnixFileURL);
