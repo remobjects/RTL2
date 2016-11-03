@@ -2,11 +2,46 @@
 
 interface
 
-type  
-  List<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray where T is class;{$ENDIF}
+type
+  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray;{$ENDIF};
+  PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray;{$ENDIF};
+
+  ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray where T is class;{$ENDIF}
   private
-    method SetItem(&Index: Integer; Value: T);
     method GetItem(&Index: Integer): T;
+    
+  public
+
+    constructor; mapped to constructor();
+    constructor(Items: List<T>);
+    constructor(anArray: array of T);
+
+    method Contains(aItem: T): Boolean;
+    method Exists(Match: Predicate<T>): Boolean;
+    method FindIndex(Match: Predicate<T>): Integer;
+    method FindIndex(StartIndex: Integer; Match: Predicate<T>): Integer;
+    method FindIndex(StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
+
+    method Find(Match: Predicate<T>): T;
+    method FindAll(Match: Predicate<T>): sequence of T;
+    method TrueForAll(Match: Predicate<T>): Boolean;
+    method ForEach(Action: Action<T>);
+
+    method IndexOf(aItem: T): Integer; 
+    method LastIndexOf(aItem: T): Integer;
+
+    method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>; 
+    method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
+    method ToList<U>: ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
+    
+    property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF};
+    property Item[i: Integer]: T read GetItem; default;
+  end;
+
+  List<T> = public class (ImmutableList<T>, sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray where T is class;{$ENDIF}
+  private
+    method GetItem(&Index: Integer): T;
+    method SetItem(&Index: Integer; Value: T);
 
   public
     
@@ -26,28 +61,13 @@ type
     method RemoveAt(aIndex: Integer);
     method RemoveRange(aIndex: Integer; aCount: Integer);
 
-    method Contains(aItem: T): Boolean;
-    method Exists(Match: Predicate<T>): Boolean;
-    method FindIndex(Match: Predicate<T>): Integer;
-    method FindIndex(StartIndex: Integer; Match: Predicate<T>): Integer;
-    method FindIndex(StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
-
-    method Find(Match: Predicate<T>): T;
-    method FindAll(Match: Predicate<T>): List<T>;
-    method TrueForAll(Match: Predicate<T>): Boolean;
-    method ForEach(Action: Action<T>);
-
-    method IndexOf(aItem: T): Integer; 
     method Insert(&Index: Integer; aItem: T);
     method InsertRange(&Index: Integer; Items: List<T>);
     method InsertRange(&Index: Integer; Items: array of T);
-    method LastIndexOf(aItem: T): Integer;
 
     method Sort(Comparison: Comparison<T>);
+    method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF}
 
-    method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
-    
-    property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF};
     property Item[i: Integer]: T read GetItem write SetItem; default;
 
     {$IF TOFFEE}
@@ -72,11 +92,11 @@ type
   ListHelpers = assembly static class
   public
     method AddRange<T>(aSelf: List<T>; aArr: array of T);
-    method FindIndex<T>(aSelf: List<T>;StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
-    method Find<T>(aSelf: List<T>;Match: Predicate<T>): T;
-    method ForEach<T>(aSelf: List<T>;Action: Action<T>);
-    method TrueForAll<T>(aSelf: List<T>;Match: Predicate<T>): Boolean;
-    method FindAll<T>(aSelf: List<T>;Match: Predicate<T>): List<T>;
+    method FindIndex<T>(aSelf: ImmutableList<T>;StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
+    method Find<T>(aSelf: ImmutableList<T>;Match: Predicate<T>): T;
+    method ForEach<T>(aSelf: ImmutableList<T>;Action: Action<T>);
+    method TrueForAll<T>(aSelf: ImmutableList<T>;Match: Predicate<T>): Boolean;
+    method FindAll<T>(aSelf: ImmutableList<T>;Match: Predicate<T>): sequence of T; iterator;
     method InsertRange<T>(aSelf: List<T>; &Index: Integer; Items: array oF T);
     {$IFDEF TOFFEE}
     method LastIndexOf<T>(aSelf: NSArray; aItem: T): Integer;
@@ -89,6 +109,30 @@ type
   end;
 
 implementation
+
+constructor ImmutableList<T>(Items: List<T>);
+begin
+  {$IF COOPER}
+  result := new java.util.ArrayList<T>(Items);
+  {$ELSEIF ECHOES}
+  exit new System.Collections.Generic.List<T>(Items);
+  {$ELSEIF ISLAND}
+  exit new RemObjects.Elements.System.List<T>(Items);
+  {$ELSEIF TOFFEE}
+  result := new Foundation.NSArray withArray(Items);
+  {$ENDIF}
+end;
+
+constructor ImmutableList<T>(anArray: array of T);
+begin
+  {$IF COOPER}
+  result := new java.util.ArrayList<T>(java.util.Arrays.asList(anArray));
+  {$ELSEIF ECHOES}
+  exit new System.Collections.Generic.List<T>(anArray);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSArray.arrayWithObjects(^id(@anArray[0])) count(length(anArray));
+  {$ENDIF}
+end;
 
 constructor List<T>(Items: List<T>);
 begin
@@ -129,6 +173,15 @@ begin
   mapped[&Index] := NullHelper.ValueOf(Value);
   {$ELSE}  
   mapped[&Index] := Value;
+  {$ENDIF}
+end;
+
+method ImmutableList<T>.GetItem(&Index: Integer): T;
+begin
+  {$IF TOFFEE}
+  exit NullHelper.ValueOf(mapped.objectAtIndex(&Index));
+  {$ELSE}  
+  exit mapped[&Index];
   {$ENDIF}
 end;
 
@@ -181,7 +234,7 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.Contains(aItem: T): Boolean;
+method ImmutableList<T>.Contains(aItem: T): Boolean;
 begin
   {$IF COOPER}
   exit mapped.Contains(aItem);
@@ -192,47 +245,47 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.Exists(Match: Predicate<T>): Boolean;
+method ImmutableList<T>.Exists(Match: Predicate<T>): Boolean;
 begin
   exit self.FindIndex(Match) <> -1;
 end;
 
-method List<T>.FindIndex(Match: Predicate<T>): Integer;
+method ImmutableList<T>.FindIndex(Match: Predicate<T>): Integer;
 begin
   exit self.FindIndex(0, Count, Match);
 end;
 
-method List<T>.FindIndex(StartIndex: Integer; Match: Predicate<T>): Integer;
+method ImmutableList<T>.FindIndex(StartIndex: Integer; Match: Predicate<T>): Integer;
 begin
   exit self.FindIndex(StartIndex, Count - StartIndex, Match);
 end;
 
-method List<T>.FindIndex(StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
+method ImmutableList<T>.FindIndex(StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
 begin
   exit ListHelpers.FindIndex(self, StartIndex, aCount, Match);
 end;
 
-method List<T>.Find(Match: Predicate<T>): T;
+method ImmutableList<T>.Find(Match: Predicate<T>): T;
 begin
   exit ListHelpers.Find(self, Match);
 end;
 
-method List<T>.FindAll(Match: Predicate<T>): List<T>;
+method ImmutableList<T>.FindAll(Match: Predicate<T>): sequence of T;
 begin
   exit ListHelpers.FindAll(self, Match);
 end;
 
-method List<T>.TrueForAll(Match: Predicate<T>): Boolean;
+method ImmutableList<T>.TrueForAll(Match: Predicate<T>): Boolean;
 begin
   exit ListHelpers.TrueForAll(self, Match);
 end;
 
-method List<T>.ForEach(Action: Action<T>);
+method ImmutableList<T>.ForEach(Action: Action<T>);
 begin
   ListHelpers.ForEach(self, Action);
 end;
 
-method List<T>.IndexOf(aItem: T): Integer;
+method ImmutableList<T>.IndexOf(aItem: T): Integer;
 begin
   {$IF COOPER}
   exit mapped.IndexOf(aItem);
@@ -271,7 +324,7 @@ begin
   ListHelpers.InsertRange(self, &Index, Items);
 end;
 
-method List<T>.LastIndexOf(aItem: T): Integer;
+method ImmutableList<T>.LastIndexOf(aItem: T): Integer;
 begin  
   {$IF COOPER}
   exit mapped.LastIndexOf(aItem);
@@ -289,13 +342,11 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Remove(aItem);
   {$ELSEIF TOFFEE}
-  var lIndex := IndexOf(aItem);
-  if lIndex <> -1 then begin
-    RemoveAt(lIndex);
-    exit true;
-  end;
-  
-  exit false;
+  var lIndex := mapped.indexOfObject(NullHelper.ValueOf(aItem));
+  if lIndex = NSNotFound then
+    exit false;
+  RemoveAt(lIndex);
+  exit true;
   {$ENDIF}
 end;
 
@@ -356,7 +407,28 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.ToArray: array of T;
+method ImmutableList<T>.ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
+begin
+  {$IF COOPER}  
+  result := self.ToList();
+  java.util.Collections.sort(result, new class java.util.Comparator<T>(compare := (x, y) -> Comparison(x, y)));
+  {$ELSEIF ECHOES OR ISLAND}
+  result := self.ToList();
+  (result as PlatformList<T>).Sort((x, y) -> Comparison(x, y));
+  {$ELSEIF TOFFEE}
+  mapped.sortedArrayUsingComparator((x, y) -> begin
+    var lResult := Comparison(x, y);
+    exit if lResult < 0 then
+           NSComparisonResult.NSOrderedAscending
+         else if lResult = 0 then
+           NSComparisonResult.NSOrderedSame
+         else
+           NSComparisonResult.NSOrderedDescending;
+  end);
+  {$ENDIF}
+end;
+
+method ImmutableList<T>.ToArray: array of T;
 begin
   {$IF COOPER}
   exit mapped.toArray(new T[mapped.size()]); 
@@ -366,6 +438,25 @@ begin
   exit ListHelpers.ToArray<T>(self);
   {$ENDIF}
 end;
+
+method ImmutableList<T>.ToList<U>: ImmutableList<U>;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  self.Select(x -> x as U).ToList();
+  {$ELSEIF TOFFEE}
+  exit self as ImmutableList<U>;
+  {$ENDIF}
+end;
+
+method List<T>.ToList<U>: List<U>;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  self.Select(x -> x as U).ToList();
+  {$ELSEIF TOFFEE}
+  exit self as List<U>;
+  {$ENDIF}
+end;
+
 
 {$IF TOFFEE}
 operator List<T>.Implicit(aArray: NSArray<T>): List<T>;
@@ -394,7 +485,7 @@ begin
     aSelf.Add(aArr[i]);
 end;
 
-method ListHelpers.FindIndex<T>(aSelf: List<T>;StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
+method ListHelpers.FindIndex<T>(aSelf: ImmutableList<T>;StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
 begin
   if StartIndex > aSelf.Count then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, "StartIndex");
@@ -414,7 +505,7 @@ begin
   exit -1;
 end;
 
-method ListHelpers.Find<T>(aSelf: List<T>; Match: Predicate<T>): T;
+method ListHelpers.Find<T>(aSelf: ImmutableList<T>; Match: Predicate<T>): T;
 begin
   if Match = nil then
     raise new ArgumentNullException("Match");
@@ -427,19 +518,18 @@ begin
   exit &default(T);
 end;
 
-method ListHelpers.FindAll<T>(aSelf: List<T>; Match: Predicate<T>): List<T>;
+method ListHelpers.FindAll<T>(aSelf: ImmutableList<T>; Match: Predicate<T>): sequence of T;
 begin
   if Match = nil then
     raise new ArgumentNullException("Match");
 
-  result := new List<T>();
   for i: Integer := 0 to aSelf.Count-1 do begin
     if Match(aSelf[i]) then
-      result.Add(aSelf[i]);
+      yield aSelf[i];
   end;
 end;
 
-method ListHelpers.TrueForAll<T>(aSelf: List<T>; Match: Predicate<T>): Boolean;
+method ListHelpers.TrueForAll<T>(aSelf: ImmutableList<T>; Match: Predicate<T>): Boolean;
 begin
   if Match = nil then
     raise new ArgumentNullException("Match");
@@ -452,7 +542,7 @@ begin
   exit true;
 end;
 
-method ListHelpers.ForEach<T>(aSelf: List<T>; Action: Action<T>);
+method ListHelpers.ForEach<T>(aSelf: ImmutableList<T>; Action: Action<T>);
 begin
   if Action = nil then
     raise new ArgumentNullException("Action");
