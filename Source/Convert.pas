@@ -70,6 +70,7 @@ type
     method ToBoolean(aValue: not nullable String): Boolean;
 
     method ToUtf8Bytes(aValue: not nullable String): array of Byte;
+    method Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String;
     
     //method ToHexString(aValue: Int32; aWidth: Integer := 0): not nullable String;
     method ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
@@ -720,21 +721,18 @@ end;
 
 method Convert.ToUtf8Bytes(aValue: not nullable String): array of Byte;
 begin
-  {$IF COOPER}
-  result := PlatformString(aValue).getBytes("UTF-8");
-  {$ELSEIF ECHOES}
-  result := new System.Text.UTF8Encoding(/*BOM:*/false).GetBytes(aValue) // todo check order  
-  {$ELSEIF ISLAND}
-  result := TextConvert.StringToUTF8(aValue, /*BOM:*/false); // todo check order  
-  {$ELSEIF COCOA}
-  var utf8 := PlatformString(aValue).dataUsingEncoding(NSStringEncoding.NSUTF8StringEncoding); // todo check order
-  if not assigned(utf8) then
-    raise new ConversionException("Encoding of String to UTF8 failed.");
-  result := new Byte[utf8.length];
-  utf8.getBytes(result) length(utf8.length);
+  {$IF ISLAND}
+  result := TextConvert.StringToUTF8(aValue, /*BOM:*/false);
+  {$ELSE}
+  result := Encoding.UTF8.GetBytes(aValue);
   {$ENDIF}
 end;
 
+method Convert.Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String;
+begin
+  var len := coalesce(aLength, length(aBytes));
+  result := Encoding.UTF8.getString(aBytes, 0, len);
+end;
 
 {$IF TOFFEE}
 method Convert.TryParseNumber(aValue: not nullable String; aLocale: Locale := nil): NSNumber;

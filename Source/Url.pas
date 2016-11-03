@@ -18,6 +18,13 @@ type
     method GetUnixFilePath: nullable String;
     method GetCanonicalVersion(): Url;
 
+    method GetPathExtension: String;
+    method GetLastPathComponent: String;
+    method GetFilePathWithoutLastComponent: String;
+    method GetWindowsPathWithoutLastComponent: String;
+    method GetUnixPathWithoutLastComponent: String;
+    method GetUrlWithoutLastComponent: Url;
+
     constructor; empty;
     constructor(aScheme: not nullable String; aHost: String; aPath: String);
     constructor(aUrlString: not nullable String);
@@ -34,10 +41,6 @@ type
     property Fragment: String read fFragment;
     property User: String read fUser;
 
-    property FilePath: String read GetFilePath;
-    property WindowsFilePath: String read GetWindowsFilePath;
-    property UnixFilePath: String read GetUnixFilePath;
-
     [ToString]
     method ToString: String; override;
     method ToAbsoluteString: String;
@@ -49,12 +52,27 @@ type
     method GetParentUrl(): Url;
     method GetSubUrl(aName: String): Url;
     
+    //property PathWithoutLastComponent: String read GetPathWithoutLastComponent; // includes trailing "/" or "\", NOT decoded
+    
     property CanonicalVersion: Url read GetCanonicalVersion;
     property IsFileUrl: Boolean read Scheme = "file";
     property FileExists: Boolean read IsFileUrl and File.Exists(Path);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(Path);
     property IsAbsoluteWindowsFileURL: Boolean read IsFileUrl and (Path:Length ≥ 3) and (Path[1] = ':');
     property IsAbsoluteUnixFileURL: Boolean read IsFileUrl and (Path:StartsWith("/"));
+    
+    // these are all Url-decoded:
+    property FilePath: String read GetFilePath;               // converts "/" to "\" on Windows, only
+    property WindowsPath: String read GetWindowsFilePath; // converts "/" to "\", always
+    property UnixPath: String read GetUnixFilePath;       // always keeps "/"
+
+    property PathExtension: String read GetPathExtension;     // will include the "."
+    property LastPathComponent: String read GetLastPathComponent;
+    property FilePathWithoutLastComponent: String read GetFilePathWithoutLastComponent;               // includes trailing "/" or "\"
+    property WindowsPathWithoutLastComponent: String read GetWindowsPathWithoutLastComponent; // includes trailing "\"
+    property UnixPathWithoutLastComponent: String read GetUnixPathWithoutLastComponent;       // includes trailing "/"
+    property UrlWithoutLastComponent: Url read GetUrlWithoutLastComponent;
+
     
     /*method CrossPlatformPath: String;
     begin
@@ -103,7 +121,7 @@ begin
   
   if aIsDirectory and not aPath.EndsWith("/") then
     aPath := aPath+"/";
-  result := new Url("file", nil, UrlEncodePath(aPath));
+  result := new Url("file", nil, aPath);
 end;
 
 //
@@ -116,6 +134,11 @@ begin
   if lProtocolPosition ≥ 0 then begin
     fScheme := aUrlString.Substring(0, lProtocolPosition);
     aUrlString := aUrlString.Substring(lProtocolPosition + 3); /* skip over :// */
+  end;
+  
+  if fScheme = "file" then begin
+    fPath := UrlDecodePath(aUrlString);
+    exit;
   end;
   
   var lHostAndPort: String;
@@ -164,14 +187,14 @@ begin
   end;
   lProtocolPosition := aUrlString.IndexOf(#63);
   if lProtocolPosition ≥ 0 then begin
-    fPath := aUrlString.Substring(0, lProtocolPosition);
+    fPath := UrlDecodePath(aUrlString.Substring(0, lProtocolPosition));
     fQueryString := aUrlString.Substring(lProtocolPosition + 1);
   end
   else begin
     if aUrlString.Length = 0 then begin
       aUrlString := '/';
     end;
-    fPath := aUrlString;
+    fPath := UrlDecodePath(aUrlString);
     fQueryString := nil;
   end;
 end;
@@ -202,29 +225,86 @@ end;
 method Url.GetPathAndQueryString: nullable String;
 begin
   if length(fPath) > 0 then
-    result := fPath;
+    result := UrlEncodePath(fPath);
   if length(fQueryString) > 0 then
     result := result+'?'+fQueryString;
   if length(fFragment) > 0 then
     result := result+'#'+fFragment;
 end;
 
+//
+// Working with Paths
+//
+
 method Url.GetFilePath: nullable String;
 begin
-  if IsFileUrl and assigned(fPath) then
-    result := UrlDecodePath(fPath).Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+  if IsFileUrl and assigned(fPath) then begin
+    result := fPath;
+    if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
+      result := result.Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+  end;
 end;
 
 method Url.GetWindowsFilePath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then
-    result := UrlDecodePath(fPath).Replace('/', '\');
+    result := fPath.Replace('/', '\');
 end;
 
 method Url.GetUnixFilePath: nullable String;
 begin
   if IsFileUrl then
     result := fPath;
+end;
+
+method Url.GetPathExtension: nullable String;
+begin
+  var lName := GetLastPathComponent;
+  if length(lName) > 0 then begin
+    var p := lName.LastIndexOf(".");
+    if p > -1 then
+      result := lName.Substring(p); // include the "."
+  end;
+end;
+
+method Url.GetLastPathComponent: nullable String;
+begin
+  if length(fPath) > 0 then begin
+    var p := fPath.LastIndexOf("/");
+    if (p > -1) and (p < length(fPath)-1) then
+      result := fPath.Substring(p+1); // exclude the "/"
+  end;
+end;
+
+method Url.GetFilePathWithoutLastComponent: String;
+begin
+  result := GetUnixPathWithoutLastComponent;
+  if assigned(result) then begin
+    if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
+      result := result.Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+  end;
+end;
+
+method Url.GetWindowsPathWithoutLastComponent: String;
+begin
+  result := GetUnixPathWithoutLastComponent;
+  result := result:Replace('/', '\');;
+end;
+
+method Url.GetUnixPathWithoutLastComponent: String;
+begin
+  if length(fPath) > 0 then begin
+    var p := fPath.LastIndexOf("/");
+    if (p > 0) then // yes, 0, not -1
+      result := fPath.Substring(0, p+1); // include the "/"
+  end;
+end;
+
+method Url.GetUrlWithoutLastComponent: nullable Url;
+begin
+  var lPath := GetUnixPathWithoutLastComponent();
+  if length(lPath) > 0 then
+    result := CopyWithPath(lPath);
 end;
 
 //
@@ -307,31 +387,34 @@ end;
 
 class method Url.UrlDecodePath(aString: String): String;
 begin
-  var lResult := new StringBuilder();
+  var lResultBytes := new Byte[length(aString)];
   var i := 0;
+  var j := 0;
   while i < length(aString) do begin
     var ch := aString[i];
+    if ord(ch) > 256 then
+      raise new UrlParserException("Invalid character in Url-Encoded path");
     if ch = '%' then begin
       if (i < length(aString)-1) and (aString[i+1] = '%') then begin
-        lResult.Append(ch);
+        lResultBytes[j] := Byte(ch);
         inc(i);
       end
-      else if (i < length(aString)-2) and (aString[i+1] in ['0'..'9']) and (aString[i+2] in ['0'..'9']) then begin
+      else if (i < length(aString)-2) and (aString[i+1] in ['0'..'9','A'..'F','a'..'f']) and (aString[i+2] in ['0'..'9','A'..'F','a'..'f']) then begin
         var c := Convert.HexStringToInt32(aString[i+1]+aString[i+2]);
-        {$HINT handle UTF-8 pairs}
-        lResult.Append(chr(c));
+        lResultBytes[j] := Byte(c);
         inc(i, 2);
       end;
     end
     else if ch = '+' then begin
-      lResult.Append(' ');
+      lResultBytes[j] := 32; // space
     end
     else begin
-      lResult.Append(ch);
+      lResultBytes[j] := Byte(ch);
     end;
     inc(i);
+    inc(j);
   end;
-  result := lResult.ToString()
+  result := Convert.Utf8BytesToString(lResultBytes, j);
 end;
 
 class method Url.UrlEncodeString(aString: String): String;
