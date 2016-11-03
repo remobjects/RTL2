@@ -3,15 +3,15 @@
 interface
 
 type
-  StringBuilder = public class mapped to {$IF COOPER}java.lang.StringBuilder{$ELSEIF ECHOES}System.Text.StringBuilder{$ELSEIF TOFFEE}Foundation.NSMutableString{$ENDIF}
+  StringBuilder = public class mapped to {$IF COOPER}java.lang.StringBuilder{$ELSEIF ECHOES}System.Text.StringBuilder{$ELSEIF ISLAND}RemObjects.Elements.System.StringBuilder{$ELSEIF TOFFEE}Foundation.NSMutableString{$ENDIF}
   private
     method get_Chars(&Index : Integer): Char;
     method set_Chars(&Index : Integer; Value: Char);
     method set_Length(Value: Integer);
   public
     constructor; mapped to constructor();
-    constructor(Capacity: Integer); mapped to {$IF COOPER OR ECHOES}constructor(Capacity){$ELSEIF TOFFEE}stringWithCapacity(Capacity){$ENDIF};
-    constructor(Data: String); mapped to {$IF COOPER OR ECHOES}constructor(Data){$ELSEIF TOFFEE}stringWithString(Data){$ENDIF};
+    constructor(Capacity: Integer); mapped to {$IF COOPER OR ECHOES OR ISLAND}constructor(Capacity){$ELSEIF TOFFEE}stringWithCapacity(Capacity){$ENDIF};
+    constructor(Data: String); mapped to {$IF COOPER OR ECHOES OR ISLAND}constructor(Data){$ELSEIF TOFFEE}stringWithString(Data){$ENDIF};
 
     method Append(Value: String): StringBuilder;
     method Append(Value: String; StartIndex, Count: Integer): StringBuilder;
@@ -42,7 +42,7 @@ begin
     mapped.append(Value);
 
   exit mapped;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Append(Value, RepeatCount);
   {$ELSEIF TOFFEE}
   for i: Int32 := 1 to RepeatCount do
@@ -57,7 +57,7 @@ begin
   if Value = nil then
     exit;
 
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Append(Value);
   {$ELSEIF TOFFEE}
   mapped.appendString(Value);
@@ -78,7 +78,7 @@ begin
 
   {$IF COOPER}
   exit mapped.append(Value, startIndex, startIndex + count);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Append(Value, StartIndex, Count);
   {$ELSEIF TOFFEE}
   mapped.appendString(Value.Substring(StartIndex, Count));
@@ -95,7 +95,7 @@ begin
   mapped.append(Value);
   mapped.append(Environment.NewLine);
   exit mapped;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.AppendLine(Value);
   {$ELSEIF TOFFEE}
   mapped.appendString(Value);
@@ -109,7 +109,7 @@ begin
   {$IF COOPER}
   mapped.append(Environment.NewLine);
   exit mapped;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.AppendLine;
   {$ELSEIF TOFFEE}
   mapped.appendString(Environment.NewLine);
@@ -121,7 +121,7 @@ method StringBuilder.Clear;
 begin
   {$IF COOPER}
   mapped.SetLength(0);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Length := 0;
   {$ELSEIF TOFFEE}
   mapped.SetString("");
@@ -135,8 +135,8 @@ begin
 
   {$IF COOPER}
   exit mapped.delete(StartIndex, StartIndex + Count);
-  {$ELSEIF ECHOES}
-   exit mapped.&Remove(StartIndex, Count);
+  {$ELSEIF ECHOES OR ISLAND}
+   exit mapped.Remove(StartIndex, Count);
   {$ELSEIF TOFFEE}
   mapped.deleteCharactersInRange(NSMakeRange(StartIndex, Count));
   exit mapped;
@@ -150,7 +150,7 @@ begin
 
   {$IF COOPER}
   exit mapped.charAt(&Index);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Chars[&Index];
   {$ELSEIF TOFFEE}
   result := mapped.characterAtIndex(&Index);
@@ -162,7 +162,7 @@ begin
   if Value = nil then
     raise new ArgumentNullException("Value");
 
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Insert(Offset, Value);
   {$ELSEIF TOFFEE}
   mapped.insertString(Value) atIndex(Offset);
@@ -180,7 +180,7 @@ begin
 
   {$IF COOPER}
   exit  mapped.replace(StartIndex, StartIndex + Count, Value);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Remove(StartIndex, Count);
   exit mapped.Insert(StartIndex, Value);
   {$ELSEIF TOFFEE}
@@ -196,7 +196,7 @@ begin
 
   {$IF COOPER}
   mapped.setCharAt(&Index,Value);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Chars[&Index] := Value;
   {$ELSEIF TOFFEE}
   mapped.replaceCharactersInRange(NSMakeRange(&Index, &Index)) withString(Value); 
@@ -207,7 +207,7 @@ method StringBuilder.set_Length(Value: Integer);
 begin
   {$IF COOPER}
   mapped.setLength(Value);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Length := Value;
   {$ELSEIF TOFFEE}
   if Value > mapped.length then
@@ -221,7 +221,7 @@ method StringBuilder.Substring(StartIndex: Integer): String;
 begin
   {$IF COOPER}
   exit mapped.substring(StartIndex);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToString(StartIndex, Length - StartIndex);
   {$ELSEIF TOFFEE}
   exit mapped.substringFromIndex(StartIndex);
@@ -235,7 +235,7 @@ begin
 
   {$IF COOPER}
   exit mapped.substring(StartIndex, StartIndex + Count);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToString(StartIndex, Count);
   {$ELSEIF TOFFEE}
   exit mapped.substringWithRange(NSMakeRange(StartIndex, Count));

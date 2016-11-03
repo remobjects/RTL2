@@ -5,20 +5,17 @@ interface
 type
   Encoding = public class {$IF COOPER}mapped to java.nio.charset.Charset{$ELSEIF ECHOES}mapped to System.Text.Encoding{$ELSEIF TOFFEE}mapped to Foundation.NSNumber{$ENDIF}
   private
+    {$IF ISLAND}
+    var fName: String;
+    {$ENDIF}
     method GetName: String;
   public
-    method GetBytes(Value: array of Char): array of Byte;
-    method GetBytes(Value: array of Char; Offset: Integer; Count: Integer): array of Byte;
-    method GetBytes(Value: String): array of Byte;
+    method GetBytes(aValue: String): array of Byte;
 
-    method GetChars(Value: array of Byte; Offset: Integer; Count: Integer): array of Char;
-    method GetChars(Value: array of Byte): array of Char;
-
-    method GetString(Value: array of Byte): String;
-    method GetString(Value: array of Byte; Offset: Integer; Count: Integer): String;
+    method GetString(aValue: array of Byte): String;
+    method GetString(aValue: array of Byte; aOffset: Integer; aCount: Integer): String;
 
     class method GetEncoding(aName: String): Encoding;
-
     property Name: String read GetName;
 
     class property ASCII: Encoding read GetEncoding("US-ASCII");
@@ -27,105 +24,94 @@ type
     class property UTF16BE: Encoding read GetEncoding("UTF-16BE");
 
     class property &Default: Encoding read UTF8;
+    
     {$IF TOFFEE}
     method AsNSStringEncoding: NSStringEncoding;
     class method FromNSStringEncoding(aEncoding: NSStringEncoding): Encoding;
     {$ENDIF}
   end;
 
-  EncodingHelpers = assembly static class
-  private
-  public
-    class method GetBytes(aEncoding: Encoding; Value: array of Char; Offset: Integer; Count: Integer): array of Byte;
-    class method GetBytes(aEncoding: Encoding; Value: String): array of Byte;
-    class method GetChars(aEncoding: Encoding; Value: array of Byte; Offset: Integer; Count: Integer): array of Char;
-    class method GetString(aEncoding: Encoding; Value: array of Byte; Offset: Integer; Count: Integer): String;
-    class method GetEncoding(aName: String): Encoding;
-  end;
-
 implementation
 
-method Encoding.GetBytes(Value: array of Char): array of Byte;
+method Encoding.GetBytes(aValue: String): array of Byte;
 begin
-  if Value = nil then
-    raise new ArgumentNullException("Value");
+  ArgumentNullException.RaiseIfNil(aValue, "aValue");
+  {$IF ANDROID}
+  var Buffer := java.nio.charset.Charset(aEncoding).newEncoder.
+    onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
+    onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE).
+    replaceWith([63]).
+    encode(java.nio.CharBuffer.wrap(aValue));
 
-  exit GetBytes(Value, 0, Value.length);
-end;
-
-
-method Encoding.GetChars(Value: array of Byte): array of Char;
-begin
-  {$IF COOPER}
-  exit GetChars(Value, 0, Value.length);
+  result := new Byte[Buffer.remaining];
+  Buffer.get(result);
+  {$ELSEIF COOPER}
+  var Buffer := java.nio.charset.Charset(aEncoding).encode(aValue);
+  result := new Byte[Buffer.remaining];
+  Buffer.get(result);
   {$ELSEIF ECHOES}
-  exit mapped.GetChars(Value);
+  exit System.Text.Encoding(aEncoding).GetBytes(aValue);
+  {$ELSEIF ISLAND}
+  result := case fName.ToUpper.Replace("-","") of
+              "UTF8": TextConvert.StringToUTF8(aValue);
+              "UTF16": TextConvert.StringToUTF16(aValue);
+              "UTF16BE": TextConvert.StringToUTF16BE(aValue);
+              "UTF16LE": TextConvert.StringToUTF16LE(aValue);
+              "UTF32": TextConvert.StringToUTF32(aValue);
+              "UTF32BE": TextConvert.StringToUTF32BE(aValue);
+              "UTF32LE": TextConvert.StringToUTF32LE(aValue);
+              "ASCII","USASCII","UTFASCII": TextConvert.StringToASCII(aValue);
+            end;
   {$ELSEIF TOFFEE}
-  exit GetString(Value).ToCharArray;
+  result := ((aValue as NSString).dataUsingEncoding(aEncoding.AsNSStringEncoding) allowLossyConversion(true) as Binary).ToArray;
+  if not assigned(result) then
+    raise new FormatException("Unable to convert data");
   {$ENDIF}
 end;
 
-method Encoding.GetString(Value: array of Byte): String;
+method Encoding.GetString(aValue: array of Byte; aOffset: Integer; aCount: Integer): String;
 begin
-  if Value = nil then
-    raise new ArgumentNullException("Value");
+  if aValue = nil then
+    raise new ArgumentNullException("aValue");
+  if aCount = 0 then
+    exit "";
 
-  exit GetString(Value, 0, Value.length);
+  RangeHelper.Validate(Range.MakeRange(aOffset, aCount), aValue.Length);
+  {$IF COOPER}
+  var Buffer := java.nio.charset.Charset(aEncoding).newDecoder.
+    onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
+    onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE).
+    replaceWith("?").
+    decode(java.nio.ByteBuffer.wrap(aValue, aOffset, aCount));
+  result := Buffer.toString;
+  {$ELSEIF ECHOES}
+  result := System.Text.Encoding(aEncoding).GetString(aValue, aOffset, aCount);
+  {$ELSEIF ISLAND}
+  result := case fName.ToUpper.Replace("-","") of
+              "UTF8": TextConvert.UTF8ToString(aValue /*, aOffset, aCunt*/);
+              "UTF16": TextConvert.UTF16ToString(aValue /*, aOffset, aCunt*/);
+              "UTF16BE": TextConvert.UTF16BEToString(aValue /*, aOffset, aCunt*/);
+              "UTF16LE": TextConvert.UTF16LEToString(aValue /*, aOffset, aCunt*/);
+              "UTF32": TextConvert.UTF32ToString(aValue /*, aOffset, aCunt*/);
+              "UTF32BE": TextConvert.UTF32BEToString(aValue /*, aOffset, aCunt*/);
+              "UTF32LE": TextConvert.UTF32LEToString(aValue /*, aOffset, aCunt*/);
+              "ASCII","USASCII","UTFASCII": TextConvert.ASCIIToString(aValue /*, aOffset, aCunt*/);
+            end;
+  {$ELSEIF TOFFEE}
+  result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(aEncoding.AsNSStringEncoding);
+  if not assigned(result) then
+    raise new FormatException("Unable to convert input data");
+  {$ENDIF}
+end;
+
+method Encoding.GetString(aValue: array of Byte): String;
+begin
+  if aValue = nil then
+    raise new ArgumentNullException("aValue");
+  exit GetString(aValue, 0, aValue.length);
 end;
 
 class method Encoding.GetEncoding(aName: String): Encoding;
-begin
-  exit EncodingHelpers.GetEncoding(aName);
-end;
-
-method Encoding.GetName: String;
-begin
-  {$IF COOPER}
-  exit mapped.name;
-  {$ELSEIF ECHOES}
-  exit mapped.WebName;
-  {$ELSEIF TOFFEE}
-  var lName := CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(mapped.unsignedIntValue));
-  if assigned(lName) then
-    result := bridge<NSString>(lName, BridgeMode.Transfer);
-  {$ENDIF}  
-end;
-
-{$IF TOFFEE}
-method Encoding.AsNSStringEncoding: NSStringEncoding;
-begin
-  result := (self as NSNumber).unsignedIntegerValue as NSStringEncoding;
-end;
-
-class method Encoding.FromNSStringEncoding(aEncoding: NSStringEncoding): Encoding;
-begin
-  result := NSNumber.numberWithUnsignedInteger(aEncoding);
-end;
-
-{$ENDIF}
-
-
-method Encoding.GetBytes(Value: array of Char; Offset: Integer; Count: Integer): array of Byte;
-begin
-  exit EncodingHelpers.GetBytes(self, Value, Offset, Count);
-end;
-
-method Encoding.GetBytes(Value: String): array of Byte;
-begin
-  exit EncodingHelpers.GetBytes(self, Value);
-end;
-
-method Encoding.GetChars(Value: array of Byte; Offset: Integer; Count: Integer): array of Char;
-begin
-  exit EncodingHelpers.GetChars(self, Value, Offset, Count);
-end;
-
-method Encoding.GetString(Value: array of Byte; Offset: Integer; Count: Integer): String;
-begin
-  exit EncodingHelpers.GetString(self, Value, Offset, Count);
-end;
-
-class method EncodingHelpers.GetEncoding(aName: String): Encoding;
 begin
   ArgumentNullException.RaiseIfNil(aName, "Name");
   {$IF COOPER}
@@ -137,6 +123,10 @@ begin
     result := System.Text.Encoding.GetEncoding(aName);
   {$ELSEIF ECHOES}
   result := System.Text.Encoding.GetEncoding(aName);
+  {$ELSEIF ISLAND}
+  if aName.ToUpper() not in ['US-ASCII', 'ASCII','UTF-ASCII','UTF8','UTF-8','UTF16','UTF-16','UTF32','UTF-32','UTF16LE','UTF-16LE','UTF32LE','UTF-32LE','UTF16BE','UTF-16BE','UTF32BE','UTF-32BE'] then
+    raise new Exception(String.Format('Unknown Encoding "{0}"', aName));
+  result := new Encoding(aName.ToUpper);
   {$ELSEIF TOFFEE}
   var lEncoding := NSStringEncoding.UTF8StringEncoding;
   case aName of
@@ -159,100 +149,31 @@ begin
   {$ENDIF}
 end;
 
-method EncodingHelpers.GetBytes(aEncoding: Encoding; Value: array of Char; Offset: Integer; Count: Integer): array of Byte;
-begin
-  if Value = nil then
-    raise new ArgumentNullException("Value");
-
-  if Count = 0 then
-    exit [];
-
-  RangeHelper.Validate(Range.MakeRange(Offset, Count), Value.Length);
-  {$IF ANDROID}
-  var Buffer := java.nio.charset.Charset(aEncoding).newEncoder.
-    onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
-    onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE).
-    replaceWith([63]).
-    encode(java.nio.CharBuffer.wrap(Value, Offset, Count));
-
-  result := new Byte[Buffer.remaining];
-  Buffer.get(result);
-  {$ELSEIF COOPER}
-  var Buffer := java.nio.charset.Charset(aEncoding).encode(java.nio.CharBuffer.wrap(Value, Offset, Count));
-  result := new Byte[Buffer.remaining];
-  Buffer.get(result);
-  {$ELSEIF ECHOES}
-  exit System.Text.Encoding(aEncoding).GetBytes(Value, Offset, Count);
-  {$ELSEIF TOFFEE}
-  exit GetBytes(aEncoding, new String(Value, Offset, Count));
-  {$ENDIF}
-end;
-
-method EncodingHelpers.GetBytes(aEncoding: Encoding; Value: String): array of Byte;
-begin
-  ArgumentNullException.RaiseIfNil(Value, "Value");
-  {$IF ANDROID}
-  var Buffer := java.nio.charset.Charset(aEncoding).newEncoder.
-    onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
-    onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE).
-    replaceWith([63]).
-    encode(java.nio.CharBuffer.wrap(Value));
-
-  result := new Byte[Buffer.remaining];
-  Buffer.get(result);
-  {$ELSEIF COOPER}
-  var Buffer := java.nio.charset.Charset(aEncoding).encode(Value);
-  result := new Byte[Buffer.remaining];
-  Buffer.get(result);
-  {$ELSEIF ECHOES}
-  exit System.Text.Encoding(aEncoding).GetBytes(Value);
-  {$ELSEIF TOFFEE}
-  result := ((Value as NSString).dataUsingEncoding(aEncoding.AsNSStringEncoding) allowLossyConversion(true) as Binary).ToArray;
-  if not assigned(result) then
-    raise new FormatException("Unable to convert data");
-  {$ENDIF}
-end;
-
-method EncodingHelpers.GetChars(aEncoding: Encoding; Value: array of Byte; Offset: Integer; Count: Integer): array of Char;
+method Encoding.GetName: String;
 begin
   {$IF COOPER}
-  var Buffer := java.nio.charset.Charset(aEncoding).newDecoder.
-    onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
-    onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE).
-    replaceWith("?").
-    decode(java.nio.ByteBuffer.wrap(Value, Offset, Count));
-  result := new Char[Buffer.remaining];
-  Buffer.get(result);
+  exit mapped.name;
   {$ELSEIF ECHOES}
-  exit System.Text.Encoding(aEncoding).GetChars(Value, Offset, Count);
+  exit mapped.WebName;
+  {$ELSEIF ISLAND}
+  exit fName;
   {$ELSEIF TOFFEE}
-  exit GetString(aEncoding, Value, Offset, Count).ToCharArray;
-  {$ENDIF}
+  var lName := CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(mapped.unsignedIntValue));
+  if assigned(lName) then
+    result := bridge<NSString>(lName, BridgeMode.Transfer);
+  {$ENDIF}  
 end;
 
-method EncodingHelpers.GetString(aEncoding: Encoding; Value: array of Byte; Offset: Integer; Count: Integer): String;
+{$IF TOFFEE}
+method Encoding.AsNSStringEncoding: NSStringEncoding;
 begin
-  if Value = nil then
-    raise new ArgumentNullException("Value");
-
-  if Count = 0 then
-    exit "";
-
-  RangeHelper.Validate(Range.MakeRange(Offset, Count), Value.Length);
-  {$IF COOPER}
-  var Buffer := java.nio.charset.Charset(aEncoding).newDecoder.
-    onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
-    onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE).
-    replaceWith("?").
-    decode(java.nio.ByteBuffer.wrap(Value, Offset, Count));
-  result := Buffer.toString;
-  {$ELSEIF ECHOES}
-  result := System.Text.Encoding(aEncoding).GetString(Value, Offset, Count);
-  {$ELSEIF TOFFEE}
-  result := new NSString withBytes(@Value[Offset]) length(Count) encoding(aEncoding.AsNSStringEncoding);
-  if not assigned(result) then
-    raise new FormatException("Unable to convert input data");
-  {$ENDIF}
+  result := (self as NSNumber).unsignedIntegerValue as NSStringEncoding;
 end;
+
+class method Encoding.FromNSStringEncoding(aEncoding: NSStringEncoding): Encoding;
+begin
+  result := NSNumber.numberWithUnsignedInteger(aEncoding);
+end;
+{$ENDIF}
 
 end.
