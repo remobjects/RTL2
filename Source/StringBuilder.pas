@@ -13,11 +13,11 @@ type
     constructor(Capacity: Integer); mapped to {$IF COOPER OR ECHOES OR ISLAND}constructor(Capacity){$ELSEIF TOFFEE}stringWithCapacity(Capacity){$ENDIF};
     constructor(Data: String); mapped to {$IF COOPER OR ECHOES OR ISLAND}constructor(Data){$ELSEIF TOFFEE}stringWithString(Data){$ENDIF};
 
-    method Append(Value: String): StringBuilder;
-    method Append(Value: String; StartIndex, Count: Integer): StringBuilder;
+    method Append(Value: nullable String): StringBuilder;
+    method Append(Value: nullable String; StartIndex, Count: Integer): StringBuilder;
     method Append(Value: Char; RepeatCount: Integer): StringBuilder;
     method AppendLine: StringBuilder; 
-    method AppendLine(Value: String): StringBuilder; 
+    method AppendLine(Value: nullable String): StringBuilder; 
 
     method Clear;
     method Delete(StartIndex, Count: Integer): StringBuilder;
@@ -52,7 +52,7 @@ begin
   {$ENDIF}
 end;
 
-method StringBuilder.Append(Value: String): StringBuilder;
+method StringBuilder.Append(Value: nullable String): StringBuilder;
 begin
   if Value = nil then
     exit;
@@ -65,7 +65,7 @@ begin
   {$ENDIF}
 end;
 
-method StringBuilder.Append(Value: String; StartIndex: Integer; Count: Integer): StringBuilder;
+method StringBuilder.Append(Value: nullable String; StartIndex: Integer; Count: Integer): StringBuilder;
 begin
   if (StartIndex = 0) and (Count = 0) then
     exit mapped;
@@ -86,19 +86,22 @@ begin
   {$ENDIF}
 end;
 
-method StringBuilder.AppendLine(Value: String): StringBuilder;
+method StringBuilder.AppendLine(Value: nullable String): StringBuilder;
 begin
-  if Value = nil then
-    exit;
-
   {$IF COOPER}
-  mapped.append(Value);
+  if assigned(Value) then
+    mapped.append(Value);
   mapped.append(Environment.NewLine);
   exit mapped;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.AppendLine(Value);
+  if assigned(Value) then
+    mapped.AppendLine(Value);
+  else
+    mapped.AppendLine();
+  exit mapped
   {$ELSEIF TOFFEE}
-  mapped.appendString(Value);
+  if assigned(Value) then
+    mapped.appendString(Value);
   mapped.appendString(Environment.NewLine);
   exit mapped;
   {$ENDIF}

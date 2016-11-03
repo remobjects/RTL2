@@ -63,7 +63,7 @@ begin
               "ASCII","USASCII","UTFASCII": TextConvert.StringToASCII(aValue);
             end;
   {$ELSEIF TOFFEE}
-  result := ((aValue as NSString).dataUsingEncoding(aEncoding.AsNSStringEncoding) allowLossyConversion(true) as Binary).ToArray;
+  result := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as Binary).ToArray;
   if not assigned(result) then
     raise new FormatException("Unable to convert data");
   {$ENDIF}
@@ -98,7 +98,7 @@ begin
               "ASCII","USASCII","UTFASCII": TextConvert.ASCIIToString(aValue /*, aOffset, aCunt*/);
             end;
   {$ELSEIF TOFFEE}
-  result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(aEncoding.AsNSStringEncoding);
+  result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(self.AsNSStringEncoding);
   if not assigned(result) then
     raise new FormatException("Unable to convert input data");
   {$ENDIF}

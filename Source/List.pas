@@ -416,7 +416,7 @@ begin
   result := self.ToList();
   (result as PlatformList<T>).Sort((x, y) -> Comparison(x, y));
   {$ELSEIF TOFFEE}
-  mapped.sortedArrayUsingComparator((x, y) -> begin
+  result := mapped.sortedArrayUsingComparator((x, y) -> begin
     var lResult := Comparison(x, y);
     exit if lResult < 0 then
            NSComparisonResult.NSOrderedAscending
