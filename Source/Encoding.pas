@@ -50,7 +50,7 @@ begin
   result := new Byte[Buffer.remaining];
   Buffer.get(result);
   {$ELSEIF ECHOES}
-  exit System.Text.Encoding(aEncoding).GetBytes(aValue);
+  exit mapped.GetBytes(aValue);
   {$ELSEIF ISLAND}
   result := case fName.ToUpper.Replace("-","") of
               "UTF8": TextConvert.StringToUTF8(aValue);
@@ -85,7 +85,7 @@ begin
     decode(java.nio.ByteBuffer.wrap(aValue, aOffset, aCount));
   result := Buffer.toString;
   {$ELSEIF ECHOES}
-  result := System.Text.Encoding(aEncoding).GetString(aValue, aOffset, aCount);
+  result := mapped.GetString(aValue, aOffset, aCount);
   {$ELSEIF ISLAND}
   result := case fName.ToUpper.Replace("-","") of
               "UTF8": TextConvert.UTF8ToString(aValue /*, aOffset, aCunt*/);
