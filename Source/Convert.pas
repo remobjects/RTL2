@@ -213,7 +213,7 @@ end;
 
 method Convert.ToInt32(aValue: Int64): Int32;
 begin
-  if (aValue > Consts.MaxInteger) or (aValue < Consts.MinInteger) then
+  if (aValue > Consts.MaxInt32) or (aValue < Consts.MinInt32) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Int32");
 
   {$IF COOPER OR TOFFEE}
@@ -227,7 +227,7 @@ method Convert.ToInt32(aValue: Double): Int32;
 begin
   var Number := Math.Round(aValue);
 
-  if (Number > Consts.MaxInteger) or (Number < Consts.MinInteger) then
+  if (Number > Consts.MaxInt32) or (Number < Consts.MinInt32) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Int32");
 
   exit Int32(Number);
@@ -750,7 +750,7 @@ method Convert.TryParseInt32(aValue: not nullable String): nullable Int32;
 begin
   var i64 := TryParseInt64(aValue);
   if assigned(i64) then begin
-    if (i64 > Consts.MaxInteger) or (i64 < Consts.MinInteger) then
+    if (i64 > Consts.MaxInt32) or (i64 < Consts.MinInt32) then
       exit nil;
     exit Int32(i64);
   end;
