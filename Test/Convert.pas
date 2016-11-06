@@ -21,8 +21,8 @@ type
       Assert.IsNil(Convert.TryToInt32("5x"));
       Assert.IsNil(Convert.TryToInt32("5.0"));
       Assert.IsNil(Convert.TryToInt32("5."));
-      Assert.IsNil(Convert.TryToInt32(" 5"));  // Parses ok on Echoes, fails as expected on Cocoa and Java
-      Assert.IsNil(Convert.TryToInt32("5 "));  // Parses ok on Echoes, fails as expected on Cocoa and Java
+      Assert.IsNil(Convert.TryToInt32(" 5"));
+      Assert.IsNil(Convert.TryToInt32("5 "));
       Assert.IsNil(Convert.TryToInt32("123456789012345"));
 
       Assert.AreEqual(Convert.TryToInt32( "2147483647"), 2147483647);
