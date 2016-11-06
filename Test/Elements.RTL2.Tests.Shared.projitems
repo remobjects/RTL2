@@ -10,5 +10,6 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="$(MSBuildThisFileDirectory)Url.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Convert.pas"/>
     </ItemGroup>
 </Project>

@@ -46,7 +46,7 @@ begin
   result := new Byte[Buffer.remaining];
   Buffer.get(result);
   {$ELSEIF COOPER}
-  var Buffer := java.nio.charset.Charset(aEncoding).encode(aValue);
+  var Buffer := java.nio.charset.Charset(self).encode(aValue);
   result := new Byte[Buffer.remaining];
   Buffer.get(result);
   {$ELSEIF ECHOES}
@@ -78,7 +78,7 @@ begin
 
   RangeHelper.Validate(Range.MakeRange(aOffset, aCount), aValue.Length);
   {$IF COOPER}
-  var Buffer := java.nio.charset.Charset(aEncoding).newDecoder.
+  var Buffer := java.nio.charset.Charset(self).newDecoder.
     onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
     onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE).
     replaceWith("?").

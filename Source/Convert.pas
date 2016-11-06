@@ -247,6 +247,9 @@ begin
   {$IF COOPER}
   exit Integer.parseInt(aValue);
   {$ELSEIF ECHOES OR ISLAND}
+  for each c in aValue do
+    if Char.IsWhiteSpace(c) then // TryParse ignores whitespace, we wanna fail
+      raise new FormatException("Unable to convert string '{0}' to int64.", aValue);;
   exit Int32.Parse(aValue);
   {$ELSEIF TOFFEE}
   exit ParseInt32(aValue);
@@ -266,6 +269,9 @@ begin
       exit nil;
   end;
   {$ELSEIF ECHOES OR ISLAND}
+  for each c in aValue do
+    if Char.IsWhiteSpace(c) then // TryParse ignores whitespace, we wanna fail
+      exit nil;
   var lResult: Int32;
   if Int32.TryParse(aValue, out lResult) then
     exit lResult
@@ -452,6 +458,9 @@ begin
   {$IF COOPER}
   exit Long.parseLong(aValue);
   {$ELSEIF ECHOES OR ISLAND}
+  for each c in aValue do
+    if Char.IsWhiteSpace(c) then // TryParse ignores whitespace, we wanna fail
+      raise new FormatException("Unable to convert string '{0}' to int64.", aValue);;
   exit Int64.Parse(aValue);
   {$ELSEIF TOFFEE}
   exit ParseInt64(aValue);
@@ -471,6 +480,9 @@ begin
       exit nil;
   end;
   {$ELSEIF ECHOES OR ISLAND}
+  for each c in aValue do
+    if Char.IsWhiteSpace(c) then // TryParse ignores whitespace, we wanna fail
+      exit nil;
   var lResult: Int64;
   if Int64.TryParse(aValue, out lResult) then
     exit lResult
@@ -743,6 +755,10 @@ begin
   var Formatter := new NSNumberFormatter;
   Formatter.numberStyle := NSNumberFormatterStyle.NSNumberFormatterDecimalStyle;
   Formatter.locale := aLocale;
+  if (aValue as PlatformString).rangeOfCharacterFromSet(NSCharacterSet.whitespaceAndNewlineCharacterSet).location ≠ NSNotFound then // NSNumberFormatter ignores (some) whitespace, we wanna fail
+    exit nil;
+  if aValue.StartsWith("+") and not aValue.Contains("-") then // NSNumberFormatter doesn't like +, strip it;
+    aValue := aValue.Substring(1);
   result := Formatter.numberFromString(aValue);
 end;
 
