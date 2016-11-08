@@ -99,7 +99,11 @@ type
       Assert.AreEqual(lUrl.PathExtension, ".txt");
       Assert.AreEqual(lUrl.LastPathComponent, "Tést.txt");
       Assert.AreEqual(lUrl.FilePathWithoutLastComponent, "C:/Program Files/");
-      Assert.AreEqual(lUrl.UrlWithoutLastComponent.ToAbsoluteString, "file://C:/Program%20Files/");    
+      Assert.AreEqual(lUrl.UrlWithoutLastComponent.ToAbsoluteString, "file://C:/Program%20Files/");
+      
+      lUrl := Url.UrlWithFilePath("/foo/bar/test.txt");
+      Assert.AreEqual(lUrl.UrlWithChangedPathExtension("foo").ToAbsoluteString, "file:///foo/bar/test.foo");
+      Assert.AreEqual(lUrl.UrlWithChangedPathExtension(".foo").ToAbsoluteString, "file:///foo/bar/test.foo");
     end;
     
   end;

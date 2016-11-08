@@ -72,7 +72,8 @@ type
     property WindowsPathWithoutLastComponent: String read GetWindowsPathWithoutLastComponent; // includes trailing "\"
     property UnixPathWithoutLastComponent: String read GetUnixPathWithoutLastComponent;       // includes trailing "/"
     property UrlWithoutLastComponent: Url read GetUrlWithoutLastComponent;
-
+    
+    method UrlWithChangedPathExtension(aNewExtension: not nullable String): Url; // expects ".", but will add it if needed
     
     /*method CrossPlatformPath: String;
     begin
@@ -306,6 +307,21 @@ begin
   if length(lPath) > 0 then
     result := CopyWithPath(lPath);
 end;
+
+method Url.UrlWithChangedPathExtension(aNewExtension: not nullable String): Url;
+begin
+  var lName := GetLastPathComponent;
+  if length(lName) > 0 then begin
+    var p := lName.LastIndexOf(".");
+    if p > -1 then 
+      lName := lName.Substring(0, p); // exclude the "."
+    if not aNewExtension.StartsWith(".") then
+      aNewExtension := "."+aNewExtension; // force a "." into the neww extension
+    lName := lName+aNewExtension;
+    result := CopyWithPath(GetUnixPathWithoutLastComponent+lName);
+  end;
+end;
+
 
 //
 // Modifications
