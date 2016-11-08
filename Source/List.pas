@@ -69,10 +69,6 @@ type
     method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF}
 
     property Item[i: Integer]: T read GetItem write SetItem; default;
-
-    {$IF TOFFEE}
-    operator Implicit(aArray: NSArray<T>): List<T>;
-    {$ENDIF}
   end;
   
   ImmutableListProxy<T> = public class
@@ -456,17 +452,6 @@ begin
   exit self as List<U>;
   {$ENDIF}
 end;
-
-
-{$IF TOFFEE}
-operator List<T>.Implicit(aArray: NSArray<T>): List<T>;
-begin
-  if aArray is NSMutableArray then
-    result := List<T>(aArray)
-  else
-    result := List<T>(aArray:mutableCopy);
-end;
-{$ENDIF}
 
 { NullHelper }
 

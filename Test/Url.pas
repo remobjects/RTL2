@@ -42,7 +42,7 @@ type
     method TestWindowsFileUrls();
     begin
       var PATH: String := "C:\Program Files\Test\Test.txt";
-      var lUrl := Url.UrlWithFilePath(PATH);
+      var lUrl := Url.UrlWithWindowsPath(PATH);
       Assert.IsTrue(lUrl.IsFileUrl);
       Assert.IsFalse(lUrl.IsAbsoluteUnixFileURL);
       Assert.IsTrue(lUrl.IsAbsoluteWindowsFileURL);
@@ -69,13 +69,46 @@ type
 
     method TestEncodings();
     begin
-      var lUrl := Url.UrlWithFilePath("C:\Program Files\Tëst\Tést.txt");
+      var lUrl := Url.UrlWithWindowsPath("C:\Program Files\Tëst\Tést.txt");
       Assert.AreEqual(lUrl.ToAbsoluteString, "file://C:/Program%20Files/T%C3%ABst/T%C3%A9st.txt");
 
       lUrl := Url.UrlWithString("file://C:/Program%20Files/T%C3%ABst/T%C3%A9st.txt");
       Assert.AreEqual(lUrl.ToAbsoluteString, "file://C:/Program%20Files/T%C3%ABst/T%C3%A9st.txt");
       Assert.AreEqual(lUrl.UnixPath, "C:/Program Files/Tëst/Tést.txt");
       Assert.AreEqual(lUrl.WindowsPath, "C:\Program Files\Tëst\Tést.txt");
+    end;
+
+    method TestCanonical();
+    begin
+      var lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/../Test.txt");
+      Assert.AreEqual(lUrl.CanonicalVersion.Path, "/Users/mh/Test.txt");
+
+      lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/../../Test.txt");
+      Assert.AreEqual(lUrl.CanonicalVersion.Path, "/Users/Test.txt");
+
+      lUrl := Url.UrlWithFilePath("/Users/../mh/Desktop/../../Test.txt");
+      Assert.AreEqual(lUrl.CanonicalVersion.Path, "/Test.txt");
+
+      lUrl := Url.UrlWithFilePath("/../../Test.txt");
+      Assert.AreEqual(lUrl.CanonicalVersion.Path, "/../../Test.txt");
+
+      lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/./Test.txt");
+      Assert.AreEqual(lUrl.CanonicalVersion.Path, "/Users/mh/Desktop/Test.txt");
+    end;
+    
+    method TestRelative();
+    begin
+      var lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/");
+      var lUrl2 := Url.UrlWithFilePath("/Users/mh/Desktop/Test.txt");
+      Assert.AreEqual(lUrl2.FilePathRelativeToUrl(lUrl) Threshold(1), "Test.txt");
+
+      lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/1/2/3/4/5");
+      lUrl2 := Url.UrlWithFilePath("/Users/mh/Desktop/1/2/3/a/b/Test.txt");
+      Assert.AreEqual(lUrl2.FilePathRelativeToUrl(lUrl) Threshold(1), "/Users/mh/Desktop/1/2/3/a/b/Test.txt");
+      Assert.AreEqual(lUrl2.FilePathRelativeToUrl(lUrl) Threshold(2), "/Users/mh/Desktop/1/2/3/a/b/Test.txt");
+      Assert.AreEqual(lUrl2.FilePathRelativeToUrl(lUrl) Threshold(3), "../../a/b/Test.txt");
+      Assert.AreEqual(lUrl2.FilePathRelativeToUrl(lUrl) Threshold(4), "../../a/b/Test.txt");
+      Assert.AreEqual(lUrl2.FilePathRelativeToUrl(lUrl) Threshold(5), "../../a/b/Test.txt");
     end;
     
     method TestPathComponents();
@@ -95,7 +128,10 @@ type
       
       Assert.AreEqual(lUrl.UrlWithoutLastComponent.ToAbsoluteString, "file:///Users/mh/Desktop/");
       
-      lUrl := Url.UrlWithFilePath("C:\Program Files\Tést.txt");
+      lUrl := Url.UrlWithFilePath("foo.txt");
+      Assert.AreEqual(lUrl.PathExtension, ".txt");
+      
+      lUrl := Url.UrlWithWindowsPath("C:\Program Files\Tést.txt");
       Assert.AreEqual(lUrl.PathExtension, ".txt");
       Assert.AreEqual(lUrl.LastPathComponent, "Tést.txt");
       Assert.AreEqual(lUrl.FilePathWithoutLastComponent, "C:/Program Files/");
