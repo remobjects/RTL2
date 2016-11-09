@@ -40,6 +40,7 @@ type
     
     class method UrlWithString(aUrlString: not nullable String): Url;
     class method UrlWithFilePath(aPath: not nullable String; aIsDirectory: Boolean := false): Url;
+    //class method UrlWithFilePath(aPath: not nullable String) aRelativeToUrl(aUrl) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithWindowsPath(aPath: not nullable String; aIsDirectory: Boolean := false): Url;
     class method UrlWithUnixPath(aPath: not nullable String; aIsDirectory: Boolean := false): Url;
 
@@ -89,7 +90,7 @@ type
     method UrlWithRelativeOrAbsoluteSubPath(aSubPath: not nullable String): nullable Url;
     method UrlWithRelativeOrAbsoluteFileSubPath(aSubPath: not nullable String): nullable Url;
     method GetParentUrl(): Url;
-    method GetSubUrl(aName: String; aIsDirectorey: Boolean := false): Url;
+    method GetSubUrl(aName: String; aIsDirectory: Boolean := false): Url;
     
 
     method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
@@ -102,7 +103,7 @@ type
     
     /* Needed for fire
     
-    * 
+    * Url.fileURLWithPath(_hintPath) relativeToURL(project.baseURL);
     
     */
     
@@ -126,6 +127,7 @@ type
     
     {$IF TOFFEE}
     method isEqual(obj: id): Boolean;
+    method copyWithZone(aZone: ^NSZone): instancetype;
     {$ENDIF}    
   end;
   
@@ -515,14 +517,19 @@ begin
   result := CopyWithPath('/')
 end;
 
-method Url.GetSubUrl(aName: String; aIsDirectorey: Boolean := false): Url;
+method Url.GetSubUrl(aName: String; aIsDirectory: Boolean := false): Url;
 begin
   var lNewPath := fPath;
+  
   if length(lNewPath) = 0 then
-    lNewPath := '/';
-  if aIsDirectorey and not lNewPath.EndsWith('/') then
+    lNewPath := '/'
+  else if not lNewPath.EndsWith('/') then
     lNewPath := lNewPath+'/';
-  result := CopyWithPath(lNewPath+aName);
+    
+  lNewPath := lNewPath+aName;
+  if aIsDirectory and not lNewPath.EndsWith('/') then
+    lNewPath := lNewPath+'/';
+  result := CopyWithPath(lNewPath);
   {$HINT handle "wrong" stuff. like, what if aName starts with `/`? do we fail? do we use the absolute path}
 end;
 
@@ -702,6 +709,11 @@ begin
     exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
   if obj is NSURL then
     exit CanonicalVersion.ToAbsoluteString() = (obj as NSURL).standardizedURL.absoluteString();
+end;
+
+method Url.copyWithZone(aZone: ^NSZone): instancetype;
+begin
+  result := Url.UrlWithString(self.ToString);
 end;
 {$ENDIF}
 

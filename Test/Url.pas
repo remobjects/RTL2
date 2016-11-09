@@ -113,6 +113,7 @@ type
 
     method Dummy();
     begin
+      {$IF TOFFEE}
       var lUrl := NSURL.URLWithString("file:///Users/mh/Test%20Projects/App24/App24.sln");
       var u := lUrl as Url;
       Assert.AreEqual(lUrl.absoluteString, "file:///Users/mh/Test%20Projects/App24/App24.sln");
@@ -120,6 +121,7 @@ type
 
       var solutionLicenseFile := Path.ChangeExtension(u.FilePath, "licenses");
       Assert.AreEqual(solutionLicenseFile, "/Users/mh/Test Projects/App24/App24.licenses");
+      {$ENDIF}
     end;
     
     method TestPathComponents();
