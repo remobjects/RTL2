@@ -15,6 +15,7 @@
         <MangleTypeNames>True</MangleTypeNames>
         <EntitlementsFile>Entitlements.entitlements</EntitlementsFile>
         <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+        <DebugZombieEnabled>True</DebugZombieEnabled>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>False</Optimize>

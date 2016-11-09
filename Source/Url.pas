@@ -2,11 +2,19 @@
 
 interface
 
+{$IF TOFFEE OR (ISLAND AND LINUX)}
+  {$DEFINE KNOWN_UNIX}
+{$ENDIF}
+{$IF ISLAND AND WINDOWS}
+  {$DEFINE KNOWN_WINDOWS}
+{$ENDIF}
+
 type
   Url = public class// {$IF COOPER}mapped to java.net.URL{$ELSEIF ECHOES}mapped to System.Uri{$ELSEIF TOFFEE}mapped to Foundation.NSURL{$ENDIF}
   private
     var fScheme, fHost, fPath, fQueryString, fFragment, fUser: String;
     var fPort: nullable Int32;
+    var fIsKnownCanonical: Boolean;
 
     method Parse(aUrlString: not nullable String);
     method GetHostNameAndPort: nullable String;
@@ -88,6 +96,9 @@ type
     method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
     method UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
     
+    method FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
+    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
+    method UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
     
     /* Needed for fire
     
@@ -113,6 +124,9 @@ type
     operator Implicit(aUrl: Url): Foundation.NSURL;
     {$ENDIF}
     
+    {$IF TOFFEE}
+    method isEqual(obj: id): Boolean;
+    {$ENDIF}    
   end;
   
 implementation
@@ -136,8 +150,10 @@ end;
 
 class method Url.UrlWithFilePath(aPath: not nullable String; aIsDirectory: Boolean := false): Url;
 begin
+  {$IF NOT KNOWN_UNIX}
   if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
     aPath := aPath.Replace(Elements.RTL.Path.DirectorySeparatorChar, "/");
+  {$ENDIF}
   result := UrlWithUnixPath(aPath, aIsDirectory);
 end;
 
@@ -270,8 +286,10 @@ method Url.GetFilePath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then begin
     result := fPath;
+    {$IF NOT KNOWN_UNIX}
     if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
       result := result.Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+    {$ENDIF}
   end;
 end;
 
@@ -291,15 +309,16 @@ end;
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
 begin
   result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
+  {$IF NOT KNOWN_UNIX}
   if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
     result := result:Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+  {$ENDIF}
 end;
 
 method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
 begin
   result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
-  if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
-    result := result:Replace('/', '\');
+  result := result:Replace('/', '\');
 end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
@@ -342,6 +361,21 @@ begin
   end;
 end;
 
+method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
+begin
+  result := FilePathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+end;
+
+method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
+begin
+  result := WindowsPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+end;
+
+method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
+begin
+  result := UnixPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+end;
+
 method Url.IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
 begin
   if (Scheme = aPotentialBaseUrl.Scheme) and (Host = aPotentialBaseUrl.Host) and (Port = aPotentialBaseUrl.Port) then begin
@@ -381,8 +415,10 @@ method Url.GetFilePathWithoutLastComponent: String;
 begin
   result := GetUnixPathWithoutLastComponent;
   if assigned(result) then begin
+    {$IF NOT KNOWN_UNIX}
     if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
       result := result.Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+    {$ENDIF}
   end;
 end;
 
@@ -494,8 +530,10 @@ method Url.UrlWithRelativeOrAbsoluteFileSubPath(aSubPath: not nullable String): 
 begin
   if aSubPath.IsAbsolutePath then
     exit Url.UrlWithFilePath(aSubPath);
+  {$IF NOT KNOWN_UNIX}
   if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
     aSubPath := aSubPath.Replace(Elements.RTL.Path.DirectorySeparatorChar, '/');
+  {$ENDIF}
   result := UrlWithRelativeOrAbsoluteSubPath(aSubPath);
 end;
 
@@ -508,6 +546,9 @@ end;
 
 method Url.GetCanonicalVersion(): Url;
 begin
+  if fIsKnownCanonical then
+    exit self;
+  
   var lParts := fPath.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
   var i := 0;
   while i < length(lParts) do begin
@@ -524,15 +565,15 @@ begin
     end;
     inc(i);
   end;
-
+  
   {$HINT needs to fix case to match disk case, if present? }
-  {$HINT implement}
 
   var lNewPath := String.Join("/", lParts.ToArray());
   if lNewPath ≠ fPath then
     result := CopyWithPath(lNewPath)
   else
     result := self;
+  result.fIsKnownCanonical := true;
 end;
 
 //
@@ -586,6 +627,9 @@ begin
     inc(j);
   end;
   result := Convert.Utf8BytesToString(lResultBytes, j);
+  /*result := "";
+  for b: Int32 := 0 to j-1 do
+    result := result+chr(lResultBytes[b]);*/
 end;
 
 class method Url.UrlEncodeString(aString: String): String;
@@ -649,5 +693,16 @@ begin
 end;
 {$ENDIF}
 
+{$IF TOFFEE}
+method Url.isEqual(obj: id): Boolean;
+begin
+  if obj = self then
+    exit true;
+  if obj is Url then
+    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
+  if obj is NSURL then
+    exit CanonicalVersion.ToAbsoluteString() = (obj as NSURL).standardizedURL.absoluteString();
+end;
+{$ENDIF}
 
 end.

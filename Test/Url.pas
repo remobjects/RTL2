@@ -110,6 +110,17 @@ type
       Assert.AreEqual(lUrl2.FilePathRelativeToUrl(lUrl) Threshold(4), "../../a/b/Test.txt");
       Assert.AreEqual(lUrl2.FilePathRelativeToUrl(lUrl) Threshold(5), "../../a/b/Test.txt");
     end;
+
+    method Dummy();
+    begin
+      var lUrl := NSURL.URLWithString("file:///Users/mh/Test%20Projects/App24/App24.sln");
+      var u := lUrl as Url;
+      Assert.AreEqual(lUrl.absoluteString, "file:///Users/mh/Test%20Projects/App24/App24.sln");
+      Assert.AreEqual(u.ToAbsoluteString(), "file:///Users/mh/Test%20Projects/App24/App24.sln"); // fails ONLY when i inline Convert.Utf8BytesToString
+
+      var solutionLicenseFile := Path.ChangeExtension(u.FilePath, "licenses");
+      Assert.AreEqual(solutionLicenseFile, "/Users/mh/Test Projects/App24/App24.licenses");
+    end;
     
     method TestPathComponents();
     begin

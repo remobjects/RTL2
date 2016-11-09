@@ -69,8 +69,8 @@ type
     method ToBoolean(aValue: Byte): Boolean;
     method ToBoolean(aValue: not nullable String): Boolean;
 
-    method ToUtf8Bytes(aValue: not nullable String): array of Byte;
-    method Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String;
+    method ToUtf8Bytes(aValue: not nullable String): array of Byte; //inline;
+    method Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String; //inline;// aLength breaks when inlined (macOS).
     
     //method ToHexString(aValue: Int32; aWidth: Integer := 0): not nullable String;
     method ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
@@ -733,17 +733,13 @@ end;
 
 method Convert.ToUtf8Bytes(aValue: not nullable String): array of Byte;
 begin
-  {$IF ISLAND}
-  result := TextConvert.StringToUTF8(aValue, /*BOM:*/false);
-  {$ELSE}
   result := Encoding.UTF8.GetBytes(aValue);
-  {$ENDIF}
 end;
 
 method Convert.Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String;
 begin
   var len := coalesce(aLength, length(aBytes));
-  result := Encoding.UTF8.getString(aBytes, 0, len);
+  result := Encoding.UTF8.GetString(aBytes, 0, len);
 end;
 
 {$IF TOFFEE}
