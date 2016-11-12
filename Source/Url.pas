@@ -126,7 +126,7 @@ type
     {$ENDIF}
     
     {$IF TOFFEE}
-    method isEqual(obj: id): Boolean;
+    method isEqual(obj: id): Boolean; override;
     method copyWithZone(aZone: ^NSZone): instancetype;
     {$ENDIF}    
   end;
