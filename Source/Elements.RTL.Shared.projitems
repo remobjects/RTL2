@@ -68,7 +68,7 @@
         <Compile Include="$(MSBuildThisFileDirectory)String (Path).pas">
             <VirtualFolder>Files and Paths</VirtualFolder>
         </Compile>
-        <None Include="$(MSBuildThisFileDirectory)XmlDocument.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)XmlDocument.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Convert.pas"/>
         <None Include="$(MSBuildThisFileDirectory)Broadcasts.swift"/>
         <Compile Include="$(MSBuildThisFileDirectory)Dictionary.pas">
