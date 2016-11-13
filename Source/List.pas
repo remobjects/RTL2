@@ -6,6 +6,10 @@ type
   PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray;{$ENDIF};
   PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray;{$ENDIF};
 
+// needed
+// * subarrayWithRange
+// * replaceObjectAtIndex
+
   ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray where T is class;{$ENDIF}
   private
     method GetItem(&Index: Integer): T;
@@ -34,6 +38,10 @@ type
     method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
     method ToList<U>: ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
     
+    //76766: Echoes: Problem with using generic type in property reader
+    property FirstObject: nullable T read (if Count > 0 then self[0] else nil) as T;
+    property LastObject: nullable T read (if Count > 0 then self[Count-1] else nil) as T;
+    
     property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF};
     property Item[i: Integer]: T read GetItem; default;
   end;
@@ -60,6 +68,9 @@ type
     method RemoveAll;
     method RemoveAt(aIndex: Integer);
     method RemoveRange(aIndex: Integer; aCount: Integer);
+    
+    method RemoveFirstObject;
+    method RemoveLastObject;
 
     method Insert(&Index: Integer; aItem: T);
     method InsertRange(&Index: Integer; Items: List<T>);
@@ -451,6 +462,16 @@ begin
   {$ELSEIF TOFFEE}
   exit self as List<U>;
   {$ENDIF}
+end;
+
+method List<T>.RemoveFirstObject;
+begin
+  if Count > 0 then RemoveAt(Count-1);
+end;
+
+method List<T>.RemoveLastObject;
+begin
+  if Count > 0 then RemoveAt(Count-1);
 end;
 
 { NullHelper }
