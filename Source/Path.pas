@@ -14,6 +14,10 @@ type
     method GetFileNameWithoutExtension(FileName: not nullable String): not nullable String;
     method GetFullPath(RelativePath: not nullable String): not nullable String;
     
+    {$IF TOFFEE}
+    method ExpandTildeInPath(aPath: not nullable String): not nullable String;
+    {$ENDIF}
+    
     property DirectorySeparatorChar: Char read Folder.Separator;
   end;
 
@@ -146,5 +150,12 @@ begin
   exit (RelativePath as NSString).stringByStandardizingPath;
   {$ENDIF}
 end;
+
+{$IF TOFFEE}
+method Path.ExpandTildeInPath(aPath: not nullable String): not nullable String;
+begin
+  result := (aPath as PlatformString).stringByExpandingTildeInPath;
+end;
+{$ENDIF}
 
 end.

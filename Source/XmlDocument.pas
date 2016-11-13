@@ -29,6 +29,7 @@ type
     class method FromUrl(aUrl: not nullable Url): nullable XmlDocument;
     class method FromString(aString: not nullable String): nullable XmlDocument;
     class method WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
+    class method WithRootElement(aName: not nullable String): nullable XmlDocument;
 
     [ToString]
     method ToString(): String; override;
@@ -40,7 +41,7 @@ type
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace(aPrefix);
 
     method AddNamespace(aNamespace: not nullable XmlNamespace);
-    method AddNamespace(aPrefix: not nullable String; aUrl: not nullable Url): XmlNamespace;
+    method AddNamespace(aPrefix: nullable String; aUrl: not nullable Url): XmlNamespace;
     method RemoveNamespace(aNamespace: not nullable XmlNamespace);
     method RemoveNamespace(aPrefix: not nullable String);
   end;
@@ -63,8 +64,9 @@ type
   private
     method GetNamespace: XmlNamespace;
     method GetLocalName: not nullable String;
-    method GetValue: not nullable String;
-    method SetValue(aValue: not nullable String);    
+    method SetLocalName(aValue: not nullable String);
+    method GetValue: nullable String;
+    method SetValue(aValue: nullable String);    
     method GetAttributes: not nullable sequence of XmlAttribute;
     method GetAttribute(aName: not nullable String): nullable XmlAttribute;
     method GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
@@ -73,8 +75,8 @@ type
     
   public
     property &Namespace: XmlNamespace read GetNamespace;
-    property LocalName: not nullable String read GetLocalName;
-    property Value: not nullable String read GetValue write SetValue;
+    property LocalName: not nullable String read GetLocalName write SetLocalName;
+    property Value: nullable String read GetValue write SetValue;
   
     property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
@@ -86,13 +88,14 @@ type
     method ElementsWithNamespace(aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
     method FirstElementWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlElement;
     
-    method AddAttribute(aAttribute: not nullable XmlAttribute);
-    method AddAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String): not nullable XmlAttribute;
+    method SetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String);
     method RemoveAttribute(aAttribute: not nullable XmlAttribute);
     method RemoveAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlAttribute;
     
     method AddElement(aElement: not nullable XmlElement);
     method AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
+    method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
+    method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
     method RemoveElement(aElement: not nullable XmlElement);
     method RemoveElementsWithName(aName: not nullable String; aNamespace: nullable XmlNamespace := nil);
 
@@ -184,6 +187,16 @@ begin
   {$ENDIF}
 end;
 
+class method XmlDocument.WithRootElement(aName: not nullable String): nullable XmlDocument;
+begin
+  {$IF TOFFEE}
+  var lXml := new NSXMLDocument withRootElement(new NSXMLElement withName(aName));
+  if assigned(lXml) then begin
+    result := new XmlDocument(lXml);
+  end;
+  {$ENDIF}
+end;
+
 method XmlDocument.ToString(): String;
 begin
   {$IF TOFFEE}
@@ -215,7 +228,7 @@ begin
   {$HINT Not Implemented yet}
 end;
 
-method XmlDocument.AddNamespace(aPrefix: not nullable String; aUrl: not nullable Url): XmlNamespace;
+method XmlDocument.AddNamespace(aPrefix: nullable String; aUrl: not nullable Url): XmlNamespace;
 begin
   {$HINT Not Implemented yet}
 end;
@@ -280,7 +293,7 @@ end;
 method XmlElement.ElementsWithNamespace(aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
 begin
   {$IF TOFFEE}
-  var lURI := aNameSpace:Url:ToAbsoluteString;
+  var lURI := aNamespace:Url:ToAbsoluteString;
   result := (fNativeXmlNode as NSXMLElement).children.Where(c -> c.URI = lURI).Select(c -> new XmlElement(c, self));
   {$ENDIF}
 end;
@@ -290,18 +303,21 @@ begin
   result := ElementsWithName(aLocalName, aNamespace).FirstOrDefault();
 end;
 
-method XmlElement.AddAttribute(aAttribute: not nullable XmlAttribute);
-begin
-  {$IF TOFFEE}
-  (fNativeXmlNode as NSXMLElement).addAttribute(aAttribute.fNativeXmlNode);
-  aAttribute.fParent := self;
-  {$ENDIF}
-end;
-
-method XmlElement.AddAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String): not nullable XmlAttribute;
-begin
-  result := new XmlAttribute(aName, aNamespace, aValue);
-  AddAttribute(result);
+method XmlElement.SetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String);
+begin  
+  var lAttribute := if assigned(aNamespace) then
+                      (fNativeXmlNode as NSXMLElement).attributeForLocalName(aName) URI(aNamespace.Url.ToAbsoluteString())
+                    else
+                      (fNativeXmlNode as NSXMLElement).attributeForName(aName);
+  if assigned(lAttribute) then begin
+    lAttribute.stringValue := aValue;
+  end
+  else begin
+    if assigned(aNamespace) then
+      (fNativeXmlNode as NSXMLElement).addAttribute(NSXMLNode.attributeWithName(aName) URI(aNamespace.Url.ToAbsoluteString()) stringValue(aValue))
+    else
+      (fNativeXmlNode as NSXMLElement).addAttribute(NSXMLNode.attributeWithName(aName) stringValue(aValue));
+  end;
 end;
 
 method XmlElement.RemoveAttribute(aAttribute: not nullable XmlAttribute);
@@ -315,7 +331,12 @@ end;
 method XmlElement.RemoveAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlAttribute;
 begin
   {$IF TOFFEE}
-  (fNativeXmlNode as NSXMLElement).removeAttributeForName(aName); {$HINT doesn't honor namespace?}
+  var lAttribute := if assigned(aNamespace) then
+    (fNativeXmlNode as NSXMLElement).attributeForLocalName(aName) URI(aNamespace.Url.ToAbsoluteString())
+                    else
+                      (fNativeXmlNode as NSXMLElement).attributeForName(aName);
+  if assigned(lAttribute) then
+    (fNativeXmlNode as NSXMLElement).removeChildAtIndex(lAttribute.index);
   {$ENDIF}
 end;
 
@@ -335,6 +356,30 @@ begin
   {$ENDIF}
 end;
 
+method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
+begin
+  {$IF TOFFEE}
+  if assigned(aNamespace) then
+    result := new XmlElement(new NSXMLElement withName(aName) URI(aNamespace.Url.ToAbsoluteString()))
+  else
+    result := new XmlElement(new NSXMLElement withName(aName));
+  result.Value := aValue;
+  AddElement(result);
+  {$ENDIF}
+end;
+  
+method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
+begin
+  {$IF TOFFEE}
+  if assigned(aNamespace) then
+    result := new XmlElement(new NSXMLElement withName(aName) URI(aNamespace.Url.ToAbsoluteString()))
+  else
+    result := new XmlElement(new NSXMLElement withName(aName));
+  result.Value := aValue;
+  AddElement(result) atIndex(aIndex);
+  {$ENDIF}
+end;
+  
 method XmlElement.RemoveElement(aElement: not nullable XmlElement);
 begin
   {$IF TOFFEE}
@@ -373,6 +418,13 @@ begin
   {$ENDIF}
 end;
 
+method XmlElement.SetLocalName(aValue: not nullable String);
+begin
+  {$IF TOFFEE}
+  fNativeXmlNode.name := aValue;
+  {$ENDIF}
+end;
+
 method XmlElement.GetNamespace: nullable XmlNamespace;
 begin
   {$IF TOFFEE}
@@ -381,14 +433,14 @@ begin
   {$ENDIF}
 end;
 
-method XmlElement.GetValue: not nullable String;
+method XmlElement.GetValue: nullable String;
 begin
   {$IF TOFFEE}
-  result := fNativeXmlNode.stringValue as not nullable;
+  result := fNativeXmlNode.stringValue;
   {$ENDIF}
 end;
 
-method XmlElement.SetValue(aValue: not nullable String);
+method XmlElement.SetValue(aValue: nullable String);
 begin
   {$IF TOFFEE}
   fNativeXmlNode.stringValue := aValue;

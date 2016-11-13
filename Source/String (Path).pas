@@ -7,6 +7,11 @@ type
     
     property FileExists: Boolean read File.Exists(self);
     property FolderExists: Boolean read Folder.Exists(self);
+    property FileOrFolderExists: Boolean read Folder.Exists(self) or Folder.Exists(self);
+    
+    property LastFilePathComponent: String read Path.GetFilename(self);
+    property LastFilePathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(self);
+    property PathExitension: String read Path.GetExtension(self);
 
     property IsWindowsPath: Boolean read (Length > 2) and ((self[1] = ':') or StartsWith("\\")); // Drive letter or Windows network path
 
