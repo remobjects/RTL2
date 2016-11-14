@@ -6,7 +6,8 @@ type
   Encoding = public class {$IF COOPER}mapped to java.nio.charset.Charset{$ELSEIF ECHOES}mapped to System.Text.Encoding{$ELSEIF TOFFEE}mapped to Foundation.NSNumber{$ENDIF}
   private
     {$IF ISLAND}
-    var fName: String;
+    var fName: not nullable String;
+    constructor (aName: not nullable String);
     {$ENDIF}
     method GetName: String;
   public
@@ -173,6 +174,13 @@ end;
 class method Encoding.FromNSStringEncoding(aEncoding: NSStringEncoding): Encoding;
 begin
   result := NSNumber.numberWithUnsignedInteger(aEncoding);
+end;
+{$ENDIF}
+
+{$IF ISLAND}
+constructor Encoding(aName: not nullable String);
+begin
+  fName := aName;
 end;
 {$ENDIF}
 

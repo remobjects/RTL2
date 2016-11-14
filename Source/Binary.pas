@@ -15,6 +15,9 @@ type
   public
     method Validate(aRange: Range; BufferSize: Integer);
   end;
+  
+  ImmutableBinary = public class {$IF ECHOES}mapped to System.IO.MemoryStream{$ELSEIF TOFFEE}mapped to Foundation.NSData{$ENDIF}
+  end;
 
   Binary = public class {$IF ECHOES}mapped to System.IO.MemoryStream{$ELSEIF TOFFEE}mapped to Foundation.NSMutableData{$ENDIF}
   {$IF COOPER}

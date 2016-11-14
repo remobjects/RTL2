@@ -5,8 +5,19 @@ interface
 type
   FileOpenMode = public (&ReadOnly, &Create, ReadWrite);
   SeekOrigin = public (&Begin, Current, &End);
+  
+  {$IF ECHOES}
+  PlatformFileMode = System.IO.FileMode;
+  PlatformFileAccess = System.IO.FileAccess;
+  PlatformFileStream = System.IO.FileStream;
+  {$ENDIF}
+  {$IF ISLAND}
+  PlatformFileMode = RemObjects.Elements.System.FileMode;
+  PlatformFileAccess = RemObjects.Elements.System.FileAccess;
+  PlatformFileStream = RemObjects.Elements.System.FileStream;
+  {$ENDIF}
 
-  FileHandle = public class mapped to {$IF COOPER}java.io.RandomAccessFile{$ELSEIF WINDOWS_PHONE OR NETFX_CORE}Stream{$ELSEIF ECHOES}System.IO.FileStream{$ELSEIF TOFFEE}NSFileHandle{$ENDIF}
+  FileHandle = public class mapped to {$IF COOPER}java.io.RandomAccessFile{$ELSEIF WINDOWS_PHONE OR NETFX_CORE}Stream{$ELSEIF ECHOES OR ISLAND}PlatformFileStream{$ELSEIF TOFFEE}NSFileHandle{$ENDIF}
   private
     method GetLength: Int64;
     method SetLength(value: Int64);
@@ -45,17 +56,17 @@ begin
   var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
   exit lFile.OpenAsync(lMode).Await.AsStream;
   {$ELSEIF ECHOES}
-  var lAccess: System.IO.FileAccess := case Mode of
-                                         FileOpenMode.ReadOnly: System.IO.FileAccess.Read;
-                                         FileOpenMode.Create: System.IO.FileAccess.Write;
-                                         else System.IO.FileAccess.ReadWrite;
+  var lAccess: PlatformFileAccess := case Mode of
+                                         FileOpenMode.ReadOnly: PlatformFileAccess.Read;
+                                         FileOpenMode.Create: PlatformFileAccess.Write;
+                                         else PlatformFileAccess.ReadWrite;
                                        end;
-  var lMode: System.IO.FileMode := case Mode of
-                                         FileOpenMode.ReadOnly: System.IO.FileMode.Open;
-                                         FileOpenMode.Create: System.IO.FileMode.Create;
-                                         else System.IO.FileMode.OpenOrCreate;
+  var lMode: PlatformFileMode := case Mode of
+                                         FileOpenMode.ReadOnly: PlatformFileMode.Open;
+                                         FileOpenMode.Create: PlatformFileMode.Create;
+                                         else PlatformFileMode.OpenOrCreate;
                                        end;
-  exit new System.IO.FileStream(FileName, lMode, lAccess);
+  exit new PlatformFileStream(FileName, lMode, lAccess);
   {$ELSEIF TOFFEE}
   case Mode of
     FileOpenMode.ReadOnly: result := NSFileHandle.fileHandleForReadingAtPath(FileName);
@@ -82,9 +93,9 @@ begin
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}  
   var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
   exit Windows.Storage.StorageFile(aFile).OpenAsync(lMode).Await.AsStream;
-  {$ELSEIF ECHOES}
-  var lMode: System.IO.FileAccess := if Mode = FileOpenMode.ReadOnly then System.IO.FileAccess.Read else System.IO.FileAccess.ReadWrite;
-  exit new System.IO.FileStream(PlatformString(aFile), System.IO.FileMode.Open, lMode);
+  {$ELSEIF ECHOES OR ISLAND}
+  var lMode: PlatformFileAccess := if Mode = FileOpenMode.ReadOnly then PlatformFileAccess.Read else PlatformFileAccess.ReadWrite;
+  exit new PlatformFileStream(PlatformString(aFile), PlatformFileMode.Open, lMode);
   {$ELSEIF TOFFEE}
   case Mode of
     FileOpenMode.ReadOnly: exit NSFileHandle.fileHandleForReadingAtPath(aFile);
@@ -99,7 +110,7 @@ begin
   mapped.close;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}  
   mapped.Dispose;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Close;
   {$ELSEIF TOFFEE}
   mapped.closeFile;
@@ -112,7 +123,7 @@ begin
   mapped.Channel.force(false);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   mapped.Flush;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Flush;
   {$ELSEIF TOFFEE}
   mapped.synchronizeFile;
@@ -156,7 +167,7 @@ begin
   exit mapped.read(Buffer, Offset, Count);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   exit mapped.Read(Buffer, Offset, Count);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Read(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   var Bin := mapped.readDataOfLength(Count);
@@ -190,7 +201,7 @@ begin
   mapped.write(Buffer, Offset, Count);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   mapped.Write(Buffer, Offset, Count);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   var Bin := new NSData withBytes(@Buffer[Offset]) length(Count);
@@ -224,7 +235,7 @@ begin
   end;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   mapped.Seek(Offset, System.IO.SeekOrigin(Origin));
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Seek(Offset, System.IO.SeekOrigin(Origin));
   {$ELSEIF TOFFEE}  
   case Origin of
@@ -241,7 +252,7 @@ begin
   exit mapped.length;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   exit mapped.Length;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Length;
   {$ELSEIF TOFFEE}
   var Origin := mapped.offsetInFile;
@@ -261,7 +272,7 @@ begin
     Seek(0, SeekOrigin.Begin)
   else
     Seek(Origin, SeekOrigin.Begin);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.SetLength(value);
   {$ELSEIF TOFFEE}
   var Origin := mapped.offsetInFile;
@@ -279,7 +290,7 @@ begin
   exit mapped.FilePointer;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   exit mapped.Position;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Position;
   {$ELSEIF TOFFEE}
   exit mapped.offsetInFile;
@@ -292,7 +303,7 @@ begin
   Seek(value, SeekOrigin.Begin);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   mapped.Position := value;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Position := value;
   {$ELSEIF TOFFEE}
   Seek(value, SeekOrigin.Begin);

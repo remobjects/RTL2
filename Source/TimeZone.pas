@@ -29,9 +29,9 @@ type
     {$ENDIF}
     property OffsetToUTC: TimeSpan read mapped.BaseUtcOffset;
     {$ELSEIF ISLAND}
-    property Name: String read nil; {$WARNING Not Implemented
-    property Identifier: String read nil; {$WARNING Not Implemented
-    property OffsetToUTC: TimeSpan read nil; {$WARNING Not Implemented}
+    property Name: String read nil; {$WARNING Not Implemented}
+    property Identifier: String read nil; {$WARNING Not Implemented}
+    property OffsetToUTC: TimeSpan read new TimeSpan(0); {$WARNING Not Implemented}
     {$ELSEIF TOFFEE}
     property Name: String read mapped.name;
     property Identifier: String read mapped.abbreviation;
