@@ -15,7 +15,6 @@ type
     method GetItem(&Index: Integer): T;
     
   public
-
     constructor; mapped to constructor();
     constructor(Items: List<T>);
     constructor(anArray: array of T);
@@ -34,13 +33,19 @@ type
     method IndexOf(aItem: T): Integer; 
     method LastIndexOf(aItem: T): Integer;
 
+    method ToMutableList: List<T>; 
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>; 
     method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
     method ToList<U>: ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
+
+    method SubList(aStartIndex: Int32): ImmutableList<T>;
+    method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
+    
+    method JoinedString(aSeparator: String): not nullable String;
     
     //76766: Echoes: Problem with using generic type in property reader
-    property FirstObject: nullable T read (if Count > 0 then self[0] else nil) as T;
-    property LastObject: nullable T read (if Count > 0 then self[Count-1] else nil) as T;
+    property FirstObject: T read self[0];
+    property LastObject: T read self[Count-1];
     
     property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF};
     property Item[i: Integer]: T read GetItem; default;
@@ -58,7 +63,7 @@ type
     constructor(anArray: array of T);
 
     method &Add(aItem: T);
-    method &Add(Items: List<T>);
+    method &Add(Items: ImmutableList<T>);
     method &Add(Items: array of T);
     method Add(Items: sequence of T);
 
@@ -68,6 +73,9 @@ type
     method RemoveAll;
     method RemoveAt(aIndex: Integer);
     method RemoveRange(aIndex: Integer; aCount: Integer);
+
+    method ReplaceAt(aIndex: Integer; aNewObject: T): T;
+    method ReplaceRange(aIndex: Integer; aCount: Integer; aNewObjects: ImmutableList<T>): T;
     
     method RemoveFirstObject;
     method RemoveLastObject;
@@ -77,7 +85,10 @@ type
     method InsertRange(&Index: Integer; Items: array of T);
 
     method Sort(Comparison: Comparison<T>);
-    method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF}
+    method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF} reintroduce;
+
+    method SubList(aStartIndex: Int32): List<T>; reintroduce;
+    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; reintroduce;
 
     property Item[i: Integer]: T read GetItem write SetItem; default;
   end;
@@ -201,7 +212,7 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.Add(Items: List<T>);
+method List<T>.Add(Items: ImmutableList<T>);
 begin
   {$IF COOPER}
   mapped.AddAll(Items);
@@ -395,6 +406,26 @@ begin
   {$ENDIF}
 end;
 
+method List<T>.ReplaceAt(aIndex: Integer; aNewObject: T): T;
+begin
+  result := self[aIndex];
+  self[aIndex] := aNewObject;
+end;
+
+method List<T>.ReplaceRange(aIndex: Integer; aCount: Integer; aNewObjects: ImmutableList<T>): T;
+begin
+  {$IF COOPER}
+  mapped.subList(aIndex, aIndex+aCount).clear();
+  mapped.addAll(aIndex, aNewObjects);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.RemoveRange(aIndex, aCount);
+  mapped.InsertRange(aIndex, aNewObjects);
+  {$ELSEIF TOFFEE}
+  var range := NSMakeRange(aIndex, aCount);
+  mapped.replaceObjectsInRange(range) withObjectsFromArray(aNewObjects);
+  {$ENDIF}
+end;
+
 method List<T>.Sort(Comparison: Comparison<T>);
 begin
   {$IF COOPER}  
@@ -411,6 +442,17 @@ begin
          else
            NSComparisonResult.NSOrderedDescending;
   end);
+  {$ENDIF}
+end;
+
+method ImmutableList<T>.ToMutableList: List<T>;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  {$ELSE IF TOFFEE}
+  if self is NSMutableArray then
+    result := self as List<T>
+  else
+    result := mapped.mutableCopy();
   {$ENDIF}
 end;
 
@@ -461,6 +503,56 @@ begin
   self.Select(x -> x as U).ToList();
   {$ELSEIF TOFFEE}
   exit self as List<U>;
+  {$ENDIF}
+end;
+
+method ImmutableList<T>.SubList(aStartIndex: Int32): ImmutableList<T>;
+begin
+  result := SubList(aStartIndex, Count-aStartIndex);
+end;
+
+method ImmutableList<T>.SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
+begin
+  {$IF COOPER}
+  result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
+  {$ELSEIF ECHOES OR ISLAND}
+  var lArray := new T[Count];
+  mapped.CopyTo(aStartIndex, lArray, 0, aLength);
+  result := new List<T>(lArray);
+  {$ELSEIF TOFFEE}
+  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength));
+  {$ENDIF}
+end;
+
+method List<T>.SubList(aStartIndex: Int32): List<T>;
+begin
+  result := SubList(aStartIndex, Count-aStartIndex);
+end;
+
+method List<T>.SubList(aStartIndex: Int32; aLength: Int32): List<T>;
+begin
+  {$IF COOPER}
+  result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
+  {$ELSEIF ECHOES OR ISLAND}
+  var lArray := new T[Count];
+  mapped.CopyTo(aStartIndex, lArray, 0, aLength);
+  result := new List<T>(lArray);
+  {$ELSEIF TOFFEE}
+  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength)).mutableCopy;
+  {$ENDIF}
+end;
+
+method ImmutableList<T>.JoinedString(aSeparator: String): not nullable String;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  var lResult := new StringBuilder();
+  for each e in self index i do begin
+    if i > 0 then lResult.Append(aSeparator);
+    lResult.Append(e.ToString());
+  end;
+  result := lResult.ToString() as not nullable;
+  {$ELSEIF TOFFEE}
+  result := mapped.componentsJoinedByString(aSeparator);
   {$ENDIF}
 end;
 
