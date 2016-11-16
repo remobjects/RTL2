@@ -5,13 +5,13 @@ interface
 type
   Path = public static class
   public
-    method ChangeExtension(FileName: not nullable String; NewExtension: nullable String): not nullable String;
-    method Combine(BasePath: not nullable String; Path: not nullable String): not nullable String;
-    method Combine(BasePath: not nullable String; Path1: not nullable String; Path2: not nullable String): not nullable String;
-    method GetParentDirectory(FileName: not nullable String): nullable String;
-    method GetExtension(FileName: not nullable String): not nullable String;
-    method GetFileName(FileName: not nullable String): not nullable String;
-    method GetFileNameWithoutExtension(FileName: not nullable String): not nullable String;
+    method ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
+    method Combine(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+    method GetParentDirectory(aFileName: not nullable String): nullable String;
+    method GetExtension(aFileName: not nullable String): not nullable String;
+    method GetFileName(aFileName: not nullable String): not nullable String;
+    method GetFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
+    method GetPathWithoutExtension(aFileName: not nullable String): not nullable String;
     method GetFullPath(RelativePath: not nullable String): not nullable String;
     
     {$IF TOFFEE}
@@ -23,65 +23,51 @@ type
 
 implementation
 
-method Path.ChangeExtension(FileName: not nullable String; NewExtension: nullable String): not nullable String;
+method Path.ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
 begin
   if length(NewExtension) = 0 then
-    exit GetFileNameWithoutExtension(FileName);
+    exit GetFileNameWithoutExtension(aFileName);
 
-  var lIndex := FileName.LastIndexOf(".");
+  var lIndex := aFileName.LastIndexOf(".");
 
   if lIndex <> -1 then
-    FileName := FileName.Substring(0, lIndex);
+    aFileName := aFileName.Substring(0, lIndex);
 
   if NewExtension[0] = '.' then
-    result := FileName + NewExtension
+    result := aFileName + NewExtension
   else
-    result := FileName + "." + NewExtension as not nullable;
+    result := aFileName + "." + NewExtension as not nullable;
 end;
 
-method Path.Combine(BasePath: not nullable String; Path: not nullable String): not nullable String;
+method Path.Combine(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
 begin
-  if String.IsNullOrEmpty(BasePath) and String.IsNullOrEmpty(Path) then
-    raise new ArgumentException("Invalid arguments");
-
-  if String.IsNullOrEmpty(BasePath) then
-    exit Path;
-
-  if String.IsNullOrEmpty(Path) then
-    exit BasePath;
-
-  var LastChar := BasePath[BasePath.Length - 1];
-
-  if LastChar = Folder.Separator then
-    result := BasePath + Path
-  else
-    result := BasePath + Folder.Separator + Path; // 74540: Bogus nullability wanring, Nougat only
+  result := aBasePath;
+  if result.EndsWith(DirectorySeparatorChar) and (length(aPaths) > 0) then
+    result := result.Substring(0, result.Length-1);
+  for each p in aPaths do
+    if length(p) > 0 then
+      result := result+DirectorySeparatorChar+p;
 end;
 
-method Path.Combine(BasePath: not nullable String; Path1: not nullable String; Path2: not nullable String): not nullable String;
+method Path.GetParentDirectory(aFileName: not nullable String): nullable String;
 begin
-  exit Combine(Combine(BasePath, Path1), Path2);
-end;
-
-method Path.GetParentDirectory(FileName: not nullable String): nullable String;
-begin
-  if length(FileName) = 0 then
+  if length(aFileName) = 0 then
     raise new ArgumentException("Invalid arguments");
     
-  var LastChar := FileName[FileName.Length - 1];
+  var LastChar := aFileName[aFileName.Length - 1];
 
   if LastChar = Folder.Separator then
-    FileName := FileName.Substring(0, FileName.Length - 1);
+    aFileName := aFileName.Substring(0, aFileName.Length - 1);
 
-  if (FileName = Folder.Separator) or ((length(FileName) = 2) and (FileName[1] = ':')) then
+  if (aFileName = Folder.Separator) or ((length(aFileName) = 2) and (aFileName[1] = ':')) then
     exit nil; // root folder has no parent
 
-  var lIndex := FileName.LastIndexOf(Folder.Separator);
+  var lIndex := aFileName.LastIndexOf(Folder.Separator);
 
-  if FileName.StartsWith('\\') then begin
+  if aFileName.StartsWith('\\') then begin
 
     if lIndex > 1 then
-      result := FileName.Substring(0, lIndex)
+      result := aFileName.Substring(0, lIndex)
     else
       result := nil; // network share has no parent folder
     
@@ -89,51 +75,49 @@ begin
   else begin
   
     if lIndex > -1 then
-      result := FileName.Substring(0, lIndex)
+      result := aFileName.Substring(0, lIndex)
     else
       result := ""
       
   end;
 end;
 
-method Path.GetExtension(FileName: not nullable String): not nullable String;
+method Path.GetExtension(aFileName: not nullable String): not nullable String;
 begin
-  FileName := GetFileName(FileName);
-  var lIndex := FileName.LastIndexOf(".");
+  aFileName := GetFileName(aFileName);
+  var lIndex := aFileName.LastIndexOf(".");
   
-  if (lIndex <> -1) and (lIndex < FileName.Length - 1) then
-    exit FileName.Substring(lIndex);
+  if (lIndex <> -1) and (lIndex < aFileName.Length - 1) then
+    exit aFileName.Substring(lIndex);
 
   exit "";
 end;
 
-method Path.GetFileName(FileName: not nullable String): not nullable String;
+method Path.GetFileName(aFileName: not nullable String): not nullable String;
 begin
-  if FileName.Length = 0 then
-    exit "";
-
-  var LastChar: Char := FileName[FileName.Length - 1];
-
-  if LastChar = Folder.Separator then
-    FileName := FileName.Substring(0, FileName.Length - 1);
-
-  var lIndex := FileName.LastIndexOf(Folder.Separator);
-  
-  if (lIndex <> -1) and (lIndex < FileName.Length - 1) then
-    exit FileName.Substring(lIndex + 1);
-  
-  exit FileName;
+  result := aFileName.GetLastPathComponentWithSeparatorChar(DirectorySeparatorChar);
 end;
 
-method Path.GetFileNameWithoutExtension(FileName: not nullable String): not nullable String;
+method Path.GetFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
 begin
-  FileName := GetFileName(FileName);
-  var lIndex := FileName.LastIndexOf(".");
+  aFileName := GetFileName(aFileName);
+  var lIndex := aFileName.LastIndexOf(".");
   
   if lIndex <> -1 then
-    exit FileName.Substring(0, lIndex);
+    exit aFileName.Substring(0, lIndex);
 
-  exit FileName;
+  exit aFileName;
+end;
+
+method Path.GetPathWithoutExtension(aFileName: not nullable String): not nullable String;
+begin
+  var lIndex := aFileName.LastIndexOf(".");
+  var lIndex2 := aFileName.LastIndexOf(DirectorySeparatorChar);
+  
+  if (lIndex > lIndex2) then
+    exit aFileName.Substring(0, lIndex);
+
+  exit aFileName;
 end;
 
 method Path.GetFullPath(RelativePath: not nullable String): not nullable String;

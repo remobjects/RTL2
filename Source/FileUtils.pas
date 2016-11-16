@@ -25,7 +25,7 @@ type
     method ReadBytes(FileName: String): array of Byte;
     method ReadBinary(FileName: String): Binary;
     method WriteBytes(FileName: String; Content: array of Byte);
-    method WriteText(FileName: String; Content: String);
+    method WriteText(FileName: String; Content: String; aEncoding: Encoding := nil);
     method WriteBinary(FileName: String; Content: Binary);
   end;
 
@@ -220,9 +220,11 @@ begin
   end;
 end;
 
-class method FileUtils.WriteText(FileName: String; Content: String);
+class method FileUtils.WriteText(FileName: String; Content: String; aEncoding: Encoding := nil);
 begin
-  WriteBytes(FileName, Content.ToByteArray);
+  if not assigned(aEncoding) then
+    aEncoding := Encoding.Default;
+  WriteBytes(FileName, Content.ToByteArray(aEncoding));
 end;
 
 class method FileUtils.WriteBinary(FileName: String; Content: Binary);

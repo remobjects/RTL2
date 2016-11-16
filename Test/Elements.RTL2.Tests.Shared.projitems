@@ -11,5 +11,6 @@
     <ItemGroup>
         <Compile Include="$(MSBuildThisFileDirectory)Url.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Convert.pas"/>
+        <None Include="$(MSBuildThisFileDirectory)String_Paths.pas"/>
     </ItemGroup>
 </Project>

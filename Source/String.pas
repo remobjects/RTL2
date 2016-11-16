@@ -865,6 +865,8 @@ begin
   exit mapped.getBytes("UTF-8");
   {$ELSEIF ECHOES}
   exit System.Text.Encoding.UTF8.GetBytes(mapped);
+  {$ELSEIF ISLAND}
+  exit TextConvert.StringToUTF8(aValue);(mapped);
   {$ELSEIF TOFFEE}
   var Data := Binary(mapped.dataUsingEncoding(NSStringEncoding.NSUTF8StringEncoding));
   exit Data.ToArray;
