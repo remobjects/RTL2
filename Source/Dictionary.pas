@@ -3,59 +3,63 @@
 interface
 
 type
-  Dictionary<T, U> = public class mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary where T is class, U is class;{$ENDIF}
+  ImmutableDictionary<T, U> = public class mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary where T is class, U is class;{$ENDIF}
   private
-    method GetKeys: sequence of T;
+    method GetKeys: ImmutableList<T>;
     method GetValues: sequence of U;
-    method GetItem(Key: T): U;
+    method GetItem(aKey: T): U;
+
+  public
+    constructor; mapped to constructor();
+
+    method ContainsKey(Key: T): Boolean;
+    method ContainsValue(Value: U): Boolean;
+
+    method ForEach(Action: Action<KeyValuePair<T, U>>);
+
+    property Item[Key: T]: U read GetItem; default; // will return nil for unknown keys
+    property Keys: ImmutableList<T> read GetKeys;
+    property Values: sequence of U read GetValues;
+    property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
+
+    {$IF NOT ECHOES}
+    method GetSequence: sequence of KeyValuePair<T,U>;
+    {$ENDIF}
+  end;
+  
+  Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary where T is class, U is class;{$ENDIF}
+  private
     method SetItem(Key: T; Value: U);
+    method GetItem(aKey: T): U; // 76792: Descendant mapped type can't see `protected` members from ancestor, for property getter
+    method ContainsKey(Key: T): Boolean; // 76792: Descendant mapped type can't see `protected` members from ancestor, for property getter
 
   public
     constructor; mapped to constructor();
     constructor(aCapacity: Integer);
 
-    {$IFNDEF ECHOES}
-    method GetSequence: sequence of KeyValuePair<T,U>;
-    {$ENDIF}
-
     method &Add(Key: T; Value: U);
-    method TryGetValue(aKey: T; out aValue: U): Boolean;
-    method ContainsKey(Key: T): Boolean;
-    method ContainsValue(Value: U): Boolean;
     method &Remove(Key: T): Boolean;
     method RemoveAll;
 
-    method ForEach(Action: Action<KeyValuePair<T, U>>);
-
-    property Item[Key: T]: U read GetItem write SetItem; default;
-    property Keys: sequence of T read GetKeys;
-    property Values: sequence of U read GetValues;
-    property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
-
-    {$IF TOFFEE}
-    operator Implicit(aDictionary: NSDictionary<T,U>): Dictionary<T,U>;
-    {$ENDIF}
-  end;
-
-  DictionaryHelpers = assembly static class
-  public
-    {$IFDEF COOPER}
-    method Add<T, U>(aSelf: java.util.HashMap<T,U>; aKey: T; aVal: U);
-    method GetItem<T, U>(aSelf: java.util.HashMap<T,U>; aKey: T): U;
-    method GetSequence<T, U>(aSelf: java.util.HashMap<T,U>) : sequence of KeyValuePair<T,U>; iterator;
-    {$ELSEIF TOFFEE}
-    method Add<T, U>(aSelf: NSMutableDictionary; aKey: T; aVal: U);
-    method GetItem<T, U>(aSelf: NSDictionary; aKey: T): U;
-    method GetSequence<T, U>(aSelf: NSDictionary) : sequence of KeyValuePair<T,U>; iterator;
-    {$ELSEIF ISLAND}
-    //method Add<T, U>(aSelf: NSMutableDictionary; aKey: T; aVal: U);
-    //method GetItem<T, U>(aSelf: NSDictionary; aKey: T): U;
-    method GetSequence<T, U>(aSelf: RemObjects.Elements.System.Dictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
-    {$ENDIF}
-    method Foreach<T, U>(aSelf: Dictionary<T, U>; aAction: Action<KeyValuePair<T, U>>);
+    property Item[Key: T]: U read GetItem write SetItem; default; // will return nil for unknown keys
   end;
 
 implementation
+
+type
+  DictionaryHelpers = static class
+  public
+  {$IFDEF COOPER}
+    method Add<T, U>(aSelf: java.util.HashMap<T,U>; aKey: T; aVal: U);
+    method GetSequence<T, U>(aSelf: java.util.HashMap<T,U>) : sequence of KeyValuePair<T,U>; iterator;
+    {$ELSEIF TOFFEE}
+    method Add<T, U>(aSelf: NSMutableDictionary; aKey: T; aVal: U);
+    method GetSequence<T, U>(aSelf: NSDictionary) : sequence of KeyValuePair<T,U>; iterator;
+    {$ELSEIF ISLAND}
+    method GetSequence<T, U>(aSelf: RemObjects.Elements.System.Dictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
+    {$ENDIF}
+    method Foreach<T, U>(aSelf: ImmutableDictionary<T, U>; aAction: Action<KeyValuePair<T, U>>);
+  end;
 
 constructor Dictionary<T,U>(aCapacity: Integer);
 begin
@@ -90,6 +94,15 @@ begin
   {$ENDIF}
 end;
 
+method ImmutableDictionary<T, U>.ContainsKey(Key: T): Boolean;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  exit mapped.ContainsKey(Key);
+  {$ELSEIF TOFFEE}
+  exit mapped.objectForKey(Key) <> nil;
+  {$ENDIF}
+end;
+
 method Dictionary<T, U>.ContainsKey(Key: T): Boolean;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
@@ -99,7 +112,7 @@ begin
   {$ENDIF}
 end;
 
-method Dictionary<T, U>.ContainsValue(Value: U): Boolean;
+method ImmutableDictionary<T, U>.ContainsValue(Value: U): Boolean;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.ContainsValue(Value);
@@ -108,34 +121,51 @@ begin
   {$ENDIF}
 end;
 
-method Dictionary<T, U>.ForEach(Action: Action<KeyValuePair<T, U>>);
+method ImmutableDictionary<T, U>.ForEach(Action: Action<KeyValuePair<T, U>>);
 begin
   DictionaryHelpers.Foreach(self, Action);
 end;
 
-method Dictionary<T, U>.GetItem(Key: T): U;
+method ImmutableDictionary<T, U>.GetItem(aKey: T): U;
 begin
   {$IF COOPER}
-  result := DictionaryHelpers.GetItem(mapped, Key);
+  result := mapped[aKey];
   {$ELSEIF ECHOES OR ISLAND}
-  result := mapped[Key];
+  if not mapped.TryGetValue(aKey, out result) then
+    result := nil;
   {$ELSEIF TOFFEE}
-  result := DictionaryHelpers.GetItem<T, U>(mapped, Key);
+  result := mapped.objectForKey(aKey);
+  if assigned(result) then
+    result := NullHelper.ValueOf(result);
   {$ENDIF}
 end;
 
-method Dictionary<T, U>.GetKeys: sequence of T;
+method Dictionary<T, U>.GetItem(aKey: T): U;
 begin
   {$IF COOPER}
-  exit mapped.keySet;
+  result := mapped[aKey];
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Keys;
+  if not mapped.TryGetValue(aKey, out result) then
+    result := nil;
+  {$ELSEIF TOFFEE}
+  result := mapped.objectForKey(aKey);
+  if assigned(result) then
+    result := NullHelper.ValueOf(result);
+  {$ENDIF}
+end;
+
+method ImmutableDictionary<T, U>.GetKeys: ImmutableList<T>;
+begin
+  {$IF COOPER}
+  exit mapped.keySet.ToList();
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Keys.ToList();
   {$ELSEIF TOFFEE}
   exit mapped.allKeys;
   {$ENDIF}
 end;
 
-method Dictionary<T, U>.GetValues: sequence of U;
+method ImmutableDictionary<T, U>.GetValues: sequence of U;
 begin
   {$IF COOPER}
   exit mapped.values;
@@ -168,18 +198,20 @@ begin
   {$ENDIF}
 end;
 
+{$IF NOT ECHOES}
+method ImmutableDictionary<T,U>.GetSequence: sequence of KeyValuePair<T,U>;
+begin
+  exit DictionaryHelpers.GetSequence<T, U>(self);
+end;
+{$ENDIF}
+    
+{ DictionaryHelpers }
+
 {$IFDEF TOFFEE}
 method DictionaryHelpers.Add<T, U>(aSelf: NSMutableDictionary; aKey: T; aVal: U);
 begin
   if aSelf.objectForKey(aKey) <> nil then raise new ArgumentException(RTLErrorMessages.KEY_EXISTS);
   aSelf.setObject(NullHelper.ValueOf(aVal)) forKey(aKey);
-end;
-
-method DictionaryHelpers.GetItem<T, U>(aSelf: NSDictionary; aKey: T): U;
-begin
-  var o := aSelf.objectForKey(aKey);
-  if o = nil then raise new KeyNotFoundException();
-  exit NullHelper.ValueOf(o);
 end;
 
 method DictionaryHelpers.GetSequence<T, U>(aSelf: NSDictionary) : sequence of KeyValuePair<T,U>;
@@ -217,11 +249,6 @@ begin
     yield new KeyValuePair<T,U>(el.Key, el.Value);
 end;
 
-method DictionaryHelpers.GetItem<T, U>(aSelf: java.util.HashMap<T,U>; aKey: T): U;
-begin 
-  if not aSelf.containsKey(aKey) then raise new KeyNotFoundException();
-  exit aSelf[aKey];
-end;
 method DictionaryHelpers.Add<T, U>(aSelf: java.util.HashMap<T,U>; aKey: T; aVal: U);
 begin
   if aSelf.containsKey(aKey) then raise new ArgumentException(RTLErrorMessages.KEY_EXISTS);
@@ -230,41 +257,10 @@ end;
 
 {$ENDIF}
 
-method DictionaryHelpers.Foreach<T, U>(aSelf: Dictionary<T, U>; aAction: Action<KeyValuePair<T, U>>);
+method DictionaryHelpers.Foreach<T, U>(aSelf: ImmutableDictionary<T, U>; aAction: Action<KeyValuePair<T, U>>);
 begin
   for each el in aSelf.Keys do 
     aAction(new KeyValuePair<T,U>(T(el), U(aSelf.Item[el])));
 end;
-
-method Dictionary<T, U>.TryGetValue(aKey: T; out aValue: U): Boolean;
-begin
-  {$IF COOPER}
-  aValue := mapped[aKey];
-  result := assigned(aValue);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.TryGetValue(aKey, out aValue);
-  {$ELSEIF TOFFEE}
-  aValue := mapped.objectForKey(aKey);
-  result := assigned(aValue);
-  aValue := NullHelper.ValueOf(aValue);
-  {$ENDIF}
-end;
-
-{$IFNDEF ECHOES}
-method Dictionary<T,U>.GetSequence: sequence of KeyValuePair<T,U>;
-begin
-  exit DictionaryHelpers.GetSequence<T, U>(self);
-end;
-{$ENDIF}
-    
-{$IF TOFFEE}
-operator Dictionary<T,U>.Implicit(aDictionary: NSDictionary<T,U>): Dictionary<T,U>;
-begin
-  if aDictionary is NSMutableDictionary then
-    result := Dictionary<T,U>(aDictionary)
-  else
-    result := Dictionary<T,U>(aDictionary:mutableCopy);
-end;
-{$ENDIF}
 
 end.
