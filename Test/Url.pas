@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL2.Tests.Shared;
+﻿namespace Elements.RTL.Tests;
 
 uses
   RemObjects.Elements.EUnit,

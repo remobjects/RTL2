@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
     <PropertyGroup>
         <ProductVersion>3.5</ProductVersion>
-        <RootNamespace>Elements.RTL2.Tests.Echoes</RootNamespace>
+        <RootNamespace>Elements.RTL.Tests</RootNamespace>
         <ProjectGuid>4FE86A5E-1886-47EC-921E-D93AE32079B2</ProjectGuid>
         <OutputType>exe</OutputType>
         <AssemblyName>Elements.RTL2.Tests.Echoes</AssemblyName>

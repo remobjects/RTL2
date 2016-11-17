@@ -16,7 +16,7 @@
         <CreateAppBundle>True</CreateAppBundle>
         <InfoPListFile>.\Resources\Info.plist</InfoPListFile>
         <BundleIdentifier>com.remobjects.test</BundleIdentifier>
-        <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+        <DefaultUses>Foundation;RemObjects.Elements.EUnit;RemObjects.Elements.Linq</DefaultUses>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>False</Optimize>
@@ -54,7 +54,6 @@
         <Content Include="Resources\Info.plist"/>
         <Xib Include="Resources\LaunchScreen.xib"/>
     </ItemGroup>
-    <ItemGroup/>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets"/>
     <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared"/>
     <Import Project="..\Source\Elements.RTL.Shared.projitems" Label="Shared"/>

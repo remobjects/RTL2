@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL2.Tests;
+﻿namespace Elements.RTL.Tests;
 
 interface
 
