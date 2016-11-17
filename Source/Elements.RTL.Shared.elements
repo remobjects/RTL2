@@ -5,7 +5,7 @@
         <RootNamespace>Elements.RTL</RootNamespace>
     </PropertyGroup>
     <PropertyGroup>
-        <RootNamespace>Elements.RTL.Shared</RootNamespace>
+        <RootNamespace>Elements.RTL</RootNamespace>
     </PropertyGroup>
     <Import Project="Elements.RTL.Shared.projitems" Label="Shared"/>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.SharedProject.targets"/>
