@@ -332,7 +332,7 @@ begin
   if (length(aData) = 0) or (aCount = 0) then
     exit '';
 
-  RangeHelper.Validate(Range.MakeRange(aOffset, aCount), aData.Length);
+  RangeHelper.Validate(new Range(aOffset, aCount), aData.Length);
 
   var Chars := new Char[aCount * 2];
   var Num: Integer;

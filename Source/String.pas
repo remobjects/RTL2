@@ -133,7 +133,7 @@ begin
   if Count = 0 then
     exit "";
 
-  RangeHelper.Validate(Range.MakeRange(Offset, Count), Value.Length);
+  RangeHelper.Validate(new Range(Offset, Count), Value.Length);
 
   {$IF COOPER}
   result := new PlatformString(Value, Offset, Count);

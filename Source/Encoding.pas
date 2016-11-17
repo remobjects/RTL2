@@ -10,6 +10,7 @@ type
     constructor (aName: not nullable String);
     {$ENDIF}
     method GetName: String;
+    method GetIsUTF8: Boolean;
   public
     method GetBytes(aValue: String): array of Byte;
 
@@ -18,6 +19,7 @@ type
 
     class method GetEncoding(aName: String): Encoding;
     property Name: String read GetName;
+    property isUTF8: Boolean read GetIsUTF8;
 
     class property ASCII: Encoding read GetEncoding("US-ASCII");
     class property UTF8: Encoding read GetEncoding("UTF-8");
@@ -53,7 +55,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.GetBytes(aValue);
   {$ELSEIF ISLAND}
-  result := case fName.ToUpper.Replace("-","") of
+  result := case fName.ToUpper.Replace("-", "") of
               "UTF8": TextConvert.StringToUTF8(aValue);
               "UTF16": TextConvert.StringToUTF16(aValue);
               "UTF16BE": TextConvert.StringToUTF16BE(aValue);
@@ -77,7 +79,7 @@ begin
   if aCount = 0 then
     exit "";
 
-  RangeHelper.Validate(Range.MakeRange(aOffset, aCount), aValue.Length);
+  RangeHelper.Validate(new Range(aOffset, aCount), aValue.Length);
   {$IF COOPER}
   var Buffer := java.nio.charset.Charset(self).newDecoder.
     onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
@@ -165,6 +167,19 @@ begin
   {$ENDIF}  
 end;
 
+method Encoding.GetIsUTF8: Boolean;
+begin
+  {$IF COOPER}
+  //exit mapped.name;
+  {$ELSEIF ECHOES}
+  //exit mapped.WebName;
+  {$ELSEIF ISLAND}
+  result := fName.ToUpper.Replace("-", "");
+  {$ELSEIF TOFFEE}
+  result := AsNSStringEncoding = NSStringEncoding.UTF8StringEncoding;
+  {$ENDIF}  
+end;
+
 {$IF TOFFEE}
 method Encoding.AsNSStringEncoding: NSStringEncoding;
 begin
@@ -175,6 +190,7 @@ class method Encoding.FromNSStringEncoding(aEncoding: NSStringEncoding): Encodin
 begin
   result := NSNumber.numberWithUnsignedInteger(aEncoding);
 end;
+
 {$ENDIF}
 
 {$IF ISLAND}

@@ -5,7 +5,7 @@ interface
 type
   Range = public record {$IF TOFFEE}mapped to Foundation.NSRange{$ENDIF}
   public
-    class method MakeRange(aLocation, aLength: Integer): Range;
+    constructor(aLocation, aLength: Integer);
 
     property Location: Integer {$IF TOFFEE}read mapped.location write mapped.location{$ENDIF};
     property Length: Integer {$IF TOFFEE} read mapped.length write mapped.length{$ENDIF};
@@ -20,9 +20,14 @@ implementation
 
 { Range }
 
-class method Range.MakeRange(aLocation: Integer; aLength: Integer): Range;
-begin  
-  exit new Range(Location := aLocation, Length := aLength);
+constructor Range(aLocation, aLength: Integer);
+begin
+  {$IF TOFFEE}
+  result := NSMakeRange(aLocation, aLength);
+  {$ELSE}
+  Location := aLocation;
+  Length := aLength;
+  {$ENDIF}
 end;
 
 { RangeHelper }

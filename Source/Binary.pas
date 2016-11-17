@@ -14,9 +14,11 @@ type
     constructor(Bin: Binary);    
 
     method &Read(Range: Range): array of Byte;
+    method &Read(aStartIndex: Integer; aCount: Integer): array of Byte;
     method &Read(Count: Integer): array of Byte;
     
     method Subdata(Range: Range): Binary;
+    method Subdata(aStartIndex: Integer; aCount: Integer): Binary;
 
     method ToArray: array of Byte;
     property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};    
@@ -150,14 +152,26 @@ begin
   {$ENDIF}
 end;
 
+method ImmutableBinary.Read(aStartIndex: Integer; aCount: Integer): array of Byte;
+begin
+  if aCount = 0 then
+    exit [];
+  result := &Read(new Range(aStartIndex, aCount));
+end;
+
 method ImmutableBinary.Read(Count: Integer): array of Byte;
 begin
-  result := &Read(Range.MakeRange(0, Math.Min(Count, self.Length)));
+  result := &Read(new Range(0, Math.Min(Count, self.Length)));
 end;
 
 method ImmutableBinary.Subdata(Range: Range): Binary;
 begin
   result := new Binary(&Read(Range));
+end;
+
+method ImmutableBinary.Subdata(aStartIndex: Integer; aCount: Integer): Binary;
+begin
+  result := new Binary(&Read(aStartIndex, aCount));
 end;
 
 method Binary.&Write(Buffer: array of Byte; Offset: Integer; Count: Integer);
@@ -168,7 +182,7 @@ begin
   if Count = 0 then
     exit;
 
-  RangeHelper.Validate(Range.MakeRange(Offset, Count), Buffer.Length);
+  RangeHelper.Validate(new Range(Offset, Count), Buffer.Length);
   {$IF COOPER}
   fData.write(Buffer, Offset, Count);
   {$ELSEIF ECHOES}
