@@ -17,7 +17,7 @@ type
   public
     constructor; mapped to constructor();
     constructor(Items: List<T>);
-    constructor(anArray: array of T);
+    constructor(params anArray: array of T);
 
     method Contains(aItem: T): Boolean;
     method Exists(Match: Predicate<T>): Boolean;
@@ -37,6 +37,9 @@ type
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>; 
     method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
     method ToList<U>: ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
+    
+    method UniqueCopy: ImmutableList<T>;
+    method UniqueMutableCopy: List<T>;
 
     method SubList(aStartIndex: Int32): ImmutableList<T>;
     method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
@@ -60,7 +63,7 @@ type
     
     constructor; mapped to constructor();
     constructor(Items: List<T>);
-    constructor(anArray: array of T);
+    constructor(params anArray: array of T);
 
     method &Add(aItem: T);
     method &Add(Items: ImmutableList<T>);
@@ -141,7 +144,7 @@ begin
   {$ENDIF}
 end;
 
-constructor ImmutableList<T>(anArray: array of T);
+constructor ImmutableList<T>(params anArray: array of T);
 begin
   {$IF COOPER}
   result := new java.util.ArrayList<T>(java.util.Arrays.asList(anArray));
@@ -165,7 +168,7 @@ begin
   {$ENDIF}
 end;
 
-constructor List<T>(anArray: array of T);
+constructor List<T>(params anArray: array of T);
 begin
   {$IF COOPER}
   result := new java.util.ArrayList<T>(java.util.Arrays.asList(anArray));
@@ -355,6 +358,8 @@ end;
 
 method List<T>.Remove(aItem: T): Boolean;
 begin
+  if not assigned(aItem) then
+    exit false;
   {$IF COOPER}
   exit mapped.Remove(Object(aItem));
   {$ELSEIF ECHOES OR ISLAND}
@@ -500,7 +505,7 @@ end;
 method List<T>.ToList<U>: List<U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
-  self.Select(x -> x as U).ToList();
+  self.Select(x -> x as U).ToList(); {$HINT largely inefficient. rewrite}
   {$ELSEIF TOFFEE}
   exit self as List<U>;
   {$ENDIF}
@@ -539,6 +544,28 @@ begin
   result := new List<T>(lArray);
   {$ELSEIF TOFFEE}
   result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength)).mutableCopy;
+  {$ENDIF}
+end;
+
+method ImmutableList<T>.UniqueCopy: ImmutableList<T>;
+begin
+  {$IF COOPER}
+  result := new ImmutableList<T>(self);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := new ImmutableList<T>(self);
+  {$ELSEIF TOFFEE}
+  result := mapped.copy;
+  {$ENDIF}
+end;
+
+method ImmutableList<T>.UniqueMutableCopy: List<T>;
+begin
+  {$IF COOPER}
+  result := new List<T>(self);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := new List<T>(self);
+  {$ELSEIF TOFFEE}
+  result := mapped.mutableCopy;
   {$ENDIF}
 end;
 
