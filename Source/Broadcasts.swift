@@ -1,57 +1,57 @@
 ﻿
 typealias Block = ()->()
 
-public static class BroadcastManager {
+public static class Elements.RTL.BroadcastManager {
 	
 	private let subscriptions = Dictionary<String,List<(Object,Block)>>()
 
 	//func subscribe(_ object: Object, toBroadcast broadcast: String, block: (Dictionary<String,Any>)->()) {
 	//}
 
-	func subscribe(_ object: Object, toBroadcast broadcast: String, block: ()->()) {
+	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: ()->()) {
 		var subs = subscriptions[broadcast]
 		if subs == nil {
 			subs = List<(Object,Block)>()
 			subscriptions[broadcast] = subs
 		}
-		subs!.Add((object, block))
+		subs!.Add((receiver, block))
 	}
 
-	func subscribe(_ object: Object, toBroadcasts broadcasts: List<String>, block: ()->()) {
+	public func subscribe(_ receiver: Object, toBroadcasts broadcasts: List<String>, block: ()->()) {
 		for b in broadcasts {
-			subscribe(object, toBroadcast: b, block: block)
+			subscribe(receiver, toBroadcast: b, block: block)
 		}
 	}
 
 	#if NOUGAT
-	func subscribe(_ object: Object, selector: SEL, toBroadcast broadcast: String) {
-		NSNotificationCenter.defaultCenter.addObserver(object, selector: selector, name: broadcast, object: nil)
+	public func subscribe(_ receiver: Object, selector: SEL, toBroadcast broadcast: String, object: Object? = nil) {
+		NSNotificationCenter.defaultCenter.addObserver(receiver, selector: selector, name: broadcast, object: object)
 	}
 	#endif
 
-	func unsubscribe(_ object: Object, fromBroadcast broadcast: String?) {
+	public func unsubscribe(_ receiver: Object, fromBroadcast broadcast: String?) {
 		#if NOUGAT
-		NSNotificationCenter.defaultCenter.removeObserver(object, name: broadcast, object: nil)
+		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
 		#endif
 		
 		if let subs = subscriptions[broadcast] {
 			for s in subs? {
-				if s.0 == object {
+				if s.0 == receiver {
 					subs.remove(s)
 				}
 			}
 		}
 	}
 
-	func unsubscribe(_ object: Object) {
+	public func unsubscribe(_ receiver: Object) {
 		#if NOUGAT
-		NSNotificationCenter.defaultCenter.removeObserver(object)
+		NSNotificationCenter.defaultCenter.removeObserver(receiver)
 		#endif
 
 		for k in subscriptions.keys {
 			if let subs = subscriptions[k] {
 				for s in subs? {
-					if s.0 == object {
+					if s.0 == receiver {
 						subs.remove(s)
 					}
 				}
@@ -59,7 +59,7 @@ public static class BroadcastManager {
 		}
 	}
 
-	func submitBroadcast(_ broadcast: String, object: Object? = nil, data: Dictionary<String,Object>? = nil, syncToMainThread: Boolean = false) {
+	public func submitBroadcast(_ broadcast: String, object: Object? = nil, data: ImmutableDictionary<String,Object>? = nil, syncToMainThread: Boolean = false) {
 		#if NOUGAT
 		if syncToMainThread {
 			dispatch_async(dispatch_get_main_queue()) {
