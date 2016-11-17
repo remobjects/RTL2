@@ -90,8 +90,9 @@ type
 
   IOException = public class(RTLException);
 
-  /*HttpException = public class(SugarException)
+  HttpException = public class(RTLException)
   assembly
+  
     constructor(aMessage: String; aResponse: nullable HttpResponse := nil);
     begin
       inherited constructor(aMessage);
@@ -100,7 +101,7 @@ type
 
   public
     property Response: nullable HttpResponse; readonly;   
-  end;*/
+  end;
   
   FileNotFoundException = public class (RTLException)
   public

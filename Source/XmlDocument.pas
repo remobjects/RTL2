@@ -1,9 +1,9 @@
 ﻿namespace Elements.RTL;
 
-{$IF TOFFEE and MACOS}
+{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 //
-// For now, XmlDocument is implemented as a simple wraopper around NSXMLElement (Toffee) and System.Xml (Echoes),
+// For now, XmlDocument is implemented as a simple wraopper around NativeXmlElement (Toffee) and System.Xml (Echoes),
 // so we can start using it in Fire/Water. The long term plan is to replace this with clean, self-written
 // pure-Elements cross-platform imoplementation.
 //
@@ -11,12 +11,21 @@
 interface
 
 type
+  {$IF TOFFEE}
+  NativeXmlDocument = NSXMLDocument;
+  NativeXmlNode = NSXMLNode;
+  NativeXmlElement = NSXMLElement;
+  {$ENDIF}
+  {$IF ECHOES}
+  NativeXmlDocument = XDocument;
+  NativeXmlNode = XObject;
+  NativeXmlElement = XElement;
+  {$ENDIF}
+
   XmlDocument = public class
   private
-    {$IF TOFFEE}
-    fNativeXmlDocument: NSXMLDocument;
-    constructor (aNativeXmlDocument: NSXMLDocument);
-    {$ENDIF}
+    fNativeXmlDocument: NativeXmlDocument;
+    constructor (aNativeXmlDocument: NativeXmlDocument);
     
     fRoot: XmlElement;
     method GetRoot: not nullable XmlElement;
@@ -28,6 +37,7 @@ type
     class method FromFile(aFileName: not nullable File): nullable XmlDocument;
     class method FromUrl(aUrl: not nullable Url): nullable XmlDocument;
     class method FromString(aString: not nullable String): nullable XmlDocument;
+    class method FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
     class method WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
     class method WithRootElement(aName: not nullable String): nullable XmlDocument;
 
@@ -48,11 +58,9 @@ type
   
   XmlNode = public class
   unit
-    {$IF TOFFEE}
-    fNativeXmlNode: NSXMLNode;
-    constructor (aNativeXmlNode: NSXMLNode; aParent: XmlNode := nil);
-    {$ENDIF}
-    
+    fNativeXmlNode: NativeXmlNode;
+    constructor (aNativeXmlNode: NativeXmlNode; aParent: XmlNode := nil);
+
     fDocument: weak nullable XmlDocument;
     fParent: weak nullable XmlNode;
   public
@@ -137,19 +145,17 @@ implementation
 
 { XmlDocument }
 
-{$IF TOFFEE}
-constructor XmlDocument(aNativeXmlDocument: NSXMLDocument);
+constructor XmlDocument(aNativeXmlDocument: NativeXmlDocument);
 begin
   fNativeXmlDocument := aNativeXmlDocument;
 end;
-{$ENDIF}
 
 class method XmlDocument.FromFile(aFileName: not nullable File): nullable XmlDocument;
 begin
   if aFileName.Exists then begin
     {$IF TOFFEE}
     var lError: NSError;
-    var lXml := new NSXMLDocument withContentsOfURL(NSURL.fileURLWithPath(aFileName)) options(0) error(var lError);
+    var lXml := new NativeXmlDocument withContentsOfURL(NSURL.fileURLWithPath(aFileName)) options(0) error(var lError);
     if assigned(lXml) then
       result := new XmlDocument(lXml);
     {$ENDIF}
@@ -160,7 +166,7 @@ class method XmlDocument.FromUrl(aUrl: not nullable Url): nullable XmlDocument;
 begin
   {$IF TOFFEE}
   var lError: NSError;
-  var lXml := new NSXMLDocument withContentsOfURL(aUrl) options(0) error(var lError);
+  var lXml := new NativeXmlDocument withContentsOfURL(aUrl) options(0) error(var lError);
   if assigned(lXml) then
     result := new XmlDocument(lXml);
   {$ENDIF}
@@ -170,16 +176,21 @@ class method XmlDocument.FromString(aString: not nullable String): nullable XmlD
 begin
   {$IF TOFFEE}
   var lError: NSError;
-  var lXml := new NSXMLDocument withXMLString(aString) options(0) error(var lError);
+  var lXml := new NativeXmlDocument withXMLString(aString) options(0) error(var lError);
   if assigned(lXml) then
     result := new XmlDocument(lXml);
   {$ENDIF}
 end;
 
+class method XmlDocument.FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
+begin
+  {$WARNING Not implemented}
+end;
+
 class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
 begin
   {$IF TOFFEE}
-  var lXml := new NSXMLDocument withRootElement(aElement.fNativeXmlNode as NSXMLElement);
+  var lXml := new NativeXmlDocument withRootElement(aElement.fNativeXmlNode as NativeXmlElement);
   if assigned(lXml) then begin
     result := new XmlDocument(lXml);
     result.fRoot := aElement;
@@ -190,7 +201,7 @@ end;
 class method XmlDocument.WithRootElement(aName: not nullable String): nullable XmlDocument;
 begin
   {$IF TOFFEE}
-  var lXml := new NSXMLDocument withRootElement(new NSXMLElement withName(aName));
+  var lXml := new NativeXmlDocument withRootElement(new NativeXmlElement withName(aName));
   if assigned(lXml) then begin
     result := new XmlDocument(lXml);
   end;
@@ -246,8 +257,10 @@ end;
 method XmlDocument.GetRoot: not nullable XmlElement;
 begin
   if not assigned(fRoot) then begin
+    {$IF TOFFEE}
     fRoot := new XmlElement(fNativeXmlDocument.rootElement);
     fRoot.fDocument := self;
+    {$ENDIF}
   end;
   result := fRoot as not nullable;
 end;
@@ -270,13 +283,11 @@ end;
 
 { XmlNode }
 
-{$IF TOFFEE}
-constructor XmlNode(aNativeXmlNode: NSXMLNode; aParent: XmlNode := nil);
+constructor XmlNode(aNativeXmlNode: NativeXmlNode; aParent: XmlNode := nil);
 begin
   fNativeXmlNode := aNativeXmlNode;
   fParent := aParent;
 end;
-{$ENDIF}
 
 { XmlElement }
 
@@ -284,9 +295,11 @@ method XmlElement.ElementsWithName(aLocalName: not nullable String; aNamespace: 
 begin
   {$IF TOFFEE}
   if assigned(aNamespace) then
-    result := (fNativeXmlNode as NSXMLElement).elementsForLocalName(aLocalName) URI(aNamespace.Url.ToAbsoluteString()).Select(c -> new XmlElement(c, self))
+    result := (fNativeXmlNode as NativeXmlElement).elementsForLocalName(aLocalName) URI(aNamespace.Url.ToAbsoluteString()).Select(c -> new XmlElement(c, self))
   else
-    result := (fNativeXmlNode as NSXMLElement).elementsForName(aLocalName).Select(c -> new XmlElement(c, self));
+    result := (fNativeXmlNode as NativeXmlElement).elementsForName(aLocalName).Select(c -> new XmlElement(c, self));
+  {$ELSEIF ECHOES}
+  result := (fNativeXmlNode as XElement).Elements(aLocalName).Select(c -> new XmlElement(c, self)) as not nullable;
   {$ENDIF}
 end;
 
@@ -294,7 +307,9 @@ method XmlElement.ElementsWithNamespace(aNamespace: nullable XmlNamespace := nil
 begin
   {$IF TOFFEE}
   var lURI := aNamespace:Url:ToAbsoluteString;
-  result := (fNativeXmlNode as NSXMLElement).children.Where(c -> c.URI = lURI).Select(c -> new XmlElement(c, self));
+  result := (fNativeXmlNode as NativeXmlElement).children.Where(c -> c.URI = lURI).Select(c -> new XmlElement(c, self));
+  {$ELSEIF ECHOES}
+  result := [];//(fNativeXmlNode as XElement).Elements(aLocalName).Select(c -> new XmlElement(c, self)) as not nullable;
   {$ENDIF}
 end;
 
@@ -304,26 +319,28 @@ begin
 end;
 
 method XmlElement.SetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String);
-begin  
+begin
+  {$IF TOFFEE}
   var lAttribute := if assigned(aNamespace) then
-                      (fNativeXmlNode as NSXMLElement).attributeForLocalName(aName) URI(aNamespace.Url.ToAbsoluteString())
+                      (fNativeXmlNode as NativeXmlElement).attributeForLocalName(aName) URI(aNamespace.Url.ToAbsoluteString())
                     else
-                      (fNativeXmlNode as NSXMLElement).attributeForName(aName);
+                      (fNativeXmlNode as NativeXmlElement).attributeForName(aName);
   if assigned(lAttribute) then begin
     lAttribute.stringValue := aValue;
   end
   else begin
     if assigned(aNamespace) then
-      (fNativeXmlNode as NSXMLElement).addAttribute(NSXMLNode.attributeWithName(aName) URI(aNamespace.Url.ToAbsoluteString()) stringValue(aValue))
+      (fNativeXmlNode as NativeXmlElement).addAttribute(NativeXmlNode.attributeWithName(aName) URI(aNamespace.Url.ToAbsoluteString()) stringValue(aValue))
     else
-      (fNativeXmlNode as NSXMLElement).addAttribute(NSXMLNode.attributeWithName(aName) stringValue(aValue));
+      (fNativeXmlNode as NativeXmlElement).addAttribute(NativeXmlNode.attributeWithName(aName) stringValue(aValue));
   end;
+  {$ENDIF}
 end;
 
 method XmlElement.RemoveAttribute(aAttribute: not nullable XmlAttribute);
 begin
   {$IF TOFFEE}
-  (fNativeXmlNode as NSXMLElement).removeAttributeForName(aAttribute.LocalName);
+  (fNativeXmlNode as NativeXmlElement).removeAttributeForName(aAttribute.LocalName);
   aAttribute.fParent := nil;
   {$ENDIF}
 end;
@@ -332,18 +349,18 @@ method XmlElement.RemoveAttribute(aName: not nullable String; aNamespace: nullab
 begin
   {$IF TOFFEE}
   var lAttribute := if assigned(aNamespace) then
-    (fNativeXmlNode as NSXMLElement).attributeForLocalName(aName) URI(aNamespace.Url.ToAbsoluteString())
+    (fNativeXmlNode as NativeXmlElement).attributeForLocalName(aName) URI(aNamespace.Url.ToAbsoluteString())
                     else
-                      (fNativeXmlNode as NSXMLElement).attributeForName(aName);
+                      (fNativeXmlNode as NativeXmlElement).attributeForName(aName);
   if assigned(lAttribute) then
-    (fNativeXmlNode as NSXMLElement).removeChildAtIndex(lAttribute.index);
+    (fNativeXmlNode as NativeXmlElement).removeChildAtIndex(lAttribute.index);
   {$ENDIF}
 end;
 
 method XmlElement.AddElement(aElement: not nullable XmlElement);
 begin
   {$IF TOFFEE}
-  (fNativeXmlNode as NSXMLElement).addChild(aElement.fNativeXmlNode);
+  (fNativeXmlNode as NativeXmlElement).addChild(aElement.fNativeXmlNode);
   aElement.fParent := self;
   {$ENDIF}
 end;
@@ -351,7 +368,7 @@ end;
 method XmlElement.AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
 begin
   {$IF TOFFEE}
-  (fNativeXmlNode as NSXMLElement).insertChild(aElement.fNativeXmlNode) atIndex(aIndex);
+  (fNativeXmlNode as NativeXmlElement).insertChild(aElement.fNativeXmlNode) atIndex(aIndex);
   aElement.fParent := self;
   {$ENDIF}
 end;
@@ -360,30 +377,34 @@ method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable Xm
 begin
   {$IF TOFFEE}
   if assigned(aNamespace) then
-    result := new XmlElement(new NSXMLElement withName(aName) URI(aNamespace.Url.ToAbsoluteString()))
+    result := new XmlElement(new NativeXmlElement withName(aName) URI(aNamespace.Url.ToAbsoluteString()))
   else
-    result := new XmlElement(new NSXMLElement withName(aName));
+    result := new XmlElement(new NativeXmlElement withName(aName));
+  {$ELSEIF ECHOES}
+  result := new XmlElement(new XElement(XName.Get(aName, aNamespace:Url:ToAbsoluteString())));
+  {$ENDIF}
   result.Value := aValue;
   AddElement(result);
-  {$ENDIF}
 end;
   
 method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
 begin
   {$IF TOFFEE}
   if assigned(aNamespace) then
-    result := new XmlElement(new NSXMLElement withName(aName) URI(aNamespace.Url.ToAbsoluteString()))
+    result := new XmlElement(new NativeXmlElement withName(aName) URI(aNamespace.Url.ToAbsoluteString()))
   else
-    result := new XmlElement(new NSXMLElement withName(aName));
+    result := new XmlElement(new NativeXmlElement withName(aName));
+  {$ELSEIF ECHOES}
+  result := new XmlElement(new XElement(XName.Get(aName, aNamespace:Url:ToAbsoluteString())));
+  {$ENDIF}
   result.Value := aValue;
   AddElement(result) atIndex(aIndex);
-  {$ENDIF}
 end;
   
 method XmlElement.RemoveElement(aElement: not nullable XmlElement);
 begin
   {$IF TOFFEE}
-  (fNativeXmlNode as NSXMLElement).removeChildAtIndex(aElement.fNativeXmlNode.index);
+  (fNativeXmlNode as NativeXmlElement).removeChildAtIndex(aElement.fNativeXmlNode.index);
   aElement.fParent := nil;
   {$ENDIF}
 end;
@@ -392,7 +413,7 @@ method XmlElement.RemoveElementsWithName(aName: not nullable String; aNamespace:
 begin
   {$IF TOFFEE}
   for each e in ElementsWithName(aName, aNamespace) do
-    (fNativeXmlNode as NSXMLElement).removeChildAtIndex(e.fNativeXmlNode.index);
+    (fNativeXmlNode as NativeXmlElement).removeChildAtIndex(e.fNativeXmlNode.index);
   {$ENDIF}
 end;
 
@@ -400,8 +421,8 @@ method XmlElement.ReplaceElement(aExistingElement: not nullable XmlElement) with
 begin
   {$IF TOFFEE}
   var lIndex := aExistingElement.fNativeXmlNode.index;
-  (fNativeXmlNode as NSXMLElement).removeChildAtIndex(lIndex);
-  (fNativeXmlNode as NSXMLElement).insertChild(aNewElement.fNativeXmlNode) atIndex(lIndex);
+  (fNativeXmlNode as NativeXmlElement).removeChildAtIndex(lIndex);
+  (fNativeXmlNode as NativeXmlElement).insertChild(aNewElement.fNativeXmlNode) atIndex(lIndex);
   aExistingElement.fParent := nil;
   aNewElement.fParent := self;
   {$ENDIF}
@@ -415,6 +436,8 @@ method XmlElement.GetLocalName: not nullable String;
 begin
   {$IF TOFFEE}
   result := fNativeXmlNode.name as not nullable;
+  {$ELSEIF ECHOES}
+  result := (fNativeXmlNode as XElement).Name.LocalName as not nullable;
   {$ENDIF}
 end;
 
@@ -450,14 +473,16 @@ end;
 method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
 begin
   {$IF TOFFEE}
-  result := (fNativeXmlNode as NSXMLElement).attributes.Select(a -> new XmlAttribute(a, self));
+  result := (fNativeXmlNode as NativeXmlElement).attributes.Select(a -> new XmlAttribute(a, self));
+  {$ELSEIF ECHOES}
+  result := [];
   {$ENDIF}
 end;
 
 method XmlElement.GetAttribute(aName: not nullable String): nullable XmlAttribute;
 begin
   {$IF TOFFEE}
-  var lAttribute := (fNativeXmlNode as NSXMLElement).attributeForName(aName);
+  var lAttribute := (fNativeXmlNode as NativeXmlElement).attributeForName(aName);
   if assigned(lAttribute) then
     result := new XmlAttribute(lAttribute, self);
   {$ENDIF}
@@ -467,9 +492,9 @@ method XmlElement.GetAttribute(aName: not nullable String; aNamespace: nullable 
 begin
   {$IF TOFFEE}
   var lAttribute := if assigned(aNamespace) then
-                      (fNativeXmlNode as NSXMLElement).attributeForLocalName(aName) URI(aNamespace.Url.ToAbsoluteString)
+                      (fNativeXmlNode as NativeXmlElement).attributeForLocalName(aName) URI(aNamespace.Url.ToAbsoluteString)
                     else
-                      (fNativeXmlNode as NSXMLElement).attributeForName(aName);
+                      (fNativeXmlNode as NativeXmlElement).attributeForName(aName);
   if assigned(lAttribute) then
     result := new XmlAttribute(lAttribute, self);
   {$ENDIF}
@@ -478,23 +503,27 @@ end;
 method XmlElement.GetElements: not nullable sequence of XmlElement;
 begin
   {$IF TOFFEE}
-  result := (fNativeXmlNode as NSXMLElement).children.Where(c -> c is NSXMLElement).Select(c -> new XmlElement(c, self));
+  result := (fNativeXmlNode as NativeXmlElement).children.Where(c -> c is NativeXmlElement).Select(c -> new XmlElement(c, self));
+  {$ELSEIF ECHOES}
+  result := [];
   {$ENDIF}
 end;
 
 method XmlElement.GetNodes: not nullable sequence of XmlNode;
 begin
   {$IF TOFFEE}
-  result := (fNativeXmlNode as NSXMLElement).children.Select(c -> begin
-    if c is NSXMLElement then
+  result := (fNativeXmlNode as NativeXmlElement).children.Select(c -> begin
+    if c is NativeXmlElement then
       result := new XmlElement(c, self)
-    else case (c as NSXMLNode).kind of
+    else case (c as NativeXmlNode).kind of
       NSXMLNodeKind.XMLAttributeKind: result := new XmlAttribute(c, self);
       NSXMLNodeKind.XMLCommentKind: result := new XmlComment(c, self);
       NSXMLNodeKind.XMLNamespaceKind: result := new XmlNamespace(c, self);
       else result := new XmlNode(c, self);
     end;
   end);
+  {$ELSEIF ECHOES}
+  result := [];
   {$ENDIF}
 end;
 
@@ -502,18 +531,22 @@ end;
 
 constructor XmlAttribute(aLocalName: not nullable String; aNamespace: nullable XmlNamespace; aValue: not nullable String);
 begin
+  var lNativeNode: NativeXmlNode;
   {$IF TOFFEE}
   if assigned(aNamespace) then
-    fNativeXmlNode := NSXMLNode.attributeWithName(aLocalName) URI(aNamespace.Url.ToAbsoluteString()) stringValue(aValue)
+    lNativeNode := NativeXmlNode.attributeWithName(aLocalName) URI(aNamespace.Url.ToAbsoluteString()) stringValue(aValue)
   else
-    fNativeXmlNode := NSXMLNode.attributeWithName(aLocalName) stringValue(aValue);
+    lNativeNode := NativeXmlNode.attributeWithName(aLocalName) stringValue(aValue);
   {$ENDIF}
+  inherited constructor(lNativeNode);
 end;
 
 method XmlAttribute.GetLocalName: not nullable String;
 begin
   {$IF TOFFEE}
   result := fNativeXmlNode.name as not nullable;
+  {$ELSEIF ECHOES}
+  result := (fNativeXmlNode as XAttribute).Name.LocalName as not nullable;
   {$ENDIF}
 end;
 
@@ -529,6 +562,8 @@ method XmlAttribute.GetValue: not nullable String;
 begin
   {$IF TOFFEE}
   result := fNativeXmlNode.stringValue as not nullable;
+  {$ELSEIF ECHOES}
+  result := (fNativeXmlNode as XAttribute).Value as not nullable;
   {$ENDIF}
 end;
 
@@ -536,6 +571,8 @@ method XmlAttribute.SetValue(aValue: not nullable String);
 begin
   {$IF TOFFEE}
   fNativeXmlNode.stringValue := aValue;
+  {$ELSEIF ECHOES}
+  (fNativeXmlNode as XAttribute).Value := aValue;
   {$ENDIF}
 end;
 
