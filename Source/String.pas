@@ -67,6 +67,7 @@ type
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String;
     method Split(Separator: String): array of String;
     method Replace(OldValue, NewValue: String): not nullable String;
+    method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String;
     method PadStart(TotalWidth: Integer): String; inline; 
     method PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
     method PadEnd(TotalWidth: Integer): String; inline; 
@@ -566,6 +567,19 @@ begin
   exit mapped.Replace(OldValue, NewValue) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingOccurrencesOfString(OldValue) withString(NewValue);
+  {$ENDIF}
+end;
+
+method String.Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String;
+begin
+  if aNewValue = nil then
+    aNewValue := "";
+  {$IF COOPER}
+  exit mapped.substring(0, aStartIndex)+aNewValue+mapped.substring(aStartIndex+aLength) as not nullable;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Remove(aStartIndex, aLength).Insert(aStartIndex, aNewValue) as not nullable;
+  {$ELSEIF TOFFEE}
+  exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue);
   {$ENDIF}
 end;
 

@@ -59,8 +59,8 @@ type
     method ToString: String; override;
     method ToAbsoluteString: String;
 
-    class method UrlEncodePath(aString: String): String;
-    class method UrlDecodePath(aString: String): String;
+    class method AddPercentEncodingsToPath(aString: String): String;
+    class method RemovePercentEncodingsFromPath(aString: String): String;
     class method UrlEncodeString(aString: String): String;
 
     //property PathWithoutLastComponent: String read GetPathWithoutLastComponent; // includes trailing "/" or "\", NOT decoded
@@ -128,6 +128,11 @@ type
     operator Implicit(aUrl: Foundation.NSURL): Url;
     operator Implicit(aUrl: Url): Foundation.NSURL;
     {$ENDIF}
+
+    class operator Equal(Value1: Url; Value2: Object): Boolean;
+    class operator NotEqual(Value1: Url; Value2: Object): Boolean;
+    class operator Equal(Value1: Object; Value2: Url): Boolean;
+    class operator NotEqual(Value1: Object; Value2: Url): Boolean;
     
     {$IF TOFFEE}
     method isEqual(obj: id): Boolean; override;
@@ -197,7 +202,7 @@ begin
   end;
   
   if fScheme = "file" then begin
-    fPath := UrlDecodePath(aUrlString);
+    fPath := RemovePercentEncodingsFromPath(aUrlString);
     exit true;
   end;
   
@@ -247,14 +252,14 @@ begin
   end;
   lProtocolPosition := aUrlString.IndexOf(#63);
   if lProtocolPosition ≥ 0 then begin
-    fPath := UrlDecodePath(aUrlString.Substring(0, lProtocolPosition));
+    fPath := RemovePercentEncodingsFromPath(aUrlString.Substring(0, lProtocolPosition));
     fQueryString := aUrlString.Substring(lProtocolPosition + 1);
   end
   else begin
     if aUrlString.Length = 0 then begin
       aUrlString := '/';
     end;
-    fPath := UrlDecodePath(aUrlString);
+    fPath := RemovePercentEncodingsFromPath(aUrlString);
     fQueryString := nil;
   end;
   result := true;
@@ -286,7 +291,7 @@ end;
 method Url.GetPathAndQueryString: nullable String;
 begin
   if length(fPath) > 0 then
-    result := UrlEncodePath(fPath);
+    result := AddPercentEncodingsToPath(fPath);
   if length(fQueryString) > 0 then
     result := result+'?'+fQueryString;
   if length(fFragment) > 0 then
@@ -618,7 +623,7 @@ end;
 // Helper APIs
 //
 
-class method Url.UrlEncodePath(aString: String): String;
+class method Url.AddPercentEncodingsToPath(aString: String): String;
 begin
   var lResult := new StringBuilder();
   for i: Int32 := 0 to length(aString)-1 do begin
@@ -635,7 +640,7 @@ begin
   result := lResult.ToString()
 end;
 
-class method Url.UrlDecodePath(aString: String): String;
+class method Url.RemovePercentEncodingsFromPath(aString: String): String;
 begin
   var lResultBytes := new Byte[length(aString)];
   var i := 0;
@@ -730,6 +735,34 @@ begin
     result := Foundation.NSURL.URLWithString(aUrl.ToAbsoluteString);
 end;
 {$ENDIF}
+
+class operator Url.Equal(Value1: Url; Value2: Object): Boolean;
+begin
+  writeLn("Url.Equal1");
+  if not assigned(Value1) then exit not assigned(Value2);
+  result := Value1.ToAbsoluteString() = Url(Value2):ToAbsoluteString();
+end;
+
+class operator Url.NotEqual(Value1: Url; Value2: Object): Boolean;
+begin
+  writeLn("Url.NotEqual1");
+  if not assigned(Value1) then exit assigned(Value2);
+  result := Value1.ToAbsoluteString() ≠ Url(Value2):ToAbsoluteString();
+end;
+
+class operator Url.Equal(Value1: Object; Value2: Url): Boolean;
+begin
+  writeLn("Url.Equal2");
+  if not assigned(Value1) then exit not assigned(Value2);
+  result := Url(Value1):ToAbsoluteString() = Value2.ToAbsoluteString();
+end;
+
+class operator Url.NotEqual(Value1: Object; Value2: Url): Boolean;
+begin
+  writeLn("Url.NotEqual2");
+  if not assigned(Value1) then exit assigned(Value2);
+  result := Url(Value1):ToAbsoluteString() ≠ Value2.ToAbsoluteString();
+end;
 
 {$IF TOFFEE}
 method Url.isEqual(obj: id): Boolean;
