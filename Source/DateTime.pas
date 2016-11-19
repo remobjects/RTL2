@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL;
+﻿namespace RemObjects.Elements.RTL;
 
 interface
 
@@ -208,7 +208,7 @@ begin
   var lFormatter := if String.IsNullOrEmpty(Culture) then
                       new java.text.SimpleDateFormat(DateFormatter.Format(Format))
                     else    
-                      new java.text.SimpleDateFormat(DateFormatter.Format(Format), Elements.RTL.Cooper.LocaleUtils.ForLanguageTag(Culture));
+                      new java.text.SimpleDateFormat(DateFormatter.Format(Format), RemObjects.Elements.RTL.Cooper.LocaleUtils.ForLanguageTag(Culture));
   lFormatter.TimeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}

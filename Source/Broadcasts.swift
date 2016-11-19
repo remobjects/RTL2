@@ -1,7 +1,7 @@
 ﻿
 typealias Block = ()->()
 
-public static class Elements.RTL.BroadcastManager {
+public static class RemObjects.Elements.RTL.BroadcastManager {
 	
 	private let subscriptions = Dictionary<String,List<(Object,Block)>>()
 

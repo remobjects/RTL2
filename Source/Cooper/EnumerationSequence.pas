@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL.Cooper;
+﻿namespace RemObjects.Elements.RTL.Cooper;
 
 interface
 

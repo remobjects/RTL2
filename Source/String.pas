@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL;
+﻿namespace RemObjects.Elements.RTL;
 
 interface
 
@@ -13,7 +13,7 @@ type
   PlatformString = public RemObjects.Elements.System.String;
   {$ENDIF}
 
-  [assembly:DefaultStringType("Elements.RTL", typeOf(Elements.RTL.String))]
+  [assembly:DefaultStringType("RemObjects.Elements.RTL", typeOf(RemObjects.Elements.RTL.String))]
 
   String = public partial class mapped to PlatformString
   private

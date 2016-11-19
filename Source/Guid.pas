@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL;
+﻿namespace RemObjects.Elements.RTL;
 
 interface
 

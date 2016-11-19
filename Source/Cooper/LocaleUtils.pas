@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL.Cooper;
+﻿namespace RemObjects.Elements.RTL.Cooper;
 
 interface
 
@@ -7,7 +7,7 @@ interface
 {$ENDIF}
 
 uses
-  Elements.RTL,
+  RemObjects.Elements.RTL,
   java.util;
 
 type

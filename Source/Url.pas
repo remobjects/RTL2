@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL;
+﻿namespace RemObjects.Elements.RTL;
 
 interface
 
@@ -81,7 +81,7 @@ type
 
     property PathExtension: String read GetPathExtension;     // will include the "."
     property LastPathComponent: String read GetLastPathComponent;
-    property LastPathComponentWithoutExtension: String read Elements.RTL.Path.GetFilenameWithoutExtension(GetLastPathComponent);
+    property LastPathComponentWithoutExtension: String read RemObjects.Elements.RTL.Path.GetFilenameWithoutExtension(GetLastPathComponent);
     property FilePathWithoutLastComponent: String read GetFilePathWithoutLastComponent;               // includes trailing "/" or "\"
     property WindowsPathWithoutLastComponent: String read GetWindowsPathWithoutLastComponent; // includes trailing "\"
     property UnixPathWithoutLastComponent: String read GetUnixPathWithoutLastComponent;       // includes trailing "/"
@@ -168,8 +168,8 @@ end;
 class method Url.UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
 begin
   {$IF NOT KNOWN_UNIX}
-  if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
-    aPath := aPath.Replace(Elements.RTL.Path.DirectorySeparatorChar, "/");
+  if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
+    aPath := aPath.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "/");
   {$ENDIF}
   result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
 end;
@@ -307,7 +307,7 @@ begin
   if IsFileUrl and assigned(fPath) then begin
     {$IF NOT KNOWN_UNIX}
     if not assigned(fCachedFilePath) then begin
-      if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
+      if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
         fCachedFilePath := GetWindowsPath()
       else
         fCachedFilePath := fPath;
@@ -337,8 +337,8 @@ method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: I
 begin
   result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
   {$IF NOT KNOWN_UNIX}
-  if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
-    result := result:Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+  if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
+    result := result:Replace('/', RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
   {$ENDIF}
 end;
 
@@ -382,7 +382,7 @@ begin
       for j: Integer := baseComponents.count-1 downto 1 do 
         relative := "../"+relative;
         
-      result := Elements.RTL.Path.Combine(relative, local);
+      result := RemObjects.Elements.RTL.Path.Combine(relative, local);
       
     end;
   end;
@@ -443,8 +443,8 @@ begin
   result := GetUnixPathWithoutLastComponent;
   if assigned(result) then begin
     {$IF NOT KNOWN_UNIX}
-    if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then begin
-      result := result.Replace('/', Elements.RTL.Path.DirectorySeparatorChar);
+    if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then begin
+      result := result.Replace('/', RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
       if IsAbsoluteWindowsFileURL then
         result := result.SubString(1);
     end;
@@ -573,8 +573,8 @@ begin
   if aSubPath.IsAbsolutePath then
     exit Url.UrlWithFilePath(aSubPath);
   {$IF NOT KNOWN_UNIX}
-  if Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
-    aSubPath := aSubPath.Replace(Elements.RTL.Path.DirectorySeparatorChar, '/');
+  if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
+    aSubPath := aSubPath.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, '/');
   {$ENDIF}
   result := UrlWithRelativeOrAbsoluteSubPath(aSubPath);
 end;

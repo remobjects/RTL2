@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL;
+﻿namespace RemObjects.Elements.RTL;
 
 {$IF COOPER}
 extension method java.lang.Object.«ToString»: PlatformString;

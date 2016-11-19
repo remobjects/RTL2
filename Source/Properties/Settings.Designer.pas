@@ -1,4 +1,4 @@
-namespace Elements.RTL.Echoes;
+﻿namespace RemObjects.Elements.RTL.Echoes;
 
 interface
 
