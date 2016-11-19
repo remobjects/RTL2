@@ -1,7 +1,7 @@
 <?xml version="1.0" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
     <PropertyGroup>
-        <RootNamespace>Elements.RTL</RootNamespace>
+        <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
         <ProjectGuid>EC0982C8-700B-4085-A401-59460E394DAA</ProjectGuid>
         <OutputType>StaticLibrary</OutputType>
         <AssemblyName>Elements</AssemblyName>

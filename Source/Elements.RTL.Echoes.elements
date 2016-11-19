@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
     <PropertyGroup>
         <ProductVersion>3.5</ProductVersion>
-        <RootNamespace>Elements.RTL</RootNamespace>
+        <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
         <ProjectGuid>A0B2BF66-F2B1-4EF9-A9CE-792AB3094233</ProjectGuid>
         <OutputType>library</OutputType>
         <AssemblyName>Elements</AssemblyName>

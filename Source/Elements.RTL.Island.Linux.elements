@@ -1,8 +1,8 @@
-<?xml version="1.0"?>
+<?xml version="1.0" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
     <PropertyGroup>
         <ProductVersion>3.5</ProductVersion>
-        <RootNamespace>Elements.RTL.Island.Linux</RootNamespace>
+        <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
         <ProjectGuid>163F84DC-DC6B-4535-994F-0865D3A84D20</ProjectGuid>
         <OutputType>library</OutputType>
         <AssemblyName>Elements.RTL.Island.Linux</AssemblyName>
