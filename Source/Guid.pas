@@ -19,7 +19,6 @@ type
   private
     {$IF ECHOES OR ISLAND}
     fGuid: PlatformGuid;
-    constructor (aGuid: PlatformGuid);
     {$ENDIF}
 
     class method CreateEmptyGuid: not nullable Guid;
@@ -29,6 +28,9 @@ type
   public
     constructor(aValue: not nullable array of Byte);
     constructor(aValue: not nullable String);
+    {$IF ECHOES OR ISLAND}
+    constructor (aGuid: PlatformGuid);
+    {$ENDIF}
 
     method &Equals(aValue: Guid): Boolean;
 

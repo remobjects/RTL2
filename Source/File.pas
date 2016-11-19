@@ -202,7 +202,7 @@ begin
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   result := mapped.DateCreated.UtcDateTime;
   {$ELSEIF ECHOES}
-  result := System.IO.File.GetCreationTimeUtc(mapped);
+  result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
   {$ENDIF}
@@ -217,7 +217,7 @@ begin
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
-  result := System.IO.File.GetLastWriteTimeUtc(mapped);
+  result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate)
   {$ENDIF}

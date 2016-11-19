@@ -12,20 +12,13 @@ uses
 {$ENDIF}
 
 type
-  {$IF TOFFEE}
-  DateTimeHelpers = public static class
-  public
-    method GetComponent(aSelf: NSDate; Component: NSCalendarUnit): Integer;
-    method AdjustDate(aSelf: NSDate; Component: NSCalendarUnit; Value: Integer): DateTime;
-    class property LocalTimezone: NSTimeZone := NSTimeZone.localTimeZone;
-  end;
-  {$ENDIF}
-  
   PlatformDateTime = {$IF COOPER}java.util.Calendar{$ELSEIF ECHOES}System.DateTime{$ELSEIF ISLAND}RemObjects.Elements.System.DateTime{$ELSEIF TOFFEE}NSDate{$ENDIF};
 
-  {$IF ECHOES}[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto, Size := 1)]{$ENDIF}
-  DateTime = public {$IF COOPER}class mapped to java.util.Calendar{$ELSEIF ECHOES}record mapped to System.DateTime{$ELSEIF ISLAND}record mapped to RemObjects.Elements.System.DateTime{$ELSEIF TOFFEE}class mapped to NSDate{$ENDIF}
+  DateTime = public class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
   private
+    {$IF ECHOES OR ISLAND}
+    fDateTime: PlatformDateTime;
+    {$ENDIF}
     const DEFAULT_FORMAT = "dd/MM/yyyy hh:mm:ss";
     const DEFAULT_FORMAT_DATE = "dd/MM/yyyy";
     const DEFAULT_FORMAT_DATE_SHORT = "d/M/yyyy";
@@ -39,6 +32,9 @@ type
     constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond: Integer);
     {$IF COOPER}
     constructor(aDate: date);
+    {$ENDIF}
+    {$IF ECHOES OR ISLAND}
+    constructor (aDateTime: PlatformDateTime);
     {$ENDIF}
 
     method AddDays(Value: Integer): DateTime;
@@ -68,23 +64,23 @@ type
     method ToString: PlatformString; override;
     {$ENDIF}*/
     
-    property Hour: Integer read {$IF COOPER}mapped.get(Calendar.HOUR_OF_DAY){$ELSEIF ECHOES OR ISLAND}mapped.Hour{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSHourCalendarUnit){$ENDIF};
-    property Minute: Integer read {$IF COOPER}mapped.get(Calendar.MINUTE){$ELSEIF ECHOES OR ISLAND}mapped.Minute{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSMinuteCalendarUnit){$ENDIF};
-    property Second: Integer read {$IF COOPER}mapped.get(Calendar.SECOND){$ELSEIF ECHOES OR ISLAND}mapped.Second{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSSecondCalendarUnit){$ENDIF};
-    property Year: Integer read {$IF COOPER}mapped.get(Calendar.YEAR){$ELSEIF ECHOES OR ISLAND}mapped.Year{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSYearCalendarUnit){$ENDIF};
-    property Month: Integer read {$IF COOPER}mapped.get(Calendar.MONTH)+1{$ELSEIF ECHOES OR ISLAND}mapped.Month{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSMonthCalendarUnit){$ENDIF};    
-    property Day: Integer read {$IF COOPER}mapped.get(Calendar.DAY_OF_MONTH){$ELSEIF ECHOES OR ISLAND}mapped.Day{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSDayCalendarUnit){$ENDIF};
-    property DayOfWeek: Integer read {$IF COOPER}mapped.get(Calendar.DAY_OF_WEEK){$ELSEIF ECHOES OR ISLAND}Integer(mapped.DayOfWeek)+1{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSWeekdayCalendarUnit){$ENDIF};
-    property Date: DateTime read {$IF COOPER OR TOFFEE}new DateTime(self.Year, self.Month, self.Day, 0, 0, 0){$ELSEIF ECHOES OR ISLAND}mapped.Date{$ENDIF};  
+    property Hour: Integer read {$IF COOPER}mapped.get(Calendar.HOUR_OF_DAY){$ELSEIF ECHOES OR ISLAND}fDateTime.Hour{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSHourCalendarUnit){$ENDIF};
+    property Minute: Integer read {$IF COOPER}mapped.get(Calendar.MINUTE){$ELSEIF ECHOES OR ISLAND}fDateTime.Minute{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSMinuteCalendarUnit){$ENDIF};
+    property Second: Integer read {$IF COOPER}mapped.get(Calendar.SECOND){$ELSEIF ECHOES OR ISLAND}fDateTime.Second{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSSecondCalendarUnit){$ENDIF};
+    property Year: Integer read {$IF COOPER}mapped.get(Calendar.YEAR){$ELSEIF ECHOES OR ISLAND}fDateTime.Year{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSYearCalendarUnit){$ENDIF};
+    property Month: Integer read {$IF COOPER}mapped.get(Calendar.MONTH)+1{$ELSEIF ECHOES OR ISLAND}fDateTime.Month{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSMonthCalendarUnit){$ENDIF};    
+    property Day: Integer read {$IF COOPER}mapped.get(Calendar.DAY_OF_MONTH){$ELSEIF ECHOES OR ISLAND}fDateTime.Day{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSDayCalendarUnit){$ENDIF};
+    property DayOfWeek: Integer read {$IF COOPER}mapped.get(Calendar.DAY_OF_WEEK){$ELSEIF ECHOES OR ISLAND}Integer(fDateTime.DayOfWeek)+1{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSWeekdayCalendarUnit){$ENDIF};
+    property Date: DateTime read {$IF COOPER OR TOFFEE}new DateTime(self.Year, self.Month, self.Day, 0, 0, 0){$ELSEIF ECHOES OR ISLAND}new DateTime(fDateTime.Date){$ENDIF};  
     
-    class property Today: DateTime read {$IF COOPER OR TOFFEE}UtcNow.Date{$ELSEIF ECHOES OR ISLAND}mapped.Today{$ENDIF};
-    class property UtcNow: DateTime read {$IF COOPER OR TOFFEE}new DateTime(){$ELSEIF ECHOES OR ISLAND}mapped.UtcNow{$ENDIF};    
+    class property Today: DateTime read {$IF COOPER OR TOFFEE}UtcNow.Date{$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.Today){$ENDIF};
+    class property UtcNow: DateTime read {$IF COOPER OR TOFFEE}new DateTime(){$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.UtcNow){$ENDIF};    
     const TicksSince1970: Int64 = 621355968000000000;
     
     property TimeSince: TimeSpan read (UtcNow-self);
     class method TimeSince(aOtherDateTime: DateTime): TimeSpan;
                                   
-    property Ticks: Int64 read{$IFDEF COOPER}(mapped.TimeInMillis +mapped.TimeZone.getOffset(mapped.TimeInMillis)) * TimeSpan.TicksPerMillisecond + TicksSince1970{$ELSEIF ECHOES OR ISLAND}mapped.Ticks{$ELSE}Int64((mapped.timeIntervalSince1970 + DateTimeHelpers.LocalTimezone.secondsFromGMTForDate(mapped)) * TimeSpan.TicksPerSecond) + TicksSince1970{$ENDIF};
+    property Ticks: Int64 read{$IFDEF COOPER}(mapped.TimeInMillis +mapped.TimeZone.getOffset(mapped.TimeInMillis)) * TimeSpan.TicksPerMillisecond + TicksSince1970{$ELSEIF ECHOES OR ISLAND}fDateTime.Ticks{$ELSE}Int64((mapped.timeIntervalSince1970 + DateTimeHelpers.LocalTimezone.secondsFromGMTForDate(mapped)) * TimeSpan.TicksPerSecond) + TicksSince1970{$ENDIF};
     class operator &Add(a: DateTime; b: TimeSpan): DateTime;
     class operator Subtract(a: DateTime; b: DateTime): TimeSpan;
     class operator Subtract(a: DateTime; b: TimeSpan): DateTime;
@@ -99,12 +95,31 @@ type
 
 implementation
 
+{$IF TOFFEE}
+type
+  DateTimeHelpers = static class
+  public
+    method GetComponent(aSelf: NSDate; Component: NSCalendarUnit): Integer;
+    method AdjustDate(aSelf: NSDate; Component: NSCalendarUnit; Value: Integer): DateTime;
+    class property LocalTimezone: NSTimeZone := NSTimeZone.localTimeZone;
+  end;
+{$ENDIF}
+
+{$IF ECHOES OR ISLAND}
+constructor DateTime(aDateTime: PlatformDateTime);
+begin
+  fDateTime := aDateTime;
+end;
+{$ENDIF}
+
 constructor DateTime;
 begin
   {$IF COOPER}
-  exit Calendar.Instance;
-  {$ELSE}
-  exit new PlatformDateTime;
+  result := Calendar.Instance;
+  {$ELSEIF ECHOES OR ISLAND}
+  fDateTime := new PlatformDateTime();
+  {$ELSE IF TOFFEE}
+  result := new PlatformDateTime();
   {$ENDIF}
 end;
 
@@ -113,7 +128,7 @@ begin
   {$IF COOPER OR TOFFEE}
   constructor(aYear, aMonth, aDay, 0, 0, 0);
   {$ELSEIF ECHOES OR ISLAND}
-  exit new PlatformDateTime(aYear, aMonth, aDay);
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay);
   {$ENDIF}
 end;
 
@@ -122,7 +137,7 @@ begin
   {$IF COOPER OR TOFFEE}
   constructor(aYear, aMonth, aDay, anHour, aMinute, 0);
   {$ELSEIF ECHOES OR ISLAND}
-  exit new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0);
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0);
   {$ENDIF}
 end;
 
@@ -138,9 +153,9 @@ begin
   lCalendar.set(Calendar.MINUTE, aMinute);
   lCalendar.set(Calendar.SECOND, aSecond);
   lCalendar.set(Calendar.MILLISECOND, 0);
-  exit lCalendar;
+  result := lCalendar;
   {$ELSEIF ECHOES OR ISLAND}
-  exit new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond);
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond);
   {$ELSEIF TOFFEE}
   var Components: NSDateComponents := new NSDateComponents();  
   Components.setYear(aYear);
@@ -150,7 +165,7 @@ begin
   Components.setMinute(aMinute);
   Components.setSecond(aSecond);
   var lCalendar := NSCalendar.currentCalendar();
-  exit lCalendar.dateFromComponents(Components);
+  result := lCalendar.dateFromComponents(Components);
   {$ENDIF}
 end;
 
@@ -160,14 +175,12 @@ begin
   var lCalendar := Calendar.Instance;
   var dt := (aTicks - TicksSince1970) / TimeSpan.TicksPerMillisecond;
   lCalendar.Time := new Date(dt - lCalendar.TimeZone.getOffset(dt));
-   
-  exit lCalendar;
+  result := lCalendar;
   {$ELSEIF ECHOES OR ISLAND}
-  exit new PlatformDateTime(aTicks);
+  fDateTime := new PlatformDateTime(aTicks);
   {$ELSEIF TOFFEE}
   var dt := NSDate.dateWithTimeIntervalSince1970(Double(aTicks - TicksSince1970) / TimeSpan.TicksPerSecond);
-  
-  exit NSDate.dateWithTimeInterval(-DateTimeHelpers.LocalTimezone.secondsFromGMTForDate(dt)) sinceDate(dt);
+  result := NSDate.dateWithTimeInterval(-DateTimeHelpers.LocalTimezone.secondsFromGMTForDate(dt)) sinceDate(dt);
   {$ENDIF}
 end;
 
@@ -194,12 +207,12 @@ method DateTime.description: PlatformString;
 method DateTime.ToString: PlatformString;
 {$ENDIF}
 begin
-  exit ToString(DEFAULT_FORMAT);
+  result := ToString(DEFAULT_FORMAT);
 end;*/
 
 method DateTime.ToString(Format: String; aTimeZone: TimeZone := nil): String;
 begin
-  exit ToString(Format, nil, aTimeZone);
+  result := ToString(Format, nil, aTimeZone);
 end;
 
 method DateTime.ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
@@ -216,9 +229,9 @@ begin
     exit "";
 
   if String.IsNullOrEmpty(Culture) then
-    exit mapped.ToString(DateFormatter.Format(Format))
+    result := fDateTime.ToString(DateFormatter.Format(Format))
   else
-    exit mapped.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture));
+    result := fDateTime.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture));
   {$ELSEIF TOFFEE}
   var lFormatter := new NSDateFormatter();
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
@@ -227,13 +240,13 @@ begin
     lFormatter.locale := Locale;
   end;
   lFormatter.setDateFormat(DateFormatter.Format(Format));
-  exit lFormatter.stringFromDate(mapped);
+  result := lFormatter.stringFromDate(mapped);
   {$ENDIF}
 end;
 
 method DateTime.ToString(aTimeZone: TimeZone := nil): String;
 begin
-  exit ToString(DEFAULT_FORMAT, nil, aTimeZone);
+  result := ToString(DEFAULT_FORMAT, nil, aTimeZone);
 end;
 
 method DateTime.ToShortDateString(aTimeZone: TimeZone := nil): String;
@@ -244,9 +257,9 @@ begin
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
     {$IF WINDOWS_PHONE OR NETFX_CORE}
-    result := mapped.ToString;
+    result := fDateTime.ToString;
     {$ELSE}
-    result := mapped.ToShortDateString;
+    result := fDateTime.ToShortDateString;
     {$ENDIF}
   {$ELSEIF TOFFEE}
   var lFormatter: NSDateFormatter := new NSDateFormatter();
@@ -265,9 +278,9 @@ begin
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
     {$IF WINDOWS_PHONE OR NETFX_CORE}
-    result := mapped.ToString();
+    result := fDateTime.ToString();
     {$ELSE}
-    result := mapped.ToShortTimeString();
+    result := fDateTime.ToShortTimeString();
     {$ENDIF}
   {$ELSEIF TOFFEE}
   var lFormatter: NSDateFormatter := new NSDateFormatter();
@@ -307,9 +320,9 @@ begin
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
     {$IF WINDOWS_PHONE OR NETFX_CORE}
-    result := mapped.ToString;
+    result := fDateTime.ToString;
     {$ELSE}
-    result := mapped.ToShortDateString;
+    result := fDateTime.ToShortDateString;
     {$ENDIF}
   {$ELSEIF TOFFEE}
   var lFormatter: NSDateFormatter := new NSDateFormatter();
@@ -339,19 +352,19 @@ begin
   end;
   
   var lCalendar := NSCalendar.currentCalendar();
-  exit lCalendar.dateByAddingComponents(Components) toDate(aSelf) options(0);  
+  result := lCalendar.dateByAddingComponents(Components) toDate(aSelf) options(0);  
 end;
 
 method DateTimeHelpers.GetComponent(aSelf: NSDate; Component: NSCalendarUnit): Integer;
 begin
   var lComponents := NSCalendar.currentCalendar().components(Component) fromDate(aSelf);
   case Component of
-    NSCalendarUnit.NSDayCalendarUnit: exit lComponents.day;
-    NSCalendarUnit.NSHourCalendarUnit: exit lComponents.hour;
-    NSCalendarUnit.NSMinuteCalendarUnit: exit lComponents.minute;
-    NSCalendarUnit.NSMonthCalendarUnit: exit lComponents.month;
-    NSCalendarUnit.NSSecondCalendarUnit: exit lComponents.second;
-    NSCalendarUnit.NSYearCalendarUnit: exit lComponents.year;
+    NSCalendarUnit.NSDayCalendarUnit: result := lComponents.day;
+    NSCalendarUnit.NSHourCalendarUnit: result := lComponents.hour;
+    NSCalendarUnit.NSMinuteCalendarUnit: result := lComponents.minute;
+    NSCalendarUnit.NSMonthCalendarUnit: result := lComponents.month;
+    NSCalendarUnit.NSSecondCalendarUnit: result := lComponents.second;
+    NSCalendarUnit.NSYearCalendarUnit: result := lComponents.year;
   end;
 end;
 {$ENDIF}
@@ -361,11 +374,10 @@ begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.DATE, Value);
-  exit;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.AddDays(Value);
+  result := new DateTime(fDateTime.AddDays(Value));
   {$ELSEIF TOFFEE}
-  exit DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSDayCalendarUnit, Value);
+  result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSDayCalendarUnit, Value);
   {$ENDIF}
 end;
 
@@ -374,11 +386,10 @@ begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.HOUR_OF_DAY, Value);
-  exit;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.AddHours(Value);
+  result := new DateTime(fDateTime.AddHours(Value));
   {$ELSEIF TOFFEE}
-  exit DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSHourCalendarUnit, Value);
+  result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSHourCalendarUnit, Value);
   {$ENDIF}
 end;
 
@@ -387,11 +398,10 @@ begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.MINUTE, Value);
-  exit;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.AddMinutes(Value);
+  result := new DateTime(fDateTime.AddMinutes(Value));
   {$ELSEIF TOFFEE}
-  exit DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSMinuteCalendarUnit, Value);
+  result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSMinuteCalendarUnit, Value);
   {$ENDIF}
 end;
 
@@ -400,11 +410,10 @@ begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.MONTH, Value);
-  exit;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.AddMonths(Value);
+  result := new DateTime(fDateTime.AddMonths(Value));
   {$ELSEIF TOFFEE}
-  exit DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSMonthCalendarUnit, Value);
+  result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSMonthCalendarUnit, Value);
   {$ENDIF}
 end;
 
@@ -413,11 +422,10 @@ begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.SECOND, Value);
-  exit;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.AddSeconds(Value);
+  result := new DateTime(fDateTime.AddSeconds(Value));
   {$ELSEIF TOFFEE}
-  exit DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSSecondCalendarUnit, Value);
+  result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSSecondCalendarUnit, Value);
   {$ENDIF}
 end;
 
@@ -426,27 +434,26 @@ begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.YEAR, Value);
-  exit;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.AddYears(Value);
+  result := new DateTime(fDateTime.AddYears(Value));
   {$ELSEIF TOFFEE}
-  exit DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSYearCalendarUnit, Value);
+  result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSYearCalendarUnit, Value);
   {$ENDIF}
 end;
 
 operator DateTime.Add(a: DateTime; b: TimeSpan): DateTime;
 begin
-  exit new DateTime(a.Ticks + b.Ticks);
+  result := new DateTime(a.Ticks + b.Ticks);
 end;
 
 operator DateTime.Subtract(a: DateTime; b: DateTime): TimeSpan;
 begin
-  exit new TimeSpan(a.Ticks - b.Ticks);
+  result := new TimeSpan(a.Ticks - b.Ticks);
 end;
 
 operator DateTime.Subtract(a: DateTime; b: TimeSpan): DateTime;
 begin
-  exit new DateTime(a.Ticks - b.Ticks);
+  result := new DateTime(a.Ticks - b.Ticks);
 end;
 
 //
@@ -456,11 +463,11 @@ end;
 method DateTime.CompareTo(Value: DateTime): Integer;
 begin
   {$IF COOPER}
-  exit mapped.compareTo(new DateTime(Value.Year, Value.Month, Value.Day, Value.Hour, Value.Minute, Value.Second));
+  result := mapped.compareTo(new DateTime(Value.Year, Value.Month, Value.Day, Value.Hour, Value.Minute, Value.Second));
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.CompareTo(Value);
+  result := fDateTime.CompareTo(Value);
   {$ELSEIF TOFFEE}
-  exit mapped.compare(new DateTime(Value.Year, Value.Month, Value.Day, Value.Hour, Value.Minute, Value.Second));
+  result := mapped.compare(new DateTime(Value.Year, Value.Month, Value.Day, Value.Hour, Value.Minute, Value.Second));
   {$ENDIF}
 end;
 
@@ -470,7 +477,7 @@ begin
   if (Object(a) = nil) and (Object(b) = nil) then exit true;
   if (Object(a) = nil) or (Object(b) = nil) then exit false;
   {$ENDIF}
-  exit a.Ticks = b.Ticks;
+  result := a.Ticks = b.Ticks;
 end;
 
 operator DateTime.NotEqual(a: DateTime; b: DateTime): Boolean;
@@ -479,7 +486,7 @@ begin
   if (Object(a) = nil) and (Object(b) = nil) then exit false;
   if (Object(a) = nil) or (Object(b) = nil) then exit true;
   {$ENDIF}
-  exit a.Ticks <> b.Ticks;
+  result := a.Ticks <> b.Ticks;
 end;
 
 operator DateTime.Less(a: DateTime; b: DateTime): Boolean;
@@ -489,7 +496,7 @@ begin
   if (Object(a) = nil) then exit true;
   if (Object(b) = nil) then exit false;
   {$ENDIF}
-  exit a.Ticks < b.Ticks;
+  result := a.Ticks < b.Ticks;
 end;
 
 operator DateTime.LessOrEqual(a: DateTime; b: DateTime): Boolean;
@@ -499,7 +506,7 @@ begin
   if (Object(a) = nil) then exit true;
   if (Object(b) = nil) then exit false;
   {$ENDIF}
-  exit a.Ticks <= b.Ticks;
+  result := a.Ticks <= b.Ticks;
 end;
 
 operator DateTime.Greater(a: DateTime; b: DateTime): Boolean;
@@ -509,7 +516,7 @@ begin
   if (Object(a) = nil) then exit false;
   if (Object(b) = nil) then exit true;
   {$ENDIF}
-  exit a.Ticks > b.Ticks;
+  result := a.Ticks > b.Ticks;
 end;
 
 operator DateTime.GreaterOrEqual(a: DateTime; b: DateTime): Boolean;
@@ -519,7 +526,7 @@ begin
   if (Object(a) = nil) then exit false;
   if (Object(b) = nil) then exit true;
   {$ENDIF}
-  exit a.Ticks >= b.Ticks;
+  result := a.Ticks >= b.Ticks;
 end;
 
 end.
