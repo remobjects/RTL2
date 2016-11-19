@@ -6,10 +6,6 @@ type
   PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray;{$ENDIF};
   PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray;{$ENDIF};
 
-// needed
-// * subarrayWithRange
-// * replaceObjectAtIndex
-
   ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray where T is class;{$ENDIF}
   private
     method GetItem(&Index: Integer): T;

@@ -429,7 +429,7 @@ end;
 {$IF XML}
 method HttpResponse.GetContentAsXmlSynchronous: not nullable XmlDocument;
 begin
-  result := XmlDocument.FromBinary(GetContentAsBinarySynchronous());
+  result := XmlDocument.FromBinary(GetContentAsBinarySynchronous()) as not nullable;
 end;
 {$ENDIF}
 
