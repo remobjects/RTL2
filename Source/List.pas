@@ -492,18 +492,18 @@ end;
 method ImmutableList<T>.ToList<U>: ImmutableList<U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
-  self.Select(x -> x as U).ToList();
+  result := self.Select(x -> x as U).ToList();
   {$ELSEIF TOFFEE}
-  exit self as ImmutableList<U>;
+  result :=  self as ImmutableList<U>;
   {$ENDIF}
 end;
 
 method List<T>.ToList<U>: List<U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
-  self.Select(x -> x as U).ToList(); {$HINT largely inefficient. rewrite}
+  result := self.Select(x -> x as U).ToList(); {$HINT largely inefficient. rewrite}
   {$ELSEIF TOFFEE}
-  exit self as List<U>;
+  result :=  self as List<U>;
   {$ENDIF}
 end;
 
