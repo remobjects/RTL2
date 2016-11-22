@@ -7,7 +7,8 @@
         <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
         <AllowLegacyCreate>False</AllowLegacyCreate>
         <AllowLegacyOutParams>False</AllowLegacyOutParams>
-        <DefaultUses>com.remobjects.elements.linq</DefaultUses>
+        <DefaultUses>com.remobjects.elements.linq;RemObjects.Elements.RTL</DefaultUses>
+        <RootNamespace>RemObjects.Elements.RTL.Tests</RootNamespace>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>False</Optimize>

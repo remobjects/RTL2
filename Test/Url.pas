@@ -1,8 +1,8 @@
-﻿namespace Elements.RTL.Tests;
+﻿namespace RemObjects.Elements.RTL.Tests;
 
 uses
   RemObjects.Elements.EUnit,
-  Elements.RTL;
+  RemObjects.Elements.RTL;
 
 type
   UrlTests = public class(Test)
@@ -102,6 +102,12 @@ type
       Assert.AreEqual(lUrl.ToAbsoluteString, "file:///C:/Program%20Files/T%C3%ABst/T%C3%A9st.txt");
       Assert.AreEqual(lUrl.UnixPath, "/C:/Program Files/Tëst/Tést.txt");
       Assert.AreEqual(lUrl.WindowsPath, "C:\Program Files\Tëst\Tést.txt");
+
+
+      lUrl := Url.UrlWithFilepath("/Foo/String+Helpers.cs");
+      Assert.AreEqual(lUrl.ToAbsoluteString, "file:///Foo/String%2BHelpers.cs");
+      Assert.AreEqual(lUrl.UnixPath, "/Foo/String+Helpers.cs");
+      writeLn(lUrl.UnixPath);
     end;
 
     method TestCanonical();

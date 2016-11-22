@@ -1,7 +1,7 @@
-﻿namespace Elements.RTL.Tests;
+﻿namespace RemObjects.Elements.RTL.Tests;
 
 uses
-  Elements.RTL,
+  RemObjects.Elements.RTL,
   RemObjects.Elements.EUnit;
 
 type
@@ -11,7 +11,7 @@ type
     method PathComponents;
     begin
       //76784: Make `DefaultStringType` work in current project
-      var lPath: Elements.RTL.String := "/Users/mh/Desktop/test.txt";
+      var lPath: RemObjects.Elements.RTL.String := "/Users/mh/Desktop/test.txt";
       Assert.AreEqual(lPath.LastPathComponent, "test.txt");
       Assert.AreEqual(lPath.LastPathComponent.PathWithoutExtension, "test");
       Assert.AreEqual(lPath.PathExtension, ".txt");

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
     <PropertyGroup>
-        <RootNamespace>Elements.RTL2.Tests.Toffee.macOS</RootNamespace>
+        <RootNamespace>RemObjects.Elements.RTL.Tests</RootNamespace>
         <ProjectGuid>ACFD95B4-2D7F-4C23-9AA1-86C6615A1DA5</ProjectGuid>
         <OutputType>executable</OutputType>
         <AssemblyName>Elements.RTL2.Tests.Toffee.macOS</AssemblyName>
@@ -14,7 +14,7 @@
         <SDK>macOS</SDK>
         <MangleTypeNames>True</MangleTypeNames>
         <EntitlementsFile>Entitlements.entitlements</EntitlementsFile>
-        <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+        <DefaultUses>Foundation;RemObjects.Elements.Linq;RemObjects.Elements.RTL</DefaultUses>
         <DebugZombieEnabled>True</DebugZombieEnabled>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
