@@ -14,7 +14,7 @@
         <ApplicationIcon>Properties\App.ico</ApplicationIcon>
         <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
         <RequiredFrameworkVersion>4.0</RequiredFrameworkVersion>
-        <DefaultUses>System.Linq;RemObjects.Elements.RTL</DefaultUses>
+        <DefaultUses>RemObjects.Elements.RTL;System.Linq;System.Xml.Linq</DefaultUses>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>False</Optimize>

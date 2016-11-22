@@ -109,7 +109,7 @@ type
       Assert.AreEqual(lUrl.UnixPath, "/Foo/String+Helpers.cs");
       writeLn(lUrl.UnixPath);
     end;
-
+    
     method TestCanonical();
     begin
       var lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/../Test.txt");
@@ -193,6 +193,26 @@ type
       Assert.AreEqual(lUrl.UrlWithChangedPathExtension("foo").ToAbsoluteString, "file:///foo/bar/test.foo");
       Assert.AreEqual(lUrl.UrlWithChangedPathExtension(".foo").ToAbsoluteString, "file:///foo/bar/test.foo");
     end;
+    
+    method TestOperators();
+    begin
+      var lUrl1 := Url.UrlWithFilePath("/Users/mh/Desktop/Test.txt");
+      var lUrl2 := Url.UrlWithFilePath("/Users/mh/Desktop/Test.txt");
+      var lUrl3 := Url.UrlWithFilePath("/Users/mh/Desktop/Test2.txt");
+      Assert.AreEqual(lUrl1 = lUrl2, true); //FAILS
+      Assert.AreEqual(lUrl1 ≠ lUrl3, true);
+
+      var lUrl1A := lUrl1 as Object;
+      var lUrl2A := lUrl2 as Object;
+      var lUrl3A := lUrl2 as Object;
+
+      Assert.AreEqual(lUrl1 = lUrl2A, true); // calls fiest operator
+      Assert.AreEqual(lUrl1A = lUrl2, true); // calls scond operator
+
+      Assert.AreEqual(lUrl1A = lUrl2A, false); // expected to fail, object comparisson
+      Assert.AreEqual(lUrl1A ≠ lUrl3A, true);
+    end;
+
     
   end;
 

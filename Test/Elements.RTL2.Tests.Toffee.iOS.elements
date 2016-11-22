@@ -16,7 +16,7 @@
         <CreateAppBundle>True</CreateAppBundle>
         <InfoPListFile>.\Resources\Info.plist</InfoPListFile>
         <BundleIdentifier>com.remobjects.test</BundleIdentifier>
-        <DefaultUses>Foundation;RemObjects.Elements.EUnit;RemObjects.Elements.Linq</DefaultUses>
+        <DefaultUses>Foundation;RemObjects.Elements.EUnit;RemObjects.Elements.Linq;RemObjects.Elements.RTL</DefaultUses>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>False</Optimize>
