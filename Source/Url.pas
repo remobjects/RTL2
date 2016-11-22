@@ -129,6 +129,8 @@ type
     operator Implicit(aUrl: Url): Foundation.NSURL;
     {$ENDIF}
 
+    class operator Equal(Value1: Url; Value2: Url): Boolean;
+    class operator NotEqual(Value1: Url; Value2: Url): Boolean;
     class operator Equal(Value1: Url; Value2: Object): Boolean;
     class operator NotEqual(Value1: Url; Value2: Object): Boolean;
     class operator Equal(Value1: Object; Value2: Url): Boolean;
@@ -735,6 +737,18 @@ begin
     result := Foundation.NSURL.URLWithString(aUrl.ToAbsoluteString);
 end;
 {$ENDIF}
+
+class operator Url.Equal(Value1: Url; Value2: Url): Boolean;
+begin
+  if not assigned(Value1) then exit not assigned(Value2);
+  result := Value1.ToAbsoluteString() = Value2:ToAbsoluteString();
+end;
+
+class operator Url.NotEqual(Value1: Url; Value2: Url): Boolean;
+begin
+  if not assigned(Value1) then exit assigned(Value2);
+  result := Value1.ToAbsoluteString() ≠ Value2:ToAbsoluteString();
+end;
 
 class operator Url.Equal(Value1: Url; Value2: Object): Boolean;
 begin
