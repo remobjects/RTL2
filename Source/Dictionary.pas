@@ -22,6 +22,10 @@ type
     property Values: sequence of U read GetValues;
     property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
 
+    //method UniqueCopy: ImmutableDictionary<T,U>;
+    //method UniqueMutableCopy: Dictionary<T,U>;
+    method MutableVersion: Dictionary<T,U>;
+
     {$IF NOT ECHOES}
     method GetSequence: sequence of KeyValuePair<T,U>;
     {$ENDIF}
@@ -204,6 +208,40 @@ begin
   exit DictionaryHelpers.GetSequence<T, U>(self);
 end;
 {$ENDIF}
+    
+/*method ImmutableDictionary<T,U>.UniqueCopy: ImmutableDictionary<T,U>;
+begin
+  {$IF COOPER}
+  result := new ImmutableDictionary<T,U>(self);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := new ImmutableDictionary<T,U>(self);
+  {$ELSEIF TOFFEE}
+  result := mapped.copy;
+  {$ENDIF}
+end;
+
+method ImmutableDictionary<T,U>.UniqueMutableCopy: Dictionary<T,U>;
+begin
+  {$IF COOPER}
+  result := new Dictionary<T,U>(self);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := new Dictionary<T,U>(self);
+  {$ELSEIF TOFFEE}
+  result := mapped.mutableCopy;
+  {$ENDIF}
+end;*/
+
+method ImmutableDictionary<T,U>.MutableVersion: Dictionary<T,U>;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := self;
+  {$ELSEIF TOFFEE}
+  if self is NSMutableDictionary then
+    result := self as NSMutableDictionary
+  else
+    result := mapped.mutableCopy;
+  {$ENDIF}
+end;
     
 { DictionaryHelpers }
 

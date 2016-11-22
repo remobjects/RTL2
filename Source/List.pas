@@ -36,6 +36,7 @@ type
     
     method UniqueCopy: ImmutableList<T>;
     method UniqueMutableCopy: List<T>;
+    method MutableVersion: List<T>;
 
     method SubList(aStartIndex: Int32): ImmutableList<T>;
     method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
@@ -562,6 +563,18 @@ begin
   result := new List<T>(self);
   {$ELSEIF TOFFEE}
   result := mapped.mutableCopy;
+  {$ENDIF}
+end;
+
+method ImmutableList<T>.MutableVersion: List<T>;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := self;
+  {$ELSEIF TOFFEE}
+  if self is NSMutableArray then
+    result := self as NSMutableArray
+  else
+    result := mapped.mutableCopy;
   {$ENDIF}
 end;
 
