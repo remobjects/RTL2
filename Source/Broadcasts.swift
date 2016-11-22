@@ -37,7 +37,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		if let subs = subscriptions[broadcast] {
 			for s in subs? {
 				if s.0 == receiver {
-					subs.remove(s)
+					subs.Remove(s)
 				}
 			}
 		}
@@ -48,11 +48,11 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		NSNotificationCenter.defaultCenter.removeObserver(receiver)
 		#endif
 
-		for k in subscriptions.keys {
+		for k in subscriptions.Keys {
 			if let subs = subscriptions[k] {
 				for s in subs? {
 					if s.0 == receiver {
-						subs.remove(s)
+						subs.Remove(s)
 					}
 				}
 			}

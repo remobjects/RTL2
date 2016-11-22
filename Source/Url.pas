@@ -60,7 +60,7 @@ type
     method ToAbsoluteString: String;
 
     class method AddPercentEncodingsToPath(aString: String): String;
-    class method RemovePercentEncodingsFromPath(aString: String): String;
+    class method RemovePercentEncodingsFromPath(aString: String; aAlsoRemovePlusCharacter: Boolean := false): String;
     class method UrlEncodeString(aString: String): String;
 
     //property PathWithoutLastComponent: String read GetPathWithoutLastComponent; // includes trailing "/" or "\", NOT decoded
@@ -202,7 +202,7 @@ begin
   end;
   
   if fScheme = "file" then begin
-    fPath := RemovePercentEncodingsFromPath(aUrlString);
+    fPath := RemovePercentEncodingsFromPath(aUrlString, true);
     exit true;
   end;
   
@@ -252,14 +252,14 @@ begin
   end;
   lProtocolPosition := aUrlString.IndexOf(#63);
   if lProtocolPosition ≥ 0 then begin
-    fPath := RemovePercentEncodingsFromPath(aUrlString.Substring(0, lProtocolPosition));
+    fPath := RemovePercentEncodingsFromPath(aUrlString.Substring(0, lProtocolPosition), true);
     fQueryString := aUrlString.Substring(lProtocolPosition + 1);
   end
   else begin
     if aUrlString.Length = 0 then begin
       aUrlString := '/';
     end;
-    fPath := RemovePercentEncodingsFromPath(aUrlString);
+    fPath := RemovePercentEncodingsFromPath(aUrlString, true);
     fQueryString := nil;
   end;
   result := true;
@@ -640,7 +640,7 @@ begin
   result := lResult.ToString()
 end;
 
-class method Url.RemovePercentEncodingsFromPath(aString: String): String;
+class method Url.RemovePercentEncodingsFromPath(aString: String; aAlsoRemovePlusCharacter: Boolean := false): String;
 begin
   var lResultBytes := new Byte[length(aString)];
   var i := 0;
@@ -660,7 +660,7 @@ begin
         inc(i, 2);
       end;
     end
-    else if ch = '+' then begin
+    else if (ch = '+') and aAlsoRemovePlusCharacter then begin
       lResultBytes[j] := 32; // space
     end
     else begin
