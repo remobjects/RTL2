@@ -31,7 +31,7 @@ type
     method ToInt32(aValue: Double): Int32;
     method ToInt32(aValue: Char): Int32;
     method ToInt32(aValue: not nullable String): Int32;
-    method TryToInt32(aValue: not nullable String): nullable Int32;
+    method TryToInt32(aValue: nullable String): nullable Int32;
 
     method ToInt64(aValue: Boolean): Int64;
     method ToInt64(aValue: Byte): Int64;
@@ -39,14 +39,14 @@ type
     method ToInt64(aValue: Double): Int64;
     method ToInt64(aValue: Char): Int64;
     method ToInt64(aValue: not nullable String): Int64;
-    method TryToInt64(aValue: not nullable String): nullable Int64;
+    method TryToInt64(aValue: nullable String): nullable Int64;
 
     method ToDouble(aValue: Boolean): Double;
     method ToDouble(aValue: Byte): Double;
     method ToDouble(aValue: Int32): Double;
     method ToDouble(aValue: Int64): Double;
-    method TryToDouble(aValue: not nullable String; aLocale: Locale): nullable Double;
-    method TryToDoubleInvariant(aValue: not nullable String): nullable Double; inline;
+    method TryToDouble(aValue: nullable String; aLocale: Locale): nullable Double;
+    method TryToDoubleInvariant(aValue: nullable String): nullable Double; inline;
     method ToDouble(aValue: not nullable String; aLocale: Locale): Double;
     method ToDoubleInvariant(aValue: not nullable String): Double; inline;
 
@@ -256,7 +256,7 @@ begin
   {$ENDIF}
 end;
 
-method Convert.TryToInt32(aValue: not nullable String): nullable Int32;
+method Convert.TryToInt32(aValue: nullable String): nullable Int32;
 begin
   if length(aValue) = 0 then
     exit nil;
@@ -467,7 +467,7 @@ begin
   {$ENDIF}
 end;
 
-method Convert.TryToInt64(aValue: not nullable String): nullable Int64;
+method Convert.TryToInt64(aValue: nullable String): nullable Int64;
 begin
   if length(aValue) = 0 then
     exit nil;
@@ -530,7 +530,7 @@ begin
   result := ToDouble(aValue, Locale.Invariant);
 end;
 
-method Convert.TryToDoubleInvariant(aValue: not nullable String): nullable Double;
+method Convert.TryToDoubleInvariant(aValue: nullable String): nullable Double;
 begin
   result := TryToDouble(aValue, Locale.Invariant);
 end;
@@ -544,7 +544,7 @@ begin
     raise new FormatException(String.Format("Invalid double value '{0}' for locale {1}", aValue, aLocale.Identifier));
 end;
 
-method Convert.TryToDouble(aValue: not nullable String; aLocale: Locale): nullable Double;
+method Convert.TryToDouble(aValue: nullable String; aLocale: Locale): nullable Double;
 begin
   if String.IsNullOrWhiteSpace(aValue) then
     exit nil;
