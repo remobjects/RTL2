@@ -139,6 +139,7 @@ type
     {$IF TOFFEE}
     method isEqual(obj: id): Boolean; override;
     method copyWithZone(aZone: ^NSZone): instancetype;
+    method hash: NSUInteger; override;
     {$ENDIF}    
   end;
   
@@ -788,6 +789,11 @@ end;
 method Url.copyWithZone(aZone: ^NSZone): instancetype;
 begin
   result := Url.UrlWithString(self.ToString);
+end;
+
+method Url.hash: NSUInteger;
+begin
+  result := (ToAbsoluteString as PlatformString).hash;
 end;
 {$ENDIF}
 
