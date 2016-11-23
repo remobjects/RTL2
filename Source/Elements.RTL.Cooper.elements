@@ -10,6 +10,7 @@
         <CrossPlatform>True</CrossPlatform>
         <DefaultUses>com.remobjects.elements.linq</DefaultUses>
         <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
+        <AssemblyName>elements</AssemblyName>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>false</Optimize>

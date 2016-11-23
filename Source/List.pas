@@ -30,6 +30,7 @@ type
     method LastIndexOf(aItem: T): Integer;
 
     method ToMutableList: List<T>; 
+    method ToSortedList: ImmutableList<T>; 
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>; 
     method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
     method ToList<U>: ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
@@ -64,8 +65,8 @@ type
 
     method &Add(aItem: T);
     method &Add(Items: ImmutableList<T>);
-    method &Add(Items: array of T);
-    method Add(Items: sequence of T);
+    method &Add(params Items: array of T);
+    method &Add(Items: sequence of T);
 
     method &Remove(aItem: T): Boolean;
     method &Remove(aItems: List<T>);
@@ -236,7 +237,7 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.Add(Items: array of T);
+method List<T>.Add(params Items: array of T);
 begin
   ListHelpers.AddRange(self, Items);
 end;
@@ -477,6 +478,11 @@ begin
            NSComparisonResult.NSOrderedDescending;
   end);
   {$ENDIF}
+end;
+
+method ImmutableList<T>.ToSortedList: ImmutableList<T>;
+begin
+  result := self.OrderBy(n -> n).ToList();
 end;
 
 method ImmutableList<T>.ToArray: array of T;
