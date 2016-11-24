@@ -30,7 +30,9 @@ type
     method LastIndexOf(aItem: T): Integer;
 
     method ToMutableList: List<T>; 
-    method ToSortedList: ImmutableList<T>; 
+    {$IF NOT COOPER}
+    method ToSortedList: ImmutableList<T>;
+    {$ENDIF}
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>; 
     method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
     method ToList<U>: ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
@@ -480,10 +482,12 @@ begin
   {$ENDIF}
 end;
 
+{$IF NOT COOPER}
 method ImmutableList<T>.ToSortedList: ImmutableList<T>;
 begin
   result := self.OrderBy(n -> n).ToList();
 end;
+{$ENDIF}
 
 method ImmutableList<T>.ToArray: array of T;
 begin
