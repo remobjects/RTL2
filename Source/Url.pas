@@ -98,6 +98,8 @@ type
     method GetParentUrl(): Url;
     method GetSubUrl(aName: String) isDirectory(aIsDirectory: Boolean := false): Url;
     
+    method UrlWithFragment(aFragment: nullable String): not nullable Url;
+    method UrlWithoutFragment(): not nullable Url; inline;
 
     method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; //inline;
     method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; inline;
@@ -525,6 +527,26 @@ begin
   result := CopyWithPath(GetUnixPathWithoutLastComponent+aNewLastPathComponent);
 end;
 
+method Url.UrlWithFragment(aFragment: nullable String): not nullable Url;
+begin
+  if fFragment = aFragment then
+    exit self;
+  result := new Url();
+  result.fScheme := fScheme;
+  result.fHost := fHost;
+  result.fPath := fPath;
+  result.fQueryString := fQueryString;
+  result.fFragment := aFragment;
+  result.fUser := fUser;
+  result.fPort := fPort;
+end;
+
+method Url.UrlWithoutFragment(): not nullable Url;
+begin
+  if Fragment = nil then
+    exit self;
+  result := UrlWithFragment(nil);
+end;
 
 //
 // Modifications
