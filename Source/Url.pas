@@ -15,6 +15,8 @@ type
     var fScheme, fHost, fPath, fQueryString, fFragment, fUser: String;
     var fPort: nullable Int32;
     var fCanonicalVersion: weak Url;
+    var fCachedAbsoluteString: String;
+    var fCachedLastPathComponent: String;
     {$IF NOT KNOWN_UNIX}
     var fCachedFilePath: String;
     {$ENDIF}
@@ -66,7 +68,7 @@ type
     //property PathWithoutLastComponent: String read GetPathWithoutLastComponent; // includes trailing "/" or "\", NOT decoded
     
     property CanonicalVersion: Url read GetCanonicalVersion;
-    property IsFileUrl: Boolean read Scheme = "file";
+    property IsFileUrl: Boolean read fScheme = "file";
     property FileExists: Boolean read IsFileUrl and File.Exists(Path);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(Path);
     property IsAbsoluteWindowsFileURL: Boolean read IsFileUrl and (Path:Length ≥ 3) and ((Path[2] = ':') or ((Path[1] = '/') and (Path[1] = '/')));
@@ -97,13 +99,13 @@ type
     method GetSubUrl(aName: String) isDirectory(aIsDirectory: Boolean := false): Url;
     
 
-    method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
-    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
+    method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; //inline;
+    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; inline;
     method UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
     
-    method FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
-    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
-    method UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
+    method FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; //inline; 76830: Toffee: "E0 Internal error: Could not resolve member op_Implicit on RemObjects.Elements.RTL.String" with inline
+    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; inline;
+    method UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; inline;
     
     /* Needed for fire
     
@@ -275,12 +277,17 @@ end;
 
 method Url.ToAbsoluteString: String;
 begin
-  result := fScheme;
-  result := result+"://";
-  if length(fUser) > 0 then
-    result := result+fUser+"@";
-  result := result+GetHostNameAndPort();
-  result := result+GetPathAndQueryString();
+  if not assigned(fCachedAbsoluteString) then begin
+    var lResult := new StringBuilder();
+    lResult.Append(fScheme);
+    lResult.Append("://");
+    if length(fUser) > 0 then
+      lResult.Append(fUser+"@");
+    lResult.Append(GetHostNameAndPort());
+    lResult.Append(GetPathAndQueryString());
+    fCachedAbsoluteString := lResult.ToString();
+  end;
+  result := fCachedAbsoluteString;
 end;
 
 method Url.GetHostNameAndPort: nullable String;
@@ -429,16 +436,19 @@ end;
 
 method Url.GetLastPathComponent: nullable String;
 begin
-  var lPath := fPath;
-  if lPath.EndsWith("/") then
-    lPath := lPath.Substring(0, length(lPath)-1);
-  if length(lPath) > 0 then begin
-    var p := lPath.LastIndexOf("/");
-    if (p > -1) and (p < length(lPath)-1) then
-      result := lPath.Substring(p+1) // exclude the "/"
-    else
-      result := lPath;
+  if not assigned(fCachedLastPathComponent) then begin
+    var lPath := fPath;
+    if lPath.EndsWith("/") then
+      lPath := lPath.Substring(0, length(lPath)-1);
+    if length(lPath) > 0 then begin
+      var p := lPath.LastIndexOf("/");
+      if (p > -1) and (p < length(lPath)-1) then
+        fCachedLastPathComponent := lPath.Substring(p+1) // exclude the "/"
+      else
+        fCachedLastPathComponent := lPath;
+    end;
   end;
+  result := fCachedLastPathComponent;
 end;
 
 method Url.GetFilePathWithoutLastComponent: String;

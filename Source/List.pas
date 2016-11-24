@@ -63,17 +63,17 @@ type
     constructor(Items: List<T>);
     constructor(params anArray: array of T);
 
-    method &Add(aItem: T);
+    method &Add(aItem: T); inline;
     method &Add(Items: ImmutableList<T>);
     method &Add(params Items: array of T);
     method &Add(Items: sequence of T);
 
-    method &Remove(aItem: T): Boolean;
-    method &Remove(aItems: List<T>);
-    method &Remove(aItems: sequence of T);
-    method RemoveAll;
-    method RemoveAt(aIndex: Integer);
-    method RemoveRange(aIndex: Integer; aCount: Integer);
+    method &Remove(aItem: T): Boolean; inline;
+    method &Remove(aItems: List<T>); inline;
+    method &Remove(aItems: sequence of T); inline;
+    method RemoveAll; inline;
+    method RemoveAt(aIndex: Integer); inline;
+    method RemoveRange(aIndex: Integer; aCount: Integer); inline;
 
     method ReplaceAt(aIndex: Integer; aNewObject: T): T;
     method ReplaceRange(aIndex: Integer; aCount: Integer; aNewObjects: ImmutableList<T>): T;

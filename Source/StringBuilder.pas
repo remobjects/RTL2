@@ -13,18 +13,19 @@ type
     constructor(Capacity: Integer); mapped to {$IF COOPER OR ECHOES OR ISLAND}constructor(Capacity){$ELSEIF TOFFEE}stringWithCapacity(Capacity){$ENDIF};
     constructor(Data: String); mapped to {$IF COOPER OR ECHOES OR ISLAND}constructor(Data){$ELSEIF TOFFEE}stringWithString(Data){$ENDIF};
 
-    method Append(Value: nullable String): StringBuilder;
-    method Append(Value: nullable String; StartIndex, Count: Integer): StringBuilder;
-    method Append(Value: Char; RepeatCount: Integer): StringBuilder;
-    method AppendLine: StringBuilder; 
-    method AppendLine(Value: nullable String): StringBuilder; 
+    method Append(Value: nullable String): StringBuilder; inline;
+    method Append(Value: nullable String; StartIndex, Count: Integer): StringBuilder; inline;
+    method Append(Value: Char; RepeatCount: Integer): StringBuilder; inline;
+    method Append(Value: Char): StringBuilder; inline;
+    method AppendLine: StringBuilder;  inline;
+    method AppendLine(Value: nullable String): StringBuilder; inline;
 
-    method Clear;
-    method Delete(StartIndex, Count: Integer): StringBuilder;
-    method Replace(StartIndex, Count: Integer; Value: String): StringBuilder;
-    method Substring(StartIndex: Integer): String;
-    method Substring(StartIndex, Count: Integer): String;
-    method Insert(Offset: Integer; Value: String): StringBuilder;
+    method Clear; inline;
+    method Delete(StartIndex, Count: Integer): StringBuilder; inline;
+    method Replace(StartIndex, Count: Integer; Value: String): StringBuilder; inline;
+    method Substring(StartIndex: Integer): String; inline;
+    method Substring(StartIndex, Count: Integer): String; inline;
+    method Insert(Offset: Integer; Value: String): StringBuilder; inline;
 
     property Length: Integer read mapped.length write set_Length;
     property Chars[&Index: Integer]: Char read get_Chars write set_Chars; default;
@@ -41,14 +42,25 @@ begin
   for i: Int32 := 1 to RepeatCount do 
     mapped.append(Value);
 
-  exit mapped;
+  result := mapped;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Append(Value, RepeatCount);
+  result := mapped.Append(Value, RepeatCount);
   {$ELSEIF TOFFEE}
-  for i: Int32 := 1 to RepeatCount do
-    mapped.appendString(Value);
+  mapped.appendString(new String(Value, RepeatCount));
+  result := mapped;
+  {$ENDIF}
+end;
 
-  exit mapped;
+method StringBuilder.Append(Value: Char): StringBuilder;
+begin
+  {$IF COOPER}
+  mapped.append(Value);
+  result := mapped;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.Append(Value);
+  {$ELSEIF TOFFEE}
+  mapped.appendFormat("%c", Value);
+  result := mapped;
   {$ENDIF}
 end;
 

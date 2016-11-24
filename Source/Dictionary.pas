@@ -7,7 +7,7 @@ type
   private
     method GetKeys: ImmutableList<T>;
     method GetValues: sequence of U;
-    method GetItem(aKey: T): U;
+    method GetItem(aKey: T): U; inline;
 
   public
     constructor; mapped to constructor();
@@ -17,7 +17,7 @@ type
 
     method ForEach(Action: Action<KeyValuePair<T, U>>);
 
-    property Item[Key: T]: U read GetItem; default; // will return nil for unknown keys
+    property Item[Key: T]: U read GetItem; default; inline; // will return nil for unknown keys
     property Keys: ImmutableList<T> read GetKeys;
     property Values: sequence of U read GetValues;
     property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
@@ -33,8 +33,8 @@ type
   
   Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary where T is class, U is class;{$ENDIF}
   private
-    method SetItem(Key: T; Value: U);
-    method GetItem(aKey: T): U; // 76792: Descendant mapped type can't see `protected` members from ancestor, for property getter
+    method SetItem(Key: T; Value: U); inline;
+    method GetItem(aKey: T): U; inline; // 76792: Descendant mapped type can't see `protected` members from ancestor, for property getter
     method ContainsKey(Key: T): Boolean; // 76792: Descendant mapped type can't see `protected` members from ancestor, for property getter
 
   public
@@ -45,7 +45,7 @@ type
     method &Remove(Key: T): Boolean;
     method RemoveAll;
 
-    property Item[Key: T]: U read GetItem write SetItem; default; // will return nil for unknown keys
+    property Item[Key: T]: U read GetItem write SetItem; default; inline; // will return nil for unknown keys
   end;
 
 implementation
