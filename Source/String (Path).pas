@@ -35,12 +35,12 @@ type
     property ToWindowsPathFromUnixPath: String read Replace("/", "\");
 
     // Converts a local-style path to be Windows or Unix style
-    property ToWindowsPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '\' then self.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "\");
-    property ToUnixPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then self.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "/");
+    property ToWindowsPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '\' then self.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "\") else self;
+    property ToUnixPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then self.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "/") else self;
 
     // Converts a known-to-be Winows or Unix style path to fit the local platform. and back.
-    property ToPlatformPathFromWindowsPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '\' then self.Replace("\", RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
-    property ToPlatformPathFromUnixPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then self.Replace("/", RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
+    property ToPlatformPathFromWindowsPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '\' then self.Replace("\", RemObjects.Elements.RTL.Path.DirectorySeparatorChar) else self;
+    property ToPlatformPathFromUnixPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then self.Replace("/", RemObjects.Elements.RTL.Path.DirectorySeparatorChar) else self;
 
     property ToPathWithLocalFolderPrefixIfRelative: String read if not StartsWith(".") and not StartsWith(Path.DirectorySeparatorChar) then "."+Path.DirectorySeparatorChar+self else self;
     property QuotedIfNeeded: String read if IndexOf(" ") > -1 then '"'+self+'"' else self;
