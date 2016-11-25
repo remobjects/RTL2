@@ -1,4 +1,6 @@
-﻿namespace RemObjects.Elements.RTL.Echoes;
+﻿namespace RemObjects.Elements.RTL;
+
+interface
 
 uses
   System.Reflection,
@@ -18,5 +20,7 @@ uses
 [assembly: ComVisible(false)]
 
 [assembly: AssemblyKeyName('RemObjectsSoftware')]
+
+implementation
 
 end.
