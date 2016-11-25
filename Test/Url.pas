@@ -107,7 +107,6 @@ type
       lUrl := Url.UrlWithFilepath("/Foo/String+Helpers.cs");
       Assert.AreEqual(lUrl.ToAbsoluteString, "file:///Foo/String%2BHelpers.cs");
       Assert.AreEqual(lUrl.UnixPath, "/Foo/String+Helpers.cs");
-      writeLn(lUrl.UnixPath);
     end;
     
     method TestCanonical();

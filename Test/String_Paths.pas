@@ -16,9 +16,28 @@ type
       Assert.AreEqual(lPath.LastPathComponent.PathWithoutExtension, "test");
       Assert.AreEqual(lPath.PathExtension, ".txt");
       Assert.AreEqual(lPath.PathWithoutExtension, "/Users/mh/Desktop/test");
-      
     end;
     
+    method PlatformConversions;
+    begin
+      //76784: Make `DefaultStringType` work in current project
+      var lWindowsPath: RemObjects.Elements.RTL.String := "C:\Program Files\test.txt";
+      var lUnixPath: RemObjects.Elements.RTL.String := "/Users/mh/Desktop/test.txt";
+      
+      Assert.AreEqual(lWindowsPath.ToWindowsPath, lWindowsPath);
+      //Assert.AreEqual(lWindowsPath.ToUnixPath, "C:/Program Files/text.txt"); // should succeed on Windowd?
+      if Environment.OS in [OperatingSystem.macOS, OperatingSystem.Linux] then
+        Assert.AreEqual(lWindowsPath.ToPlatformPathFromWindowsPath, "C:/Program Files/test.txt");
+      if Environment.OS in [OperatingSystem.Windows] then
+        Assert.AreEqual(lWindowsPath.ToPlatformPathFromWindowsPath, lWindowsPath);
+      
+      Assert.AreEqual(lUnixPath.ToWindowsPath, "\Users\mh\Desktop\test.txt"); //should fail on Windows? test
+      Assert.AreEqual(lUnixPath.ToUnixPath, lUnixPath);
+      if Environment.OS in [OperatingSystem.macOS, OperatingSystem.Linux] then
+        Assert.AreEqual(lUnixPath.ToPlatformPathFromWindowsPath, lUnixPath);
+      if Environment.OS in [OperatingSystem.Windows] then
+        Assert.AreEqual(lUnixPath.ToPlatformPathFromWindowsPath, "\Users\mh\Desktop\test.txt");
+    end;
   end;
 
 end.

@@ -1,5 +1,12 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF TOFFEE OR (ISLAND AND LINUX)}
+  {$DEFINE KNOWN_UNIX}
+{$ENDIF}
+{$IF ISLAND AND WINDOWS}
+  {$DEFINE KNOWN_WINDOWS}
+{$ENDIF}
+
 interface
 
 type
@@ -34,13 +41,28 @@ type
     property ToUnixPathFromWindowsPath: String read Replace("\", "/");
     property ToWindowsPathFromUnixPath: String read Replace("/", "\");
 
+    {$IF KNOWN_UNIX}
+    // Converts a local-style path to be Windows or Unix style
+    property ToWindowsPath: String read self.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "\");
+    property ToUnixPath: String read self;
+    // Converts a known-to-be Winows or Unix style path to fit the local platform. and back.
+    property ToPlatformPathFromWindowsPath: String read self.Replace("\", RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
+    property ToPlatformPathFromUnixPath: String read self;
+    {$ELSEIF KNOWN_WINDOWS}
+    // Converts a local-style path to be Windows or Unix style
+    property ToWindowsPath: String read self;
+    property ToUnixPath: String read self.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "/");
+    // Converts a known-to-be Winows or Unix style path to fit the local platform. and back.
+    property ToPlatformPathFromWindowsPath: String read self;
+    property ToPlatformPathFromUnixPath: String read self.Replace("/", RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
+    {$ELSE}
     // Converts a local-style path to be Windows or Unix style
     property ToWindowsPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '\' then self.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "\") else self;
     property ToUnixPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then self.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "/") else self;
-
     // Converts a known-to-be Winows or Unix style path to fit the local platform. and back.
     property ToPlatformPathFromWindowsPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '\' then self.Replace("\", RemObjects.Elements.RTL.Path.DirectorySeparatorChar) else self;
     property ToPlatformPathFromUnixPath: String read if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then self.Replace("/", RemObjects.Elements.RTL.Path.DirectorySeparatorChar) else self;
+    {$ENDIF}
 
     property ToPathWithLocalFolderPrefixIfRelative: String read if not StartsWith(".") and not StartsWith(Path.DirectorySeparatorChar) then "."+Path.DirectorySeparatorChar+self else self;
     property QuotedIfNeeded: String read if IndexOf(" ") > -1 then '"'+self+'"' else self;
