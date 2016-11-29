@@ -3,6 +3,7 @@
     <PropertyGroup Label="Globals">
         <ProjectGuid>ABEC8ACC-B076-406C-871B-581E8AF0A453</ProjectGuid>
         <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
+        <DefaultLanguage>Oxygene</DefaultLanguage>
     </PropertyGroup>
     <Import Project="Elements.RTL.Shared.projitems" Label="Shared"/>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.SharedProject.targets"/>

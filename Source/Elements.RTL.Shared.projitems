@@ -80,6 +80,7 @@
         <Compile Include="$(MSBuildThisFileDirectory)HTTP.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Range.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Guid.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Task.pas"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Files and Paths">
