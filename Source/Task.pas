@@ -79,9 +79,6 @@ end;
 class method Task.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
 begin
   using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
-    lTask.Start();
-    lTask.WaitFor();
-    result := lTask.ExitCode;
     {$IF ECHOES}
     lTask.Start();
     lTask.WaitFor();
@@ -93,9 +90,7 @@ begin
     var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
     var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
     lTask.Start();
-
     lTask.WaitFor();
-    
     var d := stdOut.availableData();
     if (d ≠ nil) and (d.length() > 0) then
       aStdOut := new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
@@ -227,8 +222,10 @@ begin
   {$ELSEIF TOFFEE}
   var lResult := new NSTask();
   lResult.launchPath := aCommand;
-  lResult.arguments := aArguments.ToList();
-  lResult.environment := aEnvironment;
+  if assigned(aArguments) then
+    lResult.arguments := aArguments.ToList();
+  if assigned(aEnvironment) then
+    lResult.environment := aEnvironment;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then 
     lResult.currentDirectoryPath := aWorkingDirectory;
   {$ENDIF}
