@@ -24,7 +24,7 @@ type
     class var unameResult: String;
     {$ENDIF}
   public
-    property NewLine: String read GetNewLine;
+    property LineBreak: String read GetNewLine;
     property UserName: String read GetUserName;
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;

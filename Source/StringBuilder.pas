@@ -114,7 +114,7 @@ begin
   {$ELSEIF TOFFEE}
   if assigned(Value) then
     mapped.appendString(Value);
-  mapped.appendString(Environment.NewLine);
+  mapped.appendString(Environment.LineBreak);
   exit mapped;
   {$ENDIF}
 end;
@@ -127,7 +127,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.AppendLine;
   {$ELSEIF TOFFEE}
-  mapped.appendString(Environment.NewLine);
+  mapped.appendString(Environment.LineBreak);
   exit mapped;
   {$ENDIF}
 end;
