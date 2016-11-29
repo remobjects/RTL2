@@ -42,11 +42,25 @@ type
     constructor(aCapacity: Integer);
 
     method &Add(Key: T; Value: U);
+    method &Add(aDictionary: ImmutableDictionary<T, U>);
     method &Remove(Key: T): Boolean;
     method RemoveAll;
 
     property Item[Key: T]: U read GetItem write SetItem; default; inline; // will return nil for unknown keys
   end;
+  
+  ObjectDictionary = public Dictionary<String,Object>;
+  
+  StringDictionary = public Dictionary<String,String>;
+  StringDictionary2 = public Dictionary<String,StringDictionary>;
+  StringDictionary3 = public Dictionary<String,StringDictionary2>;
+  StringDictionary4 = public Dictionary<String,StringDictionary3>;
+
+  ImmutableObjectDictionary = public ImmutableDictionary<String,Object>;
+  ImmutableStringDictionary = public ImmutableDictionary<String,String>;
+  ImmutableStringDictionary2 = public ImmutableDictionary<String,ImmutableStringDictionary>;
+  ImmutableStringDictionary3 = public ImmutableDictionary<String,ImmutableStringDictionary2>;
+  ImmutableStringDictionary4 = public ImmutableDictionary<String,ImmutableStringDictionary3>;
 
 implementation
 
@@ -86,6 +100,16 @@ begin
   mapped.Add(Key, Value);
   {$ELSEIF TOFFEE}
   DictionaryHelpers.Add(mapped, Key, Value);
+  {$ENDIF}
+end;
+
+method Dictionary<T, U>.Add(aDictionary: ImmutableDictionary<T, U>);
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  for each item in aDictionary do
+    self[item.Key] := item.Value;
+  {$ELSEIF TOFFEE}
+  mapped.addEntriesFromDictionary(aDictionary);
   {$ENDIF}
 end;
 
