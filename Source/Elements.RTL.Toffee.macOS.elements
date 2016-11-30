@@ -15,8 +15,8 @@
         <MangleTypeNames>True</MangleTypeNames>
         <CreateHeaderFile>True</CreateHeaderFile>
         <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-        <CrossPlatform>True</CrossPlatform>
         <DeploymentTargetVersion>10.10</DeploymentTargetVersion>
+        <CrossPlatform>True</CrossPlatform>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>false</Optimize>
@@ -27,12 +27,11 @@
         <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
         <CaptureConsoleOutput>False</CaptureConsoleOutput>
         <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-        <IRFilename>.\bin\Debug\macOS\libElements.ir</IRFilename>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <Optimize>true</Optimize>
         <OutputPath>.\bin\Release</OutputPath>
-        <GenerateDebugInfo>False</GenerateDebugInfo>
+        <GenerateDebugInfo>True</GenerateDebugInfo>
         <EnableAsserts>False</EnableAsserts>
         <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
         <CaptureConsoleOutput>False</CaptureConsoleOutput>

@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
     <PropertyGroup>
         <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-        <ProjectGuid>EC0982C8-700B-4085-A401-59460E394DAA</ProjectGuid>
+        <ProjectGuid>E1E9CB29-553D-4EA9-B9D1-62A5195BDD10</ProjectGuid>
         <OutputType>StaticLibrary</OutputType>
         <AssemblyName>Elements</AssemblyName>
         <AllowGlobals>False</AllowGlobals>
@@ -11,11 +11,11 @@
         <AllowLegacyCreate>False</AllowLegacyCreate>
         <AllowUnsafeCode>False</AllowUnsafeCode>
         <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-        <SDK>iOS</SDK>
+        <SDK>watchOS</SDK>
         <MangleTypeNames>True</MangleTypeNames>
         <CreateHeaderFile>True</CreateHeaderFile>
         <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-        <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
+        <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
         <CrossPlatform>True</CrossPlatform>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

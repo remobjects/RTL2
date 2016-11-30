@@ -77,26 +77,26 @@ begin
   if Accounts.length = 0 then
     exit "";
 
-  exit Accounts[0].name;
+  result := Accounts[0].name;
   {$ELSEIF COOPER}
-  exit System.getProperty("user.name");
+  result := System.getProperty("user.name");
   {$ELSEIF WINDOWS_PHONE}
-  exit Windows.Networking.Proximity.PeerFinder.DisplayName;
+  result := Windows.Networking.Proximity.PeerFinder.DisplayName;
   {$ELSEIF NETFX_CORE}
-  exit Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
+  result := Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
   {$ELSEIF ECHOES}
-  exit System.Environment.UserName;
+  result := System.Environment.UserName;
   {$ELSEIF ISLAND}
-  exit RemObjects.Elements.System.Environment.UserName;
+  result := RemObjects.Elements.System.Environment.UserName;
   {$ELSEIF TOFFEE}
     {$IF OSX}
-    exit Foundation.NSUserName;
+    result := Foundation.NSUserName;
     {$ELSEIF IOS}
-    exit UIKit.UIDevice.currentDevice.name;
+    exit "iOS User";
     {$ELSEIF WATCHOS}
-    exit "Apple Watch";
+    exit "Apple Watch User";
     {$ELSEIF TVOS}
-    exit "Apple TV";
+    exit "Apple TV User";
     {$ENDIF}
   {$ENDIF}
 end;
