@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES OR TOFFEE}
+{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 interface
 
@@ -28,6 +28,7 @@ type
   
     method WaitFor; inline;
     method Start; inline;
+    method Stop; inline;
     property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ENDIF};
     
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
@@ -54,6 +55,15 @@ begin
   mapped.Start();
   {$ELSEIF TOFFEE}
   mapped.launch();
+  {$ENDIF}
+end;
+
+method Task.Stop;
+begin
+  {$IF ECHOES}
+  mapped.Kill();
+  {$ELSEIF TOFFEE}
+  mapped.terminate();
   {$ENDIF}
 end;
 
@@ -114,70 +124,70 @@ begin
   var lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   result := lTask;
   
+  {$IF ECHOES}
+  if assigned(aStdOutCallback) then begin
+    (lTask as PlatformTask).StartInfo.RedirectStandardOutput := true;
+    (lTask as PlatformTask).OutputDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
+      aStdOutCallback(e.Data);
+    end;
+    //(lTask as PlatformTask).BeginOutputReadLine();
+  end;
+  if assigned(aStdErrCallback) then begin
+    (lTask as PlatformTask).StartInfo.RedirectStandardError := true;
+    (lTask as PlatformTask).ErrorDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
+      aStdErrCallback(e.Data);
+    end;
+    //(lTask as PlatformTask).BeginErrorReadLine();
+  end;
+  {$ELSEIF TOFFEE}
+  if assigned(aStdOutCallback) then
+    (lTask as PlatformTask).standardOutput := NSPipe.pipe();
+  if assigned(aStdErrCallback) then
+    (lTask as PlatformTask).standardError := NSPipe.pipe();
+
+  if assigned(aStdOutCallback) then
+    dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
+      var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
+      var lastIncompleteLogLine: String;
+      while (lTask as PlatformTask).isRunning do begin
+        using autoreleasepool do begin
+          var d := stdOut.availableData;
+          if (d ≠ nil) and (d.length > 0) then
+            processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
+          NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
+        end;
+      end;
+      lTask.WaitFor();
+      var d := stdOut.availableData;
+      while (d ≠ nil) and (d.length > 0) do begin
+        processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
+        d := stdOut.availableData;
+      end;
+    end);
+
+  if assigned(aStdErrCallback) then
+    dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
+      var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
+      var lastIncompleteLogLine: String;
+      while (lTask as PlatformTask).isRunning do begin
+        using autoreleasepool do begin
+          var d := stdErr.availableData;
+          if (d ≠ nil) and (d.length > 0) then
+            processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
+          NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
+        end;
+      end;
+      lTask.WaitFor();
+      var d := stdErr.availableData;
+      while (d ≠ nil) and (d.length > 0) do begin
+        processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
+        d := stdErr.availableData;
+      end;
+    end);
+  {$ENDIF}
+
+  lTask.Start();
   async begin
-    {$IF ECHOES}
-    if assigned(aStdOutCallback) then begin
-      (lTask as PlatformTask).StartInfo.RedirectStandardOutput := true;
-      (lTask as PlatformTask).OutputDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
-        aStdOutCallback(e.Data);
-      end;
-      //(lTask as PlatformTask).BeginOutputReadLine();
-    end;
-    if assigned(aStdErrCallback) then begin
-      (lTask as PlatformTask).StartInfo.RedirectStandardError := true;
-      (lTask as PlatformTask).ErrorDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
-        aStdErrCallback(e.Data);
-      end;
-      //(lTask as PlatformTask).BeginErrorReadLine();
-    end;
-    {$ELSEIF TOFFEE}
-    if assigned(aStdOutCallback) then
-      (lTask as PlatformTask).standardOutput := NSPipe.pipe();
-    if assigned(aStdErrCallback) then
-      (lTask as PlatformTask).standardError := NSPipe.pipe();
-
-    if assigned(aStdOutCallback) then
-      dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
-        var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
-        var lastIncompleteLogLine: String;
-        while (lTask as PlatformTask).isRunning do begin
-          using autoreleasepool do begin
-            var d := stdOut.availableData;
-            if (d ≠ nil) and (d.length > 0) then
-              processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
-            NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
-          end;
-        end;
-        lTask.WaitFor();
-        var d := stdOut.availableData;
-        while (d ≠ nil) and (d.length > 0) do begin
-          processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
-          d := stdOut.availableData;
-        end;
-      end);
-
-    if assigned(aStdErrCallback) then
-      dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
-        var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
-        var lastIncompleteLogLine: String;
-        while (lTask as PlatformTask).isRunning do begin
-          using autoreleasepool do begin
-            var d := stdErr.availableData;
-            if (d ≠ nil) and (d.length > 0) then
-              processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
-            NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
-          end;
-        end;
-        lTask.WaitFor();
-        var d := stdErr.availableData;
-        while (d ≠ nil) and (d.length > 0) do begin
-          processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
-          d := stdErr.availableData;
-        end;
-      end);
-    {$ENDIF}
-
-    lTask.Start();
     lTask.WaitFor();
     if assigned(aFinishedCallback) then
       aFinishedCallback(lTask.ExitCode);
@@ -216,7 +226,7 @@ begin
     lResult.StartInfo.WorkingDirectory := aWorkingDirectory;
   if length(aArguments) > 0 then
     lResult.StartInfo.Arguments := BuildArgumentsCommandLine(aArguments);
-  for each k in aEnvironment.Keys do
+  for each k in aEnvironment:Keys do
     lResult.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
   lResult.StartInfo.UseShellExecute := false;
   {$ELSEIF TOFFEE}
