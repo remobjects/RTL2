@@ -103,7 +103,7 @@ begin
   {$IF COOPER}
   if assigned(Value) then
     mapped.append(Value);
-  mapped.append(Environment.NewLine);
+  mapped.append(Environment.LineBreak);
   exit mapped;
   {$ELSEIF ECHOES OR ISLAND}
   if assigned(Value) then
@@ -122,7 +122,7 @@ end;
 method StringBuilder.AppendLine: StringBuilder;
 begin
   {$IF COOPER}
-  mapped.append(Environment.NewLine);
+  mapped.append(Environment.LineBreak);
   exit mapped;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.AppendLine;
