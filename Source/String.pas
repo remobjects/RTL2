@@ -84,6 +84,7 @@ type
     method Trim(const TrimChars: array of Char): not nullable String; 
     method TrimEnd(const TrimChars: array of Char): not nullable String; 
     method TrimStart(const TrimChars: array of Char): not nullable String; 
+    method TrimNewLineCharacters: not nullable String; inline;
     method StartsWith(Value: String): Boolean; inline;
     method StartsWith(Value: String; IgnoreCase: Boolean): Boolean; 
     method EndsWith(Value: String): Boolean; inline;
@@ -746,6 +747,11 @@ begin
   {$ELSEIF TOFFEE}
   result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length)));
   {$ENDIF}
+end;
+
+method String.TrimNewLineCharacters: not nullable String;
+begin
+  result := Trim([#13, #10]);
 end;
 
 {$IF COOPER}
