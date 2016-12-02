@@ -95,6 +95,7 @@ type
     method UrlWithChangedLastPathComponent(aNewLastPathComponent: not nullable String): nullable Url;
     method UrlWithRelativeOrAbsoluteSubPath(aSubPath: not nullable String): nullable Url;
     method UrlWithRelativeOrAbsoluteFileSubPath(aSubPath: not nullable String): nullable Url;
+    method UrlWithRelativeOrAbsoluteWindowsSubPath(aSubPath: not nullable String): nullable Url;
     method GetParentUrl(): Url;
     method GetSubUrl(aName: String) isDirectory(aIsDirectory: Boolean := false): Url;
     
@@ -347,6 +348,14 @@ end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
 begin
+  if IsAbsoluteWindowsFileURL then begin
+    if not aUrl.IsAbsoluteWindowsFileURL then begin
+      exit nil;
+    end
+    else begin
+      {$WARNING need to handle this case still} 
+    end;
+  end;
   result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
   {$IF NOT KNOWN_UNIX}
   if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
@@ -611,6 +620,14 @@ begin
   if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
     aSubPath := aSubPath.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, '/');
   {$ENDIF}
+  result := UrlWithRelativeOrAbsoluteSubPath(aSubPath);
+end;
+
+method Url.UrlWithRelativeOrAbsoluteWindowsSubPath(aSubPath: not nullable String): nullable Url;
+begin
+  if aSubPath.IsAbsolutePath then
+    exit Url.UrlWithWindowsPath(aSubPath);
+  aSubPath := aSubPath.Replace('\', '/');
   result := UrlWithRelativeOrAbsoluteSubPath(aSubPath);
 end;
 
