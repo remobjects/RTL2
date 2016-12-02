@@ -67,7 +67,7 @@ type
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String;
     method Split(Separator: String): array of String;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
-    method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; inline;
+    method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method PadStart(TotalWidth: Integer): String; inline; 
     method PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
     method PadEnd(TotalWidth: Integer): String; inline; 

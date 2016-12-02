@@ -22,8 +22,8 @@ type
     property Values: sequence of U read GetValues;
     property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
 
-    //method UniqueCopy: ImmutableDictionary<T,U>;
-    //method UniqueMutableCopy: Dictionary<T,U>;
+    method UniqueCopy: ImmutableDictionary<T,U>;
+    method UniqueMutableCopy: Dictionary<T,U>;
     method MutableVersion: Dictionary<T,U>;
 
     {$IF NOT ECHOES}
@@ -233,12 +233,10 @@ begin
 end;
 {$ENDIF}
     
-/*method ImmutableDictionary<T,U>.UniqueCopy: ImmutableDictionary<T,U>;
+method ImmutableDictionary<T,U>.UniqueCopy: ImmutableDictionary<T,U>;
 begin
-  {$IF COOPER}
-  result := new ImmutableDictionary<T,U>(self);
-  {$ELSEIF ECHOES OR ISLAND}
-  result := new ImmutableDictionary<T,U>(self);
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := UniqueMutableCopy();
   {$ELSEIF TOFFEE}
   result := mapped.copy;
   {$ENDIF}
@@ -246,14 +244,14 @@ end;
 
 method ImmutableDictionary<T,U>.UniqueMutableCopy: Dictionary<T,U>;
 begin
-  {$IF COOPER}
-  result := new Dictionary<T,U>(self);
-  {$ELSEIF ECHOES OR ISLAND}
-  result := new Dictionary<T,U>(self);
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := new Dictionary<T,U>();
+  for each k in Keys do
+    result[k] := self[k];
   {$ELSEIF TOFFEE}
   result := mapped.mutableCopy;
   {$ENDIF}
-end;*/
+end;
 
 method ImmutableDictionary<T,U>.MutableVersion: Dictionary<T,U>;
 begin
