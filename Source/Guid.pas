@@ -134,7 +134,7 @@ begin
   {$IF COOPER}
   aValue := java.lang.String(aValue.ToUpper).replaceAll("[{}()]", "");
   exit mapped.fromString(aValue);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   var lGuid: PlatformGuid;
   if not PlatformGuid.TryParse(aValue, out lGuid) then
     exit nil;

@@ -3,7 +3,19 @@
 interface
 
 type
-  ImmutableBinary = public class {$IF ECHOES}mapped to System.IO.MemoryStream{$ELSEIF TOFFEE}mapped to Foundation.NSData{$ENDIF}
+  {$IF ECHOES}
+  ImmutablePlatformBinary = System.IO.MemoryStream;
+  PlatformBinary = System.IO.MemoryStream;
+  {$ELSEIF ISLAND}
+  ImmutablePlatformBinary = RemObjects.Elements.System.MemoryStream;
+  PlatformBinary = RemObjects.Elements.System.MemoryStream;
+  {$ELSEIF TOFFEE}
+  ImmutablePlatformBinary = Foundation.NSData;
+  PlatformBinary = Foundation.NSMutableData;
+  {$ENDIF}
+
+
+  ImmutableBinary = public class {$IF ECHOES OR ISLAND OR TOFFEE}mapped to ImmutablePlatformBinary{$ENDIF}
   {$IF COOPER}
   protected
     fData: java.io.ByteArrayOutputStream := new java.io.ByteArrayOutputStream();
@@ -21,10 +33,10 @@ type
     method Subdata(aStartIndex: Integer; aCount: Integer): Binary;
 
     method ToArray: array of Byte;
-    property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};    
+    property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};    
   end;
 
-  Binary = public class(ImmutableBinary) {$IF ECHOES}mapped to System.IO.MemoryStream{$ELSEIF TOFFEE}mapped to Foundation.NSMutableData{$ENDIF}
+  Binary = public class(ImmutableBinary) {$IF ECHOES OR ISLAND OR TOFFEE}mapped to PlatformBinary{$ENDIF}
   public
     constructor;
     constructor(anArray: array of Byte);

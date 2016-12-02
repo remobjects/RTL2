@@ -10,11 +10,13 @@ type
   PlatformFileMode = System.IO.FileMode;
   PlatformFileAccess = System.IO.FileAccess;
   PlatformFileStream = System.IO.FileStream;
+  PlatformSeekOrigin = System.IO.SeekOrigin;
   {$ENDIF}
   {$IF ISLAND}
   PlatformFileMode = RemObjects.Elements.System.FileMode;
   PlatformFileAccess = RemObjects.Elements.System.FileAccess;
   PlatformFileStream = RemObjects.Elements.System.FileStream;
+  PlatformSeekOrigin = RemObjects.Elements.System.SeekOrigin;
   {$ENDIF}
 
   FileHandle = public class mapped to {$IF COOPER}java.io.RandomAccessFile{$ELSEIF WINDOWS_PHONE OR NETFX_CORE}Stream{$ELSEIF ECHOES OR ISLAND}PlatformFileStream{$ELSEIF TOFFEE}NSFileHandle{$ENDIF}
@@ -93,7 +95,7 @@ begin
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}  
   var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
   exit Windows.Storage.StorageFile(aFile).OpenAsync(lMode).Await.AsStream;
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   var lMode: PlatformFileAccess := if Mode = FileOpenMode.ReadOnly then PlatformFileAccess.Read else PlatformFileAccess.ReadWrite;
   exit new PlatformFileStream(PlatformString(aFile), PlatformFileMode.Open, lMode);
   {$ELSEIF TOFFEE}
@@ -123,7 +125,7 @@ begin
   mapped.Channel.force(false);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   mapped.Flush;
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   mapped.Flush;
   {$ELSEIF TOFFEE}
   mapped.synchronizeFile;
@@ -167,7 +169,7 @@ begin
   exit mapped.read(Buffer, Offset, Count);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   exit mapped.Read(Buffer, Offset, Count);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   exit mapped.Read(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   var Bin := mapped.readDataOfLength(Count);
@@ -201,7 +203,7 @@ begin
   mapped.write(Buffer, Offset, Count);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   mapped.Write(Buffer, Offset, Count);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   mapped.Write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   var Bin := new NSData withBytes(@Buffer[Offset]) length(Count);
@@ -236,7 +238,7 @@ begin
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   mapped.Seek(Offset, System.IO.SeekOrigin(Origin));
   {$ELSEIF ECHOES OR ISLAND}
-  mapped.Seek(Offset, System.IO.SeekOrigin(Origin));
+  mapped.Seek(Offset, PlatformSeekOrigin(Origin));
   {$ELSEIF TOFFEE}  
   case Origin of
     SeekOrigin.Begin: mapped.seekToFileOffset(Offset);
@@ -272,7 +274,7 @@ begin
     Seek(0, SeekOrigin.Begin)
   else
     Seek(Origin, SeekOrigin.Begin);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   mapped.SetLength(value);
   {$ELSEIF TOFFEE}
   var Origin := mapped.offsetInFile;

@@ -417,7 +417,7 @@ end;
 
 method String.IndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF COOPER OR ECHOES}// OR ISLAND}
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
@@ -432,7 +432,7 @@ begin
   if Value.Length = 0 then
     exit 0;
 
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF COOPER OR ECHOES}// OR ISLAND}
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
@@ -444,7 +444,7 @@ method String.IndexOfAny(const AnyOf: array of Char): Integer;
 begin
   {$IF COOPER OR TOFFEE}
   result := IndexOfAny(AnyOf, 0);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   result := mapped.IndexOfAny(AnyOf);
   {$ENDIF}
 end;
@@ -459,7 +459,7 @@ begin
      end;
   end;
   result := -1;
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   result := mapped.IndexOfAny(AnyOf, StartIndex);
   {$ELSEIF TOFFEE}
   var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
@@ -495,7 +495,7 @@ end;
 
 method String.LastIndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF COOPER OR ECHOES}// OR ISLAND}
   result := mapped.LastIndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   result := LastIndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
@@ -577,7 +577,7 @@ begin
     aNewValue := "";
   {$IF COOPER}
   exit mapped.substring(0, aStartIndex)+aNewValue+mapped.substring(aStartIndex+aLength) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   exit mapped.Remove(aStartIndex, aLength).Insert(aStartIndex, aNewValue) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue);
@@ -886,7 +886,7 @@ begin
   {$ELSEIF ECHOES}
   exit System.Text.Encoding.UTF8.GetBytes(mapped);
   {$ELSEIF ISLAND}
-  exit TextConvert.StringToUTF8(aValue);(mapped);
+  exit TextConvert.StringToUTF8(mapped);
   {$ELSEIF TOFFEE}
   var Data := Binary(mapped.dataUsingEncoding(NSStringEncoding.NSUTF8StringEncoding));
   exit Data.ToArray;

@@ -21,11 +21,13 @@ type
     {$ENDIF}
 
     {$IF COOPER}
-    property Identifier: String read mapped.toString;
+    property Identifier: not nullable String read mapped.toString;
     {$ELSEIF ECHOES}
-    property Identifier: String read mapped.Name;
+    property Identifier: not nullable String read mapped.Name;
+    {$ELSEIF ISLAND}
+    property Identifier: not nullable String read "Dummy"; {$WARNING Not Implemented}
     {$ELSEIF TOFFEE}
-    property Identifier: String read mapped.localeIdentifier;
+    property Identifier: not nullable String read mapped.localeIdentifier;
     {$ENDIF}
   end;
 

@@ -63,7 +63,7 @@ begin
               "UTF32": TextConvert.StringToUTF32(aValue);
               "UTF32BE": TextConvert.StringToUTF32BE(aValue);
               "UTF32LE": TextConvert.StringToUTF32LE(aValue);
-              "ASCII","USASCII","UTFASCII": TextConvert.StringToASCII(aValue);
+              //"ASCII","USASCII","UTFASCII": TextConvert.StringToASCII(aValue);
             end;
   {$ELSEIF TOFFEE}
   result := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as Binary).ToArray;
@@ -98,7 +98,7 @@ begin
               "UTF32": TextConvert.UTF32ToString(aValue /*, aOffset, aCunt*/);
               "UTF32BE": TextConvert.UTF32BEToString(aValue /*, aOffset, aCunt*/);
               "UTF32LE": TextConvert.UTF32LEToString(aValue /*, aOffset, aCunt*/);
-              "ASCII","USASCII","UTFASCII": TextConvert.ASCIIToString(aValue /*, aOffset, aCunt*/);
+              //"ASCII","USASCII","UTFASCII": TextConvert.ASCIIToString(aValue /*, aOffset, aCunt*/);
             end;
   {$ELSEIF TOFFEE}
   result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(self.AsNSStringEncoding);
@@ -174,7 +174,7 @@ begin
   {$ELSEIF ECHOES}
   //exit mapped.WebName;
   {$ELSEIF ISLAND}
-  result := fName.ToUpper.Replace("-", "");
+  result := fName.ToUpper.Replace("-", "") = "UTF8";
   {$ELSEIF TOFFEE}
   result := AsNSStringEncoding = NSStringEncoding.UTF8StringEncoding;
   {$ENDIF}  

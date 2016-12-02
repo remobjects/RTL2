@@ -30,7 +30,7 @@ type
     method LastIndexOf(aItem: T): Integer;
 
     method ToMutableList: List<T>; 
-    {$IF NOT COOPER}
+    {$IF NOT COOPER AND NOT ISLAND}
     method ToSortedList: ImmutableList<T>;
     {$ENDIF}
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>; 
@@ -482,7 +482,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT COOPER}
+{$IF NOT COOPER AND NOT ISLAND}
 method ImmutableList<T>.ToSortedList: ImmutableList<T>;
 begin
   result := self.OrderBy(n -> n).ToList();
@@ -527,7 +527,7 @@ method ImmutableList<T>.SubList(aStartIndex: Int32; aLength: Int32): ImmutableLi
 begin
   {$IF COOPER}
   result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   var lArray := new T[Count];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
   result := new List<T>(lArray);
@@ -545,7 +545,7 @@ method List<T>.SubList(aStartIndex: Int32; aLength: Int32): List<T>;
 begin
   {$IF COOPER}
   result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   var lArray := new T[Count];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
   result := new List<T>(lArray);

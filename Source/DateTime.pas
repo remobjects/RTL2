@@ -465,7 +465,7 @@ begin
   {$IF COOPER}
   result := mapped.compareTo(new DateTime(Value.Year, Value.Month, Value.Day, Value.Hour, Value.Minute, Value.Second));
   {$ELSEIF ECHOES OR ISLAND}
-  result := fDateTime.CompareTo(Value);
+  result := fDateTime.CompareTo(Value:fDateTime);
   {$ELSEIF TOFFEE}
   result := mapped.compare(new DateTime(Value.Year, Value.Month, Value.Day, Value.Hour, Value.Minute, Value.Second));
   {$ENDIF}
