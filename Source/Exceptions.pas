@@ -43,6 +43,18 @@ type
     {$ENDIF}
     
   end;
+
+  Exception_Helpers = public extension class(Exception)
+  public
+    {$IF TOFFEE}
+    constructor withError(aError: NSError);
+    begin
+      result := new Exception withName('Exception') reason(aError.description) userInfo(nil);
+    end;
+    
+    property Message: String read reason;
+    {$ENDIF}
+  end;
   
   NotImplementedException = public class(RTLException);
   NotSupportedException = public class(RTLException);
