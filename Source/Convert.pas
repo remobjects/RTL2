@@ -20,6 +20,7 @@ type
     method ToString(aValue: Byte; aBase: Integer := 10): not nullable String;
     method ToString(aValue: Int32; aBase: Integer := 10): not nullable String;
     method ToString(aValue: Int64; aBase: Integer := 10): not nullable String;
+    method ToString(aValue: UInt64; aBase: Integer := 10): not nullable String;
     method ToString(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aLocale: Locale := nil): not nullable String;
     method ToStringInvariant(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1): not nullable String;
     method ToString(aValue: Char): not nullable String;
@@ -79,8 +80,8 @@ type
     method ToHexString(aData: array of Byte): not nullable String;
     method ToHexString(aData: Binary): not nullable String;
 
-    method ToOctalString(aValue: Int64; aWidth: Integer := 0): not nullable String;
-    method ToBinaryString(aValue: Int64; aWidth: Integer := 0): not nullable String;
+    method ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
+    method ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 
     method HexStringToInt32(aValue: not nullable String): UInt32;
     method HexStringToInt64(aValue: not nullable String): UInt64;
@@ -137,6 +138,17 @@ begin
   {$ELSEIF ECHOES}
   exit System.Convert.ToString(aValue, aBase) as not nullable;
   {$ENDIF}
+end;
+
+method Convert.ToString(aValue: UInt64; aBase: Integer := 10): not nullable String;
+begin
+  case aBase of
+    2: exit ToBinaryString(aValue);
+    8: exit ToOctalString(aValue);
+    10: exit aValue.ToString as not nullable;
+    16: exit ToHexString(aValue);
+    else raise new ConversionException('Unsupported base for ToString.');
+  end;
 end;
 
 method Convert.ToStringInvariant(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1): not nullable String;
@@ -305,7 +317,7 @@ begin
     result := TrimLeadingZeros(result);
 end;
 
-method Convert.ToOctalString(aValue: Int64; aWidth: Integer := 0): not nullable String;
+method Convert.ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 begin
   var lWidth := aWidth;
   if (lWidth < 1) or (lWidth > 64/3) then lWidth := 64/3;
@@ -316,7 +328,7 @@ begin
     result := TrimLeadingZeros(result);
 end;
 
-method Convert.ToBinaryString(aValue: Int64; aWidth: Integer := 0): not nullable String;
+method Convert.ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 begin
   var lWidth := aWidth;
   if (lWidth < 1) or (lWidth > 64) then lWidth := 64;
