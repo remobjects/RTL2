@@ -385,7 +385,7 @@ begin
     end;
   end
   else begin
-    result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
+    result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(false);
   end;
 end;
 
@@ -426,7 +426,7 @@ begin
       for j: Integer := baseComponents.count-1 downto 1 do 
         relative := "../"+relative;
         
-      result := RemObjects.Elements.RTL.Path.Combine(relative, local);
+      result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
       
     end;
   end;

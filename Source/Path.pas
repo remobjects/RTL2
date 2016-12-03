@@ -6,7 +6,11 @@ type
   Path = public static class
   public
     method ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
+    
     method Combine(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+    method CombineUnixPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+    method CombineWindowsPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+
     method GetParentDirectory(aFileName: not nullable String): nullable String;
     method GetExtension(aFileName: not nullable String): not nullable String;
     method GetFileName(aFileName: not nullable String): not nullable String;
@@ -49,6 +53,26 @@ begin
   for each p in aPaths do
     if length(p) > 0 then
       result := result+DirectorySeparatorChar+p;
+end;
+
+method Path.CombineUnixPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+begin
+  result := aBasePath;
+  if result.EndsWith("/") and (length(aPaths) > 0) then
+    result := result.Substring(0, result.Length-1);
+  for each p in aPaths do
+    if length(p) > 0 then
+      result := result+"/"+p;
+end;
+
+method Path.CombineWindowsPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+begin
+  result := aBasePath;
+  if result.EndsWith("\") and (length(aPaths) > 0) then
+    result := result.Substring(0, result.Length-1);
+  for each p in aPaths do
+    if length(p) > 0 then
+      result := result+"\"+p;
 end;
 
 method Path.GetParentDirectory(aFileName: not nullable String): nullable String;

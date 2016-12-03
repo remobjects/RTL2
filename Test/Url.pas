@@ -202,7 +202,7 @@ type
       if Environment.OS in [OperatingSystem.macOS, OperatingSystem.Linux] then
         Assert.AreEqual(lUrl.FilePathWithoutLastComponent, "/Users/mh/Desktop/");
       if Environment.OS in [OperatingSystem.Windows] then
-        Assert.AreEqual(lUrl.FilePathWithoutLastComponent, "/Users/mh/Desktop/");
+        Assert.AreEqual(lUrl.FilePathWithoutLastComponent, "\Users\mh\Desktop\");
 
       Assert.AreEqual(lUrl.WindowsPathWithoutLastComponent, "\Users\mh\Desktop\");
       Assert.AreEqual(lUrl.UnixPathWithoutLastComponent, "/Users/mh/Desktop/");
