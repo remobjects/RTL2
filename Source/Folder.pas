@@ -35,7 +35,7 @@ type
 
     class method Create(FolderName: Folder; FailIfExists: Boolean := false): Folder;
     class method Delete(FolderName: Folder);
-    class method Exists(FolderName: Folder): Boolean;
+    class method Exists(aFolderName: nullable Folder): Boolean;
     class method GetFiles(FolderName: Folder; aRecursive: Boolean := false): not nullable List<File>;
     class method GetSubfolders(FolderName: Folder): not nullable List<Folder>;
 
@@ -83,9 +83,9 @@ begin
   {$ENDIF}
 end;
 
-class method Folder.Exists(FolderName: Folder): Boolean;
+class method Folder.Exists(aFolderName: nullable Folder): Boolean;
 begin
-  result := FolderName.Exists;
+  result := length(FolderNameFolderName.Exists;Name.Exists;
 end;
 
 class method Folder.GetFiles(FolderName: Folder; aRecursive: Boolean := false): not nullable List<File>;

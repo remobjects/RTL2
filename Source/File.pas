@@ -25,7 +25,7 @@ type
     class method &Copy(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
     class method Move(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
     class method Rename(FileName: not nullable File; NewName: not nullable String): not nullable File;
-    class method Exists(FileName: not nullable File): Boolean; inline;
+    class method Exists(FileName: nullable File): Boolean; inline;
     class method Delete(FileName: not nullable File); inline;
 
     {$IF WINDOWS_PHONE OR NETFX_CORE}
@@ -124,7 +124,7 @@ begin
   result := FileUtils.Exists(mapped);
 end;
 
-class method File.Exists(FileName: not nullable File): Boolean;
+class method File.Exists(FileName: nullable File): Boolean;
 begin
   result := FileUtils.Exists(FileName);
 end;

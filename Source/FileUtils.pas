@@ -122,7 +122,7 @@ end;
 
 class method FileUtils.Exists(FileName: String): Boolean;
 begin
-  ArgumentNullException.RaiseIfNil(FileName, "FileName");
+  if length(FileName) = 0 then exit false;
   {$IF COOPER}
   exit new java.io.File(FileName).exists;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
