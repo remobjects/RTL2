@@ -81,6 +81,7 @@
         <Compile Include="$(MSBuildThisFileDirectory)Range.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Guid.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Task.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Char (Extensions).pas"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Files and Paths">

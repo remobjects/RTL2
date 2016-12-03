@@ -16,6 +16,10 @@ type
       Assert.AreEqual(lPath.LastPathComponent.PathWithoutExtension, "test");
       Assert.AreEqual(lPath.PathExtension, ".txt");
       Assert.AreEqual(lPath.PathWithoutExtension, "/Users/mh/Desktop/test");
+      Assert.AreEqual(lPath.NetworkServerName, nil);
+
+      var lPath2: RemObjects.Elements.RTL.String := "\\RIBBONS\Users\mh\Desktop\test.txt";
+      Assert.AreEqual(lPath2.NetworkServerName, "RIBBONS");
     end;
     
     method PlatformConversions;

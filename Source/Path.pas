@@ -14,6 +14,8 @@ type
     method GetPathWithoutExtension(aFileName: not nullable String): not nullable String;
     method GetFullPath(RelativePath: not nullable String): not nullable String;
     
+    method GetNetworkServerName(aFileName: not nullable String): nullable String;
+    
     {$IF TOFFEE}
     method ExpandTildeInPath(aPath: not nullable String): not nullable String;
     {$ENDIF}
@@ -134,6 +136,16 @@ begin
   exit (RelativePath as NSString).stringByStandardizingPath;
   {$ENDIF}
 end;
+
+method Path.GetNetworkServerName(aFileName: not nullable String): nullable String;
+begin
+  if not aFileName.StartsWith("\\") then exit nil;
+  aFileName := aFileName.Substring(2);
+  var p := aFileName.IndexOf("\");
+  if p ≤ -1 then exit nil;
+  result := aFileName.Substring(0, p);
+end;
+
 
 {$IF TOFFEE}
 method Path.ExpandTildeInPath(aPath: not nullable String): not nullable String;

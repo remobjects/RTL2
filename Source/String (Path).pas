@@ -30,6 +30,7 @@ type
 
     property PathWithoutExtension: String read Path.GetPathWithoutExtension(self);
     property PathExtension: String read Path.GetExtension(self);
+    property NetworkServerName: nullable String read Path.GetNetworkServerName(self);
 
     property IsWindowsPath: Boolean read (Length > 2) and ((self[1] = ':') or StartsWith("\\")); // Drive letter or Windows network path
 

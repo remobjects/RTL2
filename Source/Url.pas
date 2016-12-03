@@ -38,6 +38,8 @@ type
     method GetUnixPathWithoutLastComponent: String;
     method GetUrlWithoutLastComponent: Url;
 
+    method DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String; //inline; 76882: Echoes: E0 Internal error: GOUNKEX137 with `inline`
+
     constructor; empty;
     constructor(aScheme: not nullable String; aHost: String; aPath: String);
     constructor(aUrlString: not nullable String);
@@ -345,17 +347,8 @@ begin
     result := fPath;
 end;
 
-
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
 begin
-  if IsAbsoluteWindowsFileURL then begin
-    if not aUrl.IsAbsoluteWindowsFileURL then begin
-      exit nil;
-    end
-    else begin
-      {$WARNING need to handle this case still} 
-    end;
-  end;
   result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
   {$IF NOT KNOWN_UNIX}
   if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
@@ -370,6 +363,33 @@ begin
 end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
+begin
+  var SelfIsAbsoluteWIndowsUrl := IsAbsoluteWindowsFileURL;
+  var BaseIsAbsoluteWIndowsUrl := aUrl.IsAbsoluteWindowsFileURL;
+  if SelfIsAbsoluteWIndowsUrl ≠ BaseIsAbsoluteWIndowsUrl then begin
+    exit nil; // can never be relative;
+  end
+  else if SelfIsAbsoluteWIndowsUrl and BaseIsAbsoluteWIndowsUrl then begin
+    var SelfIsDriveletter := Path[2] = ":";
+    var BaseIsDriveletter := aUrl.Path[2] = ":";
+    if SelfIsDriveletter ≠ BaseIsDriveletter then begin
+      exit nil; // can never be relative;
+    end
+    else if SelfIsDriveletter and BaseIsDriveletter then begin
+      if LowerChar(Path[1]) ≠ LowerChar(aURL.Path[1]) then exit nil; // different drive, can never be relative;
+      result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
+    end
+    else begin// both network urls
+      if WindowsPath.NetworkServerName:ToLowerInvariant() ≠ aUrl.WindowsPath.NetworkServerName:ToLowerInvariant() then exit nil; // different server, can never be relative;
+      result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
+    end;
+  end
+  else begin
+    result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
+  end;
+end;
+
+method Url.DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String;
 begin
   if (Scheme = aUrl.Scheme) and (Host = aUrl.Host) and (Port = aUrl.Port) then begin
     if IsFileUrl and assigned(fPath) then begin
@@ -388,8 +408,11 @@ begin
       var localComponents := local.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
       var len := Math.Min(baseComponents.Count, localComponents.Count);
       var i := 0;
-      while (i < len) and (baseComponents[i] = localComponents[i]) do
-        inc(i);
+      if aCaseInsensitive then
+        while (i < len) and (baseComponents[i].ToLowerInvariant() = localComponents[i].ToLowerInvariant()) do inc(i)
+      else
+        while (i < len) and (baseComponents[i] = localComponents[i]) do inc(i);
+        
       baseComponents.RemoveRange(0, i);
       localComponents.RemoveRange(0, i);
       
