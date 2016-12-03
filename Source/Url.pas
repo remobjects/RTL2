@@ -181,6 +181,8 @@ begin
   if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
     aPath := aPath.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "/");
   {$ENDIF}
+  if aPath.IsAbsoluteWindowsPath then
+    aPath := "/"+aPath; // Windows paths always get an extra "/"
   result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
 end;
 
