@@ -85,7 +85,7 @@ end;
 
 class method Folder.Exists(aFolderName: nullable Folder): Boolean;
 begin
-  result := length(FolderNameFolderName.Exists;Name.Exists;
+  result := (length(aFolderName) > 0) and aFolderName.Exists;
 end;
 
 class method Folder.GetFiles(FolderName: Folder; aRecursive: Boolean := false): not nullable List<File>;
