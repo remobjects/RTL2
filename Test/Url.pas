@@ -34,8 +34,11 @@ type
       lUrl2 := lUrl2.GetParentUrl;
       Assert.AreEqual(lUrl2, nil);
       
-      var lUrl3 := lUrl.GetParentUrl.GetSubUrl("test2.txt");
+      var lUrl3 := lUrl.GetParentUrl.SubUrl("test2.txt");
       Assert.AreEqual(lUrl3.ToAbsoluteString, "file:///Users/mh/Desktop/test2.txt");
+
+      var lUrl4 := lUrl.GetParentUrl.SubUrl("bla", "test2.txt");
+      Assert.AreEqual(lUrl4.ToAbsoluteString, "file:///Users/mh/Desktop/bla/test2.txt");
     end;
   
     method TestWindowsFileUrls();
@@ -61,7 +64,7 @@ type
       lUrl2 := lUrl2.GetParentUrl;
       Assert.AreEqual(lUrl2, nil);
 
-      var lUrl3 := lUrl.GetParentUrl.GetSubUrl("YTest2.txt");
+      var lUrl3 := lUrl.GetParentUrl.SubUrl("YTest2.txt");
       Assert.AreEqual(lUrl3.ToAbsoluteString, "file:///C:/Program%20Files/Test/YTest2.txt");
     end;
     
@@ -89,8 +92,11 @@ type
       lUrl2 := lUrl2.GetParentUrl;
       Assert.AreEqual(lUrl2, nil);
 
-      var lUrl3 := lUrl.GetParentUrl.GetSubUrl("XTest2.txt");
+      var lUrl3 := lUrl.GetParentUrl.SubUrl("XTest2.txt");
       Assert.AreEqual(lUrl3.ToAbsoluteString, "file://///SHARE/Program%20Files/Test/XTest2.txt");
+
+      var lUrl4 := lUrl.GetParentUrl.SubUrl("bla", "XTest2.txt");
+      Assert.AreEqual(lUrl4.ToAbsoluteString, "file://///SHARE/Program%20Files/Test/bla/XTest2.txt");
     end;    
 
     method TestEncodings();

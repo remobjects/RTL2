@@ -95,11 +95,17 @@ type
     method UrlWithAddedPathExtension(aNewExtension: not nullable String): nullable Url; // expects ".", but will add it if needed
 
     method UrlWithChangedLastPathComponent(aNewLastPathComponent: not nullable String): nullable Url;
-    method UrlWithRelativeOrAbsoluteSubPath(aSubPath: not nullable String): nullable Url;
+
+    method GetParentUrl(): Url;
+
+    method SubUrl(params aComponents: array of String): not nullable Url;
+    method SubUrl(params aComponents: array of String) isDirectory(aIsDirectory: Boolean): not nullable Url;
+    method SubUrlWithFilePath(aSubPath: String): not nullable Url;
+    method SubUrlWithFilePath(aSubPath: String) isDirectory(aIsDirectory: Boolean): not nullable Url;
+
+    //method UrlWithRelativeOrAbsoluteSubPath(aSubPath: not nullable String): nullable Url;
     method UrlWithRelativeOrAbsoluteFileSubPath(aSubPath: not nullable String): nullable Url;
     method UrlWithRelativeOrAbsoluteWindowsSubPath(aSubPath: not nullable String): nullable Url;
-    method GetParentUrl(): Url;
-    method GetSubUrl(aName: String) isDirectory(aIsDirectory: Boolean := false): Url;
     
     method UrlWithFragment(aFragment: nullable String): not nullable Url;
     method UrlWithoutFragment(): not nullable Url; inline;
@@ -621,31 +627,47 @@ begin
   result := CopyWithPath('/')
 end;
 
-method Url.GetSubUrl(aName: String) isDirectory(aIsDirectory: Boolean := false): Url;
+method Url.SubUrl(params aComponents: array of String): not nullable Url;
+begin
+  result := SubUrl(aComponents) isDirectory(false);
+end;
+
+method Url.SubUrl(params aComponents: array of String) isDirectory(aIsDirectory: Boolean): not nullable Url;
 begin
   var lNewPath := fPath;
   
-  if length(lNewPath) = 0 then
-    lNewPath := '/'
-  else if not lNewPath.EndsWith('/') then
-    lNewPath := lNewPath+'/';
-    
-  lNewPath := lNewPath+aName;
+  for each c in aComponents do begin
+    if not lNewPath.EndsWith('/') then
+      lNewPath := lNewPath+'/';
+    lNewPath := lNewPath+c;
+  end;
   if aIsDirectory and not lNewPath.EndsWith('/') then
     lNewPath := lNewPath+'/';
+    
   result := CopyWithPath(lNewPath);
+end;
+
+method Url.SubUrlWithFilePath(aSubPath: String): not nullable Url;
+begin
+  result := SubUrlWithFilePath(aSubPath) isDirectory(false);
   {$HINT handle "wrong" stuff. like, what if aName starts with `/`? do we fail? do we use the absolute path}
 end;
+
+method Url.SubUrlWithFilePath(aSubPath: String) isDirectory(aIsDirectory: Boolean): not nullable Url;
+begin
+  {$IF NOT KNOWN_UNIX}
+  if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
+    aSubPath := aSubPath.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, '/');
+  {$ENDIF}
+  result := SubUrl(aSubPath);
+end;
+
 
 method Url.UrlWithRelativeOrAbsoluteFileSubPath(aSubPath: not nullable String): nullable Url;
 begin
   if aSubPath.IsAbsolutePath then
     exit Url.UrlWithFilePath(aSubPath);
-  {$IF NOT KNOWN_UNIX}
-  if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
-    aSubPath := aSubPath.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, '/');
-  {$ENDIF}
-  result := UrlWithRelativeOrAbsoluteSubPath(aSubPath);
+  result := SubUrlWithFilePath(aSubPath);;
 end;
 
 method Url.UrlWithRelativeOrAbsoluteWindowsSubPath(aSubPath: not nullable String): nullable Url;
@@ -653,15 +675,15 @@ begin
   if aSubPath.IsAbsolutePath then
     exit Url.UrlWithWindowsPath(aSubPath);
   aSubPath := aSubPath.Replace('\', '/');
-  result := UrlWithRelativeOrAbsoluteSubPath(aSubPath);
+  result := SubUrl(aSubPath);;
 end;
 
-method Url.UrlWithRelativeOrAbsoluteSubPath(aSubPath: not nullable String): nullable Url;
+/*method Url.UrlWithRelativeOrAbsoluteSubPath(aSubPath: not nullable String): nullable Url;
 begin
   if aSubPath.IsAbsolutePath then
     exit Url.UrlWithFilePath(aSubPath);
-  result := GetSubUrl(aSubPath).CanonicalVersion;
-end;
+  result := SubUrl(aSubPath);
+end;*/
 
 method Url.GetCanonicalVersion(): Url;
 begin
