@@ -91,6 +91,11 @@ type
     class operator LessOrEqual(a,b: DateTime): Boolean;
     class operator Greater(a, b: DateTime): Boolean;
     class operator GreaterOrEqual(a,b: DateTime): Boolean;
+
+    {$IF ECHOES OR ISLAND}
+    operator Implicit(aDateTime: PlatformDateTime): DateTime;
+    operator Implicit(aDateTime: DateTime): PlatformDateTime;
+    {$ENDIF}
   end;
 
 implementation
@@ -473,60 +478,62 @@ end;
 
 operator DateTime.Equal(a: DateTime; b: DateTime): Boolean;
 begin
-  {$IF NOT ECHOES OR ISLAND}
-  if (Object(a) = nil) and (Object(b) = nil) then exit true;
-  if (Object(a) = nil) or (Object(b) = nil) then exit false;
-  {$ENDIF}
+  if Object(a) = nil then exit Object(b) = nil;
+  if Object(b) = nil then exit Object(a) = nil;
   result := a.Ticks = b.Ticks;
 end;
 
 operator DateTime.NotEqual(a: DateTime; b: DateTime): Boolean;
 begin
-  {$IF NOT ECHOES OR ISLAND}
-  if (Object(a) = nil) and (Object(b) = nil) then exit false;
-  if (Object(a) = nil) or (Object(b) = nil) then exit true;
-  {$ENDIF}
+  if Object(a) = nil then exit Object(b) ≠ nil;
+  if Object(b) = nil then exit Object(a) ≠ nil;
   result := a.Ticks <> b.Ticks;
 end;
 
 operator DateTime.Less(a: DateTime; b: DateTime): Boolean;
 begin
-  {$IF NOT ECHOES OR ISLAND}
   if (Object(a) = nil) and (Object(b) = nil) then exit false;
   if (Object(a) = nil) then exit true;
   if (Object(b) = nil) then exit false;
-  {$ENDIF}
   result := a.Ticks < b.Ticks;
 end;
 
 operator DateTime.LessOrEqual(a: DateTime; b: DateTime): Boolean;
 begin
-  {$IF NOT ECHOES OR ISLAND}
   if (Object(a) = nil) and (Object(b) = nil) then exit true;
   if (Object(a) = nil) then exit true;
   if (Object(b) = nil) then exit false;
-  {$ENDIF}
   result := a.Ticks <= b.Ticks;
 end;
 
 operator DateTime.Greater(a: DateTime; b: DateTime): Boolean;
 begin
-  {$IF NOT ECHOES OR ISLAND}
   if (Object(a) = nil) and (Object(b) = nil) then exit false;
   if (Object(a) = nil) then exit false;
   if (Object(b) = nil) then exit true;
-  {$ENDIF}
   result := a.Ticks > b.Ticks;
 end;
 
 operator DateTime.GreaterOrEqual(a: DateTime; b: DateTime): Boolean;
 begin
-  {$IF NOT ECHOES OR ISLAND}
   if (Object(a) = nil) and (Object(b) = nil) then exit true;
   if (Object(a) = nil) then exit false;
   if (Object(b) = nil) then exit true;
-  {$ENDIF}
   result := a.Ticks >= b.Ticks;
 end;
+
+{$IF ECHOES OR ISLAND}
+operator DateTime.Implicit(aDateTime: PlatformDateTime): DateTime;
+begin
+  result := new DateTime(aDateTime);
+end;
+
+operator DateTime.Implicit(aDateTime: DateTime): PlatformDateTime;
+begin
+  if not assigned(aDateTime) then
+    raise new InvalidCastException("Cannot cast null DateTime to platform DateTime type.");
+  result := aDateTime.fDateTime
+end;
+{$ENDIF}
 
 end.
