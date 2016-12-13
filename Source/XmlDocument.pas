@@ -197,8 +197,15 @@ end;
 
 class method XmlDocument.FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
 begin
+  {$IF ECHOES}
   {$WARNING Not implemented}
-  raise new NotImplementedException("XmlDocument.FromBinary() is not imoplemented yet.");
+  raise new NotImplementedException("XmlDocument.FromBinary() is not implemented for .NET yet..");
+  {$ELSEIF TOFFEE}
+  var lError: NSError;
+  var lXml := new NativeXmlDocument withData(aBinary) options(0) error(var lError);
+  if assigned(lXml) then
+    result := new XmlDocument(lXml);
+  {$ENDIF}
 end;
 
 class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
