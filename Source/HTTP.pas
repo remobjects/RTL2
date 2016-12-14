@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT ISLAND}
+
 interface
 
 {$IF ECHOES OR (TOFFEE AND MACOS)}{$DEFINE XML}{$ENDIF}
@@ -913,5 +915,7 @@ begin
   end;
 end;
 *)
+
+{$ENDIF}
 
 end.
