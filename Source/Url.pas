@@ -14,7 +14,8 @@ type
   private
     var fScheme, fHost, fPath, fQueryString, fFragment, fUser: String;
     var fPort: nullable Int32;
-    var fCanonicalVersion: weak Url;
+    var fCanonicalVersion: Url;
+    var fIsCanonical: Boolean;
     var fCachedAbsoluteString: String;
     var fCachedLastPathComponent: String;
     {$IF NOT KNOWN_UNIX}
@@ -687,35 +688,40 @@ end;*/
 
 method Url.GetCanonicalVersion(): Url;
 begin
-  if not assigned(fCanonicalVersion) then begin
+  if fIsCanonical then
+    exit self;
+    
+  if assigned(fCanonicalVersion) then
+    exit fCanonicalVersion;
   
-    var lParts := fPath.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
-    var i := 0;
-    while i < length(lParts) do begin
-      case lParts[i] of
-        "..": if (i > 0) and (lParts[i-1] ≠ "..") and (lParts[i-1] ≠ "") then begin
-                lParts.RemoveRange(i-1, 2);
-                dec(i);
-                continue;
-              end;  
-        ".": begin
-               lParts.RemoveAt(i);
-               continue;
-             end;
-      end;
-      inc(i);
+  var lParts := fPath.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
+  var i := 0;
+  while i < length(lParts) do begin
+    case lParts[i] of
+      "..": if (i > 0) and (lParts[i-1] ≠ "..") and (lParts[i-1] ≠ "") then begin
+              lParts.RemoveRange(i-1, 2);
+              dec(i);
+              continue;
+            end;  
+      ".": begin
+             lParts.RemoveAt(i);
+             continue;
+           end;
     end;
-    
-    {$HINT needs to fix case to match disk case, if present? }
-  
-    var lNewPath := String.Join("/", lParts.ToArray());
-    if lNewPath ≠ fPath then
-      fCanonicalVersion := CopyWithPath(lNewPath)
-    else
-      fCanonicalVersion := self;
-    
+    inc(i);
   end;
-  result := fCanonicalVersion;
+  
+  {$HINT needs to fix case to match disk case, if present? }
+
+  var lNewPath := String.Join("/", lParts.ToArray());
+  if lNewPath ≠ fPath then begin
+    fCanonicalVersion := CopyWithPath(lNewPath);
+    result := fCanonicalVersion;
+  end
+  else begin
+    fIsCanonical := true;
+    result := self;
+  end;
 end;
 
 //
