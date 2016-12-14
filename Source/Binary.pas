@@ -68,8 +68,12 @@ begin
   {$IF COOPER}
   fData.Write(anArray, 0, anArray.Length);
   {$ELSEIF ECHOES}
-  var ms := new System.IO.MemoryStream;
+  var ms := new ImmutablePlatformBinary();
   ms.Write(anArray, 0, anArray.Length);
+  exit ms;
+  {$ELSEIF ISLAND}
+  var ms := new ImmutablePlatformBinary();
+  ms.Write(anArray, anArray.Length);
   exit ms;
   {$ELSEIF TOFFEE}
   exit NSData.dataWithBytes(anArray) length(length(anArray)); 
@@ -82,9 +86,9 @@ begin
   {$IF COOPER}
   if Bin <> nil then
     fData.Write(Bin.ToArray, 0, Bin.Length);
-  {$ELSEIF ECHOES}
-  var ms := new System.IO.MemoryStream;
-  System.IO.MemoryStream(Bin).WriteTo(ms);
+  {$ELSEIF ECHOES OR ISLAND}
+  var ms := new ImmutablePlatformBinary();
+  ImmutablePlatformBinary(Bin).WriteTo(ms);
   exit ms;
   {$ELSEIF TOFFEE}
   exit NSData.dataWithData(Bin);
@@ -94,8 +98,8 @@ end;
 constructor Binary;
 begin
   {$IF COOPER}
-  {$ELSEIF ECHOES}
-  result := new System.IO.MemoryStream;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := new ImmutablePlatformBinary();
   {$ELSEIF TOFFEE}
   result :=  NSData.data;
   {$ENDIF} 
@@ -109,8 +113,12 @@ begin
   {$IF COOPER}
   inherited constructor(anArray);
   {$ELSEIF ECHOES}
-  var ms := new System.IO.MemoryStream;
+  var ms := new PlatformBinary();
   ms.Write(anArray, 0, anArray.Length);
+  exit ms;
+  {$ELSEIF ISLAND}
+  var ms := new PlatformBinary();
+  ms.Write(anArray, anArray.Length);
   exit ms;
   {$ELSEIF TOFFEE}
   exit NSMutableData.dataWithBytes(anArray) length(length(anArray)); 
@@ -122,9 +130,9 @@ begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
   {$IF COOPER}
   Assign(Bin);
-  {$ELSEIF ECHOES}
-  var ms := new System.IO.MemoryStream;
-  System.IO.MemoryStream(Bin).WriteTo(ms);
+  {$ELSEIF ECHOES OR ISLAND}
+  var ms := new PlatformBinary();
+  PlatformBinary(Bin).WriteTo(ms);
   exit ms;
   {$ELSEIF TOFFEE}
   exit NSMutableData.dataWithData(Bin);
@@ -137,10 +145,10 @@ begin
   Clear;
   if Bin <> nil then
     fData.Write(Bin.ToArray, 0, Bin.Length);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   Clear;
-  if Bin <> nil then
-    System.IO.MemoryStream(Bin).WriteTo(System.IO.MemoryStream(self));
+  if assigned(Bin) then
+    PlatformBinary(Bin).WriteTo(mapped);
   {$ELSEIF TOFFEE}
   mapped.setData(Bin);
   {$ENDIF}

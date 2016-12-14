@@ -150,7 +150,7 @@ class method Guid.CreateEmptyGuid: not nullable Guid;
 begin
   {$IF COOPER}
   exit new java.util.UUID(0, 0);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit new Guid(PlatformGuid.Empty);
   {$ELSEIF TOFFEE}
   var lBytes := new byte[16];

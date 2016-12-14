@@ -102,6 +102,7 @@ type
 
   IOException = public class(RTLException);
 
+  {$IF NOT ISLAND}
   HttpException = public class(RTLException)
   assembly
   
@@ -114,6 +115,7 @@ type
   public
     property Response: nullable HttpResponse; readonly;   
   end;
+  {$ENDIF}
   
   FileNotFoundException = public class (RTLException)
   public

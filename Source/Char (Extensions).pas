@@ -18,7 +18,7 @@ method LowerChar(aChar: Char): Char;
 begin
   {$IF COOPER}
   result := Character.toLowerCase(aChar);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}// OR ISLAND}
   result := Char.ToLower(aChar);
   {$ELSEIF TOFFEE}
   result := chr(toLower(ord(aChar)));

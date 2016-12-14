@@ -65,7 +65,7 @@ type
     method LastIndexOf(const Value: String; StartIndex: Integer): Integer; 
     method Substring(StartIndex: Int32): not nullable String;
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String;
-    method Split(Separator: String): array of String;
+    method Split(Separator: String): not nullable array of String;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method PadStart(TotalWidth: Integer): String; inline; 
@@ -141,7 +141,7 @@ begin
   {$ELSEIF ECHOES}
   result := new PlatformString(Value, Offset, Count);
   {$ELSEIF ISLAND}
-  //result := PlatformString.FromChars(@[Value]+Offset*sizeOf(Char), Count);
+  result := PlatformString.FromPChar((@Value)+Offset*sizeOf(Char), Count);
   {$ELSEIF TOFFEE}
   result := new PlatformString withCharacters(@Value[Offset]) length(Count);
   {$ENDIF}
@@ -157,7 +157,7 @@ begin
   {$ELSEIF ECHOES}
   result := new PlatformString(aChar, aCount);
   {$ELSEIF ISLAND}
-  //result := PlatformString.FromChar(aChar, aCount);
+  result := PlatformString.FromRepeatedChar(aChar, aCount);
   {$ELSEIF TOFFEE}
   result := PlatformString("").stringByPaddingToLength(aCount) withString(PlatformString.stringWithFormat("%c", aChar)) startingAtIndex(0);
   {$ENDIF}
@@ -519,7 +519,7 @@ begin
   if (StartIndex < 0) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "StartIndex");
 
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Substring(StartIndex) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.substringFromIndex(StartIndex) as not nullable;
@@ -533,22 +533,26 @@ begin
 
   {$IF COOPER}
   exit mapped.substring(StartIndex, StartIndex + aLength) as not nullable;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Substring(StartIndex, aLength) as not nullable;
   {$ELSEIF TOFFEE}
   result := mapped.substringWithRange(Foundation.NSMakeRange(StartIndex, aLength));
   {$ENDIF}
 end;
 
-method String.Split(Separator: String): array of String;
+method String.Split(Separator: String): not nullable array of String;
 begin
   if IsNullOrEmpty(Separator) then
     exit [mapped];
 
   {$IF COOPER}  
-  exit mapped.split(java.util.regex.Pattern.quote(Separator));
+  exit mapped.split(java.util.regex.Pattern.quote(Separator)) as not nullable;
   {$ELSEIF ECHOES}
-  exit mapped.Split([Separator], StringSplitOptions.None);
+  exit mapped.Split([Separator], StringSplitOptions.None) as not nullable;
+  {$ELSEIF ECHOES}
+  exit mapped.Split([Separator], StringSplitOptions.None) as not nullable;
+  {$ELSEIF ISLAND}
+  exit mapped.Split(Separator) as not nullable;
   {$ELSEIF TOFFEE}
   var Items := mapped.componentsSeparatedByString(Separator);
   result := new String[Items.count];
@@ -564,7 +568,7 @@ begin
 
   if NewValue = nil then
     NewValue := "";
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Replace(OldValue, NewValue) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingOccurrencesOfString(OldValue) withString(NewValue);
@@ -646,7 +650,7 @@ method String.ToLower: not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toLowerCase(Locale.Current) as not nullable;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToLower as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseString;
@@ -683,7 +687,7 @@ method String.ToUpper: not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toUpperCase(Locale.Current) as not nullable;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToUpper as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseString;
@@ -775,7 +779,7 @@ begin
     dec(i);
 
   result := mapped.substring(0, i + 1) as not nullable;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   result := mapped.TrimEnd(TrimChars) as not nullable;
   {$ELSEIF TOFFEE}
   var lCharacters := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
@@ -794,7 +798,7 @@ begin
     inc(i);
 
   result := mapped.substring(i) as not nullable;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   result := mapped.TrimStart(TrimChars) as not nullable;
   {$ELSEIF TOFFEE}
   var lCharacters := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));

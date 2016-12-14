@@ -97,7 +97,7 @@ end;
 
 method Convert.ToString(aValue: Byte; aBase: Integer := 10): not nullable String;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   case aBase of
     2: exit ToBinaryString(aValue);
     8: exit ToOctalString(aValue);
@@ -112,7 +112,7 @@ end;
 
 method Convert.ToString(aValue: Int32; aBase: Integer := 10): not nullable String;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   case aBase of
     2: exit ToBinaryString(aValue);
     8: exit ToOctalString(aValue);
@@ -127,7 +127,7 @@ end;
 
 method Convert.ToString(aValue: Int64; aBase: Integer := 10): not nullable String;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   case aBase of
     2: exit ToBinaryString(aValue);
     8: exit ToOctalString(aValue);
@@ -259,8 +259,8 @@ begin
   {$IF COOPER}
   exit Integer.parseInt(aValue);
   {$ELSEIF ECHOES OR ISLAND}
-  for each c in aValue do
-    if Char.IsWhiteSpace(c) then // TryParse ignores whitespace, we wanna fail
+  for i: Int32 := 0 to length(aValue) do
+    if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
       raise new FormatException("Unable to convert string '{0}' to int64.", aValue);;
   exit Int32.Parse(aValue);
   {$ELSEIF TOFFEE}
@@ -281,8 +281,8 @@ begin
       exit nil;
   end;
   {$ELSEIF ECHOES OR ISLAND}
-  for each c in aValue do
-    if Char.IsWhiteSpace(c) then // TryParse ignores whitespace, we wanna fail
+  for i: Int32 := 0 to length(aValue) do
+    if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
       exit nil;
   var lResult: Int32;
   if Int32.TryParse(aValue, out lResult) then
@@ -470,8 +470,8 @@ begin
   {$IF COOPER}
   exit Long.parseLong(aValue);
   {$ELSEIF ECHOES OR ISLAND}
-  for each c in aValue do
-    if Char.IsWhiteSpace(c) then // TryParse ignores whitespace, we wanna fail
+  for i: Int32 := 0 to length(aValue) do
+    if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
       raise new FormatException("Unable to convert string '{0}' to int64.", aValue);;
   exit Int64.Parse(aValue);
   {$ELSEIF TOFFEE}
@@ -492,8 +492,8 @@ begin
       exit nil;
   end;
   {$ELSEIF ECHOES OR ISLAND}
-  for each c in aValue do
-    if Char.IsWhiteSpace(c) then // TryParse ignores whitespace, we wanna fail
+  for i: Int32 := 0 to length(aValue) do
+    if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
       exit nil;
   var lResult: Int64;
   if Int64.TryParse(aValue, out lResult) then

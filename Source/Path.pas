@@ -156,6 +156,8 @@ begin
   exit System.IO.Path.GetFullPath(RelativePath)  as not nullable;
   {$ELSEIF ECHOES}
   exit System.IO.Path.GetFullPath(RelativePath) as not nullable;
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.Path.GetFullPath(RelativePath) as not nullable;
   {$ELSEIF TOFFEE}
   exit (RelativePath as NSString).stringByStandardizingPath;
   {$ENDIF}

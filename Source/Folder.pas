@@ -53,26 +53,27 @@ type
     property &Extension: not nullable String read Path.GetExtension(FullPath);
   end;
 
-  {$IF COOPER OR TOFFEE}
-  FolderHelper = public static class
-  public
-    {$IF COOPER}method DeleteFolder(Value: java.io.File);{$ENDIF}
-    {$IF TOFFEE}method IsDirectory(Value: String): Boolean;{$ENDIF}
-  end;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
-  FolderHelper = public static class
-  public
-    method GetFile(Folder: Windows.Storage.StorageFolder; FileName: String): Windows.Storage.StorageFile;
-    method GetFolder(Folder: Windows.Storage.StorageFolder; FolderName: String): Windows.Storage.StorageFolder;
-  end;
-  {$ENDIF}
-
   {$IF WINDOWS_PHONE OR NETFX_CORE}
   extension method Windows.Foundation.IAsyncOperation<TResult>.Await<TResult>: TResult;  
   {$ENDIF}
 
-
 implementation
+
+{$IF COOPER OR TOFFEE}
+type
+  FolderHelper = static class
+  public
+    {$IF COOPER}method DeleteFolder(Value: java.io.File);{$ENDIF}
+    {$IF TOFFEE}method IsDirectory(Value: String): Boolean;{$ENDIF}
+  end;
+{$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+type
+  FolderHelper = static class
+  public
+    method GetFile(Folder: Windows.Storage.StorageFolder; FileName: String): Windows.Storage.StorageFile;
+    method GetFolder(Folder: Windows.Storage.StorageFolder; FolderName: String): Windows.Storage.StorageFolder;
+  end;
+{$ENDIF}
 
 constructor Folder(aPath: not nullable String);
 begin
@@ -218,19 +219,57 @@ extension method Windows.Foundation.IAsyncOperation<TResult>.&Await<TResult>: TR
 begin
   exit self.AsTask.Result;
 end;
-{$ELSEIF ECHOES}
+{$ELSE}
 class method Folder.GetSeparator: Char;
 begin
+  {$IF COOPER}
+  exit java.io.File.separatorChar;
+  {$ELSEIF ECHOES}
   exit System.IO.Path.DirectorySeparatorChar;
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  exit '/';
+  {$ENDIF}
 end;
 
 class method Folder.UserHomeFolder: Folder;
 begin
+  {$IF COOPER}
+  {$IF ANDROID}
+  AppContextMissingException.RaiseIfMissing;
+  exit Environment.ApplicationContext.FilesDir.AbsolutePath;
+  {$ELSE}
+  exit System.getProperty("user.home");
+  {$ENDIF}
+  {$ELSEIF ECHOES}
   exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.NSApplicationSupportDirectory, NSSearchPathDomainMask.NSUserDomainMask, true).objectAtIndex(0);
+
+  if not NSFileManager.defaultManager.fileExistsAtPath(result) then begin
+    var lError: NSError := nil;
+    if not NSFileManager.defaultManager.createDirectoryAtPath(result) withIntermediateDirectories(true) attributes(nil) error(var lError) then
+      raise new NSErrorException(lError);
+  end;
+  {$ENDIF}
 end;
 
 method Folder.CreateFile(FileName: String; FailIfExists: Boolean := false): File;
 begin
+  {$IF COOPER}
+  var lNewFile := new java.io.File(mapped, FileName);
+  if lNewFile.exists then begin
+    if FailIfExists then
+      raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
+
+    exit lNewFile.path;
+  end
+  else begin
+    lNewFile.createNewFile;
+  end;
+  result := lNewFile.path;
+  {$ELSEIF ECHOES}
   var NewFileName := System.IO.Path.Combine(mapped, FileName);
 
   if System.IO.File.Exists(NewFileName) then begin
@@ -243,96 +282,38 @@ begin
   var fs := System.IO.File.Create(NewFileName);
   fs.Close;
   exit NewFileName;
-end;
-
-method Folder.Exists: Boolean;
-begin
-  result := System.IO.Directory.Exists(mapped);
-end;
-
-method Folder.Create(FailIfExists: Boolean := false);
-begin
-  if System.IO.Directory.Exists(mapped) then begin
-    if FailIfExists then
-      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
-  end
-  else begin
-    System.IO.Directory.CreateDirectory(mapped);
-  end;
-end;
-
-method Folder.Delete;
-begin
-  System.IO.Directory.Delete(mapped, true);
-end;
-
-method Folder.GetFile(FileName: String): File;
-begin
-  var ExistingFileName := System.IO.Path.Combine(mapped, FileName);
-  if System.IO.File.Exists(ExistingFileName) then
-    exit ExistingFileName;
-
-  exit nil;
-end;
-
-method Folder.GetFiles: not nullable List<File>;
-begin
-  result := new List<File>(System.IO.Directory.GetFiles(mapped));
-end;
-
-method Folder.GetSubfolders: not nullable List<Folder>;
-begin
-  result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
-end;
-
-method Folder.Rename(NewName: String): Folder;
-begin
-  var TopLevel := System.IO.Path.GetDirectoryName(mapped);
-  var FolderName := System.IO.Path.Combine(TopLevel, NewName);
-  if System.IO.Directory.Exists(FolderName) then
-    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
-
-  System.IO.Directory.Move(mapped, FolderName);
-  result := FolderName;
-end;
-{$ELSEIF COOPER}
-method Folder.CreateFile(FileName: String; FailIfExists: Boolean := false): File;
-begin
-  var lNewFile := new java.io.File(mapped, FileName);
-  if lNewFile.exists then begin
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  var NewFileName := Combine(mapped, FileName);
+  var Manager := NSFileManager.defaultManager;
+  if Manager.fileExistsAtPath(NewFileName) then begin
     if FailIfExists then
       raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
 
-    exit lNewFile.path;
-  end
-  else begin
-    lNewFile.createNewFile;
+    exit File(NewFileName);
   end;
-  result := lNewFile.path;
-end;
 
-class method Folder.GetSeparator: Char;
-begin
-  exit java.io.File.separatorChar;
-end;
-
-class method Folder.UserHomeFolder: Folder;
-begin
-  {$IF ANDROID}
-  AppContextMissingException.RaiseIfMissing;
-  exit Environment.ApplicationContext.FilesDir.AbsolutePath;
-  {$ELSE}
-  exit System.getProperty("user.home");
+  Manager.createFileAtPath(NewFileName) contents(nil) attributes(nil);
+  exit File(NewFileName);
   {$ENDIF}
 end;
 
 method Folder.Exists: Boolean;
 begin
+  {$IF COOPER}
   result := JavaFile.exists;
+  {$ELSEIF ECHOES}
+  result := System.IO.Directory.Exists(mapped);
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  var isDirectory := false;
+  result := NSFileManager.defaultManager.fileExistsAtPath(self) isDirectory(var isDirectory) and isDirectory;
+  {$ENDIF}
 end;
 
 method Folder.Create(FailIfExists: Boolean := false);
 begin
+  {$IF COOPER}
   var lFile := JavaFile;
   if lFile.exists then begin
     if FailIfExists then
@@ -343,8 +324,155 @@ begin
     if not lFile.mkdir then
       raise new IOException(RTLErrorMessages.FOLDER_CREATE_ERROR, mapped);
   end;
+  {$ELSEIF ECHOES}
+  if System.IO.Directory.Exists(mapped) then begin
+    if FailIfExists then
+      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
+  end
+  else begin
+    System.IO.Directory.CreateDirectory(mapped);
+  end;
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  var isDirectory := false;
+  if NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) then begin
+    if isDirectory and FailIfExists then
+      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
+    if not isDirectory then
+      raise new IOException(RTLErrorMessages.FILE_EXISTS, mapped);
+  end
+  else begin
+    var lError: NSError := nil;
+    if not NSFileManager.defaultManager.createDirectoryAtPath(mapped) withIntermediateDirectories(true) attributes(nil) error(var lError) then
+      raise new NSErrorException(lError);
+  end;
+  {$ENDIF}
 end;
 
+method Folder.Delete;
+begin
+  {$IF COOPER}
+  var lFile := JavaFile;
+  if not lFile.exists then
+    raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, mapped);
+
+  FolderHelper.DeleteFolder(lFile);
+  {$ELSEIF ECHOES}
+  System.IO.Directory.Delete(mapped, true);
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  var lError: NSError := nil;
+  if not NSFileManager.defaultManager.removeItemAtPath(mapped) error(var lError) then
+    raise new NSErrorException(lError);
+  {$ENDIF}
+end;
+
+method Folder.GetFile(FileName: String): File;
+begin
+  {$IF COOPER}
+  var ExistingFile := new java.io.File(mapped, FileName);
+  if not ExistingFile.exists then
+    exit nil;
+
+  exit ExistingFile.path;
+  {$ELSEIF ECHOES}
+  var ExistingFileName := System.IO.Path.Combine(mapped, FileName);
+  if System.IO.File.Exists(ExistingFileName) then
+    exit ExistingFileName;
+
+  exit nil;
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  ArgumentNullException.RaiseIfNil(FileName, "FileName");
+  var ExistingFileName := Combine(mapped, FileName);
+  if not NSFileManager.defaultManager.fileExistsAtPath(ExistingFileName) then
+    exit nil;
+
+  exit File(ExistingFileName);
+  {$ENDIF}
+end;
+
+method Folder.GetFiles: not nullable List<File>;
+begin
+  {$IF COOPER}
+  result := JavaFile.listFiles((f,n)->new java.io.File(f, n).isFile).Select(f->f.path).ToList() as not nullable;
+  {$ELSEIF ECHOES}
+  result := new List<File>(System.IO.Directory.GetFiles(mapped));
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  result := new List<File>;
+  var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
+  if Items = nil then
+    exit;
+
+  for i: Integer := 0 to Items.count - 1 do begin
+    var item := Combine(mapped, Items.objectAtIndex(i));
+    if not FolderHelper.IsDirectory(item) then
+      result.Add(File(item));
+  end;
+  result := new List<Folder>();
+  {$ENDIF}
+end;
+
+method Folder.GetSubfolders: not nullable List<Folder>;
+begin
+  {$IF COOPER}
+  result := JavaFile.listFiles( (f,n) -> new java.io.File(f, n).isDirectory).Select(f -> f.Path).ToList() as not nullable;
+  {$ELSEIF ECHOES}
+  result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
+  if Items = nil then
+    exit;
+
+  for i: Integer := 0 to Items.count - 1 do begin
+    var item := Combine(mapped, Items.objectAtIndex(i));
+    if FolderHelper.IsDirectory(item) then
+      result.Add(Folder(item));
+  end;
+  {$ENDIF}
+end;
+
+method Folder.Rename(NewName: String): Folder;
+begin
+  {$IF COOPER}
+  var lFile := JavaFile;
+  var NewFolder := new java.io.File(lFile.ParentFile, NewName);
+  if NewFolder.exists then
+    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
+
+  if not lFile.renameTo(NewFolder) then
+    raise new IOException(RTLErrorMessages.IO_RENAME_ERROR, mapped, NewName);
+
+  result := NewName;
+  {$ELSEIF ECHOES}
+  var TopLevel := System.IO.Path.GetDirectoryName(mapped);
+  var FolderName := System.IO.Path.Combine(TopLevel, NewName);
+  if System.IO.Directory.Exists(FolderName) then
+    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
+
+  System.IO.Directory.Move(mapped, FolderName);
+  result := FolderName;
+  {$ELSEIF ISLAND}
+  {$ELSEIF NOUGAT}
+  var RootFolder := mapped.stringByDeletingLastPathComponent;
+  var NewFolderName := Combine(RootFolder, NewName);
+  var Manager := NSFileManager.defaultManager;
+
+  if Manager.fileExistsAtPath(NewFolderName) then
+    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
+
+  var lError: NSError := nil; 
+  if not Manager.moveItemAtPath(mapped) toPath(NewFolderName) error(var lError) then
+    raise new NSErrorException(lError);
+
+  result := NewFolderName;
+  {$ENDIF}
+end;
+{$ENDIF}
+
+{$IF COOPER}
 class method FolderHelper.DeleteFolder(Value: java.io.File);
 begin
   if Value.isDirectory then begin
@@ -359,166 +487,12 @@ begin
     if not Value.delete then
       raise new IOException(RTLErrorMessages.FOLDER_DELETE_ERROR, Value.Name);
 end;
+{$ENDIF}
 
-method Folder.Delete;
-begin
-  var lFile := JavaFile;
-  if not lFile.exists then
-    raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, mapped);
-
-  FolderHelper.DeleteFolder(lFile);
-end;
-
-method Folder.GetFile(FileName: String): File;
-begin
-  var ExistingFile := new java.io.File(mapped, FileName);
-  if not ExistingFile.exists then
-    exit nil;
-
-  exit ExistingFile.path;
-end;
-
-method Folder.GetFiles: not nullable List<File>;
-begin
-  result := JavaFile.listFiles((f,n)->new java.io.File(f, n).isFile).Select(f->f.path).ToList() as not nullable;
-end;
-
-method Folder.GetSubfolders: not nullable List<Folder>;
-begin
-  result := JavaFile.listFiles( (f,n) -> new java.io.File(f, n).isDirectory).Select(f -> f.Path).ToList() as not nullable;
-end;
-
-method Folder.Rename(NewName: String): Folder;
-begin
-  var lFile := JavaFile;
-  var NewFolder := new java.io.File(lFile.ParentFile, NewName);
-  if NewFolder.exists then
-    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
-
-  if not lFile.renameTo(NewFolder) then
-    raise new IOException(RTLErrorMessages.IO_RENAME_ERROR, mapped, NewName);
-
-  result := NewName;
-end;
-{$ELSEIF TOFFEE}
-method Folder.CreateFile(FileName: String; FailIfExists: Boolean := false): File;
-begin
-  var NewFileName := Combine(mapped, FileName);
-  var Manager := NSFileManager.defaultManager;
-  if Manager.fileExistsAtPath(NewFileName) then begin
-    if FailIfExists then
-      raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
-
-    exit File(NewFileName);
-  end;
-
-  Manager.createFileAtPath(NewFileName) contents(nil) attributes(nil);
-  exit File(NewFileName);
-end;
-
-class method Folder.GetSeparator: Char;
-begin
-  exit '/';
-end;
-
-class method Folder.UserHomeFolder: Folder;
-begin
-  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.NSApplicationSupportDirectory, NSSearchPathDomainMask.NSUserDomainMask, true).objectAtIndex(0);
-
-  if not NSFileManager.defaultManager.fileExistsAtPath(result) then begin
-    var lError: NSError := nil;
-    if not NSFileManager.defaultManager.createDirectoryAtPath(result) withIntermediateDirectories(true) attributes(nil) error(var lError) then
-      raise new NSErrorException(lError);
-  end;
-end;
-
-method Folder.Exists: Boolean;
-begin
-  var isDirectory := false;
-  result := NSFileManager.defaultManager.fileExistsAtPath(self) isDirectory(var isDirectory) and isDirectory;
-end;
-
-method Folder.Create(FailIfExists: Boolean := false);
-begin
-  var isDirectory := false;
-  if NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) then begin
-    if isDirectory and FailIfExists then
-      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
-    if not isDirectory then
-      raise new IOException(RTLErrorMessages.FILE_EXISTS, mapped);
-  end
-  else begin
-    var lError: NSError := nil;
-    if not NSFileManager.defaultManager.createDirectoryAtPath(mapped) withIntermediateDirectories(true) attributes(nil) error(var lError) then
-      raise new NSErrorException(lError);
-  end;
-end;
-
-method Folder.Delete;
-begin
-  var lError: NSError := nil;
-  if not NSFileManager.defaultManager.removeItemAtPath(mapped) error(var lError) then
-    raise new NSErrorException(lError);
-end;
-
-method Folder.GetFile(FileName: String): File;
-begin
-  ArgumentNullException.RaiseIfNil(FileName, "FileName");
-  var ExistingFileName := Combine(mapped, FileName);
-  if not NSFileManager.defaultManager.fileExistsAtPath(ExistingFileName) then
-    exit nil;
-
-  exit File(ExistingFileName);
-end;
-
+{$IF TOFFEE}
 class method FolderHelper.IsDirectory(Value: String): Boolean;
 begin  
   Foundation.NSFileManager.defaultManager.fileExistsAtPath(Value) isDirectory(@Result);
-end;
-
-method Folder.GetFiles: not nullable List<File>;
-begin
-  result := new List<File>;
-  var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
-  if Items = nil then
-    exit;
-
-  for i: Integer := 0 to Items.count - 1 do begin
-    var item := Combine(mapped, Items.objectAtIndex(i));
-    if not FolderHelper.IsDirectory(item) then
-      result.Add(File(item));
-  end;
-end;
-
-method Folder.GetSubfolders: not nullable List<Folder>;
-begin
-  result := new List<Folder>();
-
-  var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
-  if Items = nil then
-    exit;
-
-  for i: Integer := 0 to Items.count - 1 do begin
-    var item := Combine(mapped, Items.objectAtIndex(i));
-    if FolderHelper.IsDirectory(item) then
-      result.Add(Folder(item));
-  end;
-end;
-
-method Folder.Rename(NewName: String): Folder;
-begin
-  var RootFolder := mapped.stringByDeletingLastPathComponent;
-  var NewFolderName := Combine(RootFolder, NewName);
-  var Manager := NSFileManager.defaultManager;
-
-  if Manager.fileExistsAtPath(NewFolderName) then
-    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
-
-  var lError: NSError := nil; 
-  if not Manager.moveItemAtPath(mapped) toPath(NewFolderName) error(var lError) then
-    raise new NSErrorException(lError);
-
-  result := NewFolderName;
 end;
 
 method Folder.Combine(BasePath: String; SubPath: String): String;
