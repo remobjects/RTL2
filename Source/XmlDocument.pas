@@ -185,8 +185,8 @@ end;
 class method XmlDocument.FromString(aString: not nullable String): nullable XmlDocument;
 begin
   {$IF ECHOES}
-  {$WARNING Not implemented}
-  raise new NotImplementedException("XmlDocument.FromString() is not implemented for .NET yet.");
+  var lXml := XDocument.Parse(aString);
+  result := new XmlDocument(lXml);
   {$ELSEIF TOFFEE}
   var lError: NSError;
   var lXml := new NativeXmlDocument withXMLString(aString) options(0) error(var lError);

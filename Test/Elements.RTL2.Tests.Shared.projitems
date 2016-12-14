@@ -13,5 +13,6 @@
         <Compile Include="$(MSBuildThisFileDirectory)Convert.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)String_Paths.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Strings.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Xml.pas"/>
     </ItemGroup>
 </Project>
