@@ -422,6 +422,7 @@ begin
   result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
   {$ELSEIF ISLAND}
   {$ELSEIF NOUGAT}
+  result := new List<Folder>();
   var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
   if Items = nil then
     exit;
