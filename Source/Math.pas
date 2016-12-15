@@ -3,8 +3,16 @@
 interface
 
 type
+  {$IF JAVA}
+  PlatformMath = java.lang.Math;
+  {$ELSEIF ECHOES}
+  PlatformMath = System.Math;
+  {$ELSEIF ISLAND}
+  PlatformMath = RemObjects.Elements.System.Math;
+  {$ENDIF}
+
   {$IF COOPER}
-  Math = public class mapped to java.lang.Math
+  Math = public class mapped to PlatformMath
   public
     class method Abs(d: Double): Double; mapped to abs(d);
     class method Abs(i: Int64): Int64;
@@ -39,8 +47,8 @@ type
   end;
   {$ENDIF}
   
-  {$IF ECHOES}
-  Math = public class mapped to System.Math
+  {$IF ECHOES OR ISLAND}
+  Math = public class mapped to PlatformMath
   public    
     class method Abs(d: Double): Double; mapped to Abs(d);
     class method Abs(i: Int64): Int64; mapped to Abs(i);
@@ -75,10 +83,9 @@ type
   end;
   {$ENDIF}
   
-  {$IF TOFFEE OR ISLAND}
+  {$IF TOFFEE}
   Math = public class
   public
-    {$IF NOT (ISLAND AND WINDOWS)}
     {$WARNING Not implemented for Island yet} 
     class method Abs(value: Double): Double;
     class method Abs(i: Int64): Int64; 
@@ -110,7 +117,6 @@ type
     class method Tan(d: Double): Double;
     class method Tanh(d: Double): Double;
     class method Truncate(d: Double): Double;
-    {$ENDIF}
   end;
   {$ENDIF}
 
@@ -136,7 +142,7 @@ type
     property PositiveInfinity: Double read {$IF COOPER}Double.POSITIVE_INFINITY{$ELSEIF ECHOES}Double.PositiveInfinity{$ELSEIF WINDOWS}INFINITE{$ELSEIF TOFFEE}rtl.INFINITY{$ENDIF};
     property NegativeInfinity: Double read {$IF COOPER}Double.NEGATIVE_INFINITY{$ELSEIF ECHOES}Double.NegativeInfinity{$ELSEIF WINDOWS}-INFINITE{$ELSEIF TOFFEE}-INFINITY{$ENDIF};
     {$ENDIF}
-    property NaN: Double read {$IF COOPER}Double.NaN{$ELSEIF ECHOES}Double.NaN{$ELSEIF LINUX}0{$WARNING ^^ nan is wrong}{$ELSEIF TOFFEE}rtl.nan{$ENDIF};
+    property NaN: Double read {$IF COOPER}Double.NaN{$ELSEIF ECHOES OR ISLAND}Double.NaN{$ELSEIF TOFFEE}rtl.nan{$ENDIF};
 
     property TrueString: not nullable String read "True";
     property FalseString: not nullable String read "False";
@@ -239,7 +245,7 @@ begin
   exit Int64(Floor(a + 0.499999999999999999));
 end;
 
-{$IF COOPER or TOFFEE or ISLAND}
+{$IF COOPER or TOFFEE}
 class method Math.Sign(d: Double): Integer;
 begin
   if Consts.IsNaN(d) then
@@ -251,7 +257,7 @@ begin
 end;
 {$ENDIF}
 
-{$IF TOFFEE OR LINUX}
+{$IF TOFFEE}
 class method Math.Pow(x, y: Double): Double;
 begin
   if (x = -1) and Consts.IsInfinity(y) then

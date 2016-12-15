@@ -9,12 +9,14 @@ type
   {$IF ECHOES}
   PlatformFileMode = System.IO.FileMode;
   PlatformFileAccess = System.IO.FileAccess;
+  PlatformFileShare = System.IO.FileShare;
   PlatformFileStream = System.IO.FileStream;
   PlatformSeekOrigin = System.IO.SeekOrigin;
   {$ENDIF}
   {$IF ISLAND}
   PlatformFileMode = RemObjects.Elements.System.FileMode;
   PlatformFileAccess = RemObjects.Elements.System.FileAccess;
+  PlatformFileShare = RemObjects.Elements.System.FileShare;
   PlatformFileStream = RemObjects.Elements.System.FileStream;
   PlatformSeekOrigin = RemObjects.Elements.System.SeekOrigin;
   {$ENDIF}
@@ -57,7 +59,7 @@ begin
   var lFile: Windows.Storage.StorageFile := Windows.Storage.StorageFile.GetFileFromPathAsync(FileName).Await;
   var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
   exit lFile.OpenAsync(lMode).Await.AsStream;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   var lAccess: PlatformFileAccess := case Mode of
                                          FileOpenMode.ReadOnly: PlatformFileAccess.Read;
                                          FileOpenMode.Create: PlatformFileAccess.Write;
@@ -68,7 +70,7 @@ begin
                                          FileOpenMode.Create: PlatformFileMode.Create;
                                          else PlatformFileMode.OpenOrCreate;
                                        end;
-  exit new PlatformFileStream(FileName, lMode, lAccess);
+  exit new PlatformFileStream(FileName, lMode, lAccess, PlatformFileShare.Read);
   {$ELSEIF TOFFEE}
   case Mode of
     FileOpenMode.ReadOnly: result := NSFileHandle.fileHandleForReadingAtPath(FileName);

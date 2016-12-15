@@ -9,6 +9,8 @@ type
     method getDateCreated: DateTime;    
     {$IF COOPER}
     property JavaFile: java.io.File read new java.io.File(mapped);
+    {$ELSEIF ISLAND}
+    property IslandFile: RemObjects.Elements.System.File read new RemObjects.Elements.System.File(mapped);
     {$ENDIF}
   public
     constructor(aPath: not nullable String);
@@ -83,6 +85,8 @@ begin
   dest.close;
   {$ELSEIF ECHOES}
   System.IO.File.Copy(mapped, lNewFile);
+  {$ELSEIF ISLAND}
+  IslandFile.Copy(lNewFile);
   {$ELSEIF TOFFEE}
   var lError: Foundation.NSError := nil;
   if not NSFileManager.defaultManager.copyItemAtPath(mapped) toPath(lNewFile) error(var lError) then
@@ -107,6 +111,8 @@ begin
   mapped.DeleteAsync.AsTask.Wait;
   {$ELSEIF ECHOES}
   System.IO.File.Delete(mapped);
+  {$ELSEIF ISLAND}
+  IslandFile.Delete();
   {$ELSEIF TOFFEE}
   var lError: NSError := nil;
   if not NSFileManager.defaultManager.removeItemAtPath(mapped) error(var lError) then
@@ -140,7 +146,10 @@ begin
   exit mapped.CopyAsync(new Folder(NewPathAndName.FullPath), NewPathAndName.Name, NameCollisionOption.FailIfExists).Await();
   {$ELSEIF ECHOES}
   System.IO.File.Move(mapped, NewPathAndName);
-  result :=  NewPathAndName;
+  result := NewPathAndName;
+  {$ELSEIF ISLAND}
+  IslandFile.Move(NewPathAndName);
+  result := NewPathAndName;
   {$ELSEIF TOFFEE}
   var lError: Foundation.NSError := nil;
   if not NSFileManager.defaultManager.moveItemAtPath(mapped) toPath(NewPathAndName) error(var lError) then
@@ -203,6 +212,8 @@ begin
   result := mapped.DateCreated.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
+  {$ELSEIF ISLAND}
+  result := new DateTime(IslandFile.DateCreated);
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
   {$ENDIF}
@@ -218,6 +229,8 @@ begin
   result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
+  {$ELSEIF ISLAND}
+  result := new DateTime(IslandFile.DateModified);
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate)
   {$ENDIF}
