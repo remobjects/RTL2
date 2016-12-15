@@ -149,9 +149,9 @@ begin
   {$IF COOPER}
   result := new PlatformImmutableList<T>(java.util.Arrays.asList(anArray));
   {$ELSEIF ECHOES}
-  result := new PlatformImmutableList<T>(anArray);
+  result := new System.Collections.Generic.List<T>(anArray);
   {$ELSEIF ISLAND}
-  result := new PlatformImmutableList<T>(anArray);
+  result := new RemObjects.Elements.System.List<T>(anArray);
   {$ELSEIF TOFFEE}
   result := Foundation.NSArray.arrayWithObjects(^id(@anArray[0])) count(length(anArray));
   {$ENDIF}
@@ -162,9 +162,9 @@ begin
   {$IF COOPER}
   result := new PlatformImmutableList<T>(Items);
   {$ELSEIF ECHOES}
-  result := new PlatformImmutableList<T>(Items);
+  result := new System.Collections.Generic.List<T>(Items);
   {$ELSEIF ISLAND}
-  result := new PlatformImmutableList<T>(Items);
+  result := new RemObjects.Elements.System.List<T>(Items);
   {$ELSEIF TOFFEE}
   result := new Foundation.NSMutableArray withArray(Items);
   {$ENDIF}
@@ -176,6 +176,8 @@ begin
   result := new java.util.ArrayList<T>(java.util.Arrays.asList(anArray));
   {$ELSEIF ECHOES}
   exit new System.Collections.Generic.List<T>(anArray);
+  {$ELSEIF ISLAND}
+  exit new RemObjects.Elements.System.List<T>(anArray);
   {$ELSEIF TOFFEE}
   result := Foundation.NSMutableArray.arrayWithObjects(^id(@anArray[0])) count(length(anArray));
   {$ENDIF}

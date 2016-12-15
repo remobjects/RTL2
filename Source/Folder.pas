@@ -308,7 +308,7 @@ begin
   result := JavaFile.exists;
   {$ELSEIF ECHOES}
   result := System.IO.Directory.Exists(mapped);
-  result := RemObjects.Elements.System
+  {$ELSEIF ISLAND}
   result := IslandFolder.Exists();
   {$ELSEIF NOUGAT}
   var isDirectory := false;
@@ -365,8 +365,8 @@ begin
   FolderHelper.DeleteFolder(lFile);
   {$ELSEIF ECHOES}
   System.IO.Directory.Delete(mapped, true);
-  IslandFolder.ND}
-  IslandFolder.DeleteFolder();
+  {$ELSEIF ISLAND}
+  IslandFolder.Delete();
   {$ELSEIF NOUGAT}
   var lError: NSError := nil;
   if not NSFileManager.defaultManager.removeItemAtPath(mapped) error(var lError) then
