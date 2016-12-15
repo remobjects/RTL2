@@ -583,6 +583,9 @@ begin
   exit mapped.substring(0, aStartIndex)+aNewValue+mapped.substring(aStartIndex+aLength) as not nullable;
   {$ELSEIF ECHOES}// OR ISLAND}
   exit mapped.Remove(aStartIndex, aLength).Insert(aStartIndex, aNewValue) as not nullable;
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue);
   {$ENDIF}
@@ -614,6 +617,9 @@ begin
     result := StringOfChar(PaddingChar, lTotal) + self;
   {$ELSEIF ECHOES}
   result := mapped.PadLeft(TotalWidth, PaddingChar);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var lTotal: Integer := TotalWidth - mapped.length;
   if lTotal > 0 then begin
@@ -641,6 +647,9 @@ begin
     result := self + StringOfChar(PaddingChar, lTotal);
   {$ELSEIF ECHOES}
   result := mapped.PadRight(TotalWidth, PaddingChar);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0);
   {$ENDIF}
@@ -663,6 +672,9 @@ begin
   exit mapped.toLowerCase(Locale.Invariant) as not nullable;
   {$ELSEIF ECHOES}
   exit mapped.ToLowerInvariant as not nullable;
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseStringWithLocale(Locale.Invariant);
   {$ENDIF}
@@ -678,6 +690,9 @@ begin
   {$ELSE}
   exit mapped.ToLower(aLocale) as not nullable;
   {$ENDIF}
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseStringWithLocale(aLocale);
   {$ENDIF}
@@ -700,6 +715,9 @@ begin
   exit mapped.toUpperCase(Locale.Invariant) as not nullable;
   {$ELSEIF ECHOES}
   exit mapped.ToUpperInvariant as not nullable;
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseStringWithLocale(Locale.Invariant);
   {$ENDIF}
@@ -715,6 +733,9 @@ begin
   {$ELSE}
   exit mapped.ToUpper(aLocale) as not nullable;
   {$ENDIF}
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseStringWithLocale(aLocale);
   {$ENDIF}
@@ -726,6 +747,9 @@ begin
   result := mapped.trim() as not nullable; // trims #$00-#$20
   {$ELSEIF ECHOES}
   result := mapped.Trim() as not nullable; // Trim() does include CR/LF and Unicode whitespace
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet);
   {$ENDIF}
@@ -748,6 +772,9 @@ begin
   result := lStr.TrimEnd(TrimChars);
   {$ELSEIF ECHOES}
   result := mapped.Trim(TrimChars) as not nullable;
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length)));
   {$ENDIF}

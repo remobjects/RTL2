@@ -158,7 +158,6 @@ end;
 
 method Convert.ToString(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aLocale: Locale := nil): not nullable String;
 begin
-
   if Consts.IsNegativeInfinity(aValue) then
     exit "-Infinity";
 
@@ -180,6 +179,8 @@ begin
     result := System.Convert.ToString(aValue, aLocale) as not nullable
   else
     result := aValue.ToString("0."+new String('0', aDigitsAfterDecimalPoint), aLocale) as not nullable
+  {$ELSEIF ISLAND}
+  raise new NotImplementedException("Convert.ToString(Double; aDigitsAfterDecimalPoint) is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var numberFormatter := new NSNumberFormatter();
   numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
@@ -195,7 +196,7 @@ end;
 
 method Convert.ToString(aValue: Char): not nullable String;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   //74584: Two more bogus nullable warnings
   exit String(aValue);
   {$ELSEIF ECHOES}

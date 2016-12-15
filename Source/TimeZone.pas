@@ -50,6 +50,8 @@ begin
   raise new NotSupportedException();
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.GetSystemTimeZones().Select(tz -> tz.Id) as not nullable;
+  {$ELSEIF ISLAND}
+  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := NSTimeZone.knownTimeZoneNames as not nullable;
   {$ENDIF}
@@ -61,6 +63,8 @@ begin
   result := java.util.TimeZone.getTimeZone(aAbbreviation);
   {$ELSEIF ECHOES}
    raise new NotSupportedException();
+  {$ELSEIF ISLAND}
+  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := NSTimeZone.timeZoneWithAbbreviation(aAbbreviation);
   {$ENDIF}
@@ -75,6 +79,8 @@ begin
   raise new NotSupportedException();
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.FindSystemTimeZoneById(aName);
+  {$ELSEIF ISLAND}
+  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := NSTimeZone.timeZoneWithName(aName);
   {$ENDIF}
@@ -86,6 +92,8 @@ begin
   result := java.util.TimeZone.getDefault() as not nullable;
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.Local as not nullable;
+  {$ELSEIF ISLAND}
+  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := NSTimeZone.localTimeZone as not nullable;
   {$ENDIF}
@@ -97,6 +105,8 @@ begin
   result := java.util.TimeZone.getTimeZone("UTC") as not nullable;
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.Utc as not nullable;
+  {$ELSEIF ISLAND}
+  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := NSTimeZone.timeZoneWithAbbreviation("UTC") as not nullable;
   {$ENDIF}

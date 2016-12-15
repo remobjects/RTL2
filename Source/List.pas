@@ -136,9 +136,9 @@ begin
   {$IF COOPER}
   result := new java.util.ArrayList<T>(Items);
   {$ELSEIF ECHOES}
-  exit new System.Collections.Generic.List<T>(Items);
+  result := new System.Collections.Generic.List<T>(Items);
   {$ELSEIF ISLAND}
-  exit new RemObjects.Elements.System.List<T>(Items);
+  result := new RemObjects.Elements.System.List<T>(Items);
   {$ELSEIF TOFFEE}
   result := new Foundation.NSArray withArray(Items);
   {$ENDIF}
@@ -147,9 +147,11 @@ end;
 constructor ImmutableList<T>(params anArray: array of T);
 begin
   {$IF COOPER}
-  result := new java.util.ArrayList<T>(java.util.Arrays.asList(anArray));
+  result := new PlatformImmutableList<T>(java.util.Arrays.asList(anArray));
   {$ELSEIF ECHOES}
-  exit new System.Collections.Generic.List<T>(anArray);
+  result := new PlatformImmutableList<T>(anArray);
+  {$ELSEIF ISLAND}
+  result := new PlatformImmutableList<T>(anArray);
   {$ELSEIF TOFFEE}
   result := Foundation.NSArray.arrayWithObjects(^id(@anArray[0])) count(length(anArray));
   {$ENDIF}
@@ -158,11 +160,11 @@ end;
 constructor List<T>(Items: List<T>);
 begin
   {$IF COOPER}
-  result := new java.util.ArrayList<T>(Items);
+  result := new PlatformImmutableList<T>(Items);
   {$ELSEIF ECHOES}
-  exit new System.Collections.Generic.List<T>(Items);
+  result := new PlatformImmutableList<T>(Items);
   {$ELSEIF ISLAND}
-  exit new RemObjects.Elements.System.List<T>(Items);
+  result := new PlatformImmutableList<T>(Items);
   {$ELSEIF TOFFEE}
   result := new Foundation.NSMutableArray withArray(Items);
   {$ENDIF}
