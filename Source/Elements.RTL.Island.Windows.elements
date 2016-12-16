@@ -4,7 +4,7 @@
         <ProductVersion>3.5</ProductVersion>
         <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
         <ProjectGuid>6F888992-4293-4097-8AA3-6667E0187D4F</ProjectGuid>
-        <OutputType>library</OutputType>
+        <OutputType>StaticLibrary</OutputType>
         <AssemblyName>Elements.RTL.Island.Windows</AssemblyName>
         <AllowGlobals>False</AllowGlobals>
         <AllowLegacyWith>False</AllowLegacyWith>
@@ -48,7 +48,6 @@
         <Reference Include="Island.fx"/>
         <Reference Include="rtl.fx"/>
     </ItemGroup>
-    <ItemGroup/>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets"/>
     <Import Project="Elements.RTL.Shared.projitems" Label="Shared"/>
 </Project>

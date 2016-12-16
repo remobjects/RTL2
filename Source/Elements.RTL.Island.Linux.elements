@@ -4,7 +4,7 @@
         <ProductVersion>3.5</ProductVersion>
         <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
         <ProjectGuid>163F84DC-DC6B-4535-994F-0865D3A84D20</ProjectGuid>
-        <OutputType>library</OutputType>
+        <OutputType>StaticLibrary</OutputType>
         <AssemblyName>Elements.RTL.Island.Linux</AssemblyName>
         <AllowGlobals>False</AllowGlobals>
         <AllowLegacyWith>False</AllowLegacyWith>
@@ -53,7 +53,6 @@
         <Reference Include="gc"/>
         <Reference Include="Island"/>
     </ItemGroup>
-    <ItemGroup/>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Linux.targets"/>
     <Import Project="Elements.RTL.Shared.projitems" Label="Shared"/>
 </Project>
