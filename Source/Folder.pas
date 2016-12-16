@@ -419,7 +419,6 @@ begin
     if not FolderHelper.IsDirectory(item) then
       result.Add(File(item));
   end;
-  result := new List<Folder>();
   {$ENDIF}
 end;
 
