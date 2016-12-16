@@ -306,7 +306,10 @@ begin
     if content.Success then begin
       try
         var document := XmlDocument.FromBinary(content.Content);
-        contentCallback(new HttpResponseContent<XmlDocument>(Content := document));
+        if assigned(document) then
+          contentCallback(new HttpResponseContent<XmlDocument>(Content := document))
+        else
+        contentCallback(new HttpResponseContent<XmlDocument>(Exception := new RTLException("Could not parse result as XML.")));
       except
         on E: Exception do
           contentCallback(new HttpResponseContent<XmlDocument>(Exception := E));
@@ -432,6 +435,8 @@ end;
 method HttpResponse.GetContentAsXmlSynchronous: not nullable XmlDocument;
 begin
   result := XmlDocument.FromBinary(GetContentAsBinarySynchronous()) as not nullable;
+  if not assigned(result) then
+    raise new RTLException("Could not parse result as XML.");
 end;
 {$ENDIF}
 
