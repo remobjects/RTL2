@@ -260,7 +260,7 @@ begin
   {$IF COOPER}
   exit Integer.parseInt(aValue);
   {$ELSEIF ECHOES OR ISLAND}
-  for i: Int32 := 0 to length(aValue) do
+  for i: Int32 := 0 to length(aValue)-1 do
     if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
       raise new FormatException("Unable to convert string '{0}' to int64.", aValue);;
   exit Int32.Parse(aValue);
