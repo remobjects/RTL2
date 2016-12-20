@@ -5,7 +5,7 @@
         <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
         <ProjectGuid>6F888992-4293-4097-8AA3-6667E0187D4F</ProjectGuid>
         <OutputType>StaticLibrary</OutputType>
-        <AssemblyName>Elements.RTL.Island.Windows</AssemblyName>
+        <AssemblyName>Elements</AssemblyName>
         <AllowGlobals>False</AllowGlobals>
         <AllowLegacyWith>False</AllowLegacyWith>
         <AllowLegacyOutParams>False</AllowLegacyOutParams>

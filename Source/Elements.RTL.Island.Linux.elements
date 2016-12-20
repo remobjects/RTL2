@@ -5,7 +5,7 @@
         <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
         <ProjectGuid>163F84DC-DC6B-4535-994F-0865D3A84D20</ProjectGuid>
         <OutputType>StaticLibrary</OutputType>
-        <AssemblyName>Elements.RTL.Island.Linux</AssemblyName>
+        <AssemblyName>Elements</AssemblyName>
         <AllowGlobals>False</AllowGlobals>
         <AllowLegacyWith>False</AllowLegacyWith>
         <AllowLegacyOutParams>False</AllowLegacyOutParams>

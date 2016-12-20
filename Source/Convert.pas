@@ -282,7 +282,7 @@ begin
       exit nil;
   end;
   {$ELSEIF ECHOES OR ISLAND}
-  for i: Int32 := 0 to length(aValue) do
+  for i: Int32 := 0 to length(aValue)-1 do
     if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
       exit nil;
   var lResult: Int32;
@@ -493,7 +493,7 @@ begin
       exit nil;
   end;
   {$ELSEIF ECHOES OR ISLAND}
-  for i: Int32 := 0 to length(aValue) do
+  for i: Int32 := 0 to length(aValue)-1 do
     if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
       exit nil;
   var lResult: Int64;
