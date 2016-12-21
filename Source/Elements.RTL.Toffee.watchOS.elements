@@ -43,6 +43,7 @@
         <Reference Include="libToffee"/>
         <Reference Include="CoreFoundation"/>
         <Reference Include="UIKit"/>
+        <Reference Include="WatchKit"/>
     </ItemGroup>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets"/>
     <Import Project="Elements.RTL.Shared.projitems" Label="Shared"/>

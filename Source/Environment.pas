@@ -11,6 +11,8 @@ type
   private
     method GetNewLine: String;
     method GetUserName: String;
+    method GetFullUserName: String;
+    method GetMachineName: String;
     method GetOS: OperatingSystem;
     method GetOSName: String;
     method GetOSVersion: String;
@@ -30,6 +32,9 @@ type
     property LineBreak: String read GetNewLine;
 
     property UserName: String read GetUserName;
+    property FullUserName: String read GetFullUserName;
+    property FullMachineName: String read GetMachineName;
+    
     property UserUserHomeFolder: nullable Folder read GetUserHomeFolder;
     property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
     
@@ -105,6 +110,40 @@ begin
     {$ELSEIF TVOS}
     exit "Apple TV User";
     {$ENDIF}
+  {$ENDIF}
+end;
+
+method Environment.GetFullUserName: String;
+begin
+  {$HINT Implement for other platforms}
+  {$IF TOFFEE}
+    {$IF OSX}
+    result := Foundation.NSFullUserName;
+    {$ELSE}
+    result := GetUserName();
+    {$ENDIF}
+  {$ELSE}
+  result := GetUserName();
+  {$ENDIF}
+end;
+
+method Environment.GetMachineName: String;
+begin
+  {$HINT Implement for other platforms}
+  {$IF ECHOES}
+  result := System.Environment.MachineName;
+  {$ELSEIF TOFFEE}
+    {$IF OSX}
+    result := NSHost.currentHost.localizedName;
+    if result.EndsWith(".local") then
+      result := result.Substring(0, length(result)-6);
+    {$ELSEIF IOS OR TVOS}
+    result := UIKit.UIDevice.currentDevice.name;
+    {$ELSE}
+    result := WatchKit.WKInterfaceDevice.currentDevice.name;
+    {$ENDIF}
+  {$ELSE}
+  result := GetUserName();
   {$ENDIF}
 end;
 

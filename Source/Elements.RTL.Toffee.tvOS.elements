@@ -42,7 +42,7 @@
         <Reference Include="rtl"/>
         <Reference Include="libToffee"/>
         <Reference Include="CoreFoundation"/>
-        <Reference Include="TVServices"/>
+        <Reference Include="UIKit"/>
     </ItemGroup>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets"/>
     <Import Project="Elements.RTL.Shared.projitems" Label="Shared"/>
