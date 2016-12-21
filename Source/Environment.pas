@@ -33,7 +33,7 @@ type
 
     property UserName: String read GetUserName;
     property FullUserName: String read GetFullUserName;
-    property FullMachineName: String read GetMachineName;
+    property MachineName: String read GetMachineName;
     
     property UserUserHomeFolder: nullable Folder read GetUserHomeFolder;
     property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
