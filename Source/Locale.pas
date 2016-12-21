@@ -23,7 +23,7 @@ type
     {$IF COOPER}
     property Identifier: not nullable String read mapped.toString;
     {$ELSEIF ECHOES}
-    property Identifier: not nullable String read mapped.Name;
+    property Identifier: not nullable String read mapped.Name as not nullable;
     {$ELSEIF ISLAND}
     property Identifier: not nullable String read "Dummy"; {$WARNING Not Implemented}
     {$ELSEIF TOFFEE}

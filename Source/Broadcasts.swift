@@ -23,14 +23,14 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		}
 	}
 
-	#if NOUGAT
+	#if TOFFEE
 	public func subscribe(_ receiver: Object, selector: SEL, toBroadcast broadcast: String, object: Object? = nil) {
 		NSNotificationCenter.defaultCenter.addObserver(receiver, selector: selector, name: broadcast, object: object)
 	}
 	#endif
 
 	public func unsubscribe(_ receiver: Object, fromBroadcast broadcast: String?) {
-		#if NOUGAT
+		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
 		#endif
 		
@@ -44,7 +44,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	}
 
 	public func unsubscribe(_ receiver: Object) {
-		#if NOUGAT
+		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver)
 		#endif
 
@@ -60,7 +60,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	}
 
 	public func submitBroadcast(_ broadcast: String, object: Object? = nil, data: ImmutableDictionary<String,Object>? = nil, syncToMainThread: Boolean = false) {
-		#if NOUGAT
+		#if TOFFEE
 		if syncToMainThread {
 			dispatch_async(dispatch_get_main_queue()) {
 				NSNotificationCenter.defaultCenter.postNotificationName(broadcast, object: object, userInfo: data)
@@ -72,7 +72,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		
 		for s in subscriptions[broadcast] {
 			if syncToMainThread {
-				#if NOUGAT
+				#if TOFFEE
 				dispatch_async(dispatch_get_main_queue()) {
 					s.1()
 				}

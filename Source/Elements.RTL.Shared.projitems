@@ -82,6 +82,8 @@
         <Compile Include="$(MSBuildThisFileDirectory)Guid.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Task.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Char (Extensions).pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.CoreFoundation.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.MacFolders.cs"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Files and Paths">
