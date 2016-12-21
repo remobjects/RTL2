@@ -41,8 +41,6 @@ type
     class method GetFiles(FolderName: Folder; aRecursive: Boolean := false): not nullable List<File>;
     class method GetSubfolders(FolderName: Folder): not nullable List<Folder>;
 
-    class method UserHomeFolder: Folder;
-
     class property Separator: Char read GetSeparator;
 
     {$IF WINDOWS_PHONE OR NETFX_CORE}
@@ -230,31 +228,8 @@ begin
   exit System.IO.Path.DirectorySeparatorChar;
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Path.DirectorySeparatorChar;
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   exit '/';
-  {$ENDIF}
-end;
-
-class method Folder.UserHomeFolder: Folder;
-begin
-  {$IF COOPER}
-  {$IF ANDROID}
-  AppContextMissingException.RaiseIfMissing;
-  exit Environment.ApplicationContext.FilesDir.AbsolutePath;
-  {$ELSE}
-  exit System.getProperty("user.home");
-  {$ENDIF}
-  {$ELSEIF ECHOES}
-  exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
-  {$ELSEIF ISLAND}
-  {$ELSEIF NOUGAT}
-  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.NSApplicationSupportDirectory, NSSearchPathDomainMask.NSUserDomainMask, true).objectAtIndex(0);
-
-  if not NSFileManager.defaultManager.fileExistsAtPath(result) then begin
-    var lError: NSError := nil;
-    if not NSFileManager.defaultManager.createDirectoryAtPath(result) withIntermediateDirectories(true) attributes(nil) error(var lError) then
-      raise new NSErrorException(lError);
-  end;
   {$ENDIF}
 end;
 
@@ -287,7 +262,7 @@ begin
   exit NewFileName;
   {$ELSEIF ISLAND}
   result := IslandFolder.CreateFile(FileName).FullName;
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   var NewFileName := Combine(mapped, FileName);
   var Manager := NSFileManager.defaultManager;
   if Manager.fileExistsAtPath(NewFileName) then begin
@@ -310,7 +285,7 @@ begin
   result := System.IO.Directory.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFolder.Exists();
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   var isDirectory := false;
   result := NSFileManager.defaultManager.fileExistsAtPath(self) isDirectory(var isDirectory) and isDirectory;
   {$ENDIF}
@@ -339,7 +314,7 @@ begin
   end;
   {$ELSEIF ISLAND}
   RemObjects.Elements.System.Folder.CreateFolder(mapped, FailIfExists);
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   var isDirectory := false;
   if NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) then begin
     if isDirectory and FailIfExists then
@@ -367,7 +342,7 @@ begin
   System.IO.Directory.Delete(mapped, true);
   {$ELSEIF ISLAND}
   IslandFolder.Delete();
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   var lError: NSError := nil;
   if not NSFileManager.defaultManager.removeItemAtPath(mapped) error(var lError) then
     raise new NSErrorException(lError);
@@ -390,7 +365,7 @@ begin
   exit nil;
   {$ELSEIF ISLAND}
   IslandFolder.GetFile(FileName);
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   ArgumentNullException.RaiseIfNil(FileName, "FileName");
   var ExistingFileName := Combine(mapped, FileName);
   if not NSFileManager.defaultManager.fileExistsAtPath(ExistingFileName) then
@@ -408,7 +383,7 @@ begin
   result := new List<File>(System.IO.Directory.GetFiles(mapped));
   {$ELSEIF ISLAND}
   result := IslandFolder.GetFiles().Select(f -> f.FullName).ToList() as not nullable;
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   result := new List<File>;
   var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
   if Items = nil then
@@ -430,7 +405,7 @@ begin
   result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
   {$ELSEIF ISLAND}
   result := IslandFolder.GetSubFolders().Select(f -> f.FullName).ToList() as not nullable;
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   result := new List<Folder>();
   var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
   if Items = nil then
@@ -466,7 +441,7 @@ begin
   result := FolderName;
   {$ELSEIF ISLAND}
   IslandFolder.Rename(NewName);
-  {$ELSEIF NOUGAT}
+  {$ELSEIF TOFFEE}
   var RootFolder := mapped.stringByDeletingLastPathComponent;
   var NewFolderName := Combine(RootFolder, NewName);
   var Manager := NSFileManager.defaultManager;

@@ -17,15 +17,22 @@ type
     method GetEnvironmentVariable(Name: String): String;
     method GetCurrentDirectory: String;
     
+    method GetUserHomeFolder: Folder;
+    method GetApplicationSupportFolder: Folder;
+    
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport("libc")]
     method uname(buf: IntPtr): Integer; external;
     method unameWrapper: String;
     class var unameResult: String;
-    {$ENDIF}
+  {$ENDIF}
   public
     property LineBreak: String read GetNewLine;
+
     property UserName: String read GetUserName;
+    property UserUserHomeFolder: nullable Folder read GetUserHomeFolder;
+    property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
+    
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
@@ -99,6 +106,35 @@ begin
     exit "Apple TV User";
     {$ENDIF}
   {$ENDIF}
+end;
+
+method Environment.GetUserHomeFolder: Folder;
+begin
+  {$IF COOPER}
+  {$IF ANDROID}
+  AppContextMissingException.RaiseIfMissing;
+  exit Environment.ApplicationContext.FilesDir.AbsolutePath;
+  {$ELSE}
+  exit System.getProperty("user.home");
+  {$ENDIF}
+  {$ELSEIF ECHOES}
+  exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
+  {$ELSEIF ISLAND}
+  {$ELSEIF TOFFEE}
+  result := NSFileManager.defaultManager.homeDirectoryForCurrentUser.path;
+  {$ENDIF}
+end;
+
+method Environment.GetApplicationSupportFolder: Folder;
+begin
+  {$IF ECHOES}
+  if OS = OperatingSystem.macOS then
+    result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType);
+  {$ELSEIF TOFFEE}
+  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.NSApplicationSupportDirectory, NSSearchPathDomainMask.NSUserDomainMask, true).objectAtIndex(0);
+  {$ENDIF}
+  if (length(result) > 0) and not Folder.Exists(result) then
+    Folder.Create(result);
 end;
 
 method Environment.GetOS: OperatingSystem;
