@@ -78,7 +78,20 @@ type
     
   end;
   
-  ArgumentOutOfRangeException = public class (ArgumentException);
+  ArgumentOutOfRangeException = public class(ArgumentException)
+  public
+
+    constructor(aMessage: String);
+    begin
+      inherited constructor(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, aMessage)
+    end;
+
+    constructor(aFormat: String; params aParams: array of Object);
+    begin
+      inherited constructor(aFormat, aParams);
+    end;
+
+  end;
 
   FormatException = public class(RTLException)
   public

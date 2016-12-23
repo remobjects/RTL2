@@ -35,7 +35,7 @@ type
     property FullUserName: String read GetFullUserName;
     property MachineName: String read GetMachineName;
     
-    property UserUserHomeFolder: nullable Folder read GetUserHomeFolder;
+    property UserHomeFolder: nullable Folder read GetUserHomeFolder;
     property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
     
     property OS: OperatingSystem read GetOS;
