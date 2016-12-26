@@ -43,9 +43,7 @@ type
     method ToByteArray: array of Byte;
     method ToString(Format: GuidFormat): String;
 
-    {$IF COOPER}
-    method ToString: PlatformString;
-    {$ELSEIF ECHOES OR ISLAND}
+    {$IF COOPER OR ECHOES OR ISLAND}
     method ToString: PlatformString; override;
     {$ELSEIF TOFFEE}
     method description: PlatformString;
@@ -210,15 +208,12 @@ end;
 
 {$IF COOPER OR ECHOES OR ISLAND}
 method Guid.ToString: PlatformString;
-begin
-  exit ToString(GuidFormat.Default);
-end;
 {$ELSEIF TOFFEE}
 method Guid.description: NSString;
-begin
-  exit ToString(GuidFormat.Default);
-end;
 {$ENDIF}
+begin
+  result := self.ToString(GuidFormat.Default);
+end;
 
 {$IF ECHOES}
 class method Guid.Exchange(Value: array of Byte; Index1: Integer; Index2: Integer);
