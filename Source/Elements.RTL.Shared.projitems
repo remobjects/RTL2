@@ -62,6 +62,12 @@
         <Compile Include="$(MSBuildThisFileDirectory)List.pas">
             <VirtualFolder>Collections</VirtualFolder>
         </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Queue.pas">
+            <VirtualFolder>Collections</VirtualFolder>
+        </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)Stack.pas">
+            <VirtualFolder>Collections</VirtualFolder>
+        </Compile>        
         <Compile Include="$(MSBuildThisFileDirectory)String (Path).pas">
             <VirtualFolder>Files and Paths</VirtualFolder>
         </Compile>

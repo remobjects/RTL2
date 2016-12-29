@@ -143,7 +143,17 @@ type
     
   end;
 
-  StackEmptyException = public class (RTLException);
+  StackEmptyException = public class (RTLException)
+  public
+
+    constructor;
+    begin
+      inherited constructor(RTLErrorMessages.COLLECTION_EMPTY);
+    end;
+
+  end;
+
+  QueueEmptyException = public class(StackEmptyException);
 
   InvalidOperationException = public class (RTLException);
 
