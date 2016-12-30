@@ -205,8 +205,8 @@ begin
   RangeHelper.Validate(new Range(Offset, Count), Buffer.Length);
   {$IF COOPER}
   fData.write(Buffer, Offset, Count);
-  {$ELSEIF ECHOES}
-  mapped.Seek(0, System.IO.SeekOrigin.End);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Seek(0, PlatformSeekOrigin.End);
   mapped.Write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   mapped.appendBytes(@Buffer[Offset]) length(Count);
@@ -226,7 +226,7 @@ end;
 method Binary.Write(Bin: Binary);
 begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   &Write(Bin.ToArray, Bin.Length);
   {$ELSEIF TOFFEE}
   mapped.appendData(Bin);
@@ -237,7 +237,7 @@ method ImmutableBinary.ToArray: array of Byte;
 begin
   {$IF COOPER}
   exit fData.toByteArray;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToArray;
   {$ELSEIF TOFFEE}
   result := new Byte[mapped.length];
@@ -249,7 +249,7 @@ method Binary.Clear;
 begin
   {$IF COOPER}
   fData.reset;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.SetLength(0);
   mapped.Position := 0;
   {$ELSEIF TOFFEE}

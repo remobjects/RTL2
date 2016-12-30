@@ -14,14 +14,31 @@ interface
   
 {$GLOBALS ON}
 
-method LowerChar(aChar: Char): Char;
+method LowerChar(aChar: Char): Char; assembly;
 begin
   {$IF COOPER}
   result := Character.toLowerCase(aChar);
   {$ELSEIF ECHOES}// OR ISLAND}
   result := Char.ToLower(aChar);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  raise new NotImplementedException("LowerChar() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := chr(toLower(ord(aChar)));
+  {$ENDIF}
+end;
+
+method UpperChar(aChar: Char): Char; assembly;
+begin
+  {$IF COOPER}
+  result := Character.toUpperCase(aChar);
+  {$ELSEIF ECHOES}// OR ISLAND}
+  result := Char.ToUpper(aChar);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  raise new NotImplementedException("UpperChar() is not implemented for Island yet.");
+  {$ELSEIF TOFFEE}
+  result := chr(toUpper(ord(aChar)));
   {$ENDIF}
 end;
 
