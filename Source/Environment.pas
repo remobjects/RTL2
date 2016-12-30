@@ -159,6 +159,7 @@ begin
   {$ELSEIF ECHOES}
   exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
   {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.homeDirectoryForCurrentUser.path;
   {$ENDIF}
@@ -206,8 +207,10 @@ begin
   {$ELSEIF ISLAND}
     {$IF LINUX}
     exit OperatingSystem.Linux;
+    {$ELSEIF ANDROID}
+    exit OperatingSystem.Android;
     {$ELSEIF WINDOWS}
-    exit OperatingSystem.WIndows;
+    exit OperatingSystem.Windows;
     {$ELSE}
       {$ERROR Unsupported Island platform}
     {$ENDIF}
