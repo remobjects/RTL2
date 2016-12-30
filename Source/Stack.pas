@@ -1,9 +1,14 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT ISLAND}
+
 interface
 
 type
-  ImmutableStack<T> = public class mapped to {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF}
+  PlatformImmutableStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
+  PlatformStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
+
+  ImmutableStack<T> = public class mapped to PlatformImmutableStack<T>
   public
     constructor; mapped to constructor();
 
@@ -18,7 +23,7 @@ type
     method MutableVersion: Stack<T>;
   end;
 
-  Stack<T> = public class(ImmutableStack<T>) mapped to {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF}
+  Stack<T> = public class(ImmutableStack<T>) mapped to PlatformStack<T>
   public
     constructor; mapped to constructor();
 
@@ -52,7 +57,7 @@ end;
 method ImmutableStack<T>.ToArray: array of T;
 begin
   {$IF COOPER}
-  exit ListHelpers.ToArrayReverse<T>(self, new T[Count]);
+  exit ListHelpers.ToArrayReverse<T>(mapped, new T[Count]);
   {$ELSEIF ECHOES}
   exit mapped.ToArray;
   {$ELSEIF TOFFEE}
@@ -122,5 +127,7 @@ begin
   mapped.addObject(NullHelper.ValueOf(Item));
   {$ENDIF}
 end;
+
+{$ENDIF}
 
 end.

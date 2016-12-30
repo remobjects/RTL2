@@ -1,9 +1,14 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT ISLAND}
+
 interface
 
 type
-  ImmutableQueue<T> = public class mapped to {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF}
+  PlatformImmutableQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
+  PlatformQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
+
+  ImmutableQueue<T> = public class mapped to PlatformImmutableQueue<T>
   public
     constructor; mapped to constructor();
 
@@ -19,7 +24,7 @@ type
     method MutableVersion: Queue<T>;
   end;
 
-  Queue<T> = public class(ImmutableQueue<T>) mapped to {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF}
+  Queue<T> = public class(ImmutableQueue<T>) mapped to PlatformQueue<T>
   public
     constructor; mapped to constructor();
 
@@ -132,5 +137,7 @@ begin
   mapped.addObject(NullHelper.ValueOf(Item));
   {$ENDIF}
 end;
+
+{$ENDIF}
 
 end.
