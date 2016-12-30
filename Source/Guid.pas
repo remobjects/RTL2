@@ -72,6 +72,9 @@ begin
   Exchange(aValue, 4, 5);
   Exchange(aValue, 6, 7);
   fGuid := New PlatformGuid(aValue);
+  {$ELSEIF ISLAND}
+  {$HINT Check if Island needs the same exchage trick as Echoes}
+  fGuid := New PlatformGuid(aValue);
   {$ELSEIF TOFFEE}
   //result := new NSUUID withUUIDBytes(uuid_t(aValue));
   raise new RTLException("not implemented yet");
@@ -84,7 +87,7 @@ begin
   result := TryParse(aValue);
   if not assigned(result) then
     raise new FormatException();
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   fGuid := new PlatformGuid(aValue);
   {$ELSEIF TOFFEE}
   result := TryParse(aValue);
@@ -137,6 +140,9 @@ begin
   if not PlatformGuid.TryParse(aValue, out lGuid) then
     exit nil;
   result := new Guid(lGuid);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  raise new NotImplementedException("Guid.TryParse() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   if aValue.StartsWith("{") and aValue.EndsWith("}") then
     aValue := aValue.Substring(1,length(aValue)-2);
@@ -173,6 +179,10 @@ begin
   Exchange(Value, 4, 5);
   Exchange(Value, 6, 7);
   exit Value;
+  {$ELSEIF ISLAND}
+  var Value := fGuid.ToByteArray;
+  {$HINT Check if Island needs the same exchage trick as Echoes}
+  exit Value;
   {$ELSEIF TOFFEE}
   result := new Byte[16];
   //mapped.getUUIDBytes(@result)
@@ -194,6 +204,12 @@ begin
     Format.Braces: result := fGuid.ToString("B");
     Format.Parentheses: result := fGuid.ToString("P");
     else result := fGuid.ToString("D");
+  end;
+  {$ELSEIF ISLAND}
+  result := fGuid.ToString;
+  case Format of
+    Format.Braces: result := "{"+result+"}";
+    Format.Parentheses: result := "("+result+")";
   end;
   {$ELSEIF TOFFEE}
   result := mapped.UUIDString;
