@@ -97,56 +97,44 @@ end;
 
 method Convert.ToString(aValue: Byte; aBase: Integer := 10): not nullable String;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
   case aBase of
-    2: exit ToBinaryString(aValue);
-    8: exit ToOctalString(aValue);
-    10: exit aValue.ToString as not nullable;
-    16: exit ToHexString(aValue);
+    2: result := ToBinaryString(aValue);
+    8: result := ToOctalString(aValue);
+    10: result := aValue.ToString as not nullable;
+    16: result := ToHexString(aValue);
     else raise new ConversionException('Unsupported base for ToString.');
   end;
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToString(aValue, aBase) as not nullable;
-  {$ENDIF}
 end;
 
 method Convert.ToString(aValue: Int32; aBase: Integer := 10): not nullable String;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
   case aBase of
-    2: exit ToBinaryString(aValue);
-    8: exit ToOctalString(aValue);
-    10: exit aValue.ToString as not nullable;
-    16: exit ToHexString(aValue);
+    2: result := ToBinaryString(aValue);
+    8: result := ToOctalString(aValue);
+    10: result := aValue.ToString as not nullable;
+    16: result := ToHexString(aValue);
     else raise new ConversionException('Unsupported base for ToString.');
   end;
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToString(aValue, aBase) as not nullable;
-  {$ENDIF}
 end;
 
 method Convert.ToString(aValue: Int64; aBase: Integer := 10): not nullable String;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
   case aBase of
-    2: exit ToBinaryString(aValue);
-    8: exit ToOctalString(aValue);
-    10: exit aValue.ToString as not nullable;
-    16: exit ToHexString(aValue);
+    2: result := ToBinaryString(aValue);
+    8: result := ToOctalString(aValue);
+    10: result := aValue.ToString as not nullable;
+    16: result := ToHexString(aValue);
     else raise new ConversionException('Unsupported base for ToString.');
   end;
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToString(aValue, aBase) as not nullable;
-  {$ENDIF}
 end;
 
 method Convert.ToString(aValue: UInt64; aBase: Integer := 10): not nullable String;
 begin
   case aBase of
-    2: exit ToBinaryString(aValue);
-    8: exit ToOctalString(aValue);
-    10: exit aValue.ToString as not nullable;
-    16: exit ToHexString(aValue);
+    2: result := ToBinaryString(aValue);
+    8: result := ToOctalString(aValue);
+    10: result := aValue.ToString as not nullable;
+    16: result := ToHexString(aValue);
     else raise new ConversionException('Unsupported base for ToString.');
   end;
 end;
@@ -197,18 +185,14 @@ end;
 
 method Convert.ToString(aValue: Char): not nullable String;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
   //74584: Two more bogus nullable warnings
-  exit String(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToString(aValue) as not nullable;
-  {$ENDIF}
+  result := String(aValue);
 end;
 
 method Convert.ToString(aValue: Object): not nullable String;
 begin
   //74584: Two more bogus nullable warnings
-  exit coalesce(aValue.ToString, '');
+  result := coalesce(aValue.ToString, '');
 end;
 
 method Convert.ToInt32(aValue: Boolean): Int32;
@@ -218,11 +202,7 @@ end;
 
 method Convert.ToInt32(aValue: Byte): Int32;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit Int32(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToInt32(aValue);
-  {$ENDIF}
+  result := Int32(aValue);
 end;
 
 method Convert.ToInt32(aValue: Int64): Int32;
@@ -230,11 +210,7 @@ begin
   if (aValue > Consts.MaxInt32) or (aValue < Consts.MinInt32) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Int32");
 
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit Int32(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToInt32(aValue);
-  {$ENDIF}
+  result := Int32(aValue);
 end;
 
 method Convert.ToInt32(aValue: Double): Int32;
@@ -249,11 +225,7 @@ end;
 
 method Convert.ToInt32(aValue: Char): Int32;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit ord(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToInt32(aValue);
-  {$ENDIF}
+  result := ord(aValue);
 end;
 
 method Convert.ToInt32(aValue: not nullable String): Int32;
@@ -437,20 +409,12 @@ end;
 
 method Convert.ToInt64(aValue: Byte): Int64;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit Int64(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToInt64(aValue);
-  {$ENDIF}
+  result := Int64(aValue);
 end;
 
 method Convert.ToInt64(aValue: Int32): Int64;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit Int64(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToInt64(aValue);
-  {$ENDIF}
+  result := Int64(aValue);
 end;
 
 method Convert.ToInt64(aValue: Double): Int64;
@@ -463,11 +427,7 @@ end;
 
 method Convert.ToInt64(aValue: Char): Int64;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
   exit ord(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToInt64(aValue);
-  {$ENDIF}
 end;
 
 method Convert.ToInt64(aValue: not nullable String): Int64;
@@ -520,29 +480,17 @@ end;
 
 method Convert.ToDouble(aValue: Byte): Double;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit Double(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToDouble(aValue);
-  {$ENDIF}
+  result := Double(aValue);
 end;
 
 method Convert.ToDouble(aValue: Int32): Double;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit Double(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToDouble(aValue);
-  {$ENDIF}
+  result := Double(aValue);
 end;
 
 method Convert.ToDouble(aValue: Int64): Double;
 begin
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit Double(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToDouble(aValue);
-  {$ENDIF}
+  result := Double(aValue);
 end;
 
 method Convert.ToDoubleInvariant(aValue: not nullable String): Double;
@@ -644,15 +592,10 @@ end;
 method Convert.ToByte(aValue: Char): Byte;
 begin
   var Number := Convert.ToInt32(aValue);
-
   if (Number > 255) or (Number < 0) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Byte");
 
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit ord(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToByte(aValue);
-  {$ENDIF}
+  result := ord(aValue);
 end;
 
 method Convert.ToByte(aValue: not nullable String): Byte;
@@ -678,7 +621,7 @@ end;
 
 method Convert.ToChar(aValue: Boolean): Char;
 begin
-  exit ToChar(ToInt32(aValue));
+  result := ToChar(ToInt32(aValue));
 end;
 
 method Convert.ToChar(aValue: Int32): Char;
@@ -686,11 +629,7 @@ begin
   if (aValue > Consts.MaxChar) or (aValue < Consts.MinChar) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Char");
 
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit chr(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToChar(aValue);
-  {$ENDIF}
+  result := chr(aValue);
 end;
 
 method Convert.ToChar(aValue: Int64): Char;
@@ -698,25 +637,12 @@ begin
   if (aValue > Consts.MaxChar) or (aValue < Consts.MinChar) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Char");
 
-  {$IF COOPER OR TOFFEE OR ISLAND}
-  exit chr(aValue);
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToChar(aValue);
-  {$ENDIF}
+  result := chr(aValue);
 end;
 
 method Convert.ToChar(aValue: Byte): Char;
 begin
-  {$IF COOPER}
-  exit chr(Integer(aValue));
-  {$ELSEIF ECHOES}
-  exit System.Convert.ToChar(aValue);
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("Convert.ToChar() is not implemented for Island yet.");
-  {$ELSEIF TOFFEE}
-  exit chr(aValue);
-  {$ENDIF}
+  result := chr(aValue);
 end;
 
 method Convert.ToChar(aValue: not nullable String): Char;
