@@ -180,6 +180,7 @@ begin
   else
     result := aValue.ToString("0."+new String('0', aDigitsAfterDecimalPoint), aLocale) as not nullable
   {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
   raise new NotImplementedException("Convert.ToString(Double; aDigitsAfterDecimalPoint) is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var numberFormatter := new NSNumberFormatter();
@@ -217,7 +218,7 @@ end;
 
 method Convert.ToInt32(aValue: Byte): Int32;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit Int32(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToInt32(aValue);
@@ -229,7 +230,7 @@ begin
   if (aValue > Consts.MaxInt32) or (aValue < Consts.MinInt32) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Int32");
 
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit Int32(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToInt32(aValue);
@@ -248,7 +249,7 @@ end;
 
 method Convert.ToInt32(aValue: Char): Int32;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit ord(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToInt32(aValue);
@@ -405,6 +406,9 @@ begin
   exit Integer.parseInt(aValue, 16);
   {$ELSEIF ECHOES}
   exit Int32.Parse(aValue, System.Globalization.NumberStyles.HexNumber);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  raise new NotImplementedException("Convert.HexStringToInt32() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var scanner: NSScanner := NSScanner.scannerWithString(aValue);
   scanner.scanHexInt(var result);
@@ -417,6 +421,9 @@ begin
   exit Long.parseLong(aValue, 16);
   {$ELSEIF ECHOES}
   exit Int64.Parse(aValue, System.Globalization.NumberStyles.HexNumber);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  raise new NotImplementedException("Convert.HexStringToInt64() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var scanner: NSScanner := NSScanner.scannerWithString(aValue);
   scanner.scanHexLongLong(var result);
@@ -430,7 +437,7 @@ end;
 
 method Convert.ToInt64(aValue: Byte): Int64;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit Int64(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToInt64(aValue);
@@ -439,7 +446,7 @@ end;
 
 method Convert.ToInt64(aValue: Int32): Int64;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit Int64(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToInt64(aValue);
@@ -456,7 +463,7 @@ end;
 
 method Convert.ToInt64(aValue: Char): Int64;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit ord(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToInt64(aValue);
@@ -513,7 +520,7 @@ end;
 
 method Convert.ToDouble(aValue: Byte): Double;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit Double(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToDouble(aValue);
@@ -522,7 +529,7 @@ end;
 
 method Convert.ToDouble(aValue: Int32): Double;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit Double(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToDouble(aValue);
@@ -531,7 +538,7 @@ end;
 
 method Convert.ToDouble(aValue: Int64): Double;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit Double(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToDouble(aValue);
@@ -594,6 +601,9 @@ begin
   var lResult: Double;
   if Double.TryParse(aValue, System.Globalization.NumberStyles.Any, aLocale, out lResult) then
     exit valueOrDefault(lResult); 
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  raise new NotImplementedException("Convert.TryToDouble() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var Number := TryParseNumber(aValue, aLocale);
   exit Number:doubleValue;
@@ -638,7 +648,7 @@ begin
   if (Number > 255) or (Number < 0) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Byte");
 
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit ord(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToByte(aValue);
@@ -657,6 +667,9 @@ begin
   exit Byte.parseByte(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToByte(aValue);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  raise new NotImplementedException("Convert.ToByte() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var Number: Int32 := ParseInt32(aValue);
   exit ToByte(Number);
@@ -673,7 +686,7 @@ begin
   if (aValue > Consts.MaxChar) or (aValue < Consts.MinChar) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Char");
 
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit chr(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToChar(aValue);
@@ -685,7 +698,7 @@ begin
   if (aValue > Consts.MaxChar) or (aValue < Consts.MinChar) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Char");
 
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR ISLAND}
   exit chr(aValue);
   {$ELSEIF ECHOES}
   exit System.Convert.ToChar(aValue);
@@ -698,6 +711,9 @@ begin
   exit chr(Integer(aValue));
   {$ELSEIF ECHOES}
   exit System.Convert.ToChar(aValue);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  raise new NotImplementedException("Convert.ToChar() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit chr(aValue);
   {$ENDIF}
