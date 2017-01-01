@@ -74,9 +74,9 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			block()
 		}
 		#else
-		#warning syncToMainThreadIfNeeded() is not implemented for non-Toffee
 		if sync {
-			throw Exception("syncToMainThreadIfNeeded() is not implemented for non-Toffee platforms, yet.")
+			#warning syncToMainThreadIfNeeded() is not implemented for non-Toffee
+			block()
 		} else {
 			block()
 		}

@@ -43,6 +43,7 @@ type
 
     method SubList(aStartIndex: Int32): ImmutableList<T>;
     method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
+    //method Partition<K>(aKeyBlock: block (aItem: T): K): ImmutableDictionary<K,ImmutableList<T>>; where K is IEquatable<K>;
     
     method JoinedString(aSeparator: String): not nullable String;
     
@@ -616,6 +617,24 @@ begin
   if Count > 0 then RemoveAt(Count-1);
 end;
 
+/*method ImmutableList<T>.Partition<K>(aKeyBlock: block (aItem: T): K): ImmutableDictionary<K,ImmutableList<T>>;
+begin
+  result := new Dictionary<K,ImmutableList<T>>();
+  var items := OrderBy(aKeyBlock);
+  var currentKey: K := nil;
+  var currentItems: List<T> := nil;
+  //var count := items.count();
+  for each i in Items do begin
+    var lKey := aKeyBlock(i);
+    if lKey ≠ currentKey then begin
+      currentKey := lKey;
+      currentItems := new List<T>();
+      (result as Dictionary<K,T>)[lKey] := currentItems;
+    end;
+    currentItems.Add(i);
+  end;
+end;*/
+
 { NullHelper }
 
 {$IF TOFFEE}
@@ -633,7 +652,7 @@ begin
     aSelf.Add(aArr[i]);
 end;
 
-method ListHelpers.FindIndex<T>(aSelf: ImmutableList<T>;StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
+method ListHelpers.FindIndex<T>(aSelf: ImmutableList<T>; StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
 begin
   if StartIndex > aSelf.Count then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, "StartIndex");

@@ -38,6 +38,9 @@ type
 
     class method Format(aFormat: String; params aParams: array of Object): not nullable String;    
     class method CharacterIsWhiteSpace(Value: Char): Boolean;
+    class method CharacterIsLetter(Value: Char): Boolean;
+    class method CharacterIsNumber(Value: Char): Boolean;
+    class method CharacterIsLetterOrNumber(Value: Char): Boolean;
     class method IsNullOrEmpty(Value: String): Boolean;
     class method IsNullOrWhiteSpace(Value: String): Boolean;
     class method &Join(Separator: String; Values: array of String): String; 
@@ -68,6 +71,7 @@ type
     method Split(Separator: String): not nullable array of String;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
+    method Insert(aIndex: Int32; aNewValue: String): not nullable String; inline;
     method PadStart(TotalWidth: Integer): String; inline; 
     method PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
     method PadEnd(TotalWidth: Integer): String; inline; 
@@ -289,6 +293,45 @@ begin
   result := Char.IsWhiteSpace(Value);
   {$ELSEIF TOFFEE}
   result := Foundation.NSCharacterSet.whitespaceAndNewlineCharacterSet.characterIsMember(Value);
+  {$ENDIF}
+end;
+
+class method String.CharacterIsLetter(Value: Char): Boolean;
+begin
+  {$IF COOPER}
+  result := java.lang.Character.isLetter(Value);
+  {$ELSEIF ECHOES}
+  result := Char.IsLetter(Value);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSCharacterSet.letterCharacterSet.characterIsMember(Value);
+  {$ENDIF}
+end;
+
+class method String.CharacterIsNumber(Value: Char): Boolean;
+begin
+  {$IF COOPER}
+  result := java.lang.Character.isDigit(Value);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := Char.IsNumber(Value);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSCharacterSet.decimalDigitCharacterSet.characterIsMember(Value);
+  {$ENDIF}
+end;
+
+class method String.CharacterIsLetterOrNumber(Value: Char): Boolean;
+begin
+  {$IF COOPER}
+  result := java.lang.Character.isLetterOrDigit(Value);
+  {$ELSEIF ECHOES}
+  result := Char.IsLetter(Value) or Char.IsNumber(Value);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSCharacterSet.alphanumericCharacterSet.characterIsMember(Value);
   {$ENDIF}
 end;
 
@@ -589,6 +632,11 @@ begin
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue);
   {$ENDIF}
+end;
+
+method String.Insert(aIndex: Int32; aNewValue: String): not nullable String;
+begin
+  result := Replace(aIndex, 0, aNewValue);
 end;
 
 {$IF COOPER}
