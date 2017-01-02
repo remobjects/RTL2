@@ -67,7 +67,7 @@
         </Compile>
         <Compile Include="$(MSBuildThisFileDirectory)Stack.pas">
             <VirtualFolder>Collections</VirtualFolder>
-        </Compile>        
+        </Compile>
         <Compile Include="$(MSBuildThisFileDirectory)String (Path).pas">
             <VirtualFolder>Files and Paths</VirtualFolder>
         </Compile>
@@ -90,6 +90,15 @@
         <Compile Include="$(MSBuildThisFileDirectory)Char (Extensions).pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.CoreFoundation.cs"/>
         <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.MacFolders.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonArray.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonConsts.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonDeserializer.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonDocument.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonExceptions.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonObject.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonSerializer.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonTokenizer.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Json\JsonValue.pas"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Files and Paths">
