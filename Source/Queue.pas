@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT ISLAND}
-
 interface
 
 type
@@ -17,7 +15,7 @@ type
     method Peek: T;
     method ToArray: array of T;
 
-    property Count: Integer read {$IF COOPER}mapped.size{$ELSEIF ECHOES OR TOFFEE}mapped.Count{$ENDIF};
+    property Count: Integer read {$IF COOPER}mapped.size{$ELSEIF ECHOES OR TOFFEE OR ISLAND}mapped.Count{$ENDIF};
 
     method UniqueCopy: ImmutableQueue<T>;
     method UniqueMutableCopy: Queue<T>;
@@ -37,7 +35,7 @@ implementation
 
 method ImmutableQueue<T>.Contains(Item: T): Boolean;
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Contains(Item);
   {$ELSEIF TOFFEE}
   exit mapped.containsObject(NullHelper.ValueOf(Item));
@@ -46,7 +44,7 @@ end;
 
 method ImmutableQueue<T>.Peek: T;
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   {$IFDEF COOPER}
   if self.Count = 0 then
     raise new QueueEmptyException;
@@ -63,7 +61,7 @@ method ImmutableQueue<T>.ToArray: array of T;
 begin
   {$IF COOPER}
   exit mapped.toArray(new T[0]);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToArray;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArray<T>(self);
@@ -104,7 +102,7 @@ end;
 
 method Queue<T>.Clear;
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   mapped.Clear;
   {$ELSEIF TOFFEE}
   mapped.removeAllObjects;
@@ -117,7 +115,7 @@ begin
   if self.Count = 0 then
     raise new QueueEmptyException;
   exit mapped.poll;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Dequeue;
   {$ELSEIF TOFFEE}
   if self.Count = 0 then
@@ -131,13 +129,11 @@ method Queue<T>.Enqueue(Item: T);
 begin
   {$IF COOPER}
   mapped.add(Item);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Enqueue(Item);
   {$ELSEIF TOFFEE}
   mapped.addObject(NullHelper.ValueOf(Item));
   {$ENDIF}
 end;
-
-{$ENDIF}
 
 end.

@@ -1,12 +1,10 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT ISLAND}
-
 interface
 
 type
-  PlatformImmutableStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
-  PlatformStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
+  PlatformImmutableStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
+  PlatformStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
 
   ImmutableStack<T> = public class mapped to PlatformImmutableStack<T>
   public
@@ -16,7 +14,7 @@ type
     method Peek: T;
     method ToArray: array of T;
 
-    property Count: Integer read {$IF COOPER}mapped.size{$ELSEIF ECHOES OR TOFFEE}mapped.Count{$ENDIF};
+    property Count: Integer read {$IF COOPER}mapped.size{$ELSEIF ECHOES OR TOFFEE OR ISLAND}mapped.Count{$ENDIF};
 
     method UniqueCopy: ImmutableStack<T>;
     method UniqueMutableCopy: Stack<T>;
@@ -36,7 +34,7 @@ implementation
 
 method ImmutableStack<T>.Contains(Item: T): Boolean;
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Contains(Item);
   {$ELSE}
   exit mapped.containsObject(NullHelper.ValueOf(Item));
@@ -45,7 +43,7 @@ end;
 
 method ImmutableStack<T>.Peek: T;
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Peek;
   {$ELSE}
   var n := mapped.lastObject;
@@ -58,7 +56,7 @@ method ImmutableStack<T>.ToArray: array of T;
 begin
   {$IF COOPER}
   exit ListHelpers.ToArrayReverse<T>(mapped, new T[Count]);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToArray;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArrayReverse<T>(self);
@@ -99,7 +97,7 @@ end;
 
 method Stack<T>.Clear;
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   mapped.Clear;
   {$ELSE}
   mapped.removeAllObjects;
@@ -108,7 +106,7 @@ end;
 
 method Stack<T>.Pop: T;
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Pop;
   {$ELSE}
   var n := mapped.lastObject;
@@ -121,13 +119,11 @@ end;
 
 method Stack<T>.Push(Item: T);
 begin
-  {$IF COOPER OR ECHOES}
+  {$IF COOPER OR ECHOES OR ISLAND}
   mapped.Push(Item);
   {$ELSE}
   mapped.addObject(NullHelper.ValueOf(Item));
   {$ENDIF}
 end;
-
-{$ENDIF}
 
 end.
