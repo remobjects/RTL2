@@ -37,10 +37,12 @@
     <ItemGroup>
         <Reference Include="Foundation"/>
         <Reference Include="libEUnit"/>
-        <Reference Include="libSugar"/>
         <Reference Include="libxml2"/>
         <Reference Include="libToffee"/>
         <Reference Include="rtl"/>
+        <Reference Include="libElements">
+            <HintPath>../Source/bin/Debug/macOS/libElements.fx</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Program.pas"/>
@@ -50,6 +52,5 @@
         <Folder Include="Properties\"/>
     </ItemGroup>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets"/>
-    <Import Project="..\Source\Elements.RTL.Shared.projitems" Label="Shared"/>
     <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared"/>
 </Project>

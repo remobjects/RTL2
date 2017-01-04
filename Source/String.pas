@@ -75,7 +75,7 @@ type
     method PadStart(TotalWidth: Integer): String; inline; 
     method PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
     method PadEnd(TotalWidth: Integer): String; inline; 
-    method PadEnd(TotalWidth: Integer; PaddingChar: Char): String;     
+    method PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
     method ToLower: not nullable String; inline;
     method ToLowerInvariant: not nullable String; inline;
     method ToLower(aLocale: Locale): not nullable String; inline;
@@ -84,7 +84,7 @@ type
     method ToUpper(aLocale: Locale): not nullable String; inline;
     method Trim: not nullable String; inline;
     method TrimEnd: not nullable String; inline;
-    method TrimStart: not nullable String; inline; 
+    method TrimStart: not nullable String; inline;
     method Trim(const TrimChars: array of Char): not nullable String; 
     method TrimEnd(const TrimChars: array of Char): not nullable String; 
     method TrimStart(const TrimChars: array of Char): not nullable String; 
@@ -102,6 +102,26 @@ type
   end;
 
 implementation
+
+{$GLOBALS ON}
+var
+  // from https://msdn.microsoft.com/en-us/library/system.Char.iswhitespace%28v=vs.110%29.aspx
+  WhiteSpaceCharacters: array of Char :=
+        [#$0020, #$1680, #$2000, #$2001, #$2002, #$2003, #$2004, #$2005, #$2006, #$2007, #$2008, #$2009, #$200A, #$202F, #$205F, #$3000, //space separators
+         #$2028, //Line Separator
+         #$2029, //Paragraph Separator
+         #$0009, #$000A, #$000B, #$000C, #$000D,#$0085, #$00A0]; // other special symbols
+
+{$IF COOPER OR TOFFEE}
+function CharIsAnyOf(Value: Char; AnyOf: array of Char): Boolean;
+begin
+  for each c: Char in AnyOf do
+    if c = Value then
+      exit true;
+
+  result := false;
+end;
+{$ENDIF}
 
 constructor String(Value: array of Byte; Encoding: Encoding := nil);
 begin
@@ -789,28 +809,38 @@ begin
   {$ENDIF}
 end;
 
+//
+// Trim
+//
+
 method String.Trim: not nullable String;
 begin
   {$IF COOPER}
-  result := mapped.trim() as not nullable; // trims #$00-#$20
-  {$ELSEIF ECHOES}
-  result := mapped.Trim() as not nullable; // Trim() does include CR/LF and Unicode whitespace
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
+  var lStr := TrimStart(TrimChars);
+  result := lStr.TrimEnd(TrimChars);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.Trim() as not nullable; // .NET Trim() does include CR/LF and Unicode whitespace
   {$ELSEIF TOFFEE}
   result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet);
   {$ENDIF}
 end;
 
-method String.TrimEnd: not nullable String;
-begin
-  result := TrimEnd([' ']);
-end;
-
 method String.TrimStart: not nullable String;
 begin
-  result := TrimStart([' ']);
+  {$IF COOPER OR TOFFEE}
+  result := TrimStart(WhiteSpaceCharacters);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.TrimStart() as not nullable; // .NET Trim() does include CR/LF and Unicode whitespace
+  {$ENDIF}
+end;
+
+method String.TrimEnd: not nullable String;
+begin
+  {$IF COOPER OR TOFFEE}
+  result := TrimEnd(WhiteSpaceCharacters);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.TrimEnd() as not nullable;
+  {$ENDIF}
 end;
 
 method String.Trim(const TrimChars: array of Char): not nullable String;
@@ -822,65 +852,54 @@ begin
   result := mapped.Trim(TrimChars) as not nullable;
   {$ELSEIF ISLAND}
   {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
+  raise new NotImplementedException("`String.Trim(array of char)` is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
-  result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length)));
+  var lCharset := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
+  result := mapped.stringByTrimmingCharactersInSet(lCharset);
   {$ENDIF}
 end;
+
+method String.TrimStart(const TrimChars: array of Char): not nullable String;
+begin
+  {$IF COOPER OR TOFFEE}
+  var len := RemObjects.Elements.System.length(self);
+  result := self;
+  if len > 0 then begin
+    var i: Integer := 0;
+    while (i < len-1) and CharIsAnyOf(self[i], TrimChars) do
+      inc(i);
+    if i > 0 then
+      result := Substring(i) as not nullable;
+  end;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.TrimStart(TrimChars) as not nullable;
+  {$ENDIF}
+end;
+
+method String.TrimEnd(const TrimChars: array of Char): not nullable String;
+begin
+  {$IF COOPER OR TOFFEE}
+  var len := RemObjects.Elements.System.length(self);
+  result := self;
+  if len > 0 then begin
+    var i: Integer := len-1;
+    while (i ≥ 0) and CharIsAnyOf(self[i], TrimChars) do
+      dec(i);
+    if i+1 < len then
+      result := Substring(0, i+1) as not nullable;
+  end;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.TrimEnd(TrimChars) as not nullable;
+  {$ENDIF}
+end;
+
 
 method String.TrimNewLineCharacters: not nullable String;
 begin
   result := Trim([#13, #10]);
 end;
 
-{$IF COOPER}
-function CharIsAnyOf(Value: Char; AnyOf: array of Char): Boolean;
-begin
-  for each c: Char in AnyOf do
-    if c = Value then
-      exit true;
 
-  result := false;
-end;
-{$ENDIF}
-
-method String.TrimEnd(const TrimChars: array of Char): not nullable String;
-begin
-  {$IF COOPER}
-  if (self = nil) or (mapped.length = 0) then
-    exit self;
-  var i: Integer := mapped.length - 1;
-  while (i >= 0) and CharIsAnyOf(mapped.charAt(i), TrimChars) do
-    dec(i);
-
-  result := mapped.substring(0, i + 1) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped.TrimEnd(TrimChars) as not nullable;
-  {$ELSEIF TOFFEE}
-  var lCharacters := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
-  var lLastWanted := mapped.rangeOfCharacterFromSet(lCharacters.invertedSet) options(NSStringCompareOptions.NSBackwardsSearch);                                                               
-  result := if lLastWanted.location = NSNotFound then self else mapped.substringToIndex(lLastWanted.location + 1) as not nullable;
-  {$ENDIF}
-end;
-
-method String.TrimStart(const TrimChars: array of Char): not nullable String;
-begin
-  {$IF COOPER}
-  if (self = nil) or (mapped.length = 0) then
-    exit self;
-  var i: Integer := 0;
-  while (i <= mapped.length) and CharIsAnyOf(mapped.charAt(i), TrimChars) do
-    inc(i);
-
-  result := mapped.substring(i) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped.TrimStart(TrimChars) as not nullable;
-  {$ELSEIF TOFFEE}
-  var lCharacters := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
-  var lFirstWanted := mapped.rangeOfCharacterFromSet(lCharacters.invertedSet);  
-  result := if lFirstWanted.location = NSNotFound then self else mapped.substringFromIndex(lFirstWanted.location);
-  {$ENDIF}
-end;
 
 method String.StartsWith(Value: String): Boolean;
 begin

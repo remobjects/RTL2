@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # RemObjects Fire
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Shared", "..\Source\Elements.RTL.Shared.elements", "{ABEC8ACC-B076-406C-871B-581E8AF0A453}"
 EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.macOS", "..\Source\Elements.RTL.Toffee.macOS.elements", "{58D52FE5-E87E-4D9C-8FBB-280980F6762B}"
+EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Cooper", "Elements.RTL2.Tests.Cooper.elements", "{F9394C75-0042-42C1-B0DC-B5ACB2C0C3A7}"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Echoes", "Elements.RTL2.Tests.Echoes.elements", "{4FE86A5E-1886-47EC-921E-D93AE32079B2}"
@@ -21,6 +23,10 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{ABEC8ACC-B076-406C-871B-581E8AF0A453}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{ABEC8ACC-B076-406C-871B-581E8AF0A453}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{58D52FE5-E87E-4D9C-8FBB-280980F6762B}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{58D52FE5-E87E-4D9C-8FBB-280980F6762B}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{58D52FE5-E87E-4D9C-8FBB-280980F6762B}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{58D52FE5-E87E-4D9C-8FBB-280980F6762B}.Release|AnyCPU.Build.0 = Release|AnyCPU
 		{F9394C75-0042-42C1-B0DC-B5ACB2C0C3A7}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{F9394C75-0042-42C1-B0DC-B5ACB2C0C3A7}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{F9394C75-0042-42C1-B0DC-B5ACB2C0C3A7}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
