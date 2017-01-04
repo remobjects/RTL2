@@ -101,8 +101,6 @@ type
     property Chars[aIndex: Int32]: Char read get_Chars; default;
   end;
 
-implementation
-
 {$GLOBALS ON}
 var
   // from https://msdn.microsoft.com/en-us/library/system.Char.iswhitespace%28v=vs.110%29.aspx
@@ -111,6 +109,8 @@ var
          #$2028, //Line Separator
          #$2029, //Paragraph Separator
          #$0009, #$000A, #$000B, #$000C, #$000D,#$0085, #$00A0]; // other special symbols
+
+implementation
 
 {$IF COOPER OR TOFFEE}
 function CharIsAnyOf(Value: Char; AnyOf: array of Char): Boolean;
@@ -816,8 +816,7 @@ end;
 method String.Trim: not nullable String;
 begin
   {$IF COOPER}
-  var lStr := TrimStart(TrimChars);
-  result := lStr.TrimEnd(TrimChars);
+  result := Trim(WhiteSpaceCharacters);
   {$ELSEIF ECHOES OR ISLAND}
   result := mapped.Trim() as not nullable; // .NET Trim() does include CR/LF and Unicode whitespace
   {$ELSEIF TOFFEE}
