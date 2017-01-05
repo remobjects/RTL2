@@ -27,7 +27,7 @@ type
     class property UTF16BE: Encoding read GetEncoding("UTF-16BE");
 
     class property &Default: Encoding read UTF8;
-    
+
     {$IF TOFFEE}
     method AsNSStringEncoding: NSStringEncoding;
     class method FromNSStringEncoding(aEncoding: NSStringEncoding): Encoding;
@@ -39,16 +39,7 @@ implementation
 method Encoding.GetBytes(aValue: String): array of Byte;
 begin
   ArgumentNullException.RaiseIfNil(aValue, "aValue");
-  {$IF ANDROID}
-  var Buffer := java.nio.charset.Charset(aEncoding).newEncoder.
-    onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
-    onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE).
-    replaceWith([63]).
-    encode(java.nio.CharBuffer.wrap(aValue));
-
-  result := new Byte[Buffer.remaining];
-  Buffer.get(result);
-  {$ELSEIF COOPER}
+  {$IF COOPER}
   var Buffer := java.nio.charset.Charset(self).encode(aValue);
   result := new Byte[Buffer.remaining];
   Buffer.get(result);
@@ -141,9 +132,9 @@ begin
     'UTF32LE','UTF-32LE': lEncoding := NSStringEncoding.UTF32LittleEndianStringEncoding;
     'UTF32BE','UTF-32BE': lEncoding := NSStringEncoding.UTF32BigEndianStringEncoding;
     'US-ASCII', 'ASCII','UTF-ASCII': lEncoding := NSStringEncoding.ASCIIStringEncoding;
-    else begin 
+    else begin
       var lH := CFStringConvertIANACharSetNameToEncoding(bridge<CFStringRef>(aName));
-      if lH = kCFStringEncodingInvalidId then 
+      if lH = kCFStringEncodingInvalidId then
         raise new ArgumentException();
       lEncoding := CFStringConvertEncodingToNSStringEncoding(lH) as NSStringEncoding;
     end;
@@ -164,7 +155,7 @@ begin
   var lName := CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(mapped.unsignedIntValue));
   if assigned(lName) then
     result := bridge<NSString>(lName, BridgeMode.Transfer);
-  {$ENDIF}  
+  {$ENDIF}
 end;
 
 method Encoding.GetIsUTF8: Boolean;
@@ -177,7 +168,7 @@ begin
   result := fName.ToUpper.Replace("-", "") = "UTF8";
   {$ELSEIF TOFFEE}
   result := AsNSStringEncoding = NSStringEncoding.UTF8StringEncoding;
-  {$ENDIF}  
+  {$ENDIF}
 end;
 
 {$IF TOFFEE}

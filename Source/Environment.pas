@@ -18,10 +18,10 @@ type
     method GetOSVersion: String;
     method GetEnvironmentVariable(Name: String): String;
     method GetCurrentDirectory: String;
-    
+
     method GetUserHomeFolder: Folder;
     method GetApplicationSupportFolder: Folder;
-    
+
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport("libc")]
     method uname(buf: IntPtr): Integer; external;
@@ -34,10 +34,10 @@ type
     property UserName: String read GetUserName;
     property FullUserName: String read GetFullUserName;
     property MachineName: String read GetMachineName;
-    
+
     property UserHomeFolder: nullable Folder read GetUserHomeFolder;
     property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
-    
+
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
@@ -52,7 +52,7 @@ implementation
 method Environment.GetEnvironmentVariable(Name: String): String;
 begin
   {$IF COOPER}
-  exit System.getenv(Name); 
+  exit System.getenv(Name);
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   raise new NotSupportedException("GetEnvironmentVariable not supported on this platfrom");
   {$ELSEIF ECHOES}
@@ -79,7 +79,7 @@ end;
 
 method Environment.GetUserName: String;
 begin
-  {$IF ANDROID}
+  {$IF COOPER AND ANDROID}
   {$HINT need to do this w/o depending on android.jar somehow}
   AppContextMissingException.RaiseIfMissing();
 
@@ -277,7 +277,7 @@ end;
 
 method Environment.GetOSVersion: String;
 begin
-  {$IF COOPER}  
+  {$IF COOPER}
   System.getProperty("os.version");
   {$ELSEIF WINDOWS_PHONE}
   exit System.Environment.OSVersion.Version.ToString;
@@ -299,7 +299,7 @@ begin
   {$ELSEIF NETFX_CORE}
   exit Windows.Storage.ApplicationData.Current.LocalFolder.Path;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
-  exit System.Environment.CurrentDirectory; 
+  exit System.Environment.CurrentDirectory;
   {$ELSEIF ECHOES}
   exit System.Environment.CurrentDirectory;
   {$ELSEIF ISLAND}
