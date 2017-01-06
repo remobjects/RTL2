@@ -36,14 +36,14 @@ type
     class operator Equal(Value1, Value2: String): Boolean;
     class operator NotEqual(Value1, Value2: String): Boolean;
 
-    class method Format(aFormat: String; params aParams: array of Object): not nullable String;    
+    class method Format(aFormat: String; params aParams: array of Object): not nullable String;
     class method CharacterIsWhiteSpace(Value: Char): Boolean;
     class method CharacterIsLetter(Value: Char): Boolean;
     class method CharacterIsNumber(Value: Char): Boolean;
     class method CharacterIsLetterOrNumber(Value: Char): Boolean;
     class method IsNullOrEmpty(Value: String): Boolean;
     class method IsNullOrWhiteSpace(Value: String): Boolean;
-    class method &Join(Separator: String; Values: array of String): String; 
+    class method &Join(Separator: String; Values: array of String): String;
 
     method CompareTo(Value: String): Integer;
     method CompareToIgnoreCase(Value: String): Integer;
@@ -58,23 +58,23 @@ type
     method Contains(Value: String): Boolean; inline;
     method IndexOf(Value: Char): Int32; inline;
     method IndexOf(Value: String): Int32; inline;
-    method IndexOf(Value: Char; StartIndex: Integer): Integer; inline; 
-    method IndexOf(Value: String; StartIndex: Integer): Integer; inline; 
-    method IndexOfAny(const AnyOf: array of Char): Integer; inline; 
-    method IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;     
+    method IndexOf(Value: Char; StartIndex: Integer): Integer; inline;
+    method IndexOf(Value: String; StartIndex: Integer): Integer; inline;
+    method IndexOfAny(const AnyOf: array of Char): Integer; inline;
+    method IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
     method LastIndexOf(Value: Char): Integer; inline;
     method LastIndexOf(Value: String): Int32; inline;
-    method LastIndexOf(Value: Char; StartIndex: Integer): Integer; 
-    method LastIndexOf(const Value: String; StartIndex: Integer): Integer; 
+    method LastIndexOf(Value: Char; StartIndex: Integer): Integer;
+    method LastIndexOf(const Value: String; StartIndex: Integer): Integer;
     method Substring(StartIndex: Int32): not nullable String;
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String;
     method Split(Separator: String): not nullable array of String;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Insert(aIndex: Int32; aNewValue: String): not nullable String; inline;
-    method PadStart(TotalWidth: Integer): String; inline; 
-    method PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
-    method PadEnd(TotalWidth: Integer): String; inline; 
+    method PadStart(TotalWidth: Integer): String; inline;
+    method PadStart(TotalWidth: Integer; PaddingChar: Char): String;
+    method PadEnd(TotalWidth: Integer): String; inline;
     method PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
     method ToLower: not nullable String; inline;
     method ToLowerInvariant: not nullable String; inline;
@@ -85,14 +85,14 @@ type
     method Trim: not nullable String; inline;
     method TrimEnd: not nullable String; inline;
     method TrimStart: not nullable String; inline;
-    method Trim(const TrimChars: array of Char): not nullable String; 
-    method TrimEnd(const TrimChars: array of Char): not nullable String; 
-    method TrimStart(const TrimChars: array of Char): not nullable String; 
+    method Trim(const TrimChars: array of Char): not nullable String;
+    method TrimEnd(const TrimChars: array of Char): not nullable String;
+    method TrimStart(const TrimChars: array of Char): not nullable String;
     method TrimNewLineCharacters: not nullable String; inline;
     method StartsWith(Value: String): Boolean; inline;
-    method StartsWith(Value: String; IgnoreCase: Boolean): Boolean; 
+    method StartsWith(Value: String; IgnoreCase: Boolean): Boolean;
     method EndsWith(Value: String): Boolean; inline;
-    method EndsWith(Value: String; IgnoreCase: Boolean): Boolean; 
+    method EndsWith(Value: String; IgnoreCase: Boolean): Boolean;
     method ToByteArray: array of Byte;
     method ToByteArray(aEncoding: {not nullable} Encoding): array of Byte;
     method ToCharArray: array of Char;
@@ -130,7 +130,7 @@ begin
 
   if Encoding = nil then
     Encoding := Encoding.Default;
-    
+
   exit Encoding.GetString(Value);
 end;
 
@@ -252,7 +252,7 @@ begin
   exit First.CompareTo(Second);
   {$ELSEIF TOFFEE}
   exit First.compare(Second);
-  {$ENDIF}  
+  {$ENDIF}
 end;
 
 class operator String.Equal(Value1: String; Value2: String): Boolean;
@@ -272,7 +272,7 @@ begin
   exit First.CompareTo(Second) = 0;
   {$ELSEIF TOFFEE}
   exit First.compare(Second) = 0;
-  {$ENDIF}  
+  {$ENDIF}
 end;
 
 class operator String.NotEqual(Value1: String; Value2: String): Boolean;
@@ -503,7 +503,7 @@ begin
   {$ENDIF}
 end;
 
-method String.IndexOfAny(const AnyOf: array of Char): Integer; 
+method String.IndexOfAny(const AnyOf: array of Char): Integer;
 begin
   {$IF COOPER OR TOFFEE}
   result := IndexOfAny(AnyOf, 0);
@@ -512,7 +512,7 @@ begin
   {$ENDIF}
 end;
 
-method String.IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer; 
+method String.IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
 begin
   {$IF COOPER}
   for i: Integer := StartIndex to mapped.length - 1 do begin
@@ -573,8 +573,8 @@ begin
     result := -1;
   {$ELSEIF TOFFEE}
   var r:= mapped.rangeOfString(Value) options(NSStringCompareOptions.NSLiteralSearch or NSStringCompareOptions.NSBackwardsSearch) range(NSMakeRange(0, StartIndex + 1));
-  exit if (r.location = NSNotFound) and (r.length = 0) then -1 else Int32(r.location);  
-  {$ENDIF}  
+  exit if (r.location = NSNotFound) and (r.length = 0) then -1 else Int32(r.location);
+  {$ENDIF}
 end;
 
 method String.Substring(StartIndex: Int32): not nullable String;
@@ -608,7 +608,7 @@ begin
   if IsNullOrEmpty(Separator) then
     exit [mapped];
 
-  {$IF COOPER}  
+  {$IF COOPER}
   exit mapped.split(java.util.regex.Pattern.quote(Separator)) as not nullable;
   {$ELSEIF ECHOES}
   exit mapped.Split([Separator], StringSplitOptions.None) as not nullable;
@@ -665,7 +665,7 @@ begin
   var sb := new StringBuilder(Count);
   for i: Integer := 0 to Count - 1 do
     sb.append(Value);
-  
+
   result := sb.toString;
 end;
 {$ENDIF}
@@ -741,8 +741,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.ToLowerInvariant as not nullable;
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
+  exit mapped.ToLower(true) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseStringWithLocale(Locale.Invariant);
   {$ENDIF}
@@ -784,8 +783,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.ToUpperInvariant as not nullable;
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
+  exit mapped.ToUpper(true) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseStringWithLocale(Locale.Invariant);
   {$ENDIF}
@@ -914,11 +912,11 @@ begin
   if IgnoreCase then
     result := mapped.regionMatches(IgnoreCase, 0, Value, 0, Value.length)
   else
-    result := mapped.StartsWith(Value);  
+    result := mapped.StartsWith(Value);
   {$ELSEIF ECHOES}
   if IgnoreCase then
     result := mapped.StartsWith(Value, StringComparison.OrdinalIgnoreCase)
-  else 
+  else
     result := mapped.StartsWith(Value);
   {$ELSEIF TOFFEE}
   if Value.Length > mapped.length then
@@ -927,7 +925,7 @@ begin
     if IgnoreCase then
       result := (mapped.compare(Value) options(NSStringCompareOptions.NSCaseInsensitiveSearch) range(NSMakeRange(0, Value.length)) = NSComparisonResult.NSOrderedSame)
     else
-      result := mapped.hasPrefix(Value);   
+      result := mapped.hasPrefix(Value);
   end;
   {$ENDIF}
 end;

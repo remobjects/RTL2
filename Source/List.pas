@@ -9,7 +9,7 @@ type
   ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray where T is class;{$ENDIF}
   private
     method GetItem(&Index: Integer): T;
-    
+
   public
     constructor; mapped to constructor();
     constructor(Items: List<T>);
@@ -26,17 +26,17 @@ type
     method TrueForAll(Match: Predicate<T>): Boolean;
     method ForEach(Action: Action<T>);
 
-    method IndexOf(aItem: T): Integer; 
+    method IndexOf(aItem: T): Integer;
     method LastIndexOf(aItem: T): Integer;
 
-    method ToMutableList: List<T>; 
+    method ToMutableList: List<T>;
     {$IF NOT COOPER AND NOT ISLAND}
     method ToSortedList: ImmutableList<T>;
     {$ENDIF}
-    method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>; 
+    method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
     method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
     method ToList<U>: ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
-    
+
     method UniqueCopy: ImmutableList<T>;
     method UniqueMutableCopy: List<T>;
     method MutableVersion: List<T>;
@@ -44,13 +44,13 @@ type
     method SubList(aStartIndex: Int32): ImmutableList<T>;
     method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
     //method Partition<K>(aKeyBlock: block (aItem: T): K): ImmutableDictionary<K,ImmutableList<T>>; where K is IEquatable<K>;
-    
+
     method JoinedString(aSeparator: String): not nullable String;
-    
+
     //76766: Echoes: Problem with using generic type in property reader
     property FirstObject: T read self[0];
     property LastObject: T read self[Count-1];
-    
+
     property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF};
     property Item[i: Integer]: T read GetItem; default;
   end;
@@ -61,7 +61,7 @@ type
     method SetItem(&Index: Integer; Value: T);
 
   public
-    
+
     constructor; mapped to constructor();
     constructor(Items: List<T>);
     constructor(params anArray: array of T);
@@ -80,7 +80,7 @@ type
 
     method ReplaceAt(aIndex: Integer; aNewObject: T): T;
     method ReplaceRange(aIndex: Integer; aCount: Integer; aNewObjects: ImmutableList<T>): T;
-    
+
     method RemoveFirstObject;
     method RemoveLastObject;
 
@@ -96,10 +96,10 @@ type
 
     property Item[i: Integer]: T read GetItem write SetItem; default;
   end;
-  
+
   ImmutableListProxy<T> = public class
   end;
-  
+
   Predicate<T> = public block (Obj: T): Boolean;
   Action<T> = public block (Obj: T);
   Comparison<T> = public block (x: T; y: T): Integer;
@@ -197,7 +197,7 @@ method List<T>.SetItem(&Index: Integer; Value: T);
 begin
   {$IF TOFFEE}
   mapped[&Index] := NullHelper.ValueOf(Value);
-  {$ELSE}  
+  {$ELSE}
   mapped[&Index] := Value;
   {$ENDIF}
 end;
@@ -206,7 +206,7 @@ method ImmutableList<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
   exit NullHelper.ValueOf(mapped.objectAtIndex(&Index));
-  {$ELSE}  
+  {$ELSE}
   exit mapped[&Index];
   {$ENDIF}
 end;
@@ -215,7 +215,7 @@ method List<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
   exit NullHelper.ValueOf(mapped.objectAtIndex(&Index));
-  {$ELSE}  
+  {$ELSE}
   exit mapped[&Index];
   {$ENDIF}
 end;
@@ -351,7 +351,7 @@ begin
 end;
 
 method ImmutableList<T>.LastIndexOf(aItem: T): Integer;
-begin  
+begin
   {$IF COOPER}
   exit mapped.LastIndexOf(aItem);
   {$ELSEIF ECHOES OR ISLAND}
@@ -438,9 +438,9 @@ end;
 
 method List<T>.Sort(Comparison: Comparison<T>);
 begin
-  {$IF COOPER}  
+  {$IF COOPER}
   java.util.Collections.sort(mapped, new class java.util.Comparator<T>(compare := (x, y) -> Comparison(x, y)));
-  {$ELSEIF ECHOES OR ISLAND} 
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Sort((x, y) -> Comparison(x, y));
   {$ELSEIF TOFFEE}
   mapped.sortUsingComparator((x, y) -> begin
@@ -468,7 +468,7 @@ end;
 
 method ImmutableList<T>.ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
 begin
-  {$IF COOPER}  
+  {$IF COOPER}
   result := self.ToList();
   java.util.Collections.sort(result, new class java.util.Comparator<T>(compare := (x, y) -> Comparison(x, y)));
   {$ELSEIF ECHOES OR ISLAND}
@@ -497,7 +497,7 @@ end;
 method ImmutableList<T>.ToArray: array of T;
 begin
   {$IF COOPER}
-  exit mapped.toArray(new T[mapped.size()]); 
+  exit mapped.toArray(new T[mapped.size()]);
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToArray;
   {$ELSEIF TOFFEE}
@@ -532,7 +532,7 @@ method ImmutableList<T>.SubList(aStartIndex: Int32; aLength: Int32): ImmutableLi
 begin
   {$IF COOPER}
   result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   var lArray := new T[Count];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
   result := new List<T>(lArray);
@@ -550,7 +550,7 @@ method List<T>.SubList(aStartIndex: Int32; aLength: Int32): List<T>;
 begin
   {$IF COOPER}
   result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   var lArray := new T[Count];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
   result := new List<T>(lArray);
@@ -663,7 +663,7 @@ begin
   if Match = nil then
     raise new ArgumentNullException("Match");
 
-  var Length := StartIndex + aCount; 
+  var Length := StartIndex + aCount;
 
   for i: Int32 := StartIndex to Length - 1 do
     if Match(aSelf[i]) then
@@ -704,7 +704,7 @@ begin
   for i: Integer := 0 to aSelf.Count-1 do begin
     if not Match(aSelf[i]) then
       exit false;
-  end; 
+  end;
 
   exit true;
 end;
@@ -730,7 +730,7 @@ end;
 method ListHelpers.LastIndexOf<T>(aSelf: NSArray; aItem: T): Integer;
 begin
   var o := NullHelper.ValueOf(aItem);
-  for i: Integer := aSelf.count -1 downto 0 do 
+  for i: Integer := aSelf.count -1 downto 0 do
     if aSelf[i] = o then exit i;
   exit -1;
 end;
