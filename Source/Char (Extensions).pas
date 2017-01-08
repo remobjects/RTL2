@@ -11,7 +11,7 @@ interface
     static method ToLower(aChar: Char): Char;
     {$ENDIF}
   end;*/
-  
+
 {$GLOBALS ON}
 
 method LowerChar(aChar: Char): Char; assembly;
@@ -24,7 +24,7 @@ begin
   {$WARNING Not Implemented for Island yet}
   raise new NotImplementedException("LowerChar() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
-  result := chr(toLower(ord(aChar)));
+  result := chr(tolower(ord(aChar)));
   {$ENDIF}
 end;
 
@@ -38,7 +38,7 @@ begin
   {$WARNING Not Implemented for Island yet}
   raise new NotImplementedException("UpperChar() is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
-  result := chr(toUpper(ord(aChar)));
+  result := chr(toupper(ord(aChar)));
   {$ENDIF}
 end;
 

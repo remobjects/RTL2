@@ -45,7 +45,7 @@ type
     constructor(aScheme: not nullable String; aHost: String; aPath: String);
     constructor(aUrlString: not nullable String);
   public
-    
+
     class method UrlWithString(aUrlString: nullable String): Url;
     class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
     //class method UrlWithFilePath(aPath: not nullable String) aRelativeToUrl(aUrl) isDirectory(aIsDirectory: Boolean := false): Url;
@@ -69,16 +69,16 @@ type
     class method UrlEncodeString(aString: String): String;
 
     //property PathWithoutLastComponent: String read GetPathWithoutLastComponent; // includes trailing "/" or "\", NOT decoded
-    
+
     property CanonicalVersion: Url read GetCanonicalVersion;
     property IsFileUrl: Boolean read fScheme = "file";
     property FileExists: Boolean read IsFileUrl and File.Exists(Path);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(Path);
     property IsAbsoluteWindowsFileURL: Boolean read IsFileUrl and (Path:Length ≥ 3) and ((Path[2] = ':') or ((Path[1] = '/') and (Path[1] = '/')));
     //property IsAbsoluteUnixFileURL: Boolean read IsFileUrl and (Path:StartsWith("/"));
-    
+
     method IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
-    
+
     // these are all Url-decoded:
     property FilePath: String read {$IF KNOWN_UNIX}fPath{$ELSE}GetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
     property WindowsPath: String read GetWindowsPath;                                         // converts "/" to "\", always
@@ -91,7 +91,7 @@ type
     property WindowsPathWithoutLastComponent: String read GetWindowsPathWithoutLastComponent; // includes trailing "\"
     property UnixPathWithoutLastComponent: String read GetUnixPathWithoutLastComponent;       // includes trailing "/"
     property UrlWithoutLastComponent: Url read GetUrlWithoutLastComponent;
-    
+
     method UrlWithChangedPathExtension(aNewExtension: nullable String): nullable Url; // expects ".", but will add it if needed
     method UrlWithAddedPathExtension(aNewExtension: not nullable String): nullable Url; // expects ".", but will add it if needed
 
@@ -107,31 +107,31 @@ type
     //method UrlWithRelativeOrAbsoluteSubPath(aSubPath: not nullable String): nullable Url;
     method UrlWithRelativeOrAbsoluteFileSubPath(aSubPath: not nullable String): nullable Url;
     method UrlWithRelativeOrAbsoluteWindowsSubPath(aSubPath: not nullable String): nullable Url;
-    
+
     method UrlWithFragment(aFragment: nullable String): not nullable Url;
     method UrlWithoutFragment(): not nullable Url; inline;
 
     method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; //inline;
     method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; inline;
     method UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
-    
+
     method FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; //inline; 76830: Toffee: "E0 Internal error: Could not resolve member op_Implicit on RemObjects.Elements.RTL.String" with inline
     method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; inline;
     method UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; inline;
-    
+
     /* Needed for fire
-    
+
     * Url.fileURLWithPath(_hintPath) relativeToURL(project.baseURL);
-    
+
     */
-    
+
     /*method CrossPlatformPath: String;
     begin
       result := Path;
       if (IsAbsoluteWindowsFileURL) then
         result := result.Substring(1).windowsPathFromUnixPath;
     end;*/
-    
+
     {$IF COOPER}
     operator Implicit(aUrl: java.net.URL): Url;
     operator Implicit(aUrl: Url): java.net.URL;
@@ -149,14 +149,14 @@ type
     class operator NotEqual(Value1: Url; Value2: Object): Boolean;
     class operator Equal(Value1: Object; Value2: Url): Boolean;
     class operator NotEqual(Value1: Object; Value2: Url): Boolean;
-    
+
     {$IF TOFFEE}
     method isEqual(obj: id): Boolean; override;
     method copyWithZone(aZone: ^NSZone): instancetype;
     method hash: NSUInteger; override;
-    {$ENDIF}    
+    {$ENDIF}
   end;
-  
+
 implementation
 
 constructor Url(aUrlString: not nullable String);
@@ -219,12 +219,12 @@ begin
     fScheme := aUrlString.Substring(0, lProtocolPosition);
     aUrlString := aUrlString.Substring(lProtocolPosition + 3); /* skip over :// */
   end;
-  
+
   if fScheme = "file" then begin
     fPath := RemovePercentEncodingsFromPath(aUrlString, true);
     exit true;
   end;
-  
+
   var lHostAndPort: String;
   lProtocolPosition := aUrlString.IndexOf('/');
   if lProtocolPosition = -1 then begin
@@ -238,7 +238,7 @@ begin
     lHostAndPort := aUrlString;
     aUrlString := '';
   end;
-  
+
   if lHostAndPort.StartsWith('[') then begin
     lProtocolPosition := lHostAndPort.IndexOf(']');
     if lProtocolPosition > 0 then begin
@@ -385,7 +385,7 @@ begin
       exit nil; // can never be relative;
     end
     else if SelfIsDriveletter and BaseIsDriveletter then begin
-      if LowerChar(Path[1]) ≠ LowerChar(aURL.Path[1]) then exit nil; // different drive, can never be relative;
+      if LowerChar(Path[1]) ≠ LowerChar(aUrl.Path[1]) then exit nil; // different drive, can never be relative;
       result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
     end
     else begin// both network urls
@@ -402,17 +402,17 @@ method Url.DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold:
 begin
   if (Scheme = aUrl.Scheme) and (Host = aUrl.Host) and (Port = aUrl.Port) then begin
     if IsFileUrl and assigned(fPath) then begin
-      
+
       var baseUrl := aUrl.CanonicalVersion.Path;
       var local := CanonicalVersion.fPath;
       if not baseUrl.EndsWith("/") then
         baseUrl := baseUrl+"/";
-        
+
       if local.StartsWith(baseUrl) then
         exit local.Substring(length(baseUrl));
       if aThreshold <= 0 then
         exit local;
-        
+
       var baseComponents := baseUrl.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
       var localComponents := local.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
       var len := Math.Min(baseComponents.Count, localComponents.Count);
@@ -421,22 +421,22 @@ begin
         while (i < len) and (baseComponents[i].ToLowerInvariant() = localComponents[i].ToLowerInvariant()) do inc(i)
       else
         while (i < len) and (baseComponents[i] = localComponents[i]) do inc(i);
-        
+
       baseComponents.RemoveRange(0, i);
       localComponents.RemoveRange(0, i);
-      
+
       if baseComponents.count-1 >= aThreshold then
         exit local;
-      
+
       baseUrl := String.Join("/", baseComponents.ToArray());
       local := String.Join("/", localComponents.ToArray());
 
       var relative := "";
-      for j: Integer := baseComponents.count-1 downto 1 do 
+      for j: Integer := baseComponents.count-1 downto 1 do
         relative := "../"+relative;
-        
+
       result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
-      
+
     end;
   end;
 end;
@@ -537,7 +537,7 @@ begin
   var lName := GetLastPathComponent;
   if length(lName) > 0 then begin
     var p := lName.LastIndexOf(".");
-    if p > -1 then 
+    if p > -1 then
       lName := lName.Substring(0, p); // exclude the "."
     if length(aNewExtension) > 0 then begin
       if not aNewExtension.StartsWith(".") then
@@ -613,7 +613,7 @@ begin
     exit nil;
   if (length(fPath) = 4) and (fPath[2] = ':') and (fPath[3] = '/') then
     exit nil;
-    
+
   var lNewPath := fPath;
   if Path.EndsWith('/') then
     lNewPath := lNewPath.Substring(0, length(lNewPath)-1);
@@ -623,7 +623,7 @@ begin
     if lNewPath = "///" then // don't strip off a Windows Network Share name
       exit nil;
     {$HINT check and compensate for any more weirdness with windows file paths?}
-    exit CopyWithPath(lNewPath); 
+    exit CopyWithPath(lNewPath);
   end;
   result := CopyWithPath('/')
 end;
@@ -636,7 +636,7 @@ end;
 method Url.SubUrl(params aComponents: array of String) isDirectory(aIsDirectory: Boolean): not nullable Url;
 begin
   var lNewPath := fPath;
-  
+
   for each c in aComponents do begin
     if not lNewPath.EndsWith('/') then
       lNewPath := lNewPath+'/';
@@ -644,7 +644,7 @@ begin
   end;
   if aIsDirectory and not lNewPath.EndsWith('/') then
     lNewPath := lNewPath+'/';
-    
+
   result := CopyWithPath(lNewPath);
 end;
 
@@ -690,10 +690,10 @@ method Url.GetCanonicalVersion(): Url;
 begin
   if fIsCanonical then
     exit self;
-    
+
   if assigned(fCanonicalVersion) then
     exit fCanonicalVersion;
-  
+
   var lParts := fPath.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
   var i := 0;
   while i < length(lParts) do begin
@@ -702,7 +702,7 @@ begin
               lParts.RemoveRange(i-1, 2);
               dec(i);
               continue;
-            end;  
+            end;
       ".": begin
              lParts.RemoveAt(i);
              continue;
@@ -710,7 +710,7 @@ begin
     end;
     inc(i);
   end;
-  
+
   {$HINT needs to fix case to match disk case, if present? }
 
   var lNewPath := String.Join("/", lParts.ToArray());
@@ -736,7 +736,7 @@ begin
     var c: UInt16 := ord(ch);
     if (c < 46) or (58 < c < 65) or (90 < c < 95) or (c = 96) or (122 < c) then begin
       var lBytes := Convert.ToUtf8Bytes(ch);
-      for each b in lBytes do 
+      for each b in lBytes do
         lResult.Append("%"+Convert.ToHexString(ord(b), 2));
     end
     else
