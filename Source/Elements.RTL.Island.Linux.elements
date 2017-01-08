@@ -31,6 +31,7 @@
         <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
         <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
         <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+        <Architecture>x86_64</Architecture>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <Optimize>true</Optimize>
