@@ -13,7 +13,7 @@
         <Compile Include="$(MSBuildThisFileDirectory)Convert.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)String_Paths.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Strings.pas"/>
-        <Compile Include="$(MSBuildThisFileDirectory)Xml.pas"/>
+        <None Include="$(MSBuildThisFileDirectory)Xml.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)String_Trim.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Guids.pas"/>
     </ItemGroup>

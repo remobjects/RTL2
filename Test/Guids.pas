@@ -46,7 +46,7 @@ type
 
     method Bytes;
     begin
-      // This tests/enforces the weird byte switch we do form Echoes. so far, Echoes and Toffee are confiormed to behave equally.
+      // This tests/enforces the weird byte switch we do form Echoes. so far, Echoes, Toffee and Cooper are confirmed to behave equally.
 
       var g := new Guid("C4511C21-B9AE-4C77-95E1-8D43622F4A5C");
       var b := g.ToByteArray;

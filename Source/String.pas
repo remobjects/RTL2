@@ -609,18 +609,33 @@ begin
     exit [mapped];
 
   {$IF COOPER}
-  exit mapped.split(java.util.regex.Pattern.quote(Separator)) as not nullable;
+  //exit mapped.split(java.util.regex.Pattern.quote(Separator)) as not nullable;
+  //Custom implementation because `mapped.split` strips empty oparts at the end, making it incomopatible with the other three platfroms.
+  var lResult := new List<string>;
+  var i := 0;
+  var lSeparatorLength := Separator.Length;
+  loop begin
+    var p := IndexOf(Separator, i);
+    if p > -1 then begin
+      var lPart := self.Substring(i, p-i);
+      lResult.Add(lPart);
+      i := p+lSeparatorLength;
+    end
+    else begin
+      var lPart := self.Substring(i);
+      lResult.Add(lPart);
+      break;
+    end;
+  end;
+  result := lResult.ToArray();
   {$ELSEIF ECHOES}
-  exit mapped.Split([Separator], StringSplitOptions.None) as not nullable;
+  result := mapped.Split([Separator], StringSplitOptions.None) as not nullable;
   {$ELSEIF ECHOES}
-  exit mapped.Split([Separator], StringSplitOptions.None) as not nullable;
+  result := mapped.Split([Separator], StringSplitOptions.None) as not nullable;
   {$ELSEIF ISLAND}
-  exit mapped.Split(Separator) as not nullable;
+  result := mapped.Split(Separator) as not nullable;
   {$ELSEIF TOFFEE}
-  var Items := mapped.componentsSeparatedByString(Separator);
-  result := new String[Items.count];
-  for i: Integer := 0 to Items.count - 1 do
-    result[i] := Items.objectAtIndex(i);
+  result := (mapped.componentsSeparatedByString(Separator) as ImmutableList<String>).ToArray();
   {$ENDIF}
 end;
 

@@ -1,6 +1,8 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # RemObjects Fire
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Cooper", "..\Source\Elements.RTL.Cooper.elements", "{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}"
+EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Echoes", "..\Source\Elements.RTL.Echoes.elements", "{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Shared", "..\Source\Elements.RTL.Shared.elements", "{ABEC8ACC-B076-406C-871B-581E8AF0A453}"
@@ -23,6 +25,10 @@ Global
 		Release|AnyCPU = Release|AnyCPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}.Release|AnyCPU.Build.0 = Release|AnyCPU
 		{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}.Release|AnyCPU.ActiveCfg = Release|AnyCPU

@@ -34,8 +34,8 @@ type
     method ToSortedList: ImmutableList<T>;
     {$ENDIF}
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
-    method ToArray: array of T; {$IF COOPER}inline;{$ENDIF}
-    method ToList<U>: ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
+    method ToArray: not nullable array of T; {$IF COOPER}inline;{$ENDIF}
+    method ToList<U>: not nullable ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
 
     method UniqueCopy: ImmutableList<T>;
     method UniqueMutableCopy: List<T>;
@@ -122,11 +122,11 @@ type
     method InsertRange<T>(aSelf: List<T>; &Index: Integer; Items: array oF T);
     {$IFDEF TOFFEE}
     method LastIndexOf<T>(aSelf: NSArray; aItem: T): Integer;
-    method ToArray<T>(aSelf: NSArray): array of T;
-    method ToArrayReverse<T>(aSelf: NSArray): array of T;
+    method ToArray<T>(aSelf: NSArray): not nullable array of T;
+    method ToArrayReverse<T>(aSelf: NSArray): not nullable array of T;
     {$ENDIF}
     {$IFDEF COOPER}
-    method ToArrayReverse<T>(aSelf: java.util.Vector<T>; aDest: array of T): array of T;
+    method ToArrayReverse<T>(aSelf: java.util.Vector<T>; aDest: not nullable array of T): not nullable array of T;
     {$ENDIF}
   end;
 
@@ -494,7 +494,7 @@ begin
 end;
 {$ENDIF}
 
-method ImmutableList<T>.ToArray: array of T;
+method ImmutableList<T>.ToArray: not nullable array of T;
 begin
   {$IF COOPER}
   exit mapped.toArray(new T[mapped.size()]);
@@ -505,7 +505,7 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableList<T>.ToList<U>: ImmutableList<U>;
+method ImmutableList<T>.ToList<U>: not nullable ImmutableList<U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := self.Select(x -> x as U).ToList();
@@ -735,14 +735,14 @@ begin
   exit -1;
 end;
 
-method ListHelpers.ToArray<T>(aSelf: NSArray): array of T;
+method ListHelpers.ToArray<T>(aSelf: NSArray): not nullable array of T;
 begin
   result := new T[aSelf.count];
   for i: Integer := 0 to aSelf.count - 1 do
     result[i] := aSelf[i];
 end;
 
-method ListHelpers.ToArrayReverse<T>(aSelf: NSArray): array of T;
+method ListHelpers.ToArrayReverse<T>(aSelf: NSArray): not nullable array of T;
 begin
   result := new T[aSelf.count];
   for i: Integer := aSelf.count - 1 downto 0 do
@@ -752,12 +752,11 @@ end;
 
 {$ENDIF}
 {$IFDEF COOPER}
-method ListHelpers.ToArrayReverse<T>(aSelf: java.util.Vector<T>; aDest: array of T): array of T;
+method ListHelpers.ToArrayReverse<T>(aSelf: java.util.Vector<T>; aDest: not nullable array of T): not nullable array of T;
 begin
   result := aDest;
   for i: Integer := aSelf.size - 1 downto 0 do
     result[aSelf.size - i - 1] := aSelf[i];
-
 end;
 {$ENDIF}
 

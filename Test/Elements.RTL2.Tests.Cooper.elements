@@ -55,6 +55,10 @@
         <Reference Include="swift">
             <Private>True</Private>
         </Reference>
+        <Reference Include="elements">
+            <HintPath>../Source/bin/Debug/elements.jar</HintPath>
+            <Private>True</Private>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Program.pas"/>
@@ -62,6 +66,5 @@
         <Compile Include="..\Source\Cooper\LocaleUtils.pas"/>
     </ItemGroup>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Cooper.targets"/>
-    <Import Project="..\Source\Elements.RTL.Shared.projitems" Label="Shared"/>
     <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared"/>
 </Project>

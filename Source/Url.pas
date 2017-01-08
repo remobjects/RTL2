@@ -413,8 +413,8 @@ begin
       if aThreshold <= 0 then
         exit local;
 
-      var baseComponents := baseUrl.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
-      var localComponents := local.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
+      var baseComponents := baseUrl.Split("/").ToList() as List<String>;
+      var localComponents := local.Split("/").ToList() as List<String>;
       var len := Math.Min(baseComponents.Count, localComponents.Count);
       var i := 0;
       if aCaseInsensitive then
