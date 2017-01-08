@@ -9,24 +9,24 @@ type
     var fName: not nullable String;
     constructor (aName: not nullable String);
     {$ENDIF}
-    method GetName: String;
+    method GetName: not nullable String;
     method GetIsUTF8: Boolean;
   public
-    method GetBytes(aValue: String): array of Byte;
+    method GetBytes(aValue: String): not nullable array of Byte;
 
-    method GetString(aValue: array of Byte): String;
-    method GetString(aValue: array of Byte; aOffset: Integer; aCount: Integer): String;
+    method GetString(aValue: not nullable array of Byte): String;
+    method GetString(aValue: not nullable array of Byte; aOffset: Integer; aCount: Integer): String;
 
-    class method GetEncoding(aName: String): Encoding;
-    property Name: String read GetName;
+    class method GetEncoding(aName: not nullable String): nullable Encoding;
+    property Name: not nullable String read GetName;
     property isUTF8: Boolean read GetIsUTF8;
 
-    class property ASCII: Encoding read GetEncoding("US-ASCII");
-    class property UTF8: Encoding read GetEncoding("UTF-8");
-    class property UTF16LE: Encoding read GetEncoding("UTF-16LE");
-    class property UTF16BE: Encoding read GetEncoding("UTF-16BE");
+    class property ASCII: not nullable Encoding read GetEncoding("US-ASCII") as not nullable;
+    class property UTF8: not nullable Encoding read GetEncoding("UTF-8") as not nullable;
+    class property UTF16LE: not nullable Encoding read GetEncoding("UTF-16LE") as not nullable;
+    class property UTF16BE: not nullable Encoding read GetEncoding("UTF-16BE") as not nullable;
 
-    class property &Default: Encoding read UTF8;
+    class property &Default: not nullable Encoding read UTF8;
 
     {$IF TOFFEE}
     method AsNSStringEncoding: NSStringEncoding;
@@ -36,7 +36,7 @@ type
 
 implementation
 
-method Encoding.GetBytes(aValue: String): array of Byte;
+method Encoding.GetBytes(aValue: String): not nullable array of Byte;
 begin
   ArgumentNullException.RaiseIfNil(aValue, "aValue");
   {$IF COOPER}
@@ -44,7 +44,7 @@ begin
   result := new Byte[Buffer.remaining];
   Buffer.get(result);
   {$ELSEIF ECHOES}
-  exit mapped.GetBytes(aValue);
+  exit mapped.GetBytes(aValue) as not nullable;
   {$ELSEIF ISLAND}
   result := case fName.ToUpper.Replace("-", "") of
               "UTF8": TextConvert.StringToUTF8(aValue);
@@ -63,7 +63,7 @@ begin
   {$ENDIF}
 end;
 
-method Encoding.GetString(aValue: array of Byte; aOffset: Integer; aCount: Integer): String;
+method Encoding.GetString(aValue: not nullable array of Byte; aOffset: Integer; aCount: Integer): String;
 begin
   if aValue = nil then
     raise new ArgumentNullException("aValue");
@@ -98,14 +98,14 @@ begin
   {$ENDIF}
 end;
 
-method Encoding.GetString(aValue: array of Byte): String;
+method Encoding.GetString(aValue: not nullable array of Byte): String;
 begin
   if aValue = nil then
     raise new ArgumentNullException("aValue");
   exit GetString(aValue, 0, aValue.length);
 end;
 
-class method Encoding.GetEncoding(aName: String): Encoding;
+class method Encoding.GetEncoding(aName: not nullable String): nullable Encoding;
 begin
   ArgumentNullException.RaiseIfNil(aName, "Name");
   {$IF COOPER}
@@ -143,18 +143,19 @@ begin
   {$ENDIF}
 end;
 
-method Encoding.GetName: String;
+method Encoding.GetName: not nullable String;
 begin
   {$IF COOPER}
-  exit mapped.name;
+  exit mapped.name as not nullable;
   {$ELSEIF ECHOES}
-  exit mapped.WebName;
+  exit mapped.WebName as not nullable;
   {$ELSEIF ISLAND}
-  exit fName;
+  exit fName as not nullable;
   {$ELSEIF TOFFEE}
   var lName := CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(mapped.unsignedIntValue));
-  if assigned(lName) then
-    result := bridge<NSString>(lName, BridgeMode.Transfer);
+  if not assigned(lName) then
+    raise new Exception("Invalid encoding.");
+  result := bridge<NSString>(lName, BridgeMode.Transfer) as not nullable;
   {$ENDIF}
 end;
 

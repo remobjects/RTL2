@@ -43,7 +43,8 @@ type
     class method CharacterIsLetterOrNumber(Value: Char): Boolean;
     class method IsNullOrEmpty(Value: String): Boolean;
     class method IsNullOrWhiteSpace(Value: String): Boolean;
-    class method &Join(Separator: String; Values: array of String): String;
+    class method &Join(Separator: nullable String; Values: not nullable array of String): not nullable String;
+    class method &Join(Separator: nullable String; Values: not nullable ImmutableList<String>): not nullable String;
 
     method CompareTo(Value: String): Integer;
     method CompareToIgnoreCase(Value: String): Integer;
@@ -68,7 +69,7 @@ type
     method LastIndexOf(const Value: String; StartIndex: Integer): Integer;
     method Substring(StartIndex: Int32): not nullable String;
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String;
-    method Split(Separator: String): not nullable array of String;
+    method Split(Separator: String): not nullable ImmutableList<String>;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Insert(aIndex: Int32; aNewValue: String): not nullable String; inline;
@@ -93,9 +94,9 @@ type
     method StartsWith(Value: String; IgnoreCase: Boolean): Boolean;
     method EndsWith(Value: String): Boolean; inline;
     method EndsWith(Value: String; IgnoreCase: Boolean): Boolean;
-    method ToByteArray: array of Byte;
-    method ToByteArray(aEncoding: {not nullable} Encoding): array of Byte;
-    method ToCharArray: array of Char;
+    method ToByteArray: not nullable array of Byte;
+    method ToByteArray(aEncoding: {not nullable} Encoding): not nullable array of Byte;
+    method ToCharArray: not nullable array of Char;
 
     property Length: Int32 read mapped.Length;
     property Chars[aIndex: Int32]: Char read get_Chars; default;
@@ -603,10 +604,10 @@ begin
   {$ENDIF}
 end;
 
-method String.Split(Separator: String): not nullable array of String;
+method String.Split(Separator: String): not nullable ImmutableList<String>;
 begin
   if IsNullOrEmpty(Separator) then
-    exit [mapped];
+    exit new ImmutableList<String>(self);
 
   {$IF COOPER}
   //exit mapped.split(java.util.regex.Pattern.quote(Separator)) as not nullable;
@@ -627,15 +628,13 @@ begin
       break;
     end;
   end;
-  result := lResult.ToArray();
+  result := lResult as not nullable;
   {$ELSEIF ECHOES}
-  result := mapped.Split([Separator], StringSplitOptions.None) as not nullable;
-  {$ELSEIF ECHOES}
-  result := mapped.Split([Separator], StringSplitOptions.None) as not nullable;
+  result := mapped.Split([Separator], StringSplitOptions.None).ToList() as not nullable;
   {$ELSEIF ISLAND}
-  result := mapped.Split(Separator) as not nullable;
+  result := mapped.Split(Separator).ToList() as not nullable;
   {$ELSEIF TOFFEE}
-  result := (mapped.componentsSeparatedByString(Separator) as ImmutableList<String>).ToArray();
+  result := mapped.componentsSeparatedByString(Separator);
   {$ENDIF}
 end;
 
@@ -977,49 +976,49 @@ begin
   {$ENDIF}
 end;
 
-method String.ToCharArray: array of Char;
+method String.ToCharArray: not nullable array of Char;
 begin
   {$IF COOPER}
-  exit mapped.ToCharArray;
-  {$ELSEIF ECHOES}
-  exit mapped.ToCharArray;
+  exit mapped.ToCharArray as not nullable;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToCharArray as not nullable;
   {$ELSEIF TOFFEE}
   result := new Char[mapped.length];
   mapped.getCharacters(result) range(NSMakeRange(0, mapped.length));
   {$ENDIF}
 end;
 
-method String.ToByteArray: array of Byte;
+method String.ToByteArray: not nullable array of Byte;
 begin
   {$IF COOPER}
-  exit mapped.getBytes("UTF-8");
+  exit mapped.getBytes("UTF-8") as not nullable;
   {$ELSEIF ECHOES}
-  exit System.Text.Encoding.UTF8.GetBytes(mapped);
+  exit System.Text.Encoding.UTF8.GetBytes(mapped) as not nullable;
   {$ELSEIF ISLAND}
-  exit TextConvert.StringToUTF8(mapped);
+  exit TextConvert.StringToUTF8(mapped) as not nullable;
   {$ELSEIF TOFFEE}
   var Data := Binary(mapped.dataUsingEncoding(NSStringEncoding.NSUTF8StringEncoding));
-  exit Data.ToArray;
+  exit Data.ToArray as not nullable;
   {$ENDIF}
 end;
 
-method String.ToByteArray(aEncoding: {not nullable} Encoding): array of Byte;
+method String.ToByteArray(aEncoding: {not nullable} Encoding): not nullable array of Byte;
 begin
   result := aEncoding.GetBytes(self);
 end;
 
-class method String.Join(Separator: String; Values: array of String): String;
+class method String.Join(Separator: nullable String; Values: not nullable array of String): not nullable String;
 begin
   {$IF COOPER}
   var sb := new StringBuilder;
-  for i: Integer := 0 to Values.length - 1 do begin
-     if i <> 0 then
+  for i: Integer := 0 to length(Values)-1 do begin
+     if (i ≠ 0) and assigned(Separator) then
       sb.append(Separator);
     sb.append(Values[i]);
   end;
-  result := sb.toString;
-  {$ELSEIF ECHOES}
-  result := PlatformString.Join(Separator, Values);
+  result := sb.toString as not nullable;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := PlatformString.Join(Separator, Values) as not nullable;
   {$ELSEIF TOFFEE}
   var lArray := new NSMutableArray withCapacity(Values.length);
   for i: Integer := 0 to Values.length - 1 do
@@ -1028,5 +1027,23 @@ begin
   result := lArray.componentsJoinedByString(Separator);
   {$ENDIF}
 end;
+
+class method String.&Join(Separator: nullable String; Values: not nullable ImmutableList<String>): not nullable String;
+begin
+  {$IF COOPER}
+  var sb := new StringBuilder;
+  for i: Integer := 0 to Values.Count-1 do begin
+     if (i ≠ 0) and assigned(Separator) then
+      sb.append(Separator);
+    sb.append(Values[i]);
+  end;
+  result := sb.toString as not nullable;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := PlatformString.Join(Separator, Values.ToArray) as not nullable;
+  {$ELSEIF TOFFEE}
+  result := (Values as NSArray).componentsJoinedByString(Separator);
+  {$ENDIF}
+end;
+
 
 end.

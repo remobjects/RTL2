@@ -413,8 +413,8 @@ begin
       if aThreshold <= 0 then
         exit local;
 
-      var baseComponents := baseUrl.Split("/").ToList() as List<String>;
-      var localComponents := local.Split("/").ToList() as List<String>;
+      var baseComponents := baseUrl.Split("/");
+      var localComponents := local.Split("/");
       var len := Math.Min(baseComponents.Count, localComponents.Count);
       var i := 0;
       if aCaseInsensitive then
@@ -422,8 +422,8 @@ begin
       else
         while (i < len) and (baseComponents[i] = localComponents[i]) do inc(i);
 
-      baseComponents.RemoveRange(0, i);
-      localComponents.RemoveRange(0, i);
+      baseComponents := baseComponents.SubList(i);
+      localComponents := localComponents.SubList(i);
 
       if baseComponents.count-1 >= aThreshold then
         exit local;
@@ -436,7 +436,6 @@ begin
         relative := "../"+relative;
 
       result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
-
     end;
   end;
 end;
@@ -694,9 +693,9 @@ begin
   if assigned(fCanonicalVersion) then
     exit fCanonicalVersion;
 
-  var lParts := fPath.Split("/"){$IF TOFFEE}.array{$ELSE}.ToList(){$ENDIF} as List<String>;
+  var lParts := fPath.Split("/").UniqueMutableCopy();
   var i := 0;
-  while i < length(lParts) do begin
+  while i < lParts.Count do begin
     case lParts[i] of
       "..": if (i > 0) and (lParts[i-1] ≠ "..") and (lParts[i-1] ≠ "") then begin
               lParts.RemoveRange(i-1, 2);

@@ -25,12 +25,12 @@ type
     {$ENDIF}
   protected
   public
-  
+
     method WaitFor; inline;
     method Start; inline;
     method Stop; inline;
     property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ENDIF};
-    
+
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer;
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
@@ -123,7 +123,7 @@ class method Task.RunAsync(aCommand: not nullable String; aArguments: array of S
 begin
   var lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   result := lTask;
-  
+
   {$IF ECHOES}
   if assigned(aStdOutCallback) then begin
     (lTask as PlatformTask).StartInfo.RedirectStandardOutput := true;
@@ -143,7 +143,7 @@ begin
   if assigned(aStdOutCallback) then
     (lTask as PlatformTask).BeginOutputReadLine();
   if assigned(aStdErrCallback) then
-    (lTask as PlatformTask).BeginErrorReadLine();  
+    (lTask as PlatformTask).BeginErrorReadLine();
   {$ELSEIF TOFFEE}
   if assigned(aStdOutCallback) then
     (lTask as PlatformTask).standardOutput := NSPipe.pipe();
@@ -209,9 +209,9 @@ begin
       lastIncompleteLogLine := nil;
     end;
     var lines := rawString.Split(Environment.LineBreak);
-    for i: Int32 := 0 to length(lines)-1 do begin
+    for i: Int32 := 0 to lines.Count-1 do begin
       var s := lines[i];
-      if (i = length(lines)-1) and not s.EndsWith(Environment.LineBreak) then begin
+      if (i = lines.Count-1) and not s.EndsWith(Environment.LineBreak) then begin
         if length(s) > 0 then
           lastIncompleteLogLine := s;
         break;
@@ -228,7 +228,7 @@ begin
   var lResult := new System.Diagnostics.Process();
   lResult.StartInfo := new System.Diagnostics.ProcessStartInfo();
   lResult.StartInfo.FileName := aCommand;
-  if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then 
+  if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
     lResult.StartInfo.WorkingDirectory := aWorkingDirectory;
   if length(aArguments) > 0 then
     lResult.StartInfo.Arguments := BuildArgumentsCommandLine(aArguments);
@@ -242,7 +242,7 @@ begin
     lResult.arguments := aArguments.ToList();
   if assigned(aEnvironment) then
     lResult.environment := aEnvironment;
-  if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then 
+  if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
     lResult.currentDirectoryPath := aWorkingDirectory;
   {$ENDIF}
   result := lResult;

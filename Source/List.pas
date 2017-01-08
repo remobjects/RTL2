@@ -45,7 +45,7 @@ type
     method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
     //method Partition<K>(aKeyBlock: block (aItem: T): K): ImmutableDictionary<K,ImmutableList<T>>; where K is IEquatable<K>;
 
-    method JoinedString(aSeparator: String): not nullable String;
+    method JoinedString(aSeparator: nullable String := nil): not nullable String;
 
     //76766: Echoes: Problem with using generic type in property reader
     property FirstObject: T read self[0];
@@ -65,6 +65,7 @@ type
     constructor; mapped to constructor();
     constructor(Items: List<T>);
     constructor(params anArray: array of T);
+    constructor withCapacity(aCapacity: Integer);
 
     method &Add(aItem: T); inline;
     method &Add(Items: ImmutableList<T>);
@@ -181,6 +182,19 @@ begin
   exit new RemObjects.Elements.System.List<T>(anArray);
   {$ELSEIF TOFFEE}
   result := Foundation.NSMutableArray.arrayWithObjects(^id(@anArray[0])) count(length(anArray));
+  {$ENDIF}
+end;
+
+constructor List<T> withCapacity(aCapacity: Integer);
+begin
+  {$IF COOPER}
+  result := new java.util.ArrayList<T>(aCapacity);
+  {$ELSEIF ECHOES}
+  exit new System.Collections.Generic.List<T>(aCapacity);
+  {$ELSEIF ISLAND}
+  exit new RemObjects.Elements.System.List<T>(aCapacity);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSMutableArray.arrayWithCapacity(aCapacity)
   {$ENDIF}
 end;
 
@@ -497,9 +511,9 @@ end;
 method ImmutableList<T>.ToArray: not nullable array of T;
 begin
   {$IF COOPER}
-  exit mapped.toArray(new T[mapped.size()]);
+  exit mapped.toArray(new T[mapped.size()]) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToArray;
+  exit mapped.ToArray as not nullable;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArray<T>(self);
   {$ENDIF}
@@ -508,7 +522,7 @@ end;
 method ImmutableList<T>.ToList<U>: not nullable ImmutableList<U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
-  result := self.Select(x -> x as U).ToList();
+  result := self.Select(x -> x as U).ToList() as not nullable;
   {$ELSEIF TOFFEE}
   result :=  self as ImmutableList<U>;
   {$ENDIF}
@@ -517,9 +531,12 @@ end;
 method List<T>.ToList<U>: List<U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
+  //result := new List<U> withCapacity(Count); // E407 No overloaded constructor with these parameters for type "List<T>", best matching overload is "constructor (Items: List<T>): List<T>"
+  //for each i in self do
+  //  result.Add(i as U);
   result := self.Select(x -> x as U).ToList(); {$HINT largely inefficient. rewrite}
   {$ELSEIF TOFFEE}
-  result :=  self as List<U>;
+  result := self as List<U>;
   {$ENDIF}
 end;
 
@@ -593,12 +610,13 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableList<T>.JoinedString(aSeparator: String): not nullable String;
+method ImmutableList<T>.JoinedString(aSeparator: nullable String := nil): not nullable String;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   var lResult := new StringBuilder();
   for each e in self index i do begin
-    if i > 0 then lResult.Append(aSeparator);
+    if (i ≠ 0) and assigned(aSeparator) then
+      lResult.Append(aSeparator);
     lResult.Append(e.ToString());
   end;
   result := lResult.ToString() as not nullable;
