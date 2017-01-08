@@ -12,7 +12,7 @@ type
 
   public
     constructor; mapped to constructor();
-    constructor(Items: List<T>);
+    constructor(Items: ImmutableList<T>);
     constructor(params anArray: array of T);
 
     method Contains(aItem: T): Boolean;
@@ -63,7 +63,7 @@ type
   public
 
     constructor; mapped to constructor();
-    constructor(Items: List<T>);
+    constructor(Items: ImmutableList<T>);
     constructor(params anArray: array of T);
     constructor withCapacity(aCapacity: Integer);
 
@@ -133,7 +133,7 @@ type
 
 implementation
 
-constructor ImmutableList<T>(Items: List<T>);
+constructor ImmutableList<T>(Items: ImmutableList<T>);
 begin
   {$IF COOPER}
   result := new java.util.ArrayList<T>(Items);
@@ -159,7 +159,7 @@ begin
   {$ENDIF}
 end;
 
-constructor List<T>(Items: List<T>);
+constructor List<T>(Items: ImmutableList<T>);
 begin
   {$IF COOPER}
   result := new PlatformImmutableList<T>(Items);
