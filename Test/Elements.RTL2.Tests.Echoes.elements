@@ -68,6 +68,10 @@
             <RequiredTargetFramework>3.5</RequiredTargetFramework>
         </Reference>
         <Reference Include="System.Web"/>
+        <Reference Include="Elements">
+            <HintPath>../Source/bin/Debug/Elements.dll</HintPath>
+            <Private>True</Private>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Program.pas"/>
@@ -87,5 +91,4 @@
     </ItemGroup>
     <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Echoes.targets"/>
     <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared"/>
-    <Import Project="..\Source\Elements.RTL.Shared.projitems" Label="Shared"/>
 </Project>

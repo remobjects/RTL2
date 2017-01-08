@@ -15,5 +15,6 @@
         <Compile Include="$(MSBuildThisFileDirectory)Strings.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Xml.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)String_Trim.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Guids.pas"/>
     </ItemGroup>
 </Project>

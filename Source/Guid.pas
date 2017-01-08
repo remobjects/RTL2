@@ -4,7 +4,7 @@ interface
 
 type
   GuidFormat = public enum (&Default, Braces, Parentheses);
-  
+
   {$IF JAVA}
   PlatformGuid = java.util.UUID;
   {$ELSEIF ECHOES}
@@ -32,7 +32,13 @@ type
     constructor (aGuid: PlatformGuid);
     {$ENDIF}
 
-    method &Equals(aValue: Guid): Boolean;
+    {$IF NOT TOFFEE}
+    method &Equals(aValue: Object): Boolean; override;
+    {$ELSE}
+    method isEqual(aValue: Object): Boolean; //override;
+    {$ENDIF}
+    operator Equal(a, b: Guid): Boolean;
+    operator NotEqual(a, b: Guid): Boolean;
 
     class method NewGuid: Guid;
     //class property EmptyGuid: not nullable Guid := CreateEmptyGuid(); lazy;
@@ -47,7 +53,7 @@ type
     method ToString: PlatformString; override;
     {$ELSEIF TOFFEE}
     method description: PlatformString;
-    {$ENDIF}    
+    {$ENDIF}
   end;
 
 
@@ -62,6 +68,8 @@ end;
 
 constructor Guid(aValue: not nullable array of Byte);
 begin
+  if length(aValue) ≠ 16 then
+    raise new ArgumentException("byte array must be exactly 16 bytes.");
   {$IF COOPER}
   var bb := java.nio.ByteBuffer.wrap(aValue);
   result := new java.util.UUID(bb.getLong, bb.getLong);
@@ -76,8 +84,9 @@ begin
   {$HINT Check if Island needs the same exchage trick as Echoes}
   fGuid := New PlatformGuid(aValue);
   {$ELSEIF TOFFEE}
-  //result := new NSUUID withUUIDBytes(uuid_t(aValue));
-  raise new RTLException("not implemented yet");
+  var lBytes: uuid_t;
+  memcpy(lBytes, aValue, sizeOf(uuid_t));
+  result := new NSUUID withUUIDBytes(var lBytes);
   {$ENDIF}
 end;
 
@@ -96,15 +105,33 @@ begin
   {$ENDIF}
 end;
 
-method Guid.Equals(aValue: Guid): Boolean;
+{$IF NOT TOFFEE}
+method Guid.&Equals(aValue: Object): Boolean;
+{$ELSE}
+method Guid.isEqual(aValue: Object): Boolean;
+{$ENDIF}
 begin
+  if not assigned(aValue) or (aValue is not Guid) then
+    exit false;
   {$IF COOPER}
   result := mapped.Equals(aValue);
   {$ELSEIF ECHOES OR ISLAND}
-  result := fGuid.Equals(aValue);
+  result := fGuid.Equals((aValue as Guid).fGuid);
   {$ELSEIF TOFFEE}
   result := mapped.isEqual(aValue);
   {$ENDIF}
+end;
+
+operator Guid.Equal(a, b: Guid): Boolean;
+begin
+  if not assigned(a) then exit not assigned(b);
+  result := a.Equals(b);
+end;
+
+operator Guid.NotEqual(a, b: Guid): Boolean;
+begin
+  if not assigned(a) then exit assigned(b);
+  result := not a.Equals(b);
 end;
 
 class method Guid.NewGuid: Guid;
@@ -157,10 +184,9 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit new Guid(PlatformGuid.Empty);
   {$ELSEIF TOFFEE}
-  var lBytes := new byte[16];
-  memset(lBytes, 0, 16);
-  //exit new NSUUID withUUIDBytes(@lBytes);
-  raise new RTLException("not implemented yet");
+  var lBytes: uuid_t;
+  memset(lBytes, 0, sizeOf(uuid_t));
+  exit new NSUUID withUUIDBytes(var lBytes);
   {$ENDIF}
 end;
 
@@ -184,8 +210,10 @@ begin
   {$HINT Check if Island needs the same exchage trick as Echoes}
   exit Value;
   {$ELSEIF TOFFEE}
-  result := new Byte[16];
-  //mapped.getUUIDBytes(@result)
+  result := new Byte[sizeOf(uuid_t)];
+  var lBytes: uuid_t;
+  mapped.getUUIDBytes(var lBytes);
+  memcpy(result, lBytes, sizeOf(uuid_t));
   {$ENDIF}
 end;
 
