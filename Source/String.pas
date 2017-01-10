@@ -700,8 +700,7 @@ begin
   {$ELSEIF ECHOES}
   result := mapped.PadLeft(TotalWidth, PaddingChar);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
+  result := mapped.PadStart(TotalWidth, PaddingChar);
   {$ELSEIF TOFFEE}
   var lTotal: Integer := TotalWidth - mapped.length;
   if lTotal > 0 then begin
@@ -730,8 +729,7 @@ begin
   {$ELSEIF ECHOES}
   result := mapped.PadRight(TotalWidth, PaddingChar);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
+  result := mapped.PadEnd(TotalWidth, PaddingChar);
   {$ELSEIF TOFFEE}
   result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0);
   {$ENDIF}
