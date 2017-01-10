@@ -531,6 +531,7 @@ end;
 method List<T>.ToList<U>: List<U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
+  //77062: Cannot call named .ctor on mapped class
   //result := new List<U> withCapacity(Count); // E407 No overloaded constructor with these parameters for type "List<T>", best matching overload is "constructor (Items: List<T>): List<T>"
   //for each i in self do
   //  result.Add(i as U);
