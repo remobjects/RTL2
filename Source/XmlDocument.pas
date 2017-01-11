@@ -755,6 +755,7 @@ end;
 
 method XmlAttribute.SetLocalName(aValue: not nullable String);
 begin
+  WSName := nil;
   if aValue.Length <> aValue.Trim.Length then WSName := aValue;
   fLocalName := aValue;
 end;
@@ -762,6 +763,7 @@ end;
 method XmlAttribute.SetValue(aValue: not nullable String);
 begin
   fValue := aValue;
+  WSValue := nil;
   if aValue.Length <> aValue.Trim.Length then WSValue := aValue;
 end;
 
@@ -800,6 +802,8 @@ end;
 
 method XmlNamespace.SetPrefix(aPrefix: String);
 begin
+  WSName := nil;
+  WSValue := nil;
   if aPrefix <> nil then begin
     var AttrSeparator := aPrefix.IndexOf("=");
     if AttrSeparator >-1 then begin
