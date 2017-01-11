@@ -279,8 +279,8 @@ begin
   while fData[fPos] <> Value.Substring(0,1){quoteSymbol} do begin
     case fData[fPos] of
       '>' :  Value := Value+'&gt;';
-      '"' : Value := Value + '&quot;';
-      '''' : Value := Value + '&apos;';
+      //'"' : Value := Value + '&quot;';
+      //'''' : Value := Value + '&apos;';
       '&' :  if ParseSpecSymbol(fPos) then fPos := fPos + fLength
         else exit;
       #13 : begin 
