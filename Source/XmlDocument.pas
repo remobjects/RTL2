@@ -12,7 +12,7 @@ type
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
 
-    method GetNodes: sequence of XmlNode;
+    method GetNodes: ImmutableList<XmlNode>;
     method GetRoot: not nullable XmlElement;
     method SetRoot(aRoot: not nullable XmlElement);
 
@@ -28,7 +28,7 @@ type
     method ToString(): String; override;
     method SaveToFile(aFileName: not nullable File);
 
-    property Nodes: sequence of XmlNode read GetNodes;
+    property Nodes: ImmutableList<XmlNode> read GetNodes;
     property Root: not nullable XmlElement read GetRoot write SetRoot;
 
     property Version : String;
@@ -93,7 +93,7 @@ type
     method GetAttributes: not nullable sequence of XmlAttribute;
     method GetAttribute(aName: not nullable String): nullable XmlAttribute;
     method GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
-    method GetNodes: not nullable sequence of XmlNode;
+    method GetNodes: ImmutableList<XmlNode>;
     method GetElements: not nullable sequence of XmlElement;
     method GetNamespace(aUrl: Url): nullable XmlNamespace;
     method GetNamespace(aPrefix: String): nullable XmlNamespace;
@@ -116,7 +116,7 @@ type
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
     property Elements: not nullable sequence of XmlElement read GetElements;
-    property Nodes: not nullable sequence of XmlNode read GetNodes;
+    property Nodes: ImmutableList<XmlNode> read GetNodes;
     property &Namespace[aUrl: Url]: nullable XmlNamespace read GetNamespace;
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
 
@@ -306,15 +306,15 @@ begin
   AddNode(aRoot);
 end;
 
-method XmlDocument.GetNodes: sequence of XmlNode;
+method XmlDocument.GetNodes: ImmutableList<XmlNode>;
 begin
-  var aNodes: List<XmlNode> := new List<XmlNode>;
+  {var aNodes: List<XmlNode> := new List<XmlNode>;
   for each aNode in fNodes do begin
     if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
       aNodes.Add(aNode);
   end;
-  result := aNodes as not nullable;
-  //result := fNodes;
+  result := aNodes as not nullable;}
+  result := fNodes;
 end;
 
 constructor XmlNode(aParent: XmlNode);
@@ -547,14 +547,15 @@ end;
 begin
 end;}
 
-method XmlElement.GetNodes: not nullable sequence of XmlNode;
+method XmlElement.GetNodes: ImmutableList<XmlNode>;
 begin
-  var aNodes: List<XmlNode> := new List<XmlNode>;
+  {var aNodes: List<XmlNode> := new List<XmlNode>;
   for each aNode in fNodes do begin
     if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
       aNodes.Add(aNode);
   end;
-  result := aNodes as not nullable;
+  result := aNodes as not nullable;}
+  result := fNodes;
 end;
 
 method XmlElement.AddNode(aNode: not nullable XmlNode);

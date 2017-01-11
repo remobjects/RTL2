@@ -182,8 +182,9 @@ begin
         result.AddNode(new XmlComment(Value := Tokenizer.Value, StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column));
         Tokenizer.Next;
         WasNewLine := false;
-        result.Nodes.ToList()[result.Nodes.Count-1].EndLine := Tokenizer.Row;
-        result.Nodes.ToList()[result.Nodes.Count-1].EndColumn := Tokenizer.Column-1;
+        var lCount := result.Nodes.Count-1;
+        result.Nodes[lCount].EndLine := Tokenizer.Row;
+        result.Nodes[lCount].EndColumn := Tokenizer.Column-1;
       end;//add node
       XmlTokenKind.ProcessingInstruction : begin 
         result.AddNode(ReadProcessingInstruction(nil)); 
@@ -377,7 +378,7 @@ begin
           case Tokenizer.Token of
             XmlTokenKind.Whitespace: begin
               if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or /*(PrevNode = XmlNodeType.Text)*/ 
-                ((result.Nodes.Count > 0) and (result.Nodes.ToList[result.Nodes.Count-1].NodeType = XmlNodeType.Text)) then begin
+                ((result.Nodes.Count > 0) and (result.Nodes[result.Nodes.Count-1].NodeType = XmlNodeType.Text)) then begin
                 result.AddNode(new XmlText(result, Value := Tokenizer.Value));
                 WSValue := "";
               end
@@ -420,11 +421,11 @@ begin
           if lFormat and (Tokenizer.Token not in [XmlTokenKind.Whitespace, XmlTokenKind.SymbolData]) then
             result.AddNode(new XmlText(result, Value:=fLineBreak));
           Tokenizer.Next;
-          
-          if (result.Nodes.Count > 0) and (result.Nodes.ToList()[result.Nodes.Count-1].EndLine = 0) then
-            result.Nodes.ToList()[result.Nodes.Count-1].EndLine := Tokenizer.Row;
-          if (result.Nodes.Count > 0) and (result.Nodes.ToList()[result.Nodes.Count-1].EndColumn = 0) then
-            result.Nodes.ToList()[result.Nodes.Count-1].EndColumn := Tokenizer.Column-1;
+          var lCount := result.Nodes.Count-1;
+          if (lCount > 0) and (result.Nodes[lCount].EndLine = 0) then
+            result.Nodes[lCount-1].EndLine := Tokenizer.Row;
+          if (lCount > 0) and (result.Nodes[lCount-1].EndColumn = 0) then
+            result.Nodes[lCount-1].EndColumn := Tokenizer.Column-1;
         end;
       end;
       if Tokenizer.Token = XmlTokenKind.TagElementEnd then begin
