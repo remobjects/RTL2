@@ -15,7 +15,7 @@ type
     method GetNodes: sequence of XmlNode;
     method GetRoot: not nullable XmlElement;
     method SetRoot(aRoot: not nullable XmlElement);
-  
+
   public
     class method FromFile(aFileName: not nullable File): nullable XmlDocument;
     class method FromUrl(aUrl: not nullable Url): nullable XmlDocument;
@@ -27,16 +27,16 @@ type
     [ToString]
     method ToString(): String; override;
     method SaveToFile(aFileName: not nullable File);
-  
+
     property Nodes: sequence of XmlNode read GetNodes;
     property Root: not nullable XmlElement read GetRoot write SetRoot;
-    
+
     property Version : String;
     property Encoding : String;
     property Standalone : String;
     method AddNode(aNode: not nullable XmlNode);
   end;
-  
+
   XmlNodeType = public enum(
     Element,
     Attribute,
@@ -57,7 +57,7 @@ type
 
     method SetDocument(aDoc: XmlDocument);
     method GetNodeType : XmlNodeType;
-  protected 
+  protected
     method CharIsWhitespace(C: String): Boolean;
   public
     constructor (aParent: XmlNode := nil);
@@ -71,7 +71,7 @@ type
     [ToString]
     method ToString(): String; override;
   end;
-  
+
   XmlElement = public class(XmlNode)
   unit
     fIsEmpty: Boolean := true;
@@ -89,7 +89,7 @@ type
     method GetLocalName: not nullable String;
     method SetLocalName(aValue: not nullable String);
     method GetValue: nullable String;
-    method SetValue(aValue: nullable String);    
+    method SetValue(aValue: nullable String);
     method GetAttributes: not nullable sequence of XmlAttribute;
     method GetAttribute(aName: not nullable String): nullable XmlAttribute;
     method GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
@@ -111,24 +111,24 @@ type
     property Value: nullable String read GetValue write SetValue;
     property IsEmpty: Boolean read fIsEmpty;
     property EndTagName: String;
-  
+
     property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
     property Elements: not nullable sequence of XmlElement read GetElements;
     property Nodes: not nullable sequence of XmlNode read GetNodes;
     property &Namespace[aUrl: Url]: nullable XmlNamespace read GetNamespace;
-    property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace(aPrefix);
+    property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
 
     method ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
     method ElementsWithNamespace(aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
     method FirstElementWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlElement;
-    
+
     method AddAttribute(aAttribute: not nullable XmlAttribute);
     method SetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String);
     method RemoveAttribute(aAttribute: not nullable XmlAttribute);
     method RemoveAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlAttribute;
-    
+
     method AddElement(aElement: not nullable XmlElement);
     method AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
@@ -147,7 +147,7 @@ type
     [ToString]
     method ToString(): String; override;
   end;
-  
+
   XmlAttribute = public class(XmlNode)
   private
     fLocalName: String;
@@ -170,22 +170,22 @@ type
     [ToString]
     method ToString(): String; override;
   end;
-  
+
   XmlComment = public class(XmlNode)
   public
     constructor (aParent: XmlNode := nil);
     property Value: String;
   end;
-  
+
   XmlCData = public class(XmlNode)
   public
     constructor (aParent: XmlNode := nil);
     property Value: String;
   end;
-  
+
   XmlNamespace = public class(XmlNode)
   private
-    method GetPrefix: String; 
+    method GetPrefix: String;
     method SetPrefix(aPrefix: String);
     fPrefix: String;
     WSName: String;
@@ -229,11 +229,11 @@ begin
 end;
 
 class method XmlDocument.FromFile(aFileName: not nullable File): nullable XmlDocument;
-begin 
+begin
   if aFileName.Exists then begin
     var XmlStr:String := aFileName.ReadText();
     var lXmlParser := new XmlParser(XmlStr);
-    result := lXmlParser.Parse(); 
+    result := lXmlParser.Parse();
     result.fXmlParser := lXmlParser;
   end;
 end;
@@ -251,13 +251,13 @@ end;
 class method XmlDocument.FromString(aString: not nullable String): nullable XmlDocument;
 begin
   var lXmlParser := new XmlParser(aString);
-  result := lXmlParser.Parse(); 
+  result := lXmlParser.Parse();
   result.fXmlParser := lXmlParser;
 end;
 
 class method XmlDocument.FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
 begin
-  result := XmlDocument.FromString(new String(aBinary.ToArray)); 
+  result := XmlDocument.FromString(new String(aBinary.ToArray));
 end;
 
 class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
@@ -342,7 +342,7 @@ begin
       result := "<!--"+XmlComment(self).Value+"-->";
     end;
     XmlNodeType.CData: result := "<![CDATA["+XmlCData(self).Value+"]]>";
-    XmlNodeType.ProcessingInstruction: begin 
+    XmlNodeType.ProcessingInstruction: begin
       result := "<?"+XmlProcessingInstruction(self).Target;
       var str := XmlProcessingInstruction(self).Data;
       if not(CharIsWhitespace(result.Substring(result.Length-1,1))) and not(CharIsWhitespace(str.Substring(0,1))) then
@@ -374,7 +374,7 @@ method XmlElement.ElementsWithName(aLocalName: not nullable String; aNamespace: 
 begin
   if aNamespace = nil then
     result := Elements.Where(c -> (c.LocalName = aLocalName)) as not nullable
-  else 
+  else
     result := Elements.Where(c -> (c.LocalName = aLocalName) and (c.Namespace = aNamespace)) as not nullable
 end;
 
@@ -394,7 +394,7 @@ begin
     end
     else begin
       var lPrefixPos := aLocalName.IndexOf(':');
-    if (lPrefixPos > 0) and (&Namespace[aLocalName.Substring(0, lPrefixPos)] <> nil) then 
+    if (lPrefixPos > 0) and (&Namespace[aLocalName.Substring(0, lPrefixPos)] <> nil) then
       result := ElementsWithName(aLocalName.Substring(lPrefixPos+1, aLocalName.Length-lPrefixPos-1), &Namespace[aLocalName.Substring(0, lPrefixPos)]).FirstOrDefault
     end;
   end;
@@ -413,7 +413,7 @@ begin
     else fAttributes.Add(new XmlAttribute(aName, aNamespace, aValue));
   end
   else begin
-    fAttributes.Add( new XmlAttribute(aName, aNamespace, aValue));  
+    fAttributes.Add( new XmlAttribute(aName, aNamespace, aValue));
   end;
 end;
 
@@ -484,7 +484,7 @@ begin
     result.Value := aValue;
   AddElement(result);
 end;
-  
+
 method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
 begin
   result := new XmlElement(self);
@@ -494,7 +494,7 @@ begin
     result.Value := aValue;
   AddElement(result) atIndex(aIndex);
 end;
-  
+
 method XmlElement.RemoveElement(aElement: not nullable XmlElement);
 begin
   fElements.Remove(aElement);
@@ -506,9 +506,9 @@ begin
       inc(i);
     end;
     i:= i-1;
-    if found and (i > 0) and (i < fNodes.Count-1)  and 
+    if found and (i > 0) and (i < fNodes.Count-1)  and
       (fNodes.Item[i-1].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[i-1]).Value.StartsWith(self.Document.fXmlParser.FormatOptions.Indentation) and
-      (fNodes.Item[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes.Item[i+1]).Value.EndsWith(#10))) then begin     
+      (fNodes.Item[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes.Item[i+1]).Value.EndsWith(#10))) then begin
        fNodes.RemoveAt(i-1);
        fNodes.RemoveAt(i-1);
        fNodes.RemoveAt(i-1);
@@ -572,7 +572,7 @@ end;
 
 method XmlElement.SetLocalName(aValue: not nullable String);
 begin
-  fLocalName := aValue;	
+  fLocalName := aValue;
 end;
 
 method XmlElement.GetNamespace: nullable XmlNamespace;
@@ -589,7 +589,7 @@ end;
 
 method XmlElement.GetDefaultNamespace: XmlNamespace;
 begin
-  if Parent = nil then result := fDefaultNamespace 
+  if Parent = nil then result := fDefaultNamespace
   else result := coalesce(fDefaultNamespace, XmlElement(Parent).DefaultNamespace);
 end;
 
@@ -689,16 +689,16 @@ begin
     if not(CharIsWhitespace(result.Substring(result.Length-1,1))) and not(CharIsWhitespace(str.Substring(0,1))) then
       result := result+" ";
     result := result+str;
-    
+
   end;
   if IsEmpty then begin
-    if (Document <> nil) and (Document.fXmlParser <> nil) and (Document.fXmlParser.FormatOptions.SpaceBeforeSlashInEmptyTags) then 
+    if (Document <> nil) and (Document.fXmlParser <> nil) and (Document.fXmlParser.FormatOptions.SpaceBeforeSlashInEmptyTags) then
       result := result+ " ";
     result := result + "/";
   end;
   result := result +">";
   for each aNode in fNodes do
-    result := result + aNode.ToString;        
+    result := result + aNode.ToString;
   if IsEmpty = false then begin
     result := result+"</";
     if (&Namespace <> nil) and (&Namespace.Prefix <> "") and (&Namespace.Prefix <> nil) then
@@ -717,7 +717,7 @@ begin
 end;
 
 constructor XmlAttribute(aLocalName: not nullable String; aNamespace: nullable XmlNamespace; aValue: not nullable String);
-begin 
+begin
   fLocalName := aLocalName;
   fNamespace := aNamespace;
   fValue := aValue;
@@ -747,7 +747,7 @@ end;
 method XmlAttribute.GetValue: not nullable String;
 begin
   result := fValue.Trim as not nullable;
-  if ((result.Substring(0,1) = '"') and (result.Substring(result.Length-1,1) = '"') or 
+  if ((result.Substring(0,1) = '"') and (result.Substring(result.Length-1,1) = '"') or
     (result.Substring(0,1) = '''') and (result.Substring(result.Length-1,1) = '''')) then
     result := result.Substring(1,result.Length-2) as not nullable;
 end;
@@ -801,7 +801,7 @@ method XmlNamespace.SetPrefix(aPrefix: String);
 begin
   if aPrefix <> nil then begin
     var AttrSeparator := aPrefix.IndexOf("=");
-    if AttrSeparator >-1 then begin 
+    if AttrSeparator >-1 then begin
       WSName := aPrefix.Substring(0, AttrSeparator);
       WSValue := aPrefix.Substring(AttrSeparator+1, aPrefix.Length-AttrSeparator-1);
       if WSName.IndexOf("xmlns:") > -1 then fPrefix := WSName.Substring(WSName.IndexOf(":")+1, WSName.Length -WSName.IndexOf(":")-1 )
