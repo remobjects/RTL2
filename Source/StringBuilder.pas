@@ -39,7 +39,7 @@ begin
     raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Number of repeats");
 
   {$IF COOPER}
-  for i: Int32 := 1 to RepeatCount do 
+  for i: Int32 := 1 to RepeatCount do
     mapped.append(Value);
 
   result := mapped;
@@ -59,7 +59,9 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   result := mapped.Append(Value);
   {$ELSEIF TOFFEE}
-  mapped.appendFormat("%c", Value);
+  mapped.appendFormat("%C", Value);
+  {$WARNING 77082: Toffee: Internal error when passing `#` char literals to mapped function}
+  //mapped.appendString(NSString.stringWithCharacters(@Value) length(1));
   result := mapped;
   {$ENDIF}
 end;
@@ -214,7 +216,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Chars[&Index] := Value;
   {$ELSEIF TOFFEE}
-  mapped.replaceCharactersInRange(NSMakeRange(&Index, &Index)) withString(Value); 
+  mapped.replaceCharactersInRange(NSMakeRange(&Index, &Index)) withString(Value);
   {$ENDIF}
 end;
 
