@@ -15,7 +15,7 @@ type
     constructor(Items: ImmutableList<T>);
     constructor(params anArray: array of T);
 
-    method Contains(aItem: T): Boolean;
+    method Contains(aItem: T): Boolean; inline;
     method Exists(Match: Predicate<T>): Boolean;
     method FindIndex(Match: Predicate<T>): Integer;
     method FindIndex(StartIndex: Integer; Match: Predicate<T>): Integer;
@@ -41,8 +41,8 @@ type
     method UniqueMutableCopy: List<T>;
     method MutableVersion: List<T>;
 
-    method SubList(aStartIndex: Int32): ImmutableList<T>;
-    method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
+    method SubList(aStartIndex: Int32): ImmutableList<T>; inline;
+    method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>; inline;
     //method Partition<K>(aKeyBlock: block (aItem: T): K): ImmutableDictionary<K,ImmutableList<T>>; where K is IEquatable<K>;
 
     method JoinedString(aSeparator: nullable String := nil): not nullable String;
@@ -51,7 +51,7 @@ type
     property FirstObject: T read self[0];
     property LastObject: T read self[Count-1];
 
-    property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF};
+    property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF}; inline;
     property Item[i: Integer]: T read GetItem; default;
   end;
 
@@ -68,9 +68,9 @@ type
     constructor withCapacity(aCapacity: Integer);
 
     method &Add(aItem: T); inline;
-    method &Add(Items: ImmutableList<T>);
+    method &Add(Items: ImmutableList<T>); inline;
     method &Add(params Items: array of T);
-    method &Add(Items: sequence of T);
+    method &Add(Items: sequence of T); inline;
 
     method &Remove(aItem: T): Boolean; inline;
     method &Remove(aItems: List<T>); inline;
@@ -79,21 +79,21 @@ type
     method RemoveAt(aIndex: Integer); inline;
     method RemoveRange(aIndex: Integer; aCount: Integer); inline;
 
-    method ReplaceAt(aIndex: Integer; aNewObject: T): T;
+    method ReplaceAt(aIndex: Integer; aNewObject: T): T; inline;
     method ReplaceRange(aIndex: Integer; aCount: Integer; aNewObjects: ImmutableList<T>): T;
 
-    method RemoveFirstObject;
-    method RemoveLastObject;
+    method RemoveFirstObject; inline;
+    method RemoveLastObject; inline;
 
-    method Insert(&Index: Integer; aItem: T);
-    method InsertRange(&Index: Integer; Items: List<T>);
+    method Insert(&Index: Integer; aItem: T); inline;
+    method InsertRange(&Index: Integer; Items: List<T>); inline;
     method InsertRange(&Index: Integer; Items: array of T);
 
     method Sort(Comparison: Comparison<T>);
     method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF} reintroduce;
 
-    method SubList(aStartIndex: Int32): List<T>; reintroduce;
-    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; reintroduce;
+    method SubList(aStartIndex: Int32): List<T>; reintroduce; inline;
+    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; reintroduce; inline;
 
     property Item[i: Integer]: T read GetItem write SetItem; default;
   end;

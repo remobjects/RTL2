@@ -17,7 +17,7 @@ type
 
   String = public partial class mapped to PlatformString
   private
-    method get_Chars(aIndex: Int32): Char;
+    method get_Chars(aIndex: Int32): Char; inline;
     class method Compare(Value1, Value2: String): Integer;
   public
     constructor(Value: array of Byte; Encoding: Encoding := nil);
@@ -67,8 +67,8 @@ type
     method LastIndexOf(Value: String): Int32; inline;
     method LastIndexOf(Value: Char; StartIndex: Integer): Integer;
     method LastIndexOf(const Value: String; StartIndex: Integer): Integer;
-    method Substring(StartIndex: Int32): not nullable String;
-    method Substring(StartIndex: Int32; aLength: Int32): not nullable String;
+    method Substring(StartIndex: Int32): not nullable String; inline;
+    method Substring(StartIndex: Int32; aLength: Int32): not nullable String; inline;
     method Split(Separator: String): not nullable ImmutableList<String>;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
@@ -99,7 +99,7 @@ type
     method ToCharArray: not nullable array of Char;
 
     property Length: Int32 read mapped.Length;
-    property Chars[aIndex: Int32]: Char read get_Chars; default;
+    property Chars[aIndex: Int32]: Char read get_Chars; default; inline;
   end;
 
 {$GLOBALS ON}
@@ -190,9 +190,6 @@ end;
 
 method String.get_Chars(aIndex: Int32): Char;
 begin
-  if aIndex < 0 then
-    raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "Index");
-
   {$IF COOPER}
   result := mapped.charAt(aIndex);
   {$ELSEIF ECHOES OR ISLAND}
