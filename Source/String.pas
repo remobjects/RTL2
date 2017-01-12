@@ -658,11 +658,8 @@ begin
     aNewValue := "";
   {$IF COOPER}
   exit mapped.substring(0, aStartIndex)+aNewValue+mapped.substring(aStartIndex+aLength) as not nullable;
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Remove(aStartIndex, aLength).Insert(aStartIndex, aNewValue) as not nullable;
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue);
   {$ENDIF}
