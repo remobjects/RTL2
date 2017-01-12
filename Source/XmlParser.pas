@@ -69,7 +69,7 @@ type
     SpaceBeforeSlashInEmptyTags: Boolean := false;
     Indentation: String := #9;
     NewLineForElements: Boolean := true;
-    NewLineForAttributes: Boolean := true;
+    NewLineForAttributes: Boolean := false;
     NewLineSymbol: XmlNewLineSymbol  := XmlNewLineSymbol.PlatformDefault;
   end;
   
@@ -159,29 +159,21 @@ begin
     Tokenizer.Next;
     
   end;
-  var WasNewLine := false;
   while Tokenizer.Token <> XmlTokenKind.TagOpen do begin
     Expected(XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction); 
     if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and 
-      (Tokenizer.Token <> XmlTokenKind.Whitespace) and
-      (not(WasNewLine) or ((result.Nodes.count=0) and (result.Version <> nil))) then begin 
-        //not((result.Nodes.ElementAt(result.Nodes.Count-1) is XmlText) and (XmlText(result.Nodes.ElementAt(result.Nodes.Count-1)).Value.IndexOf(#13#10)>-1)))
-      
-      result.AddNode(new XmlText(Value := fLineBreak));
-      WasNewLine := true;
+      (Tokenizer.Token <> XmlTokenKind.Whitespace) or ((result.Nodes.count=0) and (result.Version <> nil)) then begin 
+      result.AddNode(new XmlText(Value := fLineBreak));     
     end;
     case Tokenizer.Token of
       XmlTokenKind.Whitespace: begin
         if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) then 
           result.AddNode(new XmlText(Value := Tokenizer.Value));
-        if Tokenizer.Value.IndexOf(fLineBreak) > -1 then WasNewLine := true;
         Tokenizer.Next;
-        
       end;
       XmlTokenKind.Comment: begin 
         result.AddNode(new XmlComment(Value := Tokenizer.Value, StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column));
         Tokenizer.Next;
-        WasNewLine := false;
         var lCount := result.Nodes.Count-1;
         result.Nodes[lCount].EndLine := Tokenizer.Row;
         result.Nodes[lCount].EndColumn := Tokenizer.Column-1;
@@ -189,17 +181,17 @@ begin
       XmlTokenKind.ProcessingInstruction : begin 
         result.AddNode(ReadProcessingInstruction(nil)); 
         Tokenizer.Next;//add node 
-        WasNewLine := false;
       end;
     end;
   end;
+  Expected(XmlTokenKind.TagOpen);
   var aIndent: String;
   if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
     aIndent := "";
-    if (WasNewLine) then result.AddNode(new XmlText(Value := fLineBreak));
+    result.AddNode(new XmlText(Value := fLineBreak));
   end;
-  Expected(XmlTokenKind.TagOpen);
-  result.Root := ReadElement(nil,aIndent);//FormatOptions.Indentation);
+  
+  result.Root := ReadElement(nil,aIndent);
   while Tokenizer.Token <> XmlTokenKind.EOF do begin
     Expected(XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd);
     Tokenizer.Next;
@@ -344,45 +336,33 @@ begin
       var WSValue: String := "";
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and (FormatOptions.NewLineForElements) then
         lFormat := true;
-      if lFormat  then
-        if (Tokenizer.Token not in [XmlTokenKind.SymbolData, XmlTokenKind.Whitespace]) then  
-          result.AddNode(new XmlText(result, Value:=fLineBreak))
-        else NeedLineBreak := true;
-
       while (Tokenizer.Token <> XmlTokenKind.TagElementEnd) do begin
         Expected(XmlTokenKind.SymbolData, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.CData, XmlTokenKind.ProcessingInstruction, XmlTokenKind.TagOpen, XmlTokenKind.TagElementEnd);
-
-        //if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and (FormatOptions.NewLineForElements) and
-        //  (Tokenizer.Token not in [XmlTokenKind.SymbolData, XmlTokenKind.Whitespace]) then 
-        //  lFormat := true;  //and (WSValue <> "") then
-        //if lFormat then  result.AddNode(new XmlText(result, Value:=#13#10));
-         // result.AddNode(new XmlText(result, Value:=aIndent));
-        
-
         if Tokenizer.Token = XmlTokenKind.TagOpen then begin 
-          if NeedLineBreak then begin 
-            result.AddNode(new XmlText(result, Value := fLineBreak)); 
-            NeedLineBreak := false; 
-          end;
-          if lFormat then result.AddNode(new XmlText(result, Value:=aIndent));
-          result.AddElement(ReadElement(result, aIndent));//+FormatOptions.Indentation));
-          if lFormat then
-           if (Tokenizer.Token not in [XmlTokenKind.Whitespace, XmlTokenKind.SymbolData]) or NeedLineBreak then 
-            result.AddNode(new XmlText(result, Value:=fLineBreak))
-           else NeedLineBreak := true;
+          if lFormat then begin result.AddNode(new XmlText(result, Value:=fLineBreak));result.AddNode(new XmlText(result, Value:=aIndent)); end;
+          result.AddElement(ReadElement(result, aIndent));
           WSValue := "";
         end
         else begin
-          if lFormat and (Tokenizer.Token not in [XmlTokenKind.Whitespace, XmlTokenKind.SymbolData]) then 
+          if lFormat and (Tokenizer.Token not in [XmlTokenKind.Whitespace, XmlTokenKind.SymbolData]) then begin
+            result.AddNode(new XmlText(result, Value := fLineBreak));  NeedLineBreak := false;// end;
             result.AddNode(new XmlText(result, Value:=aIndent));
+          end;
           case Tokenizer.Token of
             XmlTokenKind.Whitespace: begin
-              if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or /*(PrevNode = XmlNodeType.Text)*/ 
-                ((result.Nodes.Count > 0) and (result.Nodes[result.Nodes.Count-1].NodeType = XmlNodeType.Text)) then begin
+              if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
                 result.AddNode(new XmlText(result, Value := Tokenizer.Value));
                 WSValue := "";
               end
-              else WSValue := Tokenizer.Value;
+              else
+                if ((result.Nodes.Count > 0) and (result.Nodes[result.Nodes.Count-1].NodeType = XmlNodeType.Text) and (XmlText(result.Nodes[result.Nodes.Count-1]).Value.Trim <> "")) then begin
+                  WSValue := Tokenizer.Value;
+                  if WSValue.IndexOf(fLineBreak) > -1 then
+                    WSValue := WSValue.Substring(0, WSValue.LastIndexOf(fLineBreak));
+                  result.AddNode(new XmlText(result, Value := WSValue));
+                  WSValue := "";
+                end
+                else WSValue := Tokenizer.Value;
             end;
             XmlTokenKind.SymbolData: begin
               if Tokenizer.Value.Trim <> "" then 
@@ -394,42 +374,27 @@ begin
               WSValue := "";
             end;
             XmlTokenKind.Comment: begin
-              if NeedLineBreak then begin
-                result.AddNode(new XmlText(result, Value := fLineBreak));
-                NeedLineBreak := false;
-              end;
               result.AddNode(new XmlComment(result, Value := Tokenizer.Value, StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column)) ;
               WSValue := "";
             end;
             XmlTokenKind.CData: begin 
-              if NeedLineBreak then begin
-                result.AddNode(new XmlText(result, Value := fLineBreak));
-                NeedLineBreak := false;
-              end;
               result.AddNode(new XmlCData(result, Value := Tokenizer.Value, StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column));
               WSValue := "";
             end;
             XmlTokenKind.ProcessingInstruction: begin 
-              if NeedLineBreak then begin
-                result.AddNode(new XmlText(result, Value := fLineBreak));
-                NeedLineBreak := false;
-              end;
               result.AddNode(ReadProcessingInstruction(result));
               WSValue := "";
             end;
           end;
-          if lFormat and (Tokenizer.Token not in [XmlTokenKind.Whitespace, XmlTokenKind.SymbolData]) then
-            result.AddNode(new XmlText(result, Value:=fLineBreak));
           Tokenizer.Next;
           var lCount := result.Nodes.Count-1;
           if (lCount > 0) and (result.Nodes[lCount].EndLine = 0) then
-            result.Nodes[lCount-1].EndLine := Tokenizer.Row;
-          if (lCount > 0) and (result.Nodes[lCount-1].EndColumn = 0) then
-            result.Nodes[lCount-1].EndColumn := Tokenizer.Column-1;
+            result.Nodes[lCount].EndLine := Tokenizer.Row;
+          if (lCount > 0) and (result.Nodes[lCount].EndColumn = 0) then
+            result.Nodes[lCount].EndColumn := Tokenizer.Column-1;
         end;
       end;
       if Tokenizer.Token = XmlTokenKind.TagElementEnd then begin
-        if NeedLineBreak then result.AddNode(new XmlText(result, Value := fLineBreak));
         Tokenizer.Next;
         Expected(XmlTokenKind.ElementName); 
         if (Tokenizer.Value.IndexOf(':') > 0) and ((result.Namespace = nil) or (result.Namespace.Prefix = nil) or 
@@ -438,9 +403,10 @@ begin
         if (Tokenizer.Value.IndexOf(':') <= 0) and (Tokenizer.Value <> result.LocalName) then 
           raise new XmlException("End tag doesn't match start tag", Tokenizer.Row, Tokenizer.Column );      
 
-        if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and (aIndent <> nil) and 
-          ((result.Elements.Count > 0) or (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag)) then
-          result.AddNode(new XmlText(result, Value := /*#13#10+*/aIndent.Substring(0,aIndent.LastIndexOf(FormatOptions.Indentation))));
+        if lFormat and (aIndent <> nil) and (result.Elements.Count >0) then begin
+          result.AddNode(new XmlText(result, Value := fLineBreak));
+          result.AddNode(new XmlText(result, Value := aIndent.Substring(0,aIndent.LastIndexOf(FormatOptions.Indentation))));
+        end;
         if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
           result.AddNode(new XmlText(result,Value := ""));
         Tokenizer.Next;
@@ -450,13 +416,10 @@ begin
             Tokenizer.Next;
         end;
         Expected(XmlTokenKind.TagClose);
-        //if lFormat then result.AddNode(new XmlText(result, Value:=#13#10));
         result.EndLine := Tokenizer.Row;
         result.EndColumn := Tokenizer.Column;
         if result.Parent = nil then exit(result);
         Tokenizer.Next;
-        //if lFormat and (Tokenizer.Token not in [XmlTokenKind.Whitespace, XmlTokenKind.SymbolData]) then 
-        //  result.AddNode(new XmlText(result, Value:=#13#10));
       end;    
     end
     else  if Tokenizer.Token = XmlTokenKind.EmptyElementEnd then begin

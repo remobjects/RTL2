@@ -8,6 +8,10 @@ type
     constructor (aRoot : not nullable XmlElement);
   assembly
     fXmlParser: XmlParser;
+    fFormatOptions: XmlFormattingOptions;
+    fSaveFormatted: Boolean := false;
+    fLineBreak: String;
+    fFormatInsideTags: Boolean := false;
   private
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
@@ -27,6 +31,8 @@ type
     [ToString]
     method ToString(): String; override;
     method SaveToFile(aFileName: not nullable File);
+    method SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
+
 
     property Nodes: ImmutableList<XmlNode> read GetNodes;
     property Root: not nullable XmlElement read GetRoot write SetRoot;
@@ -277,8 +283,34 @@ begin
   if Encoding <> nil then result := result + ' encoding="'+Encoding+'"';
   if Standalone <> nil then result := result + ' standalone="'+Standalone+'"';
   if result <> "" then result := result + "?>";
-  for each aNode in fNodes do
-      result := result+aNode.ToString;
+  if not(fSaveFormatted) or 
+    (fSaveFormatted and 
+      (fXmlParser <> nil) and 
+      (
+        (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or 
+        (
+          (fXmlParser.FormatOptions.WhitespaceStyle = fFormatOptions.WhitespaceStyle) and 
+          (fXmlParser.FormatOptions.NewLineForElements = fFormatOptions.NewLineForElements) and 
+          (fXmlParser.FormatOptions.Indentation = fFormatOptions.Indentation) and 
+          (fXmlParser.FormatOptions.NewLineSymbol = fFormatOptions.NewLineSymbol)
+        )
+      )
+     ) then begin 
+    if fSaveFormatted and (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then begin
+      fSaveFormatted := false;
+      fFormatInsideTags := true;  
+    end;
+    for each aNode in fNodes do
+      result := result+aNode.ToString
+  end
+  else begin
+    if (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then fFormatInsideTags := true;
+    if (Version <> nil) and fFormatOptions.NewLineForElements then result := result + fLineBreak;
+      for each aNode in fNodes do begin
+        if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
+          result := result+aNode.ToString+fLineBreak;
+      end;
+  end;
 end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File);
@@ -287,6 +319,20 @@ begin
     FileUtils.Create(aFileName.FullPath);
   FileUtils.WriteText(aFileName.FullPath, self.ToString);
 end;
+
+method Xmldocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
+begin
+  fSaveFormatted := true;
+  fFormatOptions := aFormatOptions;
+  case fFormatOptions.NewLineSymbol of
+    XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
+    XmlNewLineSymbol.LF: fLineBreak := #10;
+    XmlNewLineSymbol.CRLF: fLineBreak := #13#10;
+  end;
+  SaveToFile(aFileName);
+  fSaveFormatted := false;
+end;
+
 
 method XmlDocument.AddNode(aNode: not nullable XmlNode);
 begin
@@ -698,8 +744,47 @@ begin
     result := result + "/";
   end;
   result := result +">";
-  for each aNode in fNodes do
-    result := result + aNode.ToString;
+  /********/
+  if Document.fSaveFormatted and (Document.fFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
+    if Document.fFormatOptions.NewLineForElements  and 
+      (
+        ((fNodes.Count>0) and (fNodes[0].NodeType <> XmlNodeType.Text)) or 
+        (
+          (fNodes.Count>1) and 
+          (fNodes[0].NodeType = XmlNodeType.Text) and 
+          (XmlText(fNodes[0]).Value.Trim = "") and 
+          (fNodes[1].NodeType = XmlNodeType.Text) and 
+          (XmlText(fNodes[1]).Value.Trim<>"")
+        )
+     ) then 
+      result := result+Document.fLineBreak;
+    var i := 0;
+
+    for each aNode in fNodes do begin
+      if (aNode.NodeType = XmlNodeType.Text) then
+        if (XmlText(aNode).Value.Trim <> "") then
+          if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i-1]).Value.Trim = "") then
+            result := result + fNodes[i-1].ToString+ aNode.ToString
+          else result := result + aNode.ToString;
+      if (aNode.NodeType <> XmlNodeType.Text) then
+        if Document.fFormatOptions.NewLineForElements then begin
+          var n := aNode;
+          var indent := "";
+          while n.Parent<>nil do begin
+            indent := indent+Document.fFormatOptions.Indentation;
+            n := n.Parent;
+          end;
+          //end;
+          result := result + indent + aNode.ToString + Document.fLineBreak;
+        end
+        else result := result + aNode.tostring;
+      inc(i);
+    end;
+  end
+  /******/
+  else 
+    for each aNode in fNodes do
+      result := result + aNode.ToString;
   if IsEmpty = false then begin
     result := result+"</";
     if (&Namespace <> nil) and (&Namespace.Prefix <> "") and (&Namespace.Prefix <> nil) then
