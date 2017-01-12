@@ -612,7 +612,7 @@ begin
   {$IF COOPER}
   //exit mapped.split(java.util.regex.Pattern.quote(Separator)) as not nullable;
   //Custom implementation because `mapped.split` strips empty oparts at the end, making it incomopatible with the other three platfroms.
-  var lResult := new List<string>;
+  var lResult := new List<String>;
   var i := 0;
   var lSeparatorLength := Separator.Length;
   loop begin
