@@ -204,16 +204,21 @@ end;
 
 class operator String.Add(Value1: String; Value2: String): not nullable String;
 begin
+  writeLn(String.Format("[{0}]+[{1}]", Value1, Value2));
+  if not assigned(Value1) then exit coalesce(Value2, "");
+  if not assigned(Value2) then exit Value1 as not nullable;
   result := (PlatformString(Value1)+PlatformString(Value2)) as not nullable;
 end;
 
 class operator String.Add(Value1: String; Value2: Object): not nullable String;
 begin
+  writeLn(String.Format("1[{0}]+[{1}]", Value1, Value2));
   result := (Value1 + coalesce(Value2, "").ToString) as not nullable;
 end;
 
 class operator String.Add(Value1: Object; Value2: String): not nullable String;
 begin
+  writeLn(String.Format("2[{0}]+[{1}]", Value1, Value2));
   result := (coalesce(Value1, "").ToString + Value2) as not nullable;
 end;
 
