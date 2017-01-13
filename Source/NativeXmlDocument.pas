@@ -10,6 +10,9 @@
 
 interface
 
+uses
+  RemObjects.Elements.RTL;
+
 type
   {$IF TOFFEE}
   NativeXmlDocument = NSXMLDocument;

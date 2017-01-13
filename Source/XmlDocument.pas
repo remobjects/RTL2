@@ -21,12 +21,15 @@ type
     method SetRoot(aRoot: not nullable XmlElement);
 
   public
-    class method FromFile(aFileName: not nullable File): nullable XmlDocument;
-    class method FromUrl(aUrl: not nullable Url): nullable XmlDocument;
+    class method FromFile(aFileName: not nullable File): not nullable XmlDocument;
+    class method FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
     class method FromString(aString: not nullable String): nullable XmlDocument;
     class method FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
     class method WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
     class method WithRootElement(aName: not nullable String): nullable XmlDocument;
+
+    class method TryFromFile(aFileName: not nullable File): nullable XmlDocument;
+    class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
 
     [ToString]
     method ToString(): String; override;
@@ -234,23 +237,50 @@ begin
   AddNode(fRoot);
 end;
 
-class method XmlDocument.FromFile(aFileName: not nullable File): nullable XmlDocument;
+class method XmlDocument.FromFile(aFileName: not nullable File): not nullable XmlDocument;
+begin
+  if not aFileName.Exists then
+    raise new FileNotFoundException(aFileName);
+  var XmlStr:String := aFileName.ReadText();
+  var lXmlParser := new XmlParser(XmlStr);
+  result := lXmlParser.Parse();
+  result.fXmlParser := lXmlParser;
+end;
+
+class method XmlDocument.TryFromFile(aFileName: not nullable File): nullable XmlDocument;
 begin
   if aFileName.Exists then begin
-    var XmlStr:String := aFileName.ReadText();
-    var lXmlParser := new XmlParser(XmlStr);
-    result := lXmlParser.Parse();
-    result.fXmlParser := lXmlParser;
+    try
+      result := FromFile(aFileName);
+    except
+      on E: XmlException do;
+    end;
   end;
 end;
 
-class method XmlDocument.FromUrl(aUrl: not nullable Url): nullable XmlDocument;
+class method XmlDocument.FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
 begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
   {$IF NOT ISLAND}
   else if aUrl.Scheme in ["http", "https"] then
+    result := Http.GetXml(new HttpRequest(aUrl))
+  {$ENDIF}
+  else
+    raise new XmlException(String.Format("Cannot load XML from URL '{0}'.", aUrl.ToAbsoluteString()));
+end;
+
+class method XmlDocument.TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
+begin
+  if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
+    result := TryFromFile(aUrl.FilePath)
+  {$IF NOT ISLAND}
+  else if aUrl.Scheme in ["http", "https"] then try
     result := Http.GetXml(new HttpRequest(aUrl));
+  except
+    on E: XmlException do;
+    on E: HttpException do;
+  end;
   {$ENDIF}
 end;
 

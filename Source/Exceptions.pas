@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-type 
+type
   /*{$IF ECHOES}
   PlatformException = public System.Exception;
   {$ELSEIF TOFFEE}
@@ -13,12 +13,12 @@ type
 
   RTLException = public class(Exception)
   public
-  
+
     constructor;
     begin
       constructor("Exception");
     end;
-    
+
     constructor(aMessage: String);
     begin
       {$IF TOFFEE}
@@ -27,7 +27,7 @@ type
       inherited constructor(aMessage);
       {$ENDIF}
     end;
-    
+
     constructor(aFormat: String; params aParams: array of Object);
     begin
       constructor(String.Format(aFormat, aParams));
@@ -38,10 +38,10 @@ type
     begin
       result := initWithName('Exception') reason(aError.description) userInfo(nil);
     end;
-    
+
     property Message: String read reason;
     {$ENDIF}
-    
+
   end;
 
   Exception_Helpers = public extension class(Exception)
@@ -51,11 +51,11 @@ type
     begin
       result := new Exception withName('Exception') reason(aError.description) userInfo(nil);
     end;
-    
+
     property Message: String read reason;
     {$ENDIF}
   end;
-  
+
   NotImplementedException = public class(RTLException);
   NotSupportedException = public class(RTLException);
   ArgumentException = public class(RTLException);
@@ -64,20 +64,20 @@ type
 
   ArgumentNullException = public class(ArgumentException)
   public
-  
+
     constructor(aMessage: String);
     begin
       inherited constructor(RTLErrorMessages.ARG_NULL_ERROR, aMessage)
     end;
-    
+
     class method RaiseIfNil(Value: Object; Name: String);
     begin
       if Value = nil then
         raise new ArgumentNullException(Name);
     end;
-    
+
   end;
-  
+
   ArgumentOutOfRangeException = public class(ArgumentException)
   public
 
@@ -95,17 +95,17 @@ type
 
   FormatException = public class(RTLException)
   public
-  
+
     constructor();
     begin
       inherited constructor(RTLErrorMessages.FORMAT_ERROR);
     end;
-    
+
     constructor(aMessage: String);
     begin
       inherited constructor(aMessage);
     end;
-    
+
     constructor(aFormat: String; params aParams: array of Object);
     begin
       inherited constructor(aFormat, aParams);
@@ -118,7 +118,7 @@ type
   {$IF NOT ISLAND}
   HttpException = public class(RTLException)
   assembly
-  
+
     constructor(aMessage: String; aResponse: nullable HttpResponse := nil);
     begin
       inherited constructor(aMessage);
@@ -126,13 +126,13 @@ type
     end;
 
   public
-    property Response: nullable HttpResponse; readonly;   
+    property Response: nullable HttpResponse; readonly;
   end;
   {$ENDIF}
-  
+
   FileNotFoundException = public class (RTLException)
   public
-  
+
     property FileName: String read write; readonly;
 
     constructor (aFileName: String);
@@ -140,7 +140,7 @@ type
       inherited constructor (RTLErrorMessages.FILE_NOTFOUND, aFileName);
       FileName := aFileName;
     end;
-    
+
   end;
 
   StackEmptyException = public class (RTLException)
@@ -159,34 +159,34 @@ type
 
   KeyNotFoundException = public class (RTLException)
   public
-  
+
     constructor;
     begin
       inherited constructor(RTLErrorMessages.KEY_NOTFOUND);
     end;
-    
+
   end;
 
   /*AppContextMissingException = public class (RTLException)
   public
-  
+
     class method RaiseIfMissing;
     begin
       if Environment.ApplicationContext = nil then
         raise new AppContextMissingException(RTLErrorMessages.APP_CONTEXT_MISSING);
     end;
-    
+
   end;*/
 
   {$IF TOFFEE}
   NSErrorException = public class(RTLException)
   public
-  
+
     constructor(Error: Foundation.NSError);
     begin
       inherited constructor(Error.localizedDescription);
     end;
-    
+
   end;
   {$ENDIF}
 
@@ -202,7 +202,7 @@ type
     class const KEY_NOTFOUND = "Entry with specified key does not exist";
     class const KEY_EXISTS = "An element with the same key already exists in the dictionary";
 
-    class const FILE_EXISTS = "File {0} already exists";    
+    class const FILE_EXISTS = "File {0} already exists";
     class const FILE_NOTFOUND = "File {0} not found";
     class const FILE_WRITE_ERROR = "File {0} can not be written";
     class const FILE_READ_ERROR = "File {0} can not be read";
