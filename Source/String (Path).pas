@@ -17,13 +17,13 @@ type
 
   assembly
     method GetLastPathComponentWithSeparatorChar(aSeparator: Char): not nullable String;
-    
+
   public
-    
+
     property FileExists: Boolean read File.Exists(self);
     property FolderExists: Boolean read Folder.Exists(self);
     property FileOrFolderExists: Boolean read Folder.Exists(self) or Folder.Exists(self);
-    
+
     property LastPathComponent: String read Path.GetFilename(self);             // uses the platform-specific folder separator
     property LastUnixPathComponent: String read GetLastUnixPathComponent;       // always uses `/`
     property LastWindowsPathComponent: String read GetLastWindowsPathComponent; // always uses `\`
@@ -69,7 +69,7 @@ type
     property QuotedIfNeeded: String read if IndexOf(" ") > -1 then '"'+self+'"' else self;
 
   end;
-  
+
 implementation
 
 method String.GetLastPathComponentWithSeparatorChar(aSeparator: Char): not nullable String;
@@ -83,10 +83,10 @@ begin
     result := result.Substring(0, result.Length-1);
 
   var lIndex := result.LastIndexOf(aSeparator);
-  
+
   if (lIndex > -1) and (lIndex < result.Length-1) then
     exit result.Substring(lIndex+1);
-  
+
   exit result;
 end;
 

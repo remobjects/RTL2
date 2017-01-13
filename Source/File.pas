@@ -6,7 +6,7 @@ type
   File = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFile{$ELSE}PlatformString{$ENDIF}
   private
     method getDateModified: DateTime;
-    method getDateCreated: DateTime;    
+    method getDateCreated: DateTime;
     {$IF COOPER}
     property JavaFile: java.io.File read new java.io.File(mapped);
     {$ELSEIF ISLAND}
@@ -38,10 +38,10 @@ type
     property Name: not nullable String read Path.GetFileName(mapped);
     {$ENDIF}
     property &Extension: not nullable String read Path.GetExtension(FullPath);
-    
+
     property DateCreated: DateTime read getDateCreated;
     property DateModified: DateTime read getDateModified;
-    
+
     method ReadText(Encoding: Encoding := nil): String;
     method ReadBytes: array of Byte;
     method ReadBinary: Binary;
@@ -75,7 +75,7 @@ begin
   if lNewFile.Exists then
     raise new IOException(RTLErrorMessages.FILE_EXISTS, NewName);
 
-  {$IF COOPER}  
+  {$IF COOPER}
   new java.io.File(lNewFile).createNewFile;
   var source := new java.io.FileInputStream(mapped).Channel;
   var dest := new java.io.FileOutputStream(lNewFile).Channel;
@@ -105,7 +105,7 @@ method File.Delete;
 begin
   if not Exists then
     raise new FileNotFoundException(FullPath);
-  {$IF COOPER}  
+  {$IF COOPER}
   JavaFile.delete;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   mapped.DeleteAsync.AsTask.Wait;
@@ -139,7 +139,7 @@ method File.Move(NewPathAndName: not nullable File): not nullable File;
 begin
   if NewPathAndName.Exists then
     raise new IOException(RTLErrorMessages.FILE_EXISTS, NewPathAndName);
-  {$IF COOPER}  
+  {$IF COOPER}
   result := &Copy(NewPathAndName) as not nullable;
   JavaFile.delete;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
@@ -169,7 +169,7 @@ begin
 end;
 
 method File.Rename(NewName: not nullable String): not nullable File;
-begin  
+begin
   var lNewFile := new File(Path.Combine(Path.GetParentDirectory(self.FullPath), NewName));
   exit Move(lNewFile);
 end;
@@ -223,7 +223,7 @@ method File.getDateModified: DateTime;
 begin
   if not Exists then
     raise new FileNotFoundException(FullPath);
-  {$IF COOPER}  
+  {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified()));
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;

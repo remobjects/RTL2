@@ -2,7 +2,7 @@
 typealias Block = ()->()
 
 public static class RemObjects.Elements.RTL.BroadcastManager {
-	
+
 	private let subscriptions = Dictionary<String,List<(Object,Block)>>()
 
 	//func subscribe(_ object: Object, toBroadcast broadcast: String, block: (Dictionary<String,Any>)->()) {
@@ -35,7 +35,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
 		#endif
-		
+
 		__lock self {
 			if let subs = subscriptions[broadcast] {
 				for s in subs? {
@@ -64,7 +64,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			}
 		}
 	}
-	
+
 	@inline(always)
 	private func syncToMainThreadIfNeeded(sync: Boolean, block: () -> ()) {
 		#if TOFFEE
@@ -89,7 +89,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			#if TOFFEE
 			NSNotificationCenter.defaultCenter.postNotificationName(broadcast, object: object, userInfo: data)
 			#endif
-		
+
 			__lock self {
 				for s in subscriptions[broadcast] {
 					s.1()

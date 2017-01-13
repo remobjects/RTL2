@@ -24,8 +24,8 @@ type
     method Visit(Value: JsonNode);
   public
     constructor (Value: not nullable JsonNode);
-    
-    method Serialize: String;    
+
+    method Serialize: String;
   end;
 
 implementation
@@ -68,7 +68,7 @@ method JsonSerializer.VisitArray(Value: JsonArray);
 begin
   Builder.AppendLine(JsonConsts.ARRAY_START);
   IncOffset;
-  
+
   for i: Int32 := 0 to Value.Count-1 do begin
     AppendOffset;
     Visit(Value[i]);

@@ -5,7 +5,7 @@ interface
 type
   TimeSpan = public record mapped to {$IFDEF ECHOES}System.TimeSpan{$ELSEIF TOFFEE}NSTimeInterval{$ELSE}Int64{$ENDIF}
   private
-  
+
     method get_TotalMilliSeconds: Double;
     method get_Days: Integer;
     method get_Hours: Integer;
@@ -19,7 +19,7 @@ type
     method get_TotalSeconds: Double;
 
   public
-  
+
     const
       TicksPerMillisecond: Int64 = 10000;
       TicksPerSecond: Int64 = TicksPerMillisecond * 1000;
@@ -54,7 +54,7 @@ type
     class method FromSeconds(d: Double): TimeSpan;
     class method FromMilliseconds(d: Double): TimeSpan;
     class method FromTicks(d: Int64): TimeSpan;
-    
+
     class operator Equal(a,b: TimeSpan): Boolean;
     class operator NotEqual(a,b: TimeSpan): Boolean;
 
@@ -96,7 +96,7 @@ end;
 
 method TimeSpan.get_TotalSeconds: Double;
 begin
-  exit Double(Ticks) / TicksPerSecond; 
+  exit Double(Ticks) / TicksPerSecond;
 end;
 
 method TimeSpan.get_TotalMinutes: Double;
@@ -207,7 +207,7 @@ begin
 end;
 
 class method TimeSpan.FromSeconds(d: Double): TimeSpan;
-begin  
+begin
   exit FromTicks(Int64(d * TicksPerSecond));
 end;
 
@@ -353,7 +353,7 @@ end;
 
 method TimeSpan.get_TotalMilliSeconds: Double;
 begin
-  exit Double(Ticks) / TicksPerMillisecond; 
+  exit Double(Ticks) / TicksPerMillisecond;
 end;
 
 end.

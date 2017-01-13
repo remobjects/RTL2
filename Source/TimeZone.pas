@@ -5,7 +5,7 @@ interface
 type
   TimeZone = public class {$IFDEF ECHOES}mapped to System.TimeZoneInfo{$ELSEIF TOFFEE}mapped to NSTimeZone{$ELSEIF COOPER}mapped to java.util.TimeZone{$ENDIF}
   private
-    class method get_LocalTimeZone: not nullable TimeZone; 
+    class method get_LocalTimeZone: not nullable TimeZone;
     class method get_UtcTimeZone: not nullable TimeZone;
     class method get_TimeZoneWithAbreviation(aAbbreviation: String): nullable TimeZone;
     class method get_TimeZoneWithName(aName: String): nullable TimeZone;
@@ -99,7 +99,7 @@ begin
   {$ENDIF}
 end;
 
-class method TimeZone.get_UtcTimeZone: not nullable TimeZone; 
+class method TimeZone.get_UtcTimeZone: not nullable TimeZone;
 begin
   {$IF COOPER}
   result := java.util.TimeZone.getTimeZone("UTC") as not nullable;

@@ -76,7 +76,7 @@ method ImmutableStack<T>.UniqueMutableCopy: Stack<T>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := new Stack<T>();
-  for each k in mapped do 
+  for each k in mapped do
     result.Push(k);
   {$ELSEIF TOFFEE}
   result := mapped.mutableCopy;

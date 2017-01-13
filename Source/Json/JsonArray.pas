@@ -12,7 +12,7 @@ type
   public
     constructor;
     constructor(aItems: List<JsonNode>);
-  
+
     method &Add(Value: JsonNode);
     method Insert(&Index: Integer; Value: JsonNode);
     method Clear;
@@ -22,7 +22,7 @@ type
     method ToStringList: not nullable List<String>;
 
     method ToJson: String; override;
-     
+
     {$IF COOPER}
     method &iterator: java.util.&Iterator<JsonNode>;
     {$ELSEIF ECHOES}
@@ -30,7 +30,7 @@ type
     method GetEnumerator: System.Collections.Generic.IEnumerator<JsonNode>;
     {$ELSEIF ISLAND}
     method GetNonGenericEnumerator(): IEnumerator; implements IEnumerable.GetEnumerator;
-    method GetEnumerator(): IEnumerator<JsonNode>; 
+    method GetEnumerator(): IEnumerator<JsonNode>;
     {$ELSEIF TOFFEE}
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
     {$ENDIF}
@@ -71,7 +71,7 @@ end;
 
 method JsonArray.Insert(&Index: Integer; Value: JsonNode);
 begin
-  fItems.Insert(&Index, Value);  
+  fItems.Insert(&Index, Value);
 end;
 
 method JsonArray.Clear;
@@ -113,7 +113,7 @@ begin
 end;
 
 method JsonArray.GetEnumerator: System.Collections.Generic.IEnumerator<JsonNode>;
-begin  
+begin
   exit System.Collections.Generic.IEnumerable<JsonNode>(fItems).GetEnumerator;
 end;
 {$ELSEIF ISLAND}
@@ -123,7 +123,7 @@ begin
 end;
 
 method JsonArray.GetEnumerator: IEnumerator<JsonNode>;
-begin  
+begin
   exit IEnumerable<JsonNode>(fItems).GetEnumerator;
 end;
 {$ELSEIF TOFFEE}

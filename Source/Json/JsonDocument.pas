@@ -22,7 +22,7 @@ type
 
     constructor;
     constructor(aRoot: not nullable JsonNode);
-    
+
     {method Save(aFile: File);
     method Save(aFile: File; XmlDeclaration: XmlDocumentDeclaration);
     method Save(aFile: File; Version: String; Encoding: String; Standalone: Boolean);}

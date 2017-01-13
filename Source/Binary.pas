@@ -23,24 +23,24 @@ type
   public
     constructor; {$IF TOFFEE OR ECHOES}mapped to constructor();{$ELSE}empty;{$ENDIF}
     constructor(anArray: array of Byte);
-    constructor(Bin: Binary);    
+    constructor(Bin: Binary);
 
     method &Read(Range: Range): array of Byte;
     method &Read(aStartIndex: Integer; aCount: Integer): array of Byte;
     method &Read(Count: Integer): array of Byte;
-    
+
     method Subdata(Range: Range): Binary;
     method Subdata(aStartIndex: Integer; aCount: Integer): Binary;
 
     method ToArray: array of Byte;
-    property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};    
+    property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
   end;
 
   Binary = public class(ImmutableBinary) {$IF ECHOES OR ISLAND OR TOFFEE}mapped to PlatformBinary{$ENDIF}
   public
     constructor;
     constructor(anArray: array of Byte);
-    constructor(Bin: Binary);    
+    constructor(Bin: Binary);
 
     method Assign(Bin: Binary);
     method Clear;
@@ -76,8 +76,8 @@ begin
   ms.Write(anArray, anArray.Length);
   exit ms;
   {$ELSEIF TOFFEE}
-  exit NSData.dataWithBytes(anArray) length(length(anArray)); 
-  {$ENDIF}  
+  exit NSData.dataWithBytes(anArray) length(length(anArray));
+  {$ENDIF}
 end;
 
 constructor ImmutableBinary(Bin: Binary);
@@ -92,7 +92,7 @@ begin
   exit ms;
   {$ELSEIF TOFFEE}
   exit NSData.dataWithData(Bin);
-  {$ENDIF} 
+  {$ENDIF}
 end;
 
 constructor Binary;
@@ -102,7 +102,7 @@ begin
   result := new ImmutablePlatformBinary();
   {$ELSEIF TOFFEE}
   result :=  NSData.data;
-  {$ENDIF} 
+  {$ENDIF}
 end;
 
 constructor Binary(anArray: array of Byte);
@@ -121,8 +121,8 @@ begin
   ms.Write(anArray, anArray.Length);
   exit ms;
   {$ELSEIF TOFFEE}
-  exit NSMutableData.dataWithBytes(anArray) length(length(anArray)); 
-  {$ENDIF}  
+  exit NSMutableData.dataWithBytes(anArray) length(length(anArray));
+  {$ENDIF}
 end;
 
 constructor Binary(Bin: Binary);
@@ -136,7 +136,7 @@ begin
   exit ms;
   {$ELSEIF TOFFEE}
   exit NSMutableData.dataWithData(Bin);
-  {$ENDIF} 
+  {$ENDIF}
 end;
 
 method Binary.Assign(Bin: Binary);
@@ -162,7 +162,7 @@ begin
   RangeHelper.Validate(Range, self.Length);
 
   result := new Byte[Range.Length];
-  {$IF COOPER}  
+  {$IF COOPER}
   System.arraycopy(fData.toByteArray, Range.Location, result, 0, Range.Length);
   {$ELSEIF ECHOES}
   mapped.Position := Range.Location;
@@ -210,7 +210,7 @@ begin
   mapped.Write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   mapped.appendBytes(@Buffer[Offset]) length(Count);
-  {$ENDIF}  
+  {$ENDIF}
 end;
 
 method Binary.Write(Buffer: array of Byte; Count: Integer);
@@ -230,7 +230,7 @@ begin
   &Write(Bin.ToArray, Bin.Length);
   {$ELSEIF TOFFEE}
   mapped.appendData(Bin);
-  {$ENDIF}  
+  {$ENDIF}
 end;
 
 method ImmutableBinary.ToArray: array of Byte;
@@ -242,7 +242,7 @@ begin
   {$ELSEIF TOFFEE}
   result := new Byte[mapped.length];
   mapped.getBytes(result) length(mapped.length);
-  {$ENDIF}  
+  {$ENDIF}
 end;
 
 method Binary.Clear;
@@ -254,7 +254,7 @@ begin
   mapped.Position := 0;
   {$ELSEIF TOFFEE}
   mapped.setLength(0);
-  {$ENDIF}  
+  {$ENDIF}
 end;
 
 {$IF TOFFEE}

@@ -30,7 +30,7 @@ type
     method GetSequence: sequence of KeyValuePair<T,U>;
     {$ENDIF}
   end;
-  
+
   Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary where T is class, U is class;{$ENDIF}
   private
     method SetItem(Key: T; Value: U); inline;
@@ -48,9 +48,9 @@ type
 
     property Item[Key: T]: U read GetItem write SetItem; default; inline; // will return nil for unknown keys
   end;
-  
+
   ObjectDictionary = public Dictionary<String,Object>;
-  
+
   StringDictionary = public Dictionary<String,String>;
   StringDictionary2 = public Dictionary<String,StringDictionary>;
   StringDictionary3 = public Dictionary<String,StringDictionary2>;
@@ -84,9 +84,9 @@ begin
   {$IF COOPER}
   result := new java.util.HashMap<T,U>(aCapacity);
   {$ELSEIF ECHOES}
-  result := new System.Collections.Generic.Dictionary<T,U>(aCapacity); 
+  result := new System.Collections.Generic.Dictionary<T,U>(aCapacity);
   {$ELSEIF ISLAND}
-  result := new RemObjects.Elements.System.Dictionary<T,U>(aCapacity); 
+  result := new RemObjects.Elements.System.Dictionary<T,U>(aCapacity);
   {$ELSEIF TOFFEE}
   result := new Foundation.NSMutableDictionary withCapacity(aCapacity);
   {$ENDIF}
@@ -232,7 +232,7 @@ begin
   exit DictionaryHelpers.GetSequence<T, U>(self);
 end;
 {$ENDIF}
-    
+
 method ImmutableDictionary<T,U>.UniqueCopy: ImmutableDictionary<T,U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
@@ -264,7 +264,7 @@ begin
     result := mapped.mutableCopy;
   {$ENDIF}
 end;
-    
+
 { DictionaryHelpers }
 
 {$IFDEF TOFFEE}
@@ -319,7 +319,7 @@ end;
 
 method DictionaryHelpers.Foreach<T, U>(aSelf: ImmutableDictionary<T, U>; aAction: Action<KeyValuePair<T, U>>);
 begin
-  for each el in aSelf.Keys do 
+  for each el in aSelf.Keys do
     aAction(new KeyValuePair<T,U>(T(el), U(aSelf.Item[el])));
 end;
 

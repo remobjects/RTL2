@@ -2,7 +2,7 @@
 
 interface
 
-type  
+type
   KeyValuePair<T, U> = public class
   public
     constructor(aKey: T; aValue: U);
@@ -23,7 +23,7 @@ begin
     raise new ArgumentNullException("Key");
 
   Key := aKey;
-  Value := aValue;  
+  Value := aValue;
 end;
 
 method KeyValuePair<T, U>.{$IF TOFFEE}isEqual(obj: id){$ELSE}&Equals(Obj: Object){$ENDIF}: Boolean;

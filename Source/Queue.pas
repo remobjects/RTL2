@@ -11,7 +11,7 @@ type
     constructor; mapped to constructor();
 
     method Contains(Item: T): Boolean;
-  
+
     method Peek: T;
     method ToArray: array of T;
 
@@ -81,7 +81,7 @@ method ImmutableQueue<T>.UniqueMutableCopy: Queue<T>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := new Queue<T>();
-  for each k in mapped do 
+  for each k in mapped do
     result.Enqueue(k);
   {$ELSEIF TOFFEE}
   result := mapped.mutableCopy;

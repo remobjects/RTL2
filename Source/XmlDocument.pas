@@ -323,9 +323,9 @@ begin
   if Encoding <> nil then result := result + ' encoding="'+Encoding+'"';
   if Standalone <> nil then result := result + ' standalone="'+Standalone+'"';
   if result <> "" then result := result + "?>";
-  if not(aSaveFormatted) or 
-    (aSaveFormatted and 
-      (fXmlParser <> nil) and 
+  if not(aSaveFormatted) or
+    (aSaveFormatted and
+      (fXmlParser <> nil) and
       (
         (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or
         (
@@ -335,10 +335,10 @@ begin
           (fXmlParser.FormatOptions.NewLineSymbol = fFormatOptions.NewLineSymbol)
         )
       )
-     ) then begin 
+     ) then begin
     if aSaveFormatted and (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then begin
       aSaveFormatted := false;
-      aFormatInsideTags := true;  
+      aFormatInsideTags := true;
     end;
     for each aNode in fNodes do
       result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)
@@ -791,7 +791,7 @@ begin
   if IsEmpty then begin
     if (Document <> nil) then begin
       if (aFormatInsideTags) then begin
-        if (Document.fFormatOptions.EmptyTagSyle <> XmlTagStyle.PreferOpenAndCloseTag) and Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and 
+        if (Document.fFormatOptions.EmptyTagSyle <> XmlTagStyle.PreferOpenAndCloseTag) and Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and
           not (CharIsWhitespace(result[result.Length-1])) then
           result := result + " ";
         result := result + "/>"
@@ -834,7 +834,7 @@ begin
           end;
         end;
       if (aNode.NodeType <> XmlNodeType.Text) then
-        if lFormat then 
+        if lFormat then
           result := result + Document.fLineBreak + indent + aNode.ToString(aSaveFormatted, aFormatInsideTags)
         else result := result + aNode.tostring(aSaveFormatted, aFormatInsideTags);
       inc(i);
@@ -846,7 +846,7 @@ begin
       result := result + aNode.ToString(aSaveFormatted, aFormatInsideTags);
   if IsEmpty = false then begin
     if (fNodes.Count = 0) and (aFormatInsideTags) and (Document.fFormatOptions.EmptyTagSyle = XmlTagStyle.PreferSingleTag) then
-      if Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and not (CharIsWhitespace(result[result.Length-1])) then 
+      if Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and not (CharIsWhitespace(result[result.Length-1])) then
         result := result + " />"
       else
         result := result+"/>"

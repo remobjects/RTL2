@@ -15,7 +15,7 @@ type
   public
     method Validate(aRange: Range; BufferSize: Integer);
   end;
-  
+
 implementation
 
 { Range }
