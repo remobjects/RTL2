@@ -1,4 +1,4 @@
-namespace RemObjects.Elements.RTL;
+﻿namespace RemObjects.Elements.RTL;
 
 interface
 
@@ -19,8 +19,8 @@ type
     method SetRoot(aRoot: not nullable XmlElement);
 
   public
-    class method FromFile(aFileName: not nullable File): nullable XmlDocument;
-    class method FromUrl(aUrl: not nullable Url): nullable XmlDocument;
+    class method FromFile(aFileName: not nullable File): not nullable XmlDocument;
+    class method FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
     class method FromString(aString: not nullable String): nullable XmlDocument;
     class method FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
     class method WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
