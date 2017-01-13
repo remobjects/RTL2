@@ -391,7 +391,7 @@ begin
     XmlNodeType.ProcessingInstruction: begin
       result := "<?"+XmlProcessingInstruction(self).Target;
       var str := XmlProcessingInstruction(self).Data;
-      if not(CharIsWhitespace(result.Substring(result.Length-1,1))) and not(CharIsWhitespace(str.Substring(0,1))) then
+      if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
         result := result + " ";
       result := result + str+"?>";
     end;
@@ -727,56 +727,65 @@ begin
   result := result + fLocalName;
   for each defNS in DefinedNamespaces do begin
     str := defNS.ToString;
-    if not(CharIsWhitespace(result.Substring(result.Length-1,1))) and not(CharIsWhitespace(str.Substring(0,1))) then
+    if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
       result := result+" ";
     result := result+str;
   end;
   for each attr in Attributes do begin
     str := attr.ToString;
-    if not(CharIsWhitespace(result.Substring(result.Length-1,1))) and not(CharIsWhitespace(str.Substring(0,1))) then
+    if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
       result := result+" ";
     result := result+str;
 
   end;
   if IsEmpty then begin
-    if (Document <> nil) and (Document.fXmlParser <> nil) and (Document.fXmlParser.FormatOptions.SpaceBeforeSlashInEmptyTags) then
-      result := result+ " ";
-    result := result + "/";
-  end;
-  result := result +">";
-  /********/
-  if Document.fSaveFormatted and (Document.fFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
-    if Document.fFormatOptions.NewLineForElements  and 
-      (
-        ((fNodes.Count>0) and (fNodes[0].NodeType <> XmlNodeType.Text)) or 
-        (
-          (fNodes.Count>1) and 
-          (fNodes[0].NodeType = XmlNodeType.Text) and 
-          (XmlText(fNodes[0]).Value.Trim = "") and 
-          (fNodes[1].NodeType = XmlNodeType.Text) and 
-          (XmlText(fNodes[1]).Value.Trim<>"")
-        )
-     ) then 
-      result := result+Document.fLineBreak;
-    var i := 0;
+    if (Document <> nil) then begin
+      if (Document.fFormatInsideTags) then begin
+        if (Document.fFormatOptions.EmptyTagSyle <> XmlTagStyle.PreferOpenAndCloseTag) and Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and 
+          not (CharIsWhitespace(result[result.Length-1])) then
+          result := result + " ";
+        result := result + "/>"
+      end
+      else begin
+        if (Document.fXmlParser <> nil) and (Document.fXmlParser.FormatOptions.SpaceBeforeSlashInEmptyTags) and 
+          not (CharIsWhitespace(result[result.Length-1])) then 
+          result := result+ " ";
+        result := result +"/>";
+      end;
 
+    end;
+  end;
+  if fNodes.count > 0 then result := result +">";
+  /********/
+  var lFormat := false;
+  var indent : String := "";
+  if Document.fSaveFormatted and (Document.fFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
+    if Document.fFormatOptions.NewLineForElements  then lFormat := true;
+    var i := 0;
+    if lFormat  and (fNodes.count > 0) then begin
+      var n := fNodes[0];
+      while n.Parent<>nil do begin
+        indent := indent+Document.fFormatOptions.Indentation;
+        n := n.Parent;
+      end;
+    end;
+   
     for each aNode in fNodes do begin
       if (aNode.NodeType = XmlNodeType.Text) then
-        if (XmlText(aNode).Value.Trim <> "") then
+        if (XmlText(aNode).Value.Trim <> "") then begin
           if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i-1]).Value.Trim = "") then
-            result := result + fNodes[i-1].ToString+ aNode.ToString
-          else result := result + aNode.ToString;
-      if (aNode.NodeType <> XmlNodeType.Text) then
-        if Document.fFormatOptions.NewLineForElements then begin
-          var n := aNode;
-          var indent := "";
-          while n.Parent<>nil do begin
-            indent := indent+Document.fFormatOptions.Indentation;
-            n := n.Parent;
+            result := result + fNodes[i-1].ToString;
+          result := result+ aNode.ToString;
+          if (i < fNodes.Count-1) and (fNodes[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i+1]).Value.Trim = "") then begin
+            str := fNodes[i+1].ToString;
+            if str.IndexOf(Document.fLineBreak) > -1 then
+              str := str.Substring(0, str.LastIndexOf(Document.fLineBreak));
+            result := result + str;
           end;
-          //end;
-          result := result + indent + aNode.ToString + Document.fLineBreak;
-        end
+        end;
+      if (aNode.NodeType <> XmlNodeType.Text) then
+        if lFormat then 
+          result := result + Document.fLineBreak + indent + aNode.ToString
         else result := result + aNode.tostring;
       inc(i);
     end;
@@ -786,11 +795,23 @@ begin
     for each aNode in fNodes do
       result := result + aNode.ToString;
   if IsEmpty = false then begin
-    result := result+"</";
-    if (&Namespace <> nil) and (&Namespace.Prefix <> "") and (&Namespace.Prefix <> nil) then
-      result := result+&Namespace.Prefix+':';
-    if EndTagName <> nil then result := result+ EndTagName+">"
-    else result := result + LocalName+">";
+    if (fNodes.Count = 0) and (Document.fFormatInsideTags) and (Document.fFormatOptions.EmptyTagSyle = XmlTagStyle.PreferSingleTag) then
+      if Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and not (CharIsWhitespace(result[result.Length-1])) then 
+        result := result + " />"
+      else
+        result := result+"/>"
+    else begin
+      if fNodes.Count = 0 then result := result + ">";
+      if lFormat and (Elements.Count > 0) then begin
+        result := result +Document.fLineBreak;
+        if Indent.LastIndexOf(Document.fFormatOptions.Indentation) > -1 then result := result+Indent.Substring(0, Indent.LastIndexOf(Document.fFormatOptions.Indentation));  
+      end;
+      result := result+"</";
+      if (&Namespace <> nil) and (&Namespace.Prefix <> "") and (&Namespace.Prefix <> nil) then
+        result := result+&Namespace.Prefix+':';
+      if EndTagName <> nil then result := result+ EndTagName+">"
+      else result := result + LocalName+">";
+    end;
   end;
 end;
 
@@ -833,8 +854,8 @@ end;
 method XmlAttribute.GetValue: not nullable String;
 begin
   result := fValue.Trim as not nullable;
-  if ((result.Substring(0,1) = '"') and (result.Substring(result.Length-1,1) = '"') or
-    (result.Substring(0,1) = '''') and (result.Substring(result.Length-1,1) = '''')) then
+  if ((result[0] = '"') and (result[result.Length-1] = '"') or
+    (result[0] = '''') and (result[result.Length-1] = '''')) then
     result := result.Substring(1,result.Length-2) as not nullable;
 end;
 
@@ -854,13 +875,22 @@ end;
 
 method XmlAttribute.ToString: String;
 begin
-  if WSName <> nil then result := result + WSName+"="
+  if (Document <> nil) and not(Document.fFormatInsideTags) and (WSName <> nil) then result := result + WSName+"="
   else begin
-      //if result.Substring(result)
+    if (Document <> nil) and Document.fFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
+      var indent :="";
+      var n: XmlNode;
+      n:=Parent;
+      while n <> nil do begin
+        indent := indent + Document.fFormatOptions.Indentation;
+        n := n.Parent;
+      end;
+      result := result + Document.fLineBreak+indent;
+    end;
       if &Namespace<>nil then result := result+&Namespace.Prefix+":";
       result := result + LocalName+'=';
     end;
-  if WSValue <> nil then result := result + WSValue
+  if (Document <> nil) and not(Document.fFormatInsideTags) and (WSValue <> nil) then result := result + WSValue
   else result := result +'"'+Value+'"';
 end;
 
@@ -903,13 +933,23 @@ end;
 
 method XmlNamespace.ToString: String;
 begin
-  if (WSName <> nil) then result := result + WSName+"="
+  if (Document <> nil) and not(Document.fFormatInsideTags) and (WSName <> nil) then result := result + WSName+"="
   else begin
-    result := result+" xmlns";
+    if (Document <> nil) and Document.fFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
+      var indent :="";
+      var n: XmlNode;
+      n:=Parent;
+      while n <> nil do begin
+        indent := indent + Document.fFormatOptions.Indentation;
+        n := n.Parent;
+      end;
+      result := result + Document.fLineBreak+Indent;
+    end;
+    result := result+"xmlns";
     if (Prefix <> "") and (Prefix <> nil) then result := result+':'+Prefix;
     result := result + "=";
   end;
-  if WSValue <> nil then result := result + WSValue
+  if (Document <> nil) and not(Document.fFormatInsideTags) and (WSValue <> nil) then result := result + WSValue
   else    result := result +'"'+ Url.ToString+'"';
 end;
 

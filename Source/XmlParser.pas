@@ -159,12 +159,18 @@ begin
     Tokenizer.Next;
     
   end;
+  Expected(XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction); 
+  var lFormat := false;
+  if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
+    lFormat := true;
+  if lFormat and (result.Nodes.Count = 0) and (result.Version <> nil) then
+    result.AddNode(new XmlText(Value := fLineBreak));     
   while Tokenizer.Token <> XmlTokenKind.TagOpen do begin
     Expected(XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction); 
-    if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and 
-      (Tokenizer.Token <> XmlTokenKind.Whitespace) or ((result.Nodes.count=0) and (result.Version <> nil)) then begin 
+    {if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and 
+      (Tokenizer.Token <> XmlTokenKind.Whitespace) then begin //or ((result.Nodes.count=0) and (result.Version <> nil)) then begin 
       result.AddNode(new XmlText(Value := fLineBreak));     
-    end;
+    end;}
     case Tokenizer.Token of
       XmlTokenKind.Whitespace: begin
         if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) then 
@@ -177,10 +183,12 @@ begin
         var lCount := result.Nodes.Count-1;
         result.Nodes[lCount].EndLine := Tokenizer.Row;
         result.Nodes[lCount].EndColumn := Tokenizer.Column-1;
+        if lFormat then result.AddNode(new XmlText(Value := fLineBreak));
       end;//add node
       XmlTokenKind.ProcessingInstruction : begin 
         result.AddNode(ReadProcessingInstruction(nil)); 
         Tokenizer.Next;//add node 
+        if lFormat then result.AddNode(new XmlText(Value := fLineBreak));
       end;
     end;
   end;
@@ -188,7 +196,7 @@ begin
   var aIndent: String;
   if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
     aIndent := "";
-    result.AddNode(new XmlText(Value := fLineBreak));
+    //result.AddNode(new XmlText(Value := fLineBreak));
   end;
   
   result.Root := ReadElement(nil,aIndent);
@@ -452,7 +460,7 @@ method XmlParser.ReadProcessingInstruction(aParent: XmlElement):  XmlProcessingI
 begin
   var WS := "";
   Expected(XmlTokenKind.ProcessingInstruction);
-  result := new XmlProcessingInstruction(nil);
+  result := new XmlProcessingInstruction(aParent);
   result.StartLine := Tokenizer.Row;
   result.StartColumn := Tokenizer.Column;
   Tokenizer.Next;
