@@ -110,6 +110,9 @@
         <Compile Include="$(MSBuildThisFileDirectory)XmlTokenizer.pas">
             <VirtualFolder>Xml</VirtualFolder>
         </Compile>
+        <Compile Include="$(MSBuildThisFileDirectory)NativeXmlDocument.pas">
+            <VirtualFolder>Xml</VirtualFolder>
+        </Compile>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Files and Paths">
