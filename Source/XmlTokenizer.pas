@@ -1,4 +1,4 @@
-﻿namespace RemObjects.Elements.RTL;
+namespace RemObjects.Elements.RTL;
 
 interface
 type
@@ -283,10 +283,11 @@ begin
       '>':  lValue.Append('&gt;');
       //'"' : if ch lQuoteChar then lValue.Append('&quot;') else lValue.Append(ch);
       //'''': if ch lQuoteChar then lValue.Append('apos') else lValue.Append(ch);
-      '&':  if ParseSpecSymbol(fPos) then
-               fPos := fPos + fLength
-             else
-               exit;
+      '&':  if ParseSpecSymbol(fPos) then begin
+          lValue.Append(new String(fData, fPos, fLength+1));
+          fPos := fPos + fLength
+        end
+        else  exit;
       #13: begin
         if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
         fRowStart := fPos + 1;

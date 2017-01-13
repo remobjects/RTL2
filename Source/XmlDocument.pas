@@ -1,4 +1,4 @@
-﻿namespace RemObjects.Elements.RTL;
+namespace RemObjects.Elements.RTL;
 
 interface
 
@@ -9,9 +9,7 @@ type
   assembly
     fXmlParser: XmlParser;
     fFormatOptions: XmlFormattingOptions;
-    fSaveFormatted: Boolean := false;
     fLineBreak: String;
-    fFormatInsideTags: Boolean := false;
   private
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
@@ -21,8 +19,8 @@ type
     method SetRoot(aRoot: not nullable XmlElement);
 
   public
-    class method FromFile(aFileName: not nullable File): not nullable XmlDocument;
-    class method FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
+    class method FromFile(aFileName: not nullable File): nullable XmlDocument;
+    class method FromUrl(aUrl: not nullable Url): nullable XmlDocument;
     class method FromString(aString: not nullable String): nullable XmlDocument;
     class method FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
     class method WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
@@ -33,6 +31,8 @@ type
 
     [ToString]
     method ToString(): String; override;
+    method ToString(aSaveFormatted: Boolean): String;
+
     method SaveToFile(aFileName: not nullable File);
     method SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
 
@@ -79,6 +79,7 @@ type
     property EndColumn: Integer;
     [ToString]
     method ToString(): String; override;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean): String;
   end;
 
   XmlElement = public class(XmlNode)
@@ -155,6 +156,7 @@ type
     method RemoveNamespace(aPrefix: not nullable String);
     [ToString]
     method ToString(): String; override;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean): String;
   end;
 
   XmlAttribute = public class(XmlNode)
@@ -178,6 +180,7 @@ type
     property Value: not nullable String read GetValue write SetValue;
     [ToString]
     method ToString(): String; override;
+    method ToString(aFormatInsideTags: Boolean): String;
   end;
 
   XmlComment = public class(XmlNode)
@@ -206,6 +209,7 @@ type
     property Url: Url;
     [ToString]
     method ToString(): String; override;
+    method ToString(aFormatInsideTags: Boolean): String;
 
   end;
 
@@ -308,14 +312,20 @@ end;
 
 method XmlDocument.ToString(): String;
 begin
+  result := ToString(false);
+end;
+
+method XmlDocument.ToString(aSaveFormatted: Boolean): String;
+begin
   result:="";
+  var aFormatInsideTags := false;
   if Version <> nil then result := '<?xml version="'+Version+'"';
   if Encoding <> nil then result := result + ' encoding="'+Encoding+'"';
   if Standalone <> nil then result := result + ' standalone="'+Standalone+'"';
   if result <> "" then result := result + "?>";
-  if not(fSaveFormatted) or
-    (fSaveFormatted and
-      (fXmlParser <> nil) and
+  if not(aSaveFormatted) or 
+    (aSaveFormatted and 
+      (fXmlParser <> nil) and 
       (
         (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or
         (
@@ -325,20 +335,20 @@ begin
           (fXmlParser.FormatOptions.NewLineSymbol = fFormatOptions.NewLineSymbol)
         )
       )
-     ) then begin
-    if fSaveFormatted and (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then begin
-      fSaveFormatted := false;
-      fFormatInsideTags := true;
+     ) then begin 
+    if aSaveFormatted and (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then begin
+      aSaveFormatted := false;
+      aFormatInsideTags := true;  
     end;
     for each aNode in fNodes do
-      result := result+aNode.ToString
+      result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)
   end
   else begin
-    if (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then fFormatInsideTags := true;
+    if (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then aFormatInsideTags := true;
     if (Version <> nil) and fFormatOptions.NewLineForElements then result := result + fLineBreak;
       for each aNode in fNodes do begin
         if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
-          result := result+aNode.ToString+fLineBreak;
+          result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)+fLineBreak;
       end;
   end;
 end;
@@ -352,15 +362,13 @@ end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
 begin
-  fSaveFormatted := true;
   fFormatOptions := aFormatOptions;
   case fFormatOptions.NewLineSymbol of
     XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
     XmlNewLineSymbol.LF: fLineBreak := #10;
     XmlNewLineSymbol.CRLF: fLineBreak := #13#10;
   end;
-  SaveToFile(aFileName);
-  fSaveFormatted := false;
+  FileUtils.WriteText(aFileName.FullPath, self.ToString(true));
 end;
 
 
@@ -410,6 +418,12 @@ end;
 
 method XmlNode.ToString: String;
 begin
+  result := ToString(false, false);
+end;
+
+method XmlNode.ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean): String;
+begin
+  result := "";
   case NodeType of
     XmlNodeType.Text: begin
       result := XmlText(self).Value;
@@ -425,6 +439,7 @@ begin
         result := result + " ";
       result := result + str+"?>";
     end;
+    XmlNodeType.Element: result := XmlElement(self).ToString(aSaveFormatted, aFormatInsideTags);
   end;
 end;
 
@@ -748,7 +763,12 @@ begin
   fNamespaces.Remove(lNamespace);
 end;
 
-method XmlElement.ToString(): String;
+method xmlElement.ToString(): String;
+begin
+  result := ToString(false, false);
+end;
+
+method XmlElement.ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean): String;
 begin
   var str: String;
   result := "<";
@@ -756,13 +776,13 @@ begin
     result := result+&Namespace.Prefix+":";
   result := result + fLocalName;
   for each defNS in DefinedNamespaces do begin
-    str := defNS.ToString;
+    str := defNS.ToString(aFormatInsideTags);
     if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
       result := result+" ";
     result := result+str;
   end;
   for each attr in Attributes do begin
-    str := attr.ToString;
+    str := attr.ToString(aFormatInsideTags);
     if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
       result := result+" ";
     result := result+str;
@@ -770,8 +790,8 @@ begin
   end;
   if IsEmpty then begin
     if (Document <> nil) then begin
-      if (Document.fFormatInsideTags) then begin
-        if (Document.fFormatOptions.EmptyTagSyle <> XmlTagStyle.PreferOpenAndCloseTag) and Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and
+      if (aFormatInsideTags) then begin
+        if (Document.fFormatOptions.EmptyTagSyle <> XmlTagStyle.PreferOpenAndCloseTag) and Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and 
           not (CharIsWhitespace(result[result.Length-1])) then
           result := result + " ";
         result := result + "/>"
@@ -789,7 +809,7 @@ begin
   /********/
   var lFormat := false;
   var indent : String := "";
-  if Document.fSaveFormatted and (Document.fFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
+  if aSaveFormatted and (Document.fFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
     if Document.fFormatOptions.NewLineForElements  then lFormat := true;
     var i := 0;
     if lFormat  and (fNodes.count > 0) then begin
@@ -804,29 +824,29 @@ begin
       if (aNode.NodeType = XmlNodeType.Text) then
         if (XmlText(aNode).Value.Trim <> "") then begin
           if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i-1]).Value.Trim = "") then
-            result := result + fNodes[i-1].ToString;
-          result := result+ aNode.ToString;
+            result := result + fNodes[i-1].ToString(aSaveFormatted, aFormatInsideTags);
+          result := result+ aNode.ToString(aSaveFormatted, aFormatInsideTags);
           if (i < fNodes.Count-1) and (fNodes[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i+1]).Value.Trim = "") then begin
-            str := fNodes[i+1].ToString;
+            str := fNodes[i+1].ToString(aSaveFormatted, aFormatInsideTags);
             if str.IndexOf(Document.fLineBreak) > -1 then
               str := str.Substring(0, str.LastIndexOf(Document.fLineBreak));
             result := result + str;
           end;
         end;
       if (aNode.NodeType <> XmlNodeType.Text) then
-        if lFormat then
-          result := result + Document.fLineBreak + indent + aNode.ToString
-        else result := result + aNode.tostring;
+        if lFormat then 
+          result := result + Document.fLineBreak + indent + aNode.ToString(aSaveFormatted, aFormatInsideTags)
+        else result := result + aNode.tostring(aSaveFormatted, aFormatInsideTags);
       inc(i);
     end;
   end
   /******/
   else
     for each aNode in fNodes do
-      result := result + aNode.ToString;
+      result := result + aNode.ToString(aSaveFormatted, aFormatInsideTags);
   if IsEmpty = false then begin
-    if (fNodes.Count = 0) and (Document.fFormatInsideTags) and (Document.fFormatOptions.EmptyTagSyle = XmlTagStyle.PreferSingleTag) then
-      if Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and not (CharIsWhitespace(result[result.Length-1])) then
+    if (fNodes.Count = 0) and (aFormatInsideTags) and (Document.fFormatOptions.EmptyTagSyle = XmlTagStyle.PreferSingleTag) then
+      if Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and not (CharIsWhitespace(result[result.Length-1])) then 
         result := result + " />"
       else
         result := result+"/>"
@@ -903,11 +923,17 @@ begin
   if aValue.Length <> aValue.Trim.Length then WSValue := aValue;
 end;
 
-method XmlAttribute.ToString: String;
+method XmlAttribute.ToString(): String;
 begin
-  if (Document <> nil) and not(Document.fFormatInsideTags) and (WSName <> nil) then result := result + WSName+"="
+  result := ToString(false);
+end;
+
+method XmlAttribute.ToString(aFormatInsideTags: Boolean): String;
+begin
+  result := "";
+  if (Document <> nil) and not(aFormatInsideTags) and (WSName <> nil) then result := result + WSName+"="
   else begin
-    if (Document <> nil) and Document.fFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
+    if (Document <> nil) and aFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
       var indent :="";
       var n: XmlNode;
       n:=Parent;
@@ -920,7 +946,7 @@ begin
       if &Namespace<>nil then result := result+&Namespace.Prefix+":";
       result := result + LocalName+'=';
     end;
-  if (Document <> nil) and not(Document.fFormatInsideTags) and (WSValue <> nil) then result := result + WSValue
+  if (Document <> nil) and not(aFormatInsideTags) and (WSValue <> nil) then result := result + WSValue
   else result := result +'"'+Value+'"';
 end;
 
@@ -961,14 +987,18 @@ begin
   end;
 end;
 
-method XmlNamespace.ToString: String;
+
+method XmlNamespace.ToString(): String;
+begin
+  result := ToString(false);
+end;
+
+method XmlNamespace.ToString(aFormatInsideTags: Boolean): String;
 begin
   result := "";
-  if (Document <> nil) and not(Document.fFormatInsideTags) and (WSName <> nil) then begin
-    result := result + WSName+"=";
-  end
+  if (Document <> nil) and not(aFormatInsideTags) and (WSName <> nil) then result := result + WSName+"="
   else begin
-    if (Document <> nil) and Document.fFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
+    if (Document <> nil) and aFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
       var indent :="";
       var n: XmlNode;
       n:=Parent;
@@ -982,7 +1012,7 @@ begin
     if (Prefix <> "") and (Prefix <> nil) then result := result+':'+Prefix;
     result := result + "=";
   end;
-  if (Document <> nil) and not(Document.fFormatInsideTags) and (WSValue <> nil) then result := result + WSValue
+  if (Document <> nil) and not(aFormatInsideTags) and (WSValue <> nil) then result := result + WSValue
   else    result := result +'"'+ Url.ToString+'"';
 end;
 
