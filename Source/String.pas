@@ -201,6 +201,8 @@ end;
 
 class operator String.Add(Value1: String; Value2: String): not nullable String;
 begin
+  if not assigned(Value1) then exit coalesce(Value2, "");
+  if not assigned(Value2) then exit Value1 as not nullable;
   result := (PlatformString(Value1)+PlatformString(Value2)) as not nullable;
 end;
 
