@@ -18,5 +18,6 @@
         <Compile Include="$(MSBuildThisFileDirectory)XmlFire.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)String_Trim.pas"/>
         <Compile Include="$(MSBuildThisFileDirectory)Guids.pas"/>
+        <Compile Include="$(MSBuildThisFileDirectory)XmlEntities.pas"/>
     </ItemGroup>
 </Project>

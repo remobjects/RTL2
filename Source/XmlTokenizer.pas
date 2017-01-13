@@ -16,14 +16,14 @@ type
     method CharIsWhitespace(C: Char): Boolean;
     method CharIsNameStart(C: Char): Boolean;
     method CharIsName(C: Char): Boolean;
-    method IsValidSpecSymbol(S: String): Boolean;
+    method ResolveEntity(S: String): nullable String;
 
     method Parse;
 
     method ParseWhitespace;
     method ParseName;
     method ParseValue;
-    method ParseSpecSymbol(lPosition: Integer): Boolean;
+    method ParseEntity(): nullable String;
     method ParseSymbolData;
     method ParseComment;
     method ParseCData;
@@ -99,9 +99,16 @@ begin
    (C = '_') or (C = ':') or (C = '-') or ((C >='0') and (C <= '9'))); }
 end;
 
-method XmlTokenizer.IsValidSpecSymbol(S: String): Boolean;
+method XmlTokenizer.ResolveEntity(S: String): nullable String;
 begin
-  exit ((S = "&lt;") or (S = "&gt;") or (S = "&amp;") or (S = "&apos;") or (S = "&quot;"))
+  case S of
+    "&lt;": result := "<";
+    "&gt;": result := ">";
+    "&amp;": result := "&";
+    "&apos;": result := "'";
+    "&quot;": result := """";
+  end;
+  {$WARINNG need to handle others, such as &#...; and &#x...;}
 end;
 
 method XmlTokenizer.Parse;
@@ -111,79 +118,80 @@ begin
     and (fData[fPos] <> #0) and (not(CharIsWhitespace(fData[fPos]))) and (fData[fPos] <> '<') then ParseSymbolData()
   else
     if CharIsNameStart(fData[fPos]) then ParseName
-    else
-      if (fData.Length >= fPos+XmlConsts.TAG_DECL_CLOSE.Length) and (new String(fData,fPos,XmlConsts.TAG_DECL_CLOSE.Length) = XmlConsts.TAG_DECL_CLOSE) then begin
-        fLength := XmlConsts.TAG_DECL_CLOSE.Length;
-        Value:=nil;
-        Token := XmlTokenKind.DeclarationEnd;
-      end
-      else
-        case fData[fPos] of
-          ' ', #9, #13, #10: ParseWhitespace;
-          '=' : begin
+    else if (fData.Length >= fPos+XmlConsts.TAG_DECL_CLOSE.Length) and (new String(fData,fPos,XmlConsts.TAG_DECL_CLOSE.Length) = XmlConsts.TAG_DECL_CLOSE) then begin
+      fLength := XmlConsts.TAG_DECL_CLOSE.Length;
+      Value:=nil;
+      Token := XmlTokenKind.DeclarationEnd;
+    end
+    else case fData[fPos] of
+      ' ', #9, #13, #10: ParseWhitespace;
+      '=' : begin
+        fLength := 1;
+        Value := nil;
+        Token := XmlTokenKind.AttributeSeparator;
+      end;
+      '"' : ParseValue;
+      '''' : ParseValue;
+      '<': if (fData.Length >= fPos+1) then
+        case fData[fPos+1] of
+          '/': begin
+              fLength := 2;
+              Value := nil;
+              Token := XmlTokenKind.TagElementEnd;
+            end;
+          '!': if (fData.Length>fPos+4) and (fData[fPos+2] = '-') and (fData[fPos+3] = '-') then
+                 ParseComment//comment
+               else if (fData.Length>fPos+9)and (new String(fData,fPos+2,7) = "[CDATA[") then ParseCData
+               else begin
+                 Token := XmlTokenKind.SyntaxError;
+                 fPos := fPos+1;
+                 Value := "Unknown token";
+               end;
+          '?': begin
+            if (fData.Length >= fPos+XmlConsts.TAG_DECL_OPEN.Length) and
+              (new String(fData,fPos,XmlConsts.TAG_DECL_OPEN.Length)  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+XmlConsts.TAG_DECL_OPEN.Length])) then begin
+              if fPos = 0 then begin Token := XmlTokenKind.DeclarationStart;
+                fLength:= XmlConsts.TAG_DECL_OPEN.Length;
+                Value := nil;
+              end
+              else begin
+                Token := XmlTokenKind.SyntaxError;
+                Value := "No information or whitespaces before the declaration are allowed";
+                //raise new Exception('No information or whitespaces before the declaration are allowed');
+              end
+            end
+            else begin
+              Token := XmlTokenKind.ProcessingInstruction;
+              fLength := 2;
+              Value :="";
+            end;
+          end;
+          else begin
             fLength := 1;
             Value := nil;
-            Token := XmlTokenKind.AttributeSeparator;
+            Token := XmlTokenKind.TagOpen;
           end;
-          '"' : ParseValue;
-          '''' : ParseValue;
-          '<': if (fData.Length >= fPos+1) then
-            case fData[fPos+1] of
-              '/': begin
-                fLength := 2;
-                Value := nil;
-                Token := XmlTokenKind.TagElementEnd;
-              end;
-              '!': if (fData.Length>fPos+4) and (fData[fPos+2] = '-') and (fData[fPos+3] = '-') then ParseComment//comment
-                else if (fData.Length>fPos+9)and (new String(fData,fPos+2,7) = "[CDATA[") then ParseCData
-                  else begin
-                    Token := XmlTokenKind.SyntaxError;
-                    fPos := fPos+1;
-                    Value := "Unknown token";
-                  end;
-              '?': begin
-                if (fData.Length >= fPos+XmlConsts.TAG_DECL_OPEN.Length) and
-                  (new String(fData,fPos,XmlConsts.TAG_DECL_OPEN.Length)  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+XmlConsts.TAG_DECL_OPEN.Length])) then begin
-                  if fPos = 0 then begin Token := XmlTokenKind.DeclarationStart;
-                    fLength:= XmlConsts.TAG_DECL_OPEN.Length;
-                    Value := nil;
-                  end
-                  else begin
-                    Token := XmlTokenKind.SyntaxError;
-                    Value := "No information or whitespaces before the declaration are allowed";
-                    //raise new Exception('No information or whitespaces before the declaration are allowed');
-                  end
-                end
-                else begin
-                  Token := XmlTokenKind.ProcessingInstruction;
-                  fLength := 2;
-                  Value :="";
-                end;
-              end;
-              else begin
-                fLength := 1;
-                Value := nil;
-                Token := XmlTokenKind.TagOpen;
-              end;
-            end;
-            '>': begin
-              fLength := 1;
-              Value := nil;
-              Token := XmlTokenKind.TagClose;
-            end;
-            '/': if (fData.Length >= (fPos+1)) and (fData[fPos+1] = '>') then begin
+        end;
+        '>': begin
+            fLength := 1;
+            Value := nil;
+            Token := XmlTokenKind.TagClose;
+          end;
+        '/': begin
+            if (fData.Length >= (fPos+1)) and (fData[fPos+1] = '>') then begin
               fLength := 2;
               Value := nil;
               Token := XmlTokenKind.EmptyElementEnd;
-              end
-              else Token := XmlTokenKind.SlashSymbol;
-            #0 : Token := XmlTokenKind.EOF;
-            else begin
-              fLength := 0;
-              Value := "Unexpected token "+fData[fPos];
-              Token := XmlTokenKind.SyntaxError;
-            end;
+            end
+            else Token := XmlTokenKind.SlashSymbol;
           end;
+        #0: Token := XmlTokenKind.EOF;
+        else begin
+          fLength := 0;
+          Value := "Unexpected token "+fData[fPos];
+          Token := XmlTokenKind.SyntaxError;
+        end;
+      end;
 end;
 
 method XmlTokenizer.Next: Boolean;
@@ -280,14 +288,17 @@ begin
     var ch := fData[fPos];
     if ch = lQuoteChar then break;
     case ch of
-      '>':  lValue.Append('&gt;');
+      '>': lValue.Append('&gt;');
       //'"' : if ch lQuoteChar then lValue.Append('&quot;') else lValue.Append(ch);
       //'''': if ch lQuoteChar then lValue.Append('apos') else lValue.Append(ch);
-      '&':  if ParseSpecSymbol(fPos) then begin
-          lValue.Append(new String(fData, fPos, fLength+1));
-          fPos := fPos + fLength
-        end
-        else  exit;
+      '&' : begin
+          var lEntity := ParseEntity();
+          if assigned(lEntity) then begin
+            lValue.Append(lEntity);
+          end
+          else
+            lValue.Append("&");
+        end;
       #13: begin
         if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
         fRowStart := fPos + 1;
@@ -320,38 +331,37 @@ begin
   Token := XmlTokenKind.AttributeValue;
 end;
 
-method XmlTokenizer.ParseSpecSymbol(lPosition: Integer): Boolean;
+method XmlTokenizer.ParseEntity: nullable String;
 begin
-  if (fData[lPosition] <> '&') or (fData.Length = lPosition+1)  then exit(false);
-  var lPos := lPosition;
-  inc(lPos);// := fPos+1;
-  var specSymbol := "&";
-  while fData[lPos] <> ';' do begin
-    if fData[lPos] =  #0 then begin
-      fPos := lPos;
-      Token := XmlTokenKind.EOF;
-      exit(false);
+  if (fData[fPos] <> '&') or (fData.Length = fPos+1) then exit nil;
+
+  var lPos := fPos;
+  inc(lPos);
+  var lEntity := new StringBuilder("&");
+  while lPos < fData.Length do begin
+    var ch := fData[lPos];
+    case ch of
+      ';': begin
+          lEntity.Append(ch);
+          fPos := lPos;
+          break;
+        end;
+      'a'..'z','A'..'Z': begin
+          lEntity.Append(ch);
+        end;
+      else begin
+        exit nil;
+      end;
     end;
-    if fData[lPos] = '<' then begin
-      fPos := lPos;
-      Token := XmlTokenKind.SyntaxError;
-      Value := "';' expected but '<' found";
-      exit(false);
-    end;
-    specSymbol := specSymbol+fData[lPos];
     inc(lPos);
   end;
-  specSymbol := specSymbol+fData[lPos];
-  if IsValidSpecSymbol(specSymbol) then Value := Value + specSymbol
-  else begin
-    Token := XmlTokenKind.SyntaxError;
-    fPos := lPosition;
-    Value := "Symbol "+specSymbol+" is unknown";
-    exit(false);
-  end;
-  fLength := lPos - lPosition;
-  //fPos := lPosition;
-  result := true;
+
+  var lEntityString := lEntity.ToString();
+  var lResolvedEntity := ResolveEntity(lEntityString);
+  if assigned(lResolvedEntity) then
+    result := lResolvedEntity
+  else
+    result := lEntityString;
 end;
 
 method XmlTokenizer.ParseSymbolData;
@@ -361,25 +371,32 @@ begin
   var lPos: Integer;
   while ((fData[lPosition] <> '<') and (fData[lPosition] <> #0)) do begin
     case fData[lPosition] of
-      '>' :  Value := Value+'&gt;';
-      '&' :  if ParseSpecSymbol(lPosition) then lPosition := lPosition + fLength
-        else exit;
-      #13 : begin
-        if (fData.length<lPosition+1) then begin
-          Token := XmlTokenKind.EOF;
-          fPos  := lPosition +1;
-          exit;
-        end
-        else if fData[lPosition + 1] = #10 then
-          inc(lPosition);
-          lPos := lPosition+1;
-          while CharIsWhitespace(fData[lPos]) do inc(lPos);
-          if (fData[lPos] <> '<') and (fData[lPos] <> #0) then begin
-            fRowStart := lPosition + 1;
-            inc(fRow);
-            Value := Value+fData[lPosition-1]+fData[lPosition];
+      '>' :Value := Value+'&gt;';
+      '&': begin
+          var lEntity := ParseEntity();
+          if assigned(lEntity) then begin
+            Value := Value+lEntity;
+            continue; // don't inc
           end
-      end;
+          else
+            Value := Value+"&";
+        end;
+      #13 : begin
+          if (fData.length<lPosition+1) then begin
+            Token := XmlTokenKind.EOF;
+            fPos  := lPosition +1;
+            exit;
+          end
+          else if fData[lPosition + 1] = #10 then
+            inc(lPosition);
+            lPos := lPosition+1;
+            while CharIsWhitespace(fData[lPos]) do inc(lPos);
+            if (fData[lPos] <> '<') and (fData[lPos] <> #0) then begin
+              fRowStart := lPosition + 1;
+              inc(fRow);
+              Value := Value+fData[lPosition-1]+fData[lPosition];
+            end
+        end;
       #10: begin
         lPos := lPosition+1;
           while CharIsWhitespace(fData[lPos]) do inc(lPos);
