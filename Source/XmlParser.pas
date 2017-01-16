@@ -317,7 +317,6 @@ begin
     Expected(XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName);
   end;
   var lFormat := false;
-  var NeedLineBreak := false;
   if (Tokenizer.Token = XmlTokenKind.TagClose) or (Tokenizer.Token = XmlTokenKind.EmptyElementEnd) then begin
     //check prefix for LocalName
     var aNamespace: XmlNamespace := nil;
@@ -353,7 +352,7 @@ begin
         end
         else begin
           if lFormat and (Tokenizer.Token not in [XmlTokenKind.Whitespace, XmlTokenKind.SymbolData]) then begin
-            result.AddNode(new XmlText(result, Value := fLineBreak));  NeedLineBreak := false;// end;
+            result.AddNode(new XmlText(result, Value := fLineBreak));// end;
             result.AddNode(new XmlText(result, Value:=aIndent));
           end;
           case Tokenizer.Token of
@@ -376,7 +375,6 @@ begin
               if Tokenizer.Value.Trim <> "" then
                 if (WSValue <>"") then begin
                   result.AddNode(new XmlText(result, Value := WSValue));
-                  NeedLineBreak := false;
                 end;
               result.AddNode(new XmlText(result, Value := Tokenizer.Value, StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column));//add node;
               WSValue := "";
