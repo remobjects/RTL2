@@ -13,6 +13,14 @@ type
       Row := aRow;
       Column := aColumn;
     end;
+    constructor(aMessage: String);
+    begin
+      {$IF TOFFEE}
+      inherited initWithName('SugarException') reason(aMessage) userInfo(nil);
+      {$ELSE}
+      inherited constructor(aMessage);
+      {$ENDIF}
+    end;
     property Row: Integer;
     property Column: Integer;
   end;

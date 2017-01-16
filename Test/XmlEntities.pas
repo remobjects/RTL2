@@ -9,7 +9,7 @@ type
 
     method Parsing;
     begin
-      var xml := XmlDocument.FromString('<foo attr="test &amp; test>');
+      var xml := XmlDocument.FromString('<foo attr="test &amp; test"/>');
       writeLn(xml);
     end;
     

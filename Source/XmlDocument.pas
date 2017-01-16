@@ -31,7 +31,7 @@ type
 
     [ToString]
     method ToString(): String; override;
-    method ToString(aSaveFormatted: Boolean): String;
+    method ToString(aSaveFormatted: Boolean; aConvertEntities: Boolean): String;
 
     method SaveToFile(aFileName: not nullable File);
     method SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
@@ -68,6 +68,7 @@ type
     method GetNodeType : XmlNodeType;
   protected
     method CharIsWhitespace(C: String): Boolean;
+    method ConvertEntity(S: String): String;
   public
     constructor (aParent: XmlNode := nil);
     property Parent: nullable XmlNode read fParent;
@@ -79,7 +80,7 @@ type
     property EndColumn: Integer;
     [ToString]
     method ToString(): String; override;
-    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean): String;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aConvertEntities: Boolean): String;
   end;
 
   XmlElement = public class(XmlNode)
@@ -156,7 +157,7 @@ type
     method RemoveNamespace(aPrefix: not nullable String);
     [ToString]
     method ToString(): String; override;
-    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean): String;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aConvertEntities: Boolean): String;
   end;
 
   XmlAttribute = public class(XmlNode)
@@ -180,7 +181,7 @@ type
     property Value: not nullable String read GetValue write SetValue;
     [ToString]
     method ToString(): String; override;
-    method ToString(aFormatInsideTags: Boolean): String;
+    method ToString(aFormatInsideTags: Boolean; aConvertEntities: Boolean): String;
   end;
 
   XmlComment = public class(XmlNode)
@@ -312,10 +313,10 @@ end;
 
 method XmlDocument.ToString(): String;
 begin
-  result := ToString(false);
+  result := ToString(false, false);
 end;
 
-method XmlDocument.ToString(aSaveFormatted: Boolean): String;
+method XmlDocument.ToString(aSaveFormatted: Boolean; aConvertEntities: Boolean): String;
 begin
   result:="";
   var aFormatInsideTags := false;
@@ -341,23 +342,21 @@ begin
       aFormatInsideTags := true;
     end;
     for each aNode in fNodes do
-      result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)
+      result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags, aConvertEntities)
   end
   else begin
     if (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then aFormatInsideTags := true;
     if (Version <> nil) and fFormatOptions.NewLineForElements then result := result + fLineBreak;
       for each aNode in fNodes do begin
         if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
-          result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)+fLineBreak;
+          result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags, aConvertEntities)+fLineBreak;
       end;
   end;
 end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File);
 begin
-  if not(aFileName.Exists) then
-    FileUtils.Create(aFileName.FullPath);
-  FileUtils.WriteText(aFileName.FullPath, self.ToString);
+  FileUtils.WriteText(aFileName.FullPath, self.ToString(false, true));
 end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
@@ -368,7 +367,7 @@ begin
     XmlNewLineSymbol.LF: fLineBreak := #10;
     XmlNewLineSymbol.CRLF: fLineBreak := #13#10;
   end;
-  FileUtils.WriteText(aFileName.FullPath, self.ToString(true));
+  FileUtils.WriteText(aFileName.FullPath, self.ToString(true, true));
 end;
 
 
@@ -418,10 +417,10 @@ end;
 
 method XmlNode.ToString: String;
 begin
-  result := ToString(false, false);
+  result := ToString(false, false, false);
 end;
 
-method XmlNode.ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean): String;
+method XmlNode.ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aConvertEntities: Boolean): String;
 begin
   result := "";
   case NodeType of
@@ -439,7 +438,7 @@ begin
         result := result + " ";
       result := result + str+"?>";
     end;
-    XmlNodeType.Element: result := XmlElement(self).ToString(aSaveFormatted, aFormatInsideTags);
+    XmlNodeType.Element: result := XmlElement(self).ToString(aSaveFormatted, aFormatInsideTags, aConvertEntities);
   end;
 end;
 
@@ -447,6 +446,16 @@ method XmlNode.CharIsWhitespace(C: String): Boolean;
 begin
    exit (C = ' ') or (C = #13) or (C = #10) or (C = #9);
 end;
+
+method XmlNode.ConvertEntity(S: String): String;
+begin
+  result := S.Replace('&',"&amp;");
+  result := result.Replace('>',"&gt;");
+  result := result.Replace('<',"&lt;");
+  result := result.Replace('''',"&apos");
+  result := result.Replace('"',"&quot");
+end;
+
 { XmlElement }
 constructor XmlElement(aParent: XmlNode);
 begin
@@ -765,10 +774,10 @@ end;
 
 method xmlElement.ToString(): String;
 begin
-  result := ToString(false, false);
+  result := ToString(false, false, false);
 end;
 
-method XmlElement.ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean): String;
+method XmlElement.ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aConvertEntities: Boolean): String;
 begin
   var str: String;
   result := "<";
@@ -782,7 +791,7 @@ begin
     result := result+str;
   end;
   for each attr in Attributes do begin
-    str := attr.ToString(aFormatInsideTags);
+    str := attr.ToString(aFormatInsideTags, aConvertEntities);
     if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
       result := result+" ";
     result := result+str;
@@ -824,10 +833,10 @@ begin
       if (aNode.NodeType = XmlNodeType.Text) then
         if (XmlText(aNode).Value.Trim <> "") then begin
           if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i-1]).Value.Trim = "") then
-            result := result + fNodes[i-1].ToString(aSaveFormatted, aFormatInsideTags);
-          result := result+ aNode.ToString(aSaveFormatted, aFormatInsideTags);
+            result := result + fNodes[i-1].ToString(aSaveFormatted, aFormatInsideTags, aConvertEntities);
+          result := result+ aNode.ToString(aSaveFormatted, aFormatInsideTags, aConvertEntities);
           if (i < fNodes.Count-1) and (fNodes[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i+1]).Value.Trim = "") then begin
-            str := fNodes[i+1].ToString(aSaveFormatted, aFormatInsideTags);
+            str := fNodes[i+1].ToString(aSaveFormatted, aFormatInsideTags, aConvertEntities);
             if str.IndexOf(Document.fLineBreak) > -1 then
               str := str.Substring(0, str.LastIndexOf(Document.fLineBreak));
             result := result + str;
@@ -835,15 +844,15 @@ begin
         end;
       if (aNode.NodeType <> XmlNodeType.Text) then
         if lFormat then
-          result := result + Document.fLineBreak + indent + aNode.ToString(aSaveFormatted, aFormatInsideTags)
-        else result := result + aNode.tostring(aSaveFormatted, aFormatInsideTags);
+          result := result + Document.fLineBreak + indent + aNode.ToString(aSaveFormatted, aFormatInsideTags, aConvertEntities)
+        else result := result + aNode.tostring(aSaveFormatted, aFormatInsideTags, aConvertEntities);
       inc(i);
     end;
   end
   /******/
   else
     for each aNode in fNodes do
-      result := result + aNode.ToString(aSaveFormatted, aFormatInsideTags);
+      result := result + aNode.ToString(aSaveFormatted, aFormatInsideTags, aConvertEntities);
   if IsEmpty = false then begin
     if (fNodes.Count = 0) and (aFormatInsideTags) and (Document.fFormatOptions.EmptyTagSyle = XmlTagStyle.PreferSingleTag) then
       if Document.fFormatOptions.SpaceBeforeSlashInEmptyTags and not (CharIsWhitespace(result[result.Length-1])) then
@@ -925,10 +934,10 @@ end;
 
 method XmlAttribute.ToString(): String;
 begin
-  result := ToString(false);
+  result := ToString(false, false);
 end;
 
-method XmlAttribute.ToString(aFormatInsideTags: Boolean): String;
+method XmlAttribute.ToString(aFormatInsideTags: Boolean; aConvertEntities: Boolean): String;
 begin
   result := "";
   if (Document <> nil) and not(aFormatInsideTags) and (WSName <> nil) then result := result + WSName+"="
@@ -946,8 +955,13 @@ begin
       if &Namespace<>nil then result := result+&Namespace.Prefix+":";
       result := result + LocalName+'=';
     end;
-  if (Document <> nil) and not(aFormatInsideTags) and (WSValue <> nil) then result := result + WSValue
-  else result := result +'"'+Value+'"';
+  if (Document <> nil) and not(aFormatInsideTags) and (WSValue <> nil) then
+    if aConvertEntities then  result := result+ ConvertEntity(WSValue)
+    else result := result + WSValue
+  else
+    if aConvertEntities then 
+      result := result + '"'+ ConvertEntity(Value)+'"'
+    else result := result +'"'+Value+'"';
 end;
 
 { XmlNamespace}

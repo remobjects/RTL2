@@ -108,7 +108,7 @@ begin
     "&apos;": result := "'";
     "&quot;": result := """";
   end;
-  {$WARINNG need to handle others, such as &#...; and &#x...;}
+  {$WARNING need to handle others, such as &#...; and &#x...;}
 end;
 
 method XmlTokenizer.Parse;
