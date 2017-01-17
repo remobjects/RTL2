@@ -359,7 +359,7 @@ end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File);
 begin
-  FileUtils.WriteText(aFileName.FullPath, self.ToString(false));
+  FileUtils.WriteText(aFileName.FullPath, self.ToString(false), RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding));
 end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
@@ -961,7 +961,7 @@ begin
   var ent, res : String;
   var str := aValue;
   while (i > -1) and (j > -1) do begin
-    if j > i then begin 
+    if j > i then begin
       ent := str.Substring(i, j-i+1);
       res := ResolveEntity(ent);
       if res <> nil then aValue := aValue.Replace(ent, res);

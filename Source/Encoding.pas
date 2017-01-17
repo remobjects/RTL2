@@ -107,40 +107,43 @@ end;
 
 class method Encoding.GetEncoding(aName: not nullable String): nullable Encoding;
 begin
-  ArgumentNullException.RaiseIfNil(aName, "Name");
-  {$IF COOPER}
-  exit java.nio.charset.Charset.forName(aName);
-  {$ELSEIF WINDOWS_PHONE}
-  result := CustomEncoding.ForName(aName);
+  try
+    {$IF COOPER}
+    exit java.nio.charset.Charset.forName(aName);
+    {$ELSEIF WINDOWS_PHONE}
+    result := CustomEncoding.ForName(aName);
 
-  if result = nil then
+    if result = nil then
+      result := System.Text.Encoding.GetEncoding(aName);
+    {$ELSEIF ECHOES}
     result := System.Text.Encoding.GetEncoding(aName);
-  {$ELSEIF ECHOES}
-  result := System.Text.Encoding.GetEncoding(aName);
-  {$ELSEIF ISLAND}
-  if aName.ToUpper() not in ['US-ASCII', 'ASCII','UTF-ASCII','UTF8','UTF-8','UTF16','UTF-16','UTF32','UTF-32','UTF16LE','UTF-16LE','UTF32LE','UTF-32LE','UTF16BE','UTF-16BE','UTF32BE','UTF-32BE'] then
-    raise new Exception(String.Format('Unknown Encoding "{0}"', aName));
-  result := new Encoding(aName.ToUpper);
-  {$ELSEIF TOFFEE}
-  var lEncoding := NSStringEncoding.UTF8StringEncoding;
-  case aName of
-    'UTF8','UTF-8': lEncoding := NSStringEncoding.UTF8StringEncoding;
-    'UTF16','UTF-16': lEncoding := NSStringEncoding.UTF16StringEncoding;
-    'UTF32','UTF-32': lEncoding := NSStringEncoding.UTF32StringEncoding;
-    'UTF16LE','UTF-16LE': lEncoding := NSStringEncoding.UTF16LittleEndianStringEncoding;
-    'UTF16BE','UTF-16BE': lEncoding := NSStringEncoding.UTF16BigEndianStringEncoding;
-    'UTF32LE','UTF-32LE': lEncoding := NSStringEncoding.UTF32LittleEndianStringEncoding;
-    'UTF32BE','UTF-32BE': lEncoding := NSStringEncoding.UTF32BigEndianStringEncoding;
-    'US-ASCII', 'ASCII','UTF-ASCII': lEncoding := NSStringEncoding.ASCIIStringEncoding;
-    else begin
-      var lH := CFStringConvertIANACharSetNameToEncoding(bridge<CFStringRef>(aName));
-      if lH = kCFStringEncodingInvalidId then
-        raise new ArgumentException();
-      lEncoding := CFStringConvertEncodingToNSStringEncoding(lH) as NSStringEncoding;
+    {$ELSEIF ISLAND}
+    if aName.ToUpper() not in ['US-ASCII', 'ASCII','UTF-ASCII','UTF8','UTF-8','UTF16','UTF-16','UTF32','UTF-32','UTF16LE','UTF-16LE','UTF32LE','UTF-32LE','UTF16BE','UTF-16BE','UTF32BE','UTF-32BE'] then
+      raise new Exception(String.Format('Unknown Encoding "{0}"', aName));
+    result := new Encoding(aName.ToUpper);
+    {$ELSEIF TOFFEE}
+    var lEncoding := NSStringEncoding.UTF8StringEncoding;
+    case aName of
+      'UTF8','UTF-8': lEncoding := NSStringEncoding.UTF8StringEncoding;
+      'UTF16','UTF-16': lEncoding := NSStringEncoding.UTF16StringEncoding;
+      'UTF32','UTF-32': lEncoding := NSStringEncoding.UTF32StringEncoding;
+      'UTF16LE','UTF-16LE': lEncoding := NSStringEncoding.UTF16LittleEndianStringEncoding;
+      'UTF16BE','UTF-16BE': lEncoding := NSStringEncoding.UTF16BigEndianStringEncoding;
+      'UTF32LE','UTF-32LE': lEncoding := NSStringEncoding.UTF32LittleEndianStringEncoding;
+      'UTF32BE','UTF-32BE': lEncoding := NSStringEncoding.UTF32BigEndianStringEncoding;
+      'US-ASCII', 'ASCII','UTF-ASCII': lEncoding := NSStringEncoding.ASCIIStringEncoding;
+      else begin
+        var lH := CFStringConvertIANACharSetNameToEncoding(bridge<CFStringRef>(aName));
+        if lH = kCFStringEncodingInvalidId then
+          raise new ArgumentException();
+        lEncoding := CFStringConvertEncodingToNSStringEncoding(lH) as NSStringEncoding;
+      end;
     end;
+    result := NSNumber.numberWithUnsignedInt(lEncoding);
+    {$ENDIF}
+  except
+    result := nil;
   end;
-  result := NSNumber.numberWithUnsignedInt(lEncoding);
-  {$ENDIF}
 end;
 
 method Encoding.GetName: not nullable String;

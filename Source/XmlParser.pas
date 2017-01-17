@@ -137,11 +137,9 @@ begin
     end;
     if aXmlAttr.LocalName = "encoding" then begin
       //check encoding
-      try
-        Encoding.GetEncoding(aXmlAttr.Value);
-      except
-        raise new XmlException ("Unknown encoding", aXmlAttr.EndLine, aXmlAttr.EndColumn);
-      end;
+      var lEncoding := Encoding.GetEncoding(aXmlAttr.Value);
+      if not assigned(lEncoding) then
+        raise new XmlException(String.Format("Unknown encoding '{0}'", aXmlAttr.Value), aXmlAttr.EndLine, aXmlAttr.EndColumn);
       result.Encoding := aXmlAttr.Value;
       Expected(XmlTokenKind.DeclarationEnd, XmlTokenKind.ElementName);
       if Tokenizer.Token = XmlTokenKind.ElementName then begin
