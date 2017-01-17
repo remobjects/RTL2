@@ -956,21 +956,21 @@ end;
 
 method XmlAttribute.SetValue(aValue: not nullable String);
 begin
-  /*var i := aValue.IndexOf('&');
+  var i := aValue.IndexOf('&');
   var j := aValue.IndexOf(';');
-  var ent : String;
+  var ent, res : String;
   var str := aValue;
   while (i > -1) and (j > -1) do begin
     if j > i then begin 
-      str := str.Substring(i, j-i+2);
-      ent := ResolveEntity(str);
-      if ent <> nil then aValue.Replace(str, ent);
+      ent := str.Substring(i, j-i+1);
+      res := ResolveEntity(ent);
+      if res <> nil then aValue := aValue.Replace(ent, res);
     end;
-      str := str.Substring(i+1, aValue.Length - i-1);
-      i := str.IndexOf('&');
-      j := str.IndexOf(';');
+    str := str.Substring(j+1, str.Length - j-1);
+    i := str.IndexOf('&');
+    j := str.IndexOf(';');
   end;
-*/
+
   WSValue := nil;
   WSright := nil;
   if aValue.Length <> aValue.Trim.Length then begin
