@@ -381,15 +381,19 @@ method XmlTokenizer.ParseSymbolData;
 begin
   Value := "";
   var lPosition := fPos;
+  var start := fPos;
   var lPos: Integer;
   while ((fData[lPosition] <> '<') and (fData[lPosition] <> #0)) do begin
     case fData[lPosition] of
       '>' :Value := Value+'&gt;';
       '&': begin
+          fPos := lPosition;
           var lEntity := ParseEntity();
           if assigned(lEntity) then begin
             Value := Value+lEntity;
-            continue; // don't inc
+            lPosition := fPos;
+            fPos := start;
+            //continue; // don't inc
           end
           else
             Value := Value+"&";
@@ -423,15 +427,10 @@ begin
     end;
     inc(lPosition);
   end;
-  //fLength := lPosition-fPos;
-  //if CharIsWhitespace(fData[lPosition-1]) then begin
-    while CharIsWhitespace(fData[lPosition-1]) do
-      lPosition := lPosition -1;
-    fLength := lPosition - fPos; //Value.Trim.Length;
-    Value := Value.Trim;
-  //end;
-  {if fData[lPosition-1] = #10 then  fLength := fLength-1;
-  if fData[lPosition-2] = #13 then fLength := fLength-1;}
+  while CharIsWhitespace(fData[lPosition-1]) do
+    lPosition := lPosition -1;
+  fLength := lPosition - fPos; //Value.Trim.Length;
+  Value := Value.Trim;
   Token := XmlTokenKind.SymbolData;
 end;
 
