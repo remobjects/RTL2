@@ -16,8 +16,9 @@
         <EntitlementsFile>Entitlements.entitlements</EntitlementsFile>
         <DefaultUses>Foundation;RemObjects.Elements.Linq;RemObjects.Elements.RTL</DefaultUses>
         <DebugZombieEnabled>True</DebugZombieEnabled>
+        <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
         <Optimize>False</Optimize>
         <OutputPath>bin\Debug\</OutputPath>
         <GenerateDebugInfo>True</GenerateDebugInfo>
@@ -25,7 +26,7 @@
         <CaptureConsoleOutput>False</CaptureConsoleOutput>
         <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
         <Optimize>true</Optimize>
         <OutputPath>.\bin\Release</OutputPath>
         <GenerateDebugInfo>True</GenerateDebugInfo>
@@ -36,7 +37,9 @@
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Foundation"/>
-        <Reference Include="libEUnit"/>
+        <Reference Include="libEUnit">
+            <HintPath>..\..\git\EUnit\bin\Debug\macOS\libEUnit.fx</HintPath>
+        </Reference>
         <Reference Include="libxml2"/>
         <Reference Include="libToffee"/>
         <Reference Include="rtl"/>

@@ -16,7 +16,7 @@ type
       var xml2 := XmlDocument.FromString('<foo attr="test &amp; &bad; & bad test" />');
       Assert.AreEqual(xml2.Root.Attribute["attr"].Value, "test & &bad; & bad test");
       Assert.AreEqual(xml2.Root.Attribute["attr"].ToString, 'attr="test &amp; &amp;bad; &amp; bad test"');
-      Assert.AreEqual(xml2, '<foo attr="test &amp; &amp;bad; &amp; bad test" />');
+      Assert.AreEqual(xml2.ToString, '<foo attr="test &amp; &amp;bad; &amp; bad test" />');
     end;
 
   end;
