@@ -69,6 +69,7 @@ type
   protected
     method CharIsWhitespace(C: String): Boolean;
     method ConvertEntity(S: String): String;
+    method ResolveEntity(S: String): nullable String;
   public
     constructor (aParent: XmlNode := nil);
     property Parent: nullable XmlNode read fParent;
@@ -161,6 +162,8 @@ type
   end;
 
   XmlAttribute = public class(XmlNode)
+  unit
+    WSleft, WSright: String;
   private
     fLocalName: String;
     fValue: String;
@@ -456,6 +459,17 @@ begin
   result := result.Replace('"',"&quot");
 end;
 
+method XmlNode.ResolveEntity(S: String): String;
+begin
+  case S of
+    "&lt;": result := "<";
+    "&gt;": result := ">";
+    "&amp;": result := "&";
+    "&apos;": result := "'";
+    "&quot;": result := """";
+  end;
+end;
+
 { XmlElement }
 constructor XmlElement(aParent: XmlNode);
 begin
@@ -549,6 +563,7 @@ begin
   end
   else fNodes.Add(aElement);
   fElements.Add(aElement);
+  fIsEmpty := false;
 end;
 
 method XmlElement.AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
@@ -573,6 +588,7 @@ begin
     end
     else fNodes.Insert(i,aElement);
   end;
+  fIsEmpty := false;
 end;
 
 method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
@@ -616,6 +632,7 @@ begin
     else fNodes.Remove(aElement);
   end
   else fNodes.Remove(aElement);
+  if fNodes.count = 0 then fIsEmpty := true;
   aElement.fParent := nil;
 end;
 
@@ -791,7 +808,10 @@ begin
     result := result+str;
   end;
   for each attr in Attributes do begin
-    str := attr.ToString(aFormatInsideTags);
+    str := "";
+    if attr.WSleft <> nil then str := attr.WSleft;
+    str := str + attr.ToString(aFormatInsideTags);
+    if attr.WSright <> nil then str := str + attr.WSright;
     if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
       result := result+" ";
     result := result+str;
@@ -886,8 +906,8 @@ constructor XmlAttribute(aLocalName: not nullable String; aNamespace: nullable X
 begin
   fLocalName := aLocalName;
   fNamespace := aNamespace;
-  fValue := aValue;
   inherited constructor(nil);
+  setValue(aValue);
   fNodeType := XmlNodeType.Attribute;
 end;
 
@@ -921,15 +941,48 @@ end;
 method XmlAttribute.SetLocalName(aValue: not nullable String);
 begin
   WSName := nil;
-  if aValue.Length <> aValue.Trim.Length then WSName := aValue;
+  WSleft := nil;
+  if aValue.Length <> aValue.Trim.Length then begin
+    WSleft := "";
+    var i := 0;
+    while (i < aValue.Length) and CharIsWhitespace(aValue[i])  do begin
+      WSleft := WSleft + aValue[i];
+      inc(i);
+    end;
+    WSName := aValue.Substring(i,aValue.Length-i);
+  end;
   fLocalName := aValue;
 end;
 
 method XmlAttribute.SetValue(aValue: not nullable String);
 begin
-  fValue := aValue;
+  /*var i := aValue.IndexOf('&');
+  var j := aValue.IndexOf(';');
+  var ent : String;
+  var str := aValue;
+  while (i > -1) and (j > -1) do begin
+    if j > i then begin 
+      str := str.Substring(i, j-i+2);
+      ent := ResolveEntity(str);
+      if ent <> nil then aValue.Replace(str, ent);
+    end;
+      str := str.Substring(i+1, aValue.Length - i-1);
+      i := str.IndexOf('&');
+      j := str.IndexOf(';');
+  end;
+*/
   WSValue := nil;
-  if aValue.Length <> aValue.Trim.Length then WSValue := aValue;
+  WSright := nil;
+  if aValue.Length <> aValue.Trim.Length then begin
+    WSright := "";
+    i := aValue.Length -1;
+    while (i > 0) and CharIsWhitespace(aValue[i]) do begin
+      WSright := aValue[i] + WSright;
+      dec(i);
+    end;
+    WSValue := aValue.Substring(0,i+1);
+  end;
+  fValue := aValue;
 end;
 
 method XmlAttribute.ToString(): String;
