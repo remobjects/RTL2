@@ -22,6 +22,13 @@ type
       Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").Value, "Dates & Co");
     end;
 
+    method Numbers;
+    begin
+      var xml := XmlDocument.FromString('<foo attr="test&#x20;&#32;test"/>');
+      Assert.AreEqual(xml.Root.Attribute["attr"].Value, 'test  test');
+      Assert.AreEqual(xml.Root.Attribute["attr"].ToString, 'attr="test  test"');
+    end;
+
     method Encoding;
     begin
       var xml := XmlDocument.FromString('<Test/>');

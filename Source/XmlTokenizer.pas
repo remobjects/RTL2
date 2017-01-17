@@ -16,7 +16,7 @@ type
     method CharIsWhitespace(C: Char): Boolean;
     method CharIsNameStart(C: Char): Boolean;
     method CharIsName(C: Char): Boolean;
-    method ResolveEntity(S: String): nullable String;
+    method ResolveEntity(S: not nullable String): nullable String;
 
     method Parse;
 
@@ -99,16 +99,29 @@ begin
    (C = '_') or (C = ':') or (C = '-') or ((C >='0') and (C <= '9'))); }
 end;
 
-method XmlTokenizer.ResolveEntity(S: String): nullable String;
+method XmlTokenizer.ResolveEntity(S: not nullable String): nullable String;
 begin
-  case S of
+  if S.StartsWith("&#x") then begin
+    var lHex := S.Substring(3, length(S)-4);
+    try
+      var lValue := Convert.HexStringToInt32(lHex);
+      result := chr(lValue);
+    except
+    end;
+  end
+  else if S.StartsWith("&#") then begin
+    var lDec := S.Substring(2, length(S)-3);
+    var lValue := Convert.TryToInt32(lDec);
+    if assigned(lValue) then result := chr(lValue);
+  end
+  else case S of
     "&lt;": result := "<";
     "&gt;": result := ">";
     "&amp;": result := "&";
     "&apos;": result := "'";
     "&quot;": result := """";
   end;
-  {$WARNING need to handle others, such as &#...; and &#x...;}
+  {$WARNING need to other named entities too?}
 end;
 
 method XmlTokenizer.Parse;
@@ -346,7 +359,7 @@ begin
           fPos := lPos;
           break;
         end;
-      'a'..'z','A'..'Z': begin
+      'a'..'z','A'..'Z','0'..'9','#': begin
           lEntity.Append(ch);
         end;
       else begin
