@@ -41,17 +41,20 @@ type
       Assert.AreEqual(xml.Root.Attribute["Name"].ToString, 'Name="don''t you forget about me"'); // dont encode the '
 
       xml.Root.SetAttribute("Name", 'and i said "what about ''breakfast at tiffany''s''?"');
-      Assert.AreEqual(xml.Root.Attribute["Name"].ToString, 'Name="and i said &quot;what about ''breakfast at tiffany''s''?&quot;'); // do encode the " but not the '
+      Assert.AreEqual(xml.Root.Attribute["Name"].ToString, 'Name="and i said &quot;what about ''breakfast at tiffany''s''?&quot;"'); // do encode the " but not the '
 
       var xml3 := XmlDocument.FromString('<Compile ><VirtualFolder>x</VirtualFolder></Compile>');
       xml3.Root.FirstElementWithName("VirtualFolder").Value := "Dates & Co";
       Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").ToString, "<VirtualFolder>Dates &amp; Co</VirtualFolder>");
 
-      xml3.Root.FirstElementWithName("VirtualFolder").Value := "Dates &amp; Co";
-      Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").Value, "<VirtualFolder>Dates &amp;amp; Co</VirtualFolder>");
+     xml3.Root.FirstElementWithName("VirtualFolder").Value := "Dates &amp; Co"; 
+     Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").Value, "Dates &amp; Co"); 
+     Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").ToString, "<VirtualFolder>Dates &amp;amp; Co</VirtualFolder>"); 
+
 
       xml3.Root.FirstElementWithName("VirtualFolder").Value := 'and i said "what about ''breakfast at tiffany''s''?"';
-      Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").Value, '<VirtualFolder>and i said "what about ''breakfast at tiffany''s''?"</VirtualFolder>'); // domt encode either quote
+      Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").Value, 'and i said "what about ''breakfast at tiffany''s''?"'); // domt encode either quote
+      Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").ToString, '<VirtualFolder>and i said "what about ''breakfast at tiffany''s''?"</VirtualFolder>')
     end;
 
   end;

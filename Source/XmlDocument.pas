@@ -69,7 +69,7 @@ type
     method GetNodeType : XmlNodeType;
   protected
     method CharIsWhitespace(C: String): Boolean;
-    method ConvertEntity(S: String): String;
+    method ConvertEntity(S: String; C: nullable Char): String;
   public
     constructor (aParent: XmlNode := nil);
     property Parent: nullable XmlNode read fParent;
@@ -434,7 +434,7 @@ begin
   result := "";
   case NodeType of
     XmlNodeType.Text: begin
-      result := XmlText(self).Value;
+      result := ConvertEntity(XmlText(self).Value, nil);
     end;
     XmlNodeType.Comment: begin
       result := "<!--"+XmlComment(self).Value+"-->";
@@ -456,13 +456,13 @@ begin
    exit (C = ' ') or (C = #13) or (C = #10) or (C = #9);
 end;
 
-method XmlNode.ConvertEntity(S: String): String;
+method XmlNode.ConvertEntity(S: String; C: nullable Char): String;
 begin
   result := S.Replace('&',"&amp;");
   result := result.Replace('>',"&gt;");
   result := result.Replace('<',"&lt;");
-  result := result.Replace('''',"&apos");
-  result := result.Replace('"',"&quot");
+  if (C = '''') then result := result.Replace('''',"&apos");
+  if (C = '"') then result := result.Replace('"',"&quot;");
 end;
 
 { XmlElement }
@@ -989,8 +989,8 @@ begin
       result := result + LocalName+'=';
     end;
   if not(aFormatInsideTags) and (WSValue <> nil) then
-      result := result + WSValue.Replace(Value, ConvertEntity(Value))
-  else result := result + '"'+ ConvertEntity(Value)+'"';
+      result := result + WSValue.Replace(Value, ConvertEntity(Value, WSValue[0]))
+  else result := result + '"'+ ConvertEntity(Value, '"')+'"';
 end;
 
 { XmlNamespace}
