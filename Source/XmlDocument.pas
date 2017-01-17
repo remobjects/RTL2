@@ -31,7 +31,8 @@ type
 
     [ToString]
     method ToString(): String; override;
-    method ToString(aSaveFormatted: Boolean): String;
+    method ToString(aFormatOptions: XmlFormattingOptions): String;
+    method ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
 
     method SaveToFile(aFileName: not nullable File);
     method SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
@@ -316,11 +317,23 @@ end;
 
 method XmlDocument.ToString(): String;
 begin
-  result := ToString(false);
+  result := ToString(false, new XmlFormattingOptions());
 end;
 
-method XmlDocument.ToString(aSaveFormatted: Boolean): String;
+method XmlDocument.ToString(aFormatOptions: XmlFormattingOptions): String;
 begin
+  result := ToString(true, aFormatOptions);
+end;
+
+method XmlDocument.ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
+begin
+  fFormatOptions := aFormatOptions;
+  case aFormatOptions.NewLineSymbol of
+    XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
+    XmlNewLineSymbol.LF: fLineBreak := #10;
+    XmlNewLineSymbol.CRLF: fLineBreak := #13#10;
+  end;
+
   result:="";
   var aFormatInsideTags := false;
   if Version <> nil then result := '<?xml version="'+Version+'"';
@@ -331,16 +344,16 @@ begin
     (aSaveFormatted and
       (fXmlParser <> nil) and
       (
-        (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or
+        (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or
         (
-          (fXmlParser.FormatOptions.WhitespaceStyle = fFormatOptions.WhitespaceStyle) and
-          (fXmlParser.FormatOptions.NewLineForElements = fFormatOptions.NewLineForElements) and
-          (fXmlParser.FormatOptions.Indentation = fFormatOptions.Indentation) and
-          (fXmlParser.FormatOptions.NewLineSymbol = fFormatOptions.NewLineSymbol)
+          (fXmlParser.FormatOptions.WhitespaceStyle = aFormatOptions.WhitespaceStyle) and
+          (fXmlParser.FormatOptions.NewLineForElements = aFormatOptions.NewLineForElements) and
+          (fXmlParser.FormatOptions.Indentation = aFormatOptions.Indentation) and
+          (fXmlParser.FormatOptions.NewLineSymbol = aFormatOptions.NewLineSymbol)
         )
       )
      ) then begin
-    if aSaveFormatted and (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then begin
+    if aSaveFormatted and (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then begin
       aSaveFormatted := false;
       aFormatInsideTags := true;
     end;
@@ -348,8 +361,8 @@ begin
       result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)
   end
   else begin
-    if (fFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then aFormatInsideTags := true;
-    if (Version <> nil) and fFormatOptions.NewLineForElements then result := result + fLineBreak;
+    if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then aFormatInsideTags := true;
+    if (Version <> nil) and aFormatOptions.NewLineForElements then result := result + fLineBreak;
       for each aNode in fNodes do begin
         if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
           result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)+fLineBreak;
@@ -359,18 +372,12 @@ end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File);
 begin
-  FileUtils.WriteText(aFileName.FullPath, self.ToString(false), RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding));
+  FileUtils.WriteText(aFileName.FullPath, self.ToString(false, new XmlFormattingOptions), RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding));
 end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
 begin
-  fFormatOptions := aFormatOptions;
-  case fFormatOptions.NewLineSymbol of
-    XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
-    XmlNewLineSymbol.LF: fLineBreak := #10;
-    XmlNewLineSymbol.CRLF: fLineBreak := #13#10;
-  end;
-  FileUtils.WriteText(aFileName.FullPath, self.ToString(true));
+  FileUtils.WriteText(aFileName.FullPath, self.ToString(true, aFormatOptions));
 end;
 
 
