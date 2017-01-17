@@ -11,7 +11,7 @@
     <DefaultUses>com.remobjects.elements.linq</DefaultUses>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
     <AssemblyName>elements</AssemblyName>
-    <Platform Condition="$(Platform)' == '">AnyCPU</Platform>
+    <Platform Condition="'$(Platform)' == '">AnyCPU</Platform>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration)|$(Platform)' == 'Debug|AnyCPU">
     <Optimize>false</Optimize>

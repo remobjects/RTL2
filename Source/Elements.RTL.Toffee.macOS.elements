@@ -17,7 +17,7 @@
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
     <DeploymentTargetVersion>10.10</DeploymentTargetVersion>
     <CrossPlatform>True</CrossPlatform>
-    <Platform Condition="$(Platform)' == '">AnyCPU</Platform>
+    <Platform Condition="'$(Platform)' == '">AnyCPU</Platform>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration)|$(Platform)' == 'Debug|AnyCPU">
     <Optimize>false</Optimize>
