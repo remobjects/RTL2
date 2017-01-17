@@ -1,4 +1,4 @@
-namespace RemObjects.Elements.RTL;
+﻿namespace RemObjects.Elements.RTL;
 
 interface
 
@@ -70,7 +70,6 @@ type
   protected
     method CharIsWhitespace(C: String): Boolean;
     method ConvertEntity(S: String): String;
-    method ResolveEntity(S: String): nullable String;
   public
     constructor (aParent: XmlNode := nil);
     property Parent: nullable XmlNode read fParent;
