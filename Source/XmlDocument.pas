@@ -162,8 +162,9 @@ type
   end;
 
   XmlAttribute = public class(XmlNode)
-  unit
+  assembly
     WSleft, WSright: String;
+    QuoteChar: Char := '"';
   private
     fLocalName: String;
     fValue: String;
@@ -927,10 +928,7 @@ end;
 
 method XmlAttribute.GetValue: not nullable String;
 begin
-  result := fValue.Trim as not nullable;
-  if ((result[0] = '"') and (result[result.Length-1] = '"') or
-    (result[0] = '''') and (result[result.Length-1] = '''')) then
-    result := result.Substring(1,result.Length-2) as not nullable;
+  result := fValue as not nullable;
 end;
 
 method XmlAttribute.SetLocalName(aValue: not nullable String);
@@ -988,9 +986,8 @@ begin
       if &Namespace<>nil then result := result+&Namespace.Prefix+":";
       result := result + LocalName+'=';
     end;
-  if not(aFormatInsideTags) and (WSValue <> nil) then
-      result := result + WSValue.Replace(Value, ConvertEntity(Value, WSValue[0]))
-  else result := result + '"'+ ConvertEntity(Value, '"')+'"';
+  {$WARNING TODO, preserve whietspace around =}
+  result := result + QuoteChar+ ConvertEntity(Value, QuoteChar)+QuoteChar;
 end;
 
 { XmlNamespace}

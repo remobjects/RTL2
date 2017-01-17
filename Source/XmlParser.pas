@@ -126,7 +126,7 @@ begin
       //check version
       if (aXmlAttr.Value.IndexOf("1.") <> 0) or (aXmlAttr.Value.Length <> 3) or
         ((aXmlAttr.Value.Chars[2] < '0') or (aXmlAttr.Value.Chars[2] > '9')) then
-        raise new XmlException ("Unknown XML version", aXmlAttr.EndLine, aXmlAttr.EndColumn);
+        raise new XmlException(String.Format("Unknown XML version '{0}'", aXmlAttr.Value), aXmlAttr.EndLine, aXmlAttr.EndColumn);
       result.Version := aXmlAttr.Value;
       Expected(XmlTokenKind.DeclarationEnd, XmlTokenKind.ElementName);
       if Tokenizer.Token = XmlTokenKind.ElementName then begin
@@ -257,6 +257,8 @@ begin
   Expected(XmlTokenKind.AttributeValue);
   aValue := Tokenizer.Value;
   aWSValue := WS+aValue;
+  var lQuoteChar := aValue[0];
+  aValue  := aValue.Substring(1, length(aValue)-2); {$WARNING HACK FOR NOW}
   lEndRow := Tokenizer.Row;
   lEndCol := Tokenizer.Column;
   /************/
@@ -276,12 +278,13 @@ begin
       if aLocalName.StartsWith("xmlns:") then
         aLocalName:=aLocalName.Substring("xmlns:".Length, aLocalName.Length- "xmlns:".Length)
       else if aLocalName = "xmlns" then aLocalName:="";
-    result := new XmlNamespace(aParent, Prefix := aLocalName, Url := Url.UrlWithString(aValue.Substring(1,aValue.Length-2)), StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
+    result := new XmlNamespace(aParent, Prefix := aLocalName, Url := Url.UrlWithString(aValue), StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
   end
   else begin
     result := new XmlAttribute(aParent, StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
     XmlAttribute(result).LocalName := aWSName;//aLocalName;
-    XmlAttribute(result).Value := aWSValue;//aValue;
+    XmlAttribute(result).Value := aValue;
+    XmlAttribute(result).QuoteChar := lQuoteChar;
   end;
   //Tokenizer.Next;
 end;

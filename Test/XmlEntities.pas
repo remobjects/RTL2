@@ -47,9 +47,9 @@ type
       xml3.Root.FirstElementWithName("VirtualFolder").Value := "Dates & Co";
       Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").ToString, "<VirtualFolder>Dates &amp; Co</VirtualFolder>");
 
-     xml3.Root.FirstElementWithName("VirtualFolder").Value := "Dates &amp; Co"; 
-     Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").Value, "Dates &amp; Co"); 
-     Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").ToString, "<VirtualFolder>Dates &amp;amp; Co</VirtualFolder>"); 
+     xml3.Root.FirstElementWithName("VirtualFolder").Value := "Dates &amp; Co";
+     Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").Value, "Dates &amp; Co");
+     Assert.AreEqual(xml3.Root.FirstElementWithName("VirtualFolder").ToString, "<VirtualFolder>Dates &amp;amp; Co</VirtualFolder>");
 
 
       xml3.Root.FirstElementWithName("VirtualFolder").Value := 'and i said "what about ''breakfast at tiffany''s''?"';
