@@ -176,7 +176,7 @@ begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
   else if aUrl.Scheme in ["http", "https"] then
-    result := Http.GetXml(new HttpRequest(aUrl));
+    result := XmlDocument.FromString(Http.GetString(new HttpRequest(aUrl)));
   {$ELSEIF TOFFEE}
   var lError: NSError;
   var lXml := new NativeXmlDocument withContentsOfURL(aUrl) options(0) error(var lError);

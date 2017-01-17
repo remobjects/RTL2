@@ -4,7 +4,7 @@
 
 interface
 
-/*{$IF ECHOES OR TOFFEE AND MACOS)}*/{$DEFINE XML}/*{$ENDIF}*/
+{$DEFINE XML}{$DEFINE JSON}
 
 { Handy test URLs: http://httpbin.org, http://requestb.in }
 
