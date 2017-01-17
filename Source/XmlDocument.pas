@@ -1,4 +1,4 @@
-﻿namespace RemObjects.Elements.RTL;
+namespace RemObjects.Elements.RTL;
 
 interface
 
@@ -464,17 +464,6 @@ begin
   result := result.Replace('<',"&lt;");
   result := result.Replace('''',"&apos");
   result := result.Replace('"',"&quot");
-end;
-
-method XmlNode.ResolveEntity(S: String): String;
-begin
-  case S of
-    "&lt;": result := "<";
-    "&gt;": result := ">";
-    "&amp;": result := "&";
-    "&apos;": result := "'";
-    "&quot;": result := """";
-  end;
 end;
 
 { XmlElement }
@@ -963,26 +952,11 @@ end;
 
 method XmlAttribute.SetValue(aValue: not nullable String);
 begin
-  var i := aValue.IndexOf('&');
-  var j := aValue.IndexOf(';');
-  var ent, res : String;
-  var str := aValue;
-  while (i > -1) and (j > -1) do begin
-    if j > i then begin
-      ent := str.Substring(i, j-i+1);
-      res := ResolveEntity(ent);
-      if res <> nil then aValue := aValue.Replace(ent, res);
-    end;
-    str := str.Substring(j+1, str.Length - j-1);
-    i := str.IndexOf('&');
-    j := str.IndexOf(';');
-  end;
-
   WSValue := nil;
   WSright := nil;
   if aValue.Length <> aValue.Trim.Length then begin
     WSright := "";
-    i := aValue.Length -1;
+    var i := aValue.Length -1;
     while (i > 0) and CharIsWhitespace(aValue[i]) do begin
       WSright := aValue[i] + WSright;
       dec(i);
