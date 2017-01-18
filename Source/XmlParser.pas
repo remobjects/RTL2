@@ -121,37 +121,37 @@ begin
     if FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace then WS := Tokenizer.Value;
     Tokenizer.Next;
     Expected(XmlTokenKind.ElementName);
-    var aXmlAttr := XmlAttribute(ReadAttribute(nil, WS));
-    if aXmlAttr.LocalName = "version" then begin
+    var lXmlAttr := XmlAttribute(ReadAttribute(nil, WS));
+    if lXmlAttr.LocalName = "version" then begin
       //check version
-      if (aXmlAttr.Value.IndexOf("1.") <> 0) or (aXmlAttr.Value.Length <> 3) or
-        ((aXmlAttr.Value.Chars[2] < '0') or (aXmlAttr.Value.Chars[2] > '9')) then
-        raise new XmlException(String.Format("Unknown XML version '{0}'", aXmlAttr.Value), aXmlAttr.EndLine, aXmlAttr.EndColumn);
-      result.Version := aXmlAttr.Value;
+      if (lXmlAttr.Value.IndexOf("1.") <> 0) or (lXmlAttr.Value.Length <> 3) or
+        ((lXmlAttr.Value.Chars[2] < '0') or (lXmlAttr.Value.Chars[2] > '9')) then
+        raise new XmlException(String.Format("Unknown XML version '{0}'", lXmlAttr.Value), lXmlAttr.EndLine, lXmlAttr.EndColumn);
+      result.Version := lXmlAttr.Value;
       Expected(XmlTokenKind.DeclarationEnd, XmlTokenKind.ElementName);
       if Tokenizer.Token = XmlTokenKind.ElementName then begin
         if ((Tokenizer.Value <> "encoding") and (Tokenizer.Value <> "standalone")) then
           raise new XmlException("Unknown declaration attribute", Tokenizer.Row, Tokenizer.Column);
-        aXmlAttr := XmlAttribute(ReadAttribute(nil, WS));
+        lXmlAttr := XmlAttribute(ReadAttribute(nil, WS));
       end;
     end;
-    if aXmlAttr.LocalName = "encoding" then begin
+    if lXmlAttr.LocalName = "encoding" then begin
       //check encoding
-      var lEncoding := Encoding.GetEncoding(aXmlAttr.Value);
+      var lEncoding := Encoding.GetEncoding(lXmlAttr.Value);
       if not assigned(lEncoding) then
-        raise new XmlException(String.Format("Unknown encoding '{0}'", aXmlAttr.Value), aXmlAttr.EndLine, aXmlAttr.EndColumn);
-      result.Encoding := aXmlAttr.Value;
+        raise new XmlException(String.Format("Unknown encoding '{0}'", lXmlAttr.Value), lXmlAttr.EndLine, lXmlAttr.EndColumn);
+      result.Encoding := lXmlAttr.Value;
       Expected(XmlTokenKind.DeclarationEnd, XmlTokenKind.ElementName);
       if Tokenizer.Token = XmlTokenKind.ElementName then begin
         if (Tokenizer.Value <> "standalone") then raise new XmlException("Unknown declaration attribute", Tokenizer.Row, Tokenizer.Column);
-        aXmlAttr := XmlAttribute(ReadAttribute(nil, WS));
+        lXmlAttr := XmlAttribute(ReadAttribute(nil, WS));
       end;
     end;
-    if aXmlAttr.LocalName = "standalone" then begin
+    if lXmlAttr.LocalName = "standalone" then begin
       //check yes/no
-      if (aXmlAttr.Value.Trim <> "yes") and (aXmlAttr.Value.Trim <>"no") then
-        raise new XmlException("Unknown 'standalone' value", aXmlAttr.EndLine, aXmlAttr.EndColumn);
-      result.Standalone := aXmlAttr.Value;
+      if (lXmlAttr.Value.Trim <> "yes") and (lXmlAttr.Value.Trim <>"no") then
+        raise new XmlException("Unknown 'standalone' value", lXmlAttr.EndLine, lXmlAttr.EndColumn);
+      result.Standalone := lXmlAttr.Value;
     end;
     Expected(XmlTokenKind.DeclarationEnd);
     Tokenizer.Next;
@@ -191,13 +191,13 @@ begin
     end;
   end;
   Expected(XmlTokenKind.TagOpen);
-  var aIndent: String;
+  var lIndent: String;
   if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
-    aIndent := "";
+    lIndent := "";
     //result.AddNode(new XmlText(Value := fLineBreak));
   end;
 
-  result.Root := ReadElement(nil,aIndent);
+  result.Root := ReadElement(nil,lIndent);
   while Tokenizer.Token <> XmlTokenKind.EOF do begin
     Expected(XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd);
     Tokenizer.Next;
@@ -225,13 +225,13 @@ end;
 
 method XmlParser.ReadAttribute(aParent: XmlElement; aWS: String; aIndent:String): XmlNode;
 begin
-  var aLocalName, aValue, aWSName, aWSValue: String;
+  var lLocalName, lValue, lWSName, lWSValue: String;
   var lStartRow, lStartCol, lEndRow, lEndCol: Integer;
   var WS: String := aWS;
   Expected(XmlTokenKind.ElementName);
   lStartRow := Tokenizer.Row;
   lStartCol := Tokenizer.Column;
-  aLocalName := Tokenizer.Value;
+  lLocalName := Tokenizer.Value;
   if (FormatOptions.NewLineForAttributes) then begin
     if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then
       WS := fLineBreak+aParent.StartColumn+FormatOptions.Indentation
@@ -239,14 +239,14 @@ begin
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
         WS := fLineBreak+aIndent;
   end;
-  aWSName := WS+aLocalName;
+  lWSName := WS+lLocalName;
   Tokenizer.Next;
   WS := "";
   if Tokenizer.Token = XmlTokenKind.Whitespace then begin
     if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then WS := Tokenizer.Value;
     Tokenizer.Next;
   end;
-  aWSName := aWSName+WS;
+  lWSName := lWSName+WS;
   Expected(XmlTokenKind.AttributeSeparator);
   Tokenizer.Next;
   WS := "";
@@ -255,10 +255,10 @@ begin
     Tokenizer.Next;
   end;
   Expected(XmlTokenKind.AttributeValue);
-  aValue := Tokenizer.Value;
-  aWSValue := WS+aValue;
-  var lQuoteChar := aValue[0];
-  aValue  := aValue.Substring(1, length(aValue)-2); {$WARNING HACK FOR NOW}
+  lValue := Tokenizer.Value;
+  lWSValue := WS+lValue;
+  var lQuoteChar := lValue[0];
+  lValue  := lValue.Substring(1, length(lValue)-2); {$WARNING HACK FOR NOW}
   lEndRow := Tokenizer.Row;
   lEndCol := Tokenizer.Column;
   /************/
@@ -267,23 +267,23 @@ begin
   WS := "";
   if Tokenizer.Token = XmlTokenKind.Whitespace then begin
     WS := Tokenizer.Value;
-    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then aWSValue := aWSValue + WS;
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then lWSValue := lWSValue + WS;
     Tokenizer.Next;
   end;
   /***********/
-  if ((aLocalName.StartsWith("xmlns:")) or (aLocalName = "xmlns")) then begin
+  if ((lLocalName.StartsWith("xmlns:")) or (lLocalName = "xmlns")) then begin
     if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) or FormatOptions.NewLineForAttributes then
-      aLocalName := aWSName+"="+aWSValue
+      lLocalName := lWSName+"="+lWSValue
     else
-      if aLocalName.StartsWith("xmlns:") then
-        aLocalName:=aLocalName.Substring("xmlns:".Length, aLocalName.Length- "xmlns:".Length)
-      else if aLocalName = "xmlns" then aLocalName:="";
-    result := new XmlNamespace(aParent, Prefix := aLocalName, Url := Url.UrlWithString(aValue), StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
+      if lLocalName.StartsWith("xmlns:") then
+        lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
+      else if lLocalName = "xmlns" then lLocalName:="";
+    result := new XmlNamespace(aParent, Prefix := lLocalName, Url := Url.UrlWithString(lValue), StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
   end
   else begin
     result := new XmlAttribute(aParent, StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
-    XmlAttribute(result).LocalName := aWSName;//aLocalName;
-    XmlAttribute(result).Value := aValue;
+    XmlAttribute(result).LocalName := lWSName;//aLocalName;
+    XmlAttribute(result).Value := lValue;
     XmlAttribute(result).QuoteChar := lQuoteChar;
   end;
   //Tokenizer.Next;
@@ -311,30 +311,30 @@ begin
     Expected(XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName);
   end;
   while (Tokenizer.Token = XmlTokenKind.ElementName) do begin
-    var aXmlNode := ReadAttribute(result, WS, aIndent);
+    var lXmlNode := ReadAttribute(result, WS, aIndent);
     WS := "";
-    if aXmlNode.NodeType = XmlNodeType.Namespace then result.AddNamespace(XmlNamespace(aXmlNode))
-      else result.AddAttribute(XmlAttribute(aXmlNode));
+    if lXmlNode.NodeType = XmlNodeType.Namespace then result.AddNamespace(XmlNamespace(lXmlNode))
+      else result.AddAttribute(XmlAttribute(lXmlNode));
     Expected(XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName);
   end;
   var lFormat := false;
   if (Tokenizer.Token = XmlTokenKind.TagClose) or (Tokenizer.Token = XmlTokenKind.EmptyElementEnd) then begin
     //check prefix for LocalName
-    var aNamespace: XmlNamespace := nil;
+    var lNamespace: XmlNamespace := nil;
     if result.LocalName.IndexOf(':')>0 then begin
       var lPrefix := result.LocalName.Substring(0, result.LocalName.IndexOf(':'));
-      aNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
-      if (aNamespace = nil) then raise new XmlException("Unknown prefix '"+lPrefix+":'", result.StartLine, (result.StartColumn+1));
-      result.Namespace := aNamespace;
+      lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
+      if (lNamespace = nil) then raise new XmlException("Unknown prefix '"+lPrefix+":'", result.StartLine, (result.StartColumn+1));
+      result.Namespace := lNamespace;
       result.LocalName := result.LocalName.Substring(result.LocalName.IndexOf(':')+1, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
     end;
     //check prefix for attributes
     for each lAttribute in result.Attributes do begin
       if lAttribute.LocalName.IndexOf(':') >0 then begin
         var lPrefix := lAttribute.LocalName.Substring(0, lAttribute.LocalName.IndexOf(':'));
-        aNamespace := coalesce(result.Namespace[lPrefix] , GetNamespaceForPrefix(lPrefix, aParent));
-        if aNamespace = nil then raise new XmlException("Unknown prefix '"+lPrefix+":'", lAttribute.StartLine, lAttribute.StartColumn);
-        lAttribute.Namespace := aNamespace;
+        lNamespace := coalesce(result.Namespace[lPrefix] , GetNamespaceForPrefix(lPrefix, aParent));
+        if lNamespace = nil then raise new XmlException("Unknown prefix '"+lPrefix+":'", lAttribute.StartLine, lAttribute.StartColumn);
+        lAttribute.Namespace := lNamespace;
         lAttribute.LocalName := lAttribute.LocalName.Substring(lAttribute.LocalName.IndexOf(':')+1, lAttribute.LocalName.Length-lAttribute.LocalName.IndexOf(':')-1);
       end;
     end;
@@ -472,8 +472,8 @@ begin
 
   Expected(XmlTokenKind.ElementName);
   while Tokenizer.Token = XmlTokenKind.ElementName do begin
-    var aXmlAttr := XmlAttribute(ReadAttribute(nil, WS));
-    result.Data := result.Data+aXmlAttr.ToString;//aXmlAttr.LocalName+'="'+aXmlAttr.Value;
+    var lXmlAttr := XmlAttribute(ReadAttribute(nil, WS));
+    result.Data := result.Data+lXmlAttr.ToString;//aXmlAttr.LocalName+'="'+aXmlAttr.Value;
     WS:="";
     //Tokenizer.Next;
   end;

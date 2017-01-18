@@ -335,7 +335,7 @@ begin
   end;
 
   result:="";
-  var aFormatInsideTags := false;
+  var lFormatInsideTags := false;
   if Version <> nil then result := '<?xml version="'+Version+'"';
   if Encoding <> nil then result := result + ' encoding="'+Encoding+'"';
   if Standalone <> nil then result := result + ' standalone="'+Standalone+'"';
@@ -355,17 +355,17 @@ begin
      ) then begin
     if aSaveFormatted and (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then begin
       aSaveFormatted := false;
-      aFormatInsideTags := true;
+      lFormatInsideTags := true;
     end;
     for each aNode in fNodes do
-      result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)
+      result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags)
   end
   else begin
-    if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then aFormatInsideTags := true;
+    if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then lFormatInsideTags := true;
     if (Version <> nil) and aFormatOptions.NewLineForElements then result := result + fLineBreak;
       for each aNode in fNodes do begin
         if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
-          result := result+aNode.ToString(aSaveFormatted, aFormatInsideTags)+fLineBreak;
+          result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags)+fLineBreak;
       end;
   end;
 end;
