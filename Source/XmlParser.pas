@@ -225,38 +225,35 @@ end;
 
 method XmlParser.ReadAttribute(aParent: XmlElement; aWS: String; aIndent:String): XmlNode;
 begin
-  var lLocalName, lValue, lWSName, lWSValue: String;
+  var lLocalName, lValue: String;
   var lStartRow, lStartCol, lEndRow, lEndCol: Integer;
-  var WS: String := aWS;
+  var lWSleft, lWSright, linnerWSleft, linnerWSright: String;
+
+  lWSleft := aWS;
   Expected(XmlTokenKind.ElementName);
   lStartRow := Tokenizer.Row;
   lStartCol := Tokenizer.Column;
   lLocalName := Tokenizer.Value;
   if (FormatOptions.NewLineForAttributes) then begin
     if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then
-      WS := fLineBreak+aParent.StartColumn+FormatOptions.Indentation
+      lWSleft := fLineBreak+aParent.StartColumn+FormatOptions.Indentation
     else
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-        WS := fLineBreak+aIndent;
+        lWSleft := fLineBreak+aIndent;
   end;
-  lWSName := WS+lLocalName;
   Tokenizer.Next;
-  WS := "";
   if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then WS := Tokenizer.Value;
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSleft := Tokenizer.Value;
     Tokenizer.Next;
   end;
-  lWSName := lWSName+WS;
   Expected(XmlTokenKind.AttributeSeparator);
   Tokenizer.Next;
-  WS := "";
   if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then WS := Tokenizer.Value;
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSright := Tokenizer.Value;
     Tokenizer.Next;
   end;
   Expected(XmlTokenKind.AttributeValue);
   lValue := Tokenizer.Value;
-  lWSValue := WS+lValue;
   var lQuoteChar := lValue[0];
   lValue  := lValue.Substring(1, length(lValue)-2); {$WARNING HACK FOR NOW}
   lEndRow := Tokenizer.Row;
@@ -264,27 +261,27 @@ begin
   /************/
   Tokenizer.Next;
   Expected(XmlTokenKind.TagClose, XmlTokenKind.Whitespace, XmlTokenKind.EmptyElementEnd, XmlTokenKind.DeclarationEnd);
-  WS := "";
   if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-    WS := Tokenizer.Value;
-    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then lWSValue := lWSValue + WS;
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then lWSright := Tokenizer.Value;
     Tokenizer.Next;
   end;
   /***********/
   if ((lLocalName.StartsWith("xmlns:")) or (lLocalName = "xmlns")) then begin
-    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) or FormatOptions.NewLineForAttributes then
-      lLocalName := lWSName+"="+lWSValue
-    else
       if lLocalName.StartsWith("xmlns:") then
         lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
       else if lLocalName = "xmlns" then lLocalName:="";
-    result := new XmlNamespace(aParent, Prefix := lLocalName, Url := Url.UrlWithString(lValue), StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
+    result := new XmlNamespace(aParent, Prefix := lLocalName, Url := Url.UrlWithString(lValue), StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol,
+      WSleft := lWSleft, innerWSleft := linnerWSleft, innerWSright := linnerWSright, WSright := lWSright, QuoteChar := lQuoteChar);
   end
   else begin
     result := new XmlAttribute(aParent, StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
-    XmlAttribute(result).LocalName := lWSName;//aLocalName;
+    XmlAttribute(result).LocalName := lLocalName;
     XmlAttribute(result).Value := lValue;
     XmlAttribute(result).QuoteChar := lQuoteChar;
+    XmlAttribute(result).WSleft := lWSleft;
+    XmlAttribute(result).innerWSleft := linnerWSleft;
+    XmlAttribute(result).innerWSright := linnerWSright;
+    XmlAttribute(result).WSright := lWSright;
   end;
   //Tokenizer.Next;
 end;
