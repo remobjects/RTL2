@@ -17,7 +17,6 @@ type
       xml.Encoding := "utf-8";
       xml.Standalone := "yes";
       Assert.AreEqual(xml.ToString, '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"/>');
-      writeLn(xml.ToString());
     end;
 
     method PreserveHeaders;
@@ -25,7 +24,6 @@ type
       var sXML := '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Project/>';
       var xml := XmlDocument.FromString(sXML);
       Assert.AreEqual(xml.ToString, sXML);
-      writeLn(xml);
     end;
 
     method PreserveSpaces;
@@ -33,7 +31,6 @@ type
       var sXML := '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Project    '#13'Test= "foo"   '#13#13#10#9'  Bar  ="b  " >'#13'   '#13#9#19#13'  <Tag2   name=  "fo  "   />  '#9#13#10'</Project  >';
       var xml := XmlDocument.FromString(sXML);
       Assert.AreEqual(xml.ToString, sXML);
-      writeLn(xml);
     end;
 
     method AddFile;
@@ -54,7 +51,6 @@ type
       var lCompile := xml.Root.FirstElementWithName("ItemGroup").AddElement("Compile");
       lCompile.SetAttribute("Include", "Bar.pas");
       Assert.AreEqual(xml.ToString, sXML2);
-      writeLn(xml);
     end;
 
     method AddDefaultPlatform;
