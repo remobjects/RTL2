@@ -11,6 +11,7 @@ type
     method ReadElement(aParent: XmlElement; aIndent: String := nil): XmlElement;
     method GetNamespaceForPrefix(aPrefix:not nullable String; aParent: XmlElement): XmlNamespace;
     method ReadProcessingInstruction(aParent: XmlElement): XmlProcessingInstruction;
+    method ReadDocumentType: XmlDocumentType;
   assembly
     fLineBreak: String;
   public
@@ -33,6 +34,7 @@ type
     DeclarationStart,
     DeclarationEnd,
     ProcessingInstruction,
+    DocumentType,
     TagOpen,
     TagClose,
     EmptyElementEnd,
@@ -44,6 +46,8 @@ type
     CData,
     SlashSymbol,
     AttributeSeparator,
+    OpenSquareBracket,
+    CloseSquareBracket,
     SyntaxError);
 
   XmlWhitespaceStyle = public enum(
@@ -110,7 +114,7 @@ begin
       result.AddNode(new XmlText(Value := Tokenizer.Value));
     Tokenizer.Next;
   end;
-  Expected(XmlTokenKind.DeclarationStart, XmlTokenKind.ProcessingInstruction, XmlTokenKind.TagOpen);
+  Expected(XmlTokenKind.DeclarationStart, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType, XmlTokenKind.TagOpen);
 
   {result.Version := "1.0";
   result.Encoding := "utf-8";
@@ -157,14 +161,18 @@ begin
     Tokenizer.Next;
 
   end;
-  Expected(XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction);
+  Expected(XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType);
   var lFormat := false;
+  var WasDocType := false;
   if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
     lFormat := true;
   if lFormat and (result.Nodes.Count = 0) and (result.Version <> nil) then
     result.AddNode(new XmlText(Value := fLineBreak));
   while Tokenizer.Token <> XmlTokenKind.TagOpen do begin
-    Expected(XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction);
+    if WasDocType then
+      Expected(XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction)
+    else
+      Expected(XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType);
     {if (FormatOptions.NewLineForElements) and (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and
       (Tokenizer.Token <> XmlTokenKind.Whitespace) then begin //or ((result.Nodes.count=0) and (result.Version <> nil)) then begin
       result.AddNode(new XmlText(Value := fLineBreak));
@@ -186,6 +194,12 @@ begin
       XmlTokenKind.ProcessingInstruction : begin
         result.AddNode(ReadProcessingInstruction(nil));
         Tokenizer.Next;//add node
+        if lFormat then result.AddNode(new XmlText(Value := fLineBreak));
+      end;
+      XmlTokenKind.DocumentType: begin
+        WasDocType := true;
+        result.AddNode(ReadDocumentType());
+        Tokenizer.Next;
         if lFormat then result.AddNode(new XmlText(Value := fLineBreak));
       end;
     end;
@@ -478,6 +492,36 @@ begin
   result.EndLine := Tokenizer.Row;
   result.EndColumn := Tokenizer.Column+1;
   //Tokenizer.Next;
+end;
+
+method XmlParser.ReadDocumentType: XmlDocumentType;
+begin
+  Expected(XmlTokenKind.DocumentType);
+  result := new XmlDocumentType();
+  result.StartLine := Tokenizer.Row;
+  result.StartColumn := Tokenizer.Column;
+  Tokenizer.Next;
+  Expected(XmlTokenKind.Whitespace);
+  var WS := "";
+  if FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace then WS := Tokenizer.Value;
+  Tokenizer.Next;
+  Expected(XmlTokenKind.ElementName);
+  result.Name := Tokenizer.Value;
+  Tokenizer.Next;
+  Expected(XmlTokenKind.TagClose, XmlTokenKind.ElementName, XmlTokenKind.Whitespace, XmlTokenKind.OpenSquareBracket);
+  if Tokenizer.Token = XmlTokenKind.Whitespace then Tokenizer.Next;
+  Expected(XmlTokenKind.TagClose, XmlTokenKind.ElementName, XmlTokenKind.OpenSquareBracket);
+  if Tokenizer.Token = XmlTokenKind.ElementName then begin
+    if Tokenizer.Value = "SYSTEM" then 
+    else if Tokenizer.Value = "PUBLIC" then
+      else raise new XmlException("Error");
+  end
+  else if Tokenizer.Token = XmlTokenKind.OpenSquareBracket then begin
+    
+    end;
+  Expected(XmlTokenKind.TagClose);
+  result.EndLine := Tokenizer.Row;
+  result.EndColumn := Tokenizer.Column;
 end;
 
 end.

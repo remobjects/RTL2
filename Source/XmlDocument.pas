@@ -55,7 +55,7 @@ type
     &Namespace,
     Text,
     ProcessingInstruction,
-    Whitespace
+    DocumentType
     );
 
   XmlNode = public class
@@ -230,6 +230,15 @@ type
   public
     constructor (aParent: XmlNode := nil);
     property Value: String;
+  end;
+
+  XmlDocumentType = public class(XmlNode)
+  public
+    constructor (aParent: XmlNode := nil);
+    property Name: String;
+    property SystemId: String;
+    property PublicId: String;
+    property Declaration: String;
   end;
 
 implementation
@@ -1052,6 +1061,12 @@ constructor XmlProcessingInstruction(aParent: XmlNode);
 begin
   inherited constructor (aParent);
   fNodeType := XmlNodeType.ProcessingInstruction;
+end;
+
+constructor XmlDocumentType(aParent: XmlNode);
+begin
+  inherited constructor (aParent);
+  fNodeType := XmlNodeType.DocumentType;
 end;
 
 end.

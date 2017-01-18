@@ -121,7 +121,6 @@ begin
     "&apos;": result := "'";
     "&quot;": result := """";
   end;
-  {$WARNING need to other named entities too?}
 end;
 
 method XmlTokenizer.Parse;
@@ -152,14 +151,22 @@ begin
               Value := nil;
               Token := XmlTokenKind.TagElementEnd;
             end;
-          '!': if (fData.Length>fPos+4) and (fData[fPos+2] = '-') and (fData[fPos+3] = '-') then
-                 ParseComment//comment
-               else if (fData.Length>fPos+9)and (new String(fData,fPos+2,7) = "[CDATA[") then ParseCData
-               else begin
-                 Token := XmlTokenKind.SyntaxError;
-                 fPos := fPos+1;
-                 Value := "Unknown token";
-               end;
+          '!': 
+            if (fData.Length > fPos+4) and (fData[fPos+2] = '-') and (fData[fPos+3] = '-') then
+              ParseComment//comment
+            else if (fData.Length > fPos+9) then
+              if (new String(fData,fPos+2,7) = "[CDATA[") then ParseCData
+              else 
+                if (new String(fData, fPos+2, 7) = "DOCTYPE" ) then begin
+                  Token := XmlTokenKind.DocumentType;
+                  fLength := 9;
+                  Value := "";
+                end
+                else begin
+                  Token := XmlTokenKind.SyntaxError;
+                  fPos := fPos+1;
+                  Value := "Unknown token";
+                end;
           '?': begin
             if (fData.Length >= fPos+XmlConsts.TAG_DECL_OPEN.Length) and
               (new String(fData,fPos,XmlConsts.TAG_DECL_OPEN.Length)  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+XmlConsts.TAG_DECL_OPEN.Length])) then begin
