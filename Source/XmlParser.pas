@@ -81,7 +81,7 @@ implementation
 
 constructor XmlParser( XmlString: String);
 begin
-  Tokenizer := new XmlTokenizer(XmlString, true);
+  Tokenizer := new XmlTokenizer(XmlString);
   FormatOptions := new XmlFormattingOptions;
   case FormatOptions.NewLineSymbol of
     XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
@@ -93,7 +93,7 @@ end;
 
 constructor XmlParser(XmlString: String; aOptions: XmlFormattingOptions);
 begin
-  Tokenizer := new XmlTokenizer(XmlString, true);
+  Tokenizer := new XmlTokenizer(XmlString);
   FormatOptions := aOptions;
   case FormatOptions.NewLineSymbol of
     XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
