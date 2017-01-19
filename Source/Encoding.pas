@@ -79,6 +79,10 @@ begin
     decode(java.nio.ByteBuffer.wrap(aValue, aOffset, aCount));
   result := Buffer.toString;
   {$ELSEIF ECHOES}
+  if isUTF8 and (length(aValue) >= aOffset+3) and (aValue[aOffset] = $EF) and (aValue[aOffset+1] = $BB) and (aValue[aOffset+2] = $BF) then begin
+    inc(aOffset, 3);
+    dec(aCount, 3);
+  end;
   result := mapped.GetString(aValue, aOffset, aCount);
   {$ELSEIF ISLAND}
   result := case fName.ToUpper.Replace("-","") of
@@ -167,7 +171,7 @@ begin
   {$IF COOPER}
   //exit mapped.name;
   {$ELSEIF ECHOES}
-  //exit mapped.WebName;
+  result := mapped.WebName.ToLower = "utf-8";
   {$ELSEIF ISLAND}
   result := fName.ToUpper.Replace("-", "") = "UTF8";
   {$ELSEIF TOFFEE}
