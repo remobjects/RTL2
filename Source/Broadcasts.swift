@@ -30,7 +30,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	#if TOFFEE
 	private let subscriptions = Dictionary<String,List<(Object,Object?,id)>>() // receiver, object, token
 	#else
-	private let subscriptions = Dictionary<String,List<(Object,Object?,Block)>>()	// receiver, block
+	private let subscriptions = Dictionary<String,List<(Object,Object?,Block)>>()    // receiver, block
 	#endif
 
 	//func subscribe(_ object: Object, toBroadcast broadcast: String, block: (Dictionary<String,Any>)->()) {
@@ -55,7 +55,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		__lock self {
 			var subs = subscriptions[broadcast]
 			if subs == nil {
-				subs = List<(Object?,Block)>()
+				subs = List<(Object,Object?,Block)>()
 				subscriptions[broadcast] = subs
 			}
 			subs!.Add((receiver, object, block))
@@ -159,7 +159,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			#else
 			__lock self {
 				for s in subscriptions[broadcast] {
-					s.1(Notification(object: object, data: data))
+					s.2(Notification(object: object, data: data))
 				}
 			}
 			#endif

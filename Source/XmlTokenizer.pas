@@ -50,17 +50,6 @@ constructor XmlTokenizer(aXml: String);
 begin
   Xml := aXml+#0;
   fData := Xml.ToCharArray;
-  //self.IgnoreWhitespaces := SkipWhitespaces;
-  /*var CharData := Xml.ToCharArray;
-  fData := new Char[CharData.Length + 4];
-  {$IF COOPER}
-  System.arraycopy(CharData, 0, fData, 0, CharData.Length);
-  {$ELSEIF ECHOES}
-  Array.Copy(CharData, 0, fData, 0, CharData.Length);
-  {$ELSEIF TOFFEE}
-  rtl.memset(@fData[0], 0, fData.length);
-  memcpy(@fData[0], @CharData[0], sizeOf(Char) * CharData.Length);
-  {$ENDIF}*/
   Token := XmlTokenKind.BOF;
 end;
 
@@ -144,12 +133,12 @@ begin
               Value := nil;
               Token := XmlTokenKind.TagElementEnd;
             end;
-          '!': 
+          '!':
             if (fData.Length > fPos+4) and (fData[fPos+2] = '-') and (fData[fPos+3] = '-') then
               ParseComment//comment
             else if (fData.Length > fPos+9) then
               if (new String(fData,fPos+2,7) = "[CDATA[") then ParseCData
-              else 
+              else
                 if (new String(fData, fPos+2, 7) = "DOCTYPE" ) then begin
                   Token := XmlTokenKind.DocumentType;
                   fLength := 9;
