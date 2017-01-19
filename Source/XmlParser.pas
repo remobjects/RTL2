@@ -508,17 +508,50 @@ begin
   Expected(XmlTokenKind.ElementName);
   result.Name := Tokenizer.Value;
   Tokenizer.Next;
-  Expected(XmlTokenKind.TagClose, XmlTokenKind.ElementName, XmlTokenKind.Whitespace, XmlTokenKind.OpenSquareBracket);
+  Expected(XmlTokenKind.Whitespace, XmlTokenKind.TagClose);
   if Tokenizer.Token = XmlTokenKind.Whitespace then Tokenizer.Next;
   Expected(XmlTokenKind.TagClose, XmlTokenKind.ElementName, XmlTokenKind.OpenSquareBracket);
   if Tokenizer.Token = XmlTokenKind.ElementName then begin
-    if Tokenizer.Value = "SYSTEM" then 
-    else if Tokenizer.Value = "PUBLIC" then
-      else raise new XmlException("Error");
-  end
-  else if Tokenizer.Token = XmlTokenKind.OpenSquareBracket then begin
-    
+    if Tokenizer.Value = "SYSTEM" then begin
+      Tokenizer.Next;
+      Expected(XmlTokenKind.Whitespace);
+      Tokenizer.Next;
+      Expected(XmlTokenKind.AttributeValue);
+      result.SystemId := Tokenizer.Value;
+      Tokenizer.Next;
+    end
+    else if Tokenizer.Value = "PUBLIC" then begin
+      Tokenizer.Next;
+      Expected(XmlTokenKind.Whitespace);
+      Tokenizer.Next;
+      Expected(XmlTokenKind.AttributeValue);
+      result.PublicId := Tokenizer.Value;
+      Tokenizer.Next;
+      Expected(XmlTokenKind.Whitespace);
+      Tokenizer.Next;
+      Expected(XmlTokenKind.AttributeValue);
+      result.SystemId := Tokenizer.Value;
+      Tokenizer.Next; 
+    end
+    else raise new XmlException("SYSTEM, PUBLIC or square brackets expected", Tokenizer.Row, Tokenizer.Column);
+    Expected(XmlTokenKind.Whitespace, XmlTokenKind.TagClose);
+    if Tokenizer.Token = XmlTokenKind.Whitespace then Tokenizer.Next;
+  end;
+  if Tokenizer.Token = XmlTokenKind.OpenSquareBracket then begin
+    //that's only for now, need to be parsed
+    Tokenizer.Next;
+    Expected(XmlTokenKind.ElementName);
+    result.Declaration := Tokenizer.Value;
+    Tokenizer.Next;
+    Expected(XmlTokenKind.CloseSquareBracket, XmlTokenKind.Whitespace);
+    if Tokenizer.Token = XmlTokenKind.Whitespace then begin
+      Tokenizer.Next;
+      Expected(XmlTokenKind.CloseSquareBracket);
     end;
+    if Tokenizer.Token = XmlTokenKind.CloseSquareBracket then Tokenizer.Next;
+    Expected(XmlTokenKind.TagClose, XmlTokenKind.Whitespace);
+    if Tokenizer.Token = XmlTokenKind.Whitespace then Tokenizer.Next;
+  end;
   Expected(XmlTokenKind.TagClose);
   result.EndLine := Tokenizer.Row;
   result.EndColumn := Tokenizer.Column;

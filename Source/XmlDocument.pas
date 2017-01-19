@@ -459,6 +459,19 @@ begin
       result := result + str+"?>";
     end;
     XmlNodeType.Element: result := XmlElement(self).ToString(aSaveFormatted, aFormatInsideTags);
+    XmlNodeType.DocumentType: begin
+      result := "<!DOCTYPE ";
+      if XmlDocumentType(self).Name <> nil then result := result + XmlDocumentType(self).Name;
+      if XmlDocumentType(self).PublicId <> nil then begin
+        result := result + " PUBLIC "+ XmlDocumentType(self).PublicId + " "+XmlDocumentType(self).SystemId;
+
+      end
+      else if XmlDocumentType(self).SystemId <> nil then
+        result := result + " SYSTEM "+XmlDocumentType(self).SystemId;
+      if XmlDocumentType(self).Declaration <> nil then 
+        result := result + " ["+XmlDocumentType(self).Declaration+"]";
+      result := result + ">";
+    end;
   end;
 end;
 

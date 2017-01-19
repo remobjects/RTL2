@@ -192,20 +192,30 @@ begin
             Token := XmlTokenKind.TagOpen;
           end;
         end;
-        '>': begin
-            fLength := 1;
-            Value := nil;
-            Token := XmlTokenKind.TagClose;
-          end;
-        '/': begin
-            if (fData.Length >= (fPos+1)) and (fData[fPos+1] = '>') then begin
-              fLength := 2;
-              Value := nil;
-              Token := XmlTokenKind.EmptyElementEnd;
-            end
-            else Token := XmlTokenKind.SlashSymbol;
-          end;
-        #0: Token := XmlTokenKind.EOF;
+      '>': begin
+        fLength := 1;
+        Value := nil;
+        Token := XmlTokenKind.TagClose;
+        end;
+      '/': begin
+        if (fData.Length >= (fPos+1)) and (fData[fPos+1] = '>') then begin
+          fLength := 2;
+          Value := nil;
+          Token := XmlTokenKind.EmptyElementEnd;
+        end
+        else Token := XmlTokenKind.SlashSymbol;
+        end;
+      #0: Token := XmlTokenKind.EOF;
+      '[': begin
+        Token := XmlTokenKind.OpenSquareBracket;
+        Value := nil;
+        fLength := 1;
+        end;
+      ']': begin
+        Token := XmlTokenKind.CloseSquareBracket;
+        Value := nil;
+        fLength := 1;
+        end;
         else begin
           fLength := 0;
           Value := "Unexpected token "+fData[fPos];
