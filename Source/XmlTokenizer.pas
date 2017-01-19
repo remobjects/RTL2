@@ -30,7 +30,6 @@ type
 
   public
     constructor (aXml: String);
-    constructor (aXml: String; SkipWhitespaces: Boolean);
 
     method Next: Boolean;
 
@@ -39,7 +38,6 @@ type
     property Column: Integer read fPos - fLastRowStart + 1;
     property Value: String read private write;
     property Token:XmlTokenKind read private write;
-    property IgnoreWhitespaces: Boolean read write; readonly;
   end;
 
 implementation
@@ -50,15 +48,10 @@ uses System.Globalization;
 
 constructor XmlTokenizer(aXml: String);
 begin
-  constructor(aXml, true);
-end;
-
-constructor XmlTokenizer(aXml: String; SkipWhitespaces: Boolean);
-begin
-  Xml := aXml;
-  //SugarArgumentNullException.RaiseIfNil(XML, "Xml");
-  self.IgnoreWhitespaces := SkipWhitespaces;
-  var CharData := Xml.ToCharArray;
+  Xml := aXml+#0;
+  fData := Xml.ToCharArray;
+  //self.IgnoreWhitespaces := SkipWhitespaces;
+  /*var CharData := Xml.ToCharArray;
   fData := new Char[CharData.Length + 4];
   {$IF COOPER}
   System.arraycopy(CharData, 0, fData, 0, CharData.Length);
@@ -67,7 +60,7 @@ begin
   {$ELSEIF TOFFEE}
   rtl.memset(@fData[0], 0, fData.length);
   memcpy(@fData[0], @CharData[0], sizeOf(Char) * CharData.Length);
-  {$ENDIF}
+  {$ENDIF}*/
   Token := XmlTokenKind.BOF;
 end;
 
