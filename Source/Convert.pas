@@ -20,7 +20,9 @@ type
     method ToString(aValue: Byte; aBase: Integer := 10): not nullable String;
     method ToString(aValue: Int32; aBase: Integer := 10): not nullable String;
     method ToString(aValue: Int64; aBase: Integer := 10): not nullable String;
-    method ToString(aValue: UInt64; aBase: Integer := 10): not nullable String;
+    {$IF NOT COOPER}
+    method ToString(aValue: UInt64; aBase: Integer := 10): not nullable String; // 76887: Cooper: load error with RTL2
+    {$ENDIF}
     method ToString(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aLocale: Locale := nil): not nullable String;
     method ToStringInvariant(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1): not nullable String;
     method ToString(aValue: Char): not nullable String;
@@ -128,6 +130,7 @@ begin
   end;
 end;
 
+{$IF NOT COOPER}
 method Convert.ToString(aValue: UInt64; aBase: Integer := 10): not nullable String;
 begin
   case aBase of
@@ -138,6 +141,7 @@ begin
     else raise new ConversionException('Unsupported base for ToString.');
   end;
 end;
+{$ENDIF}
 
 method Convert.ToStringInvariant(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1): not nullable String;
 begin

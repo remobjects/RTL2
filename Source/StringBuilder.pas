@@ -59,9 +59,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   result := mapped.Append(Value);
   {$ELSEIF TOFFEE}
-  mapped.appendFormat("%C", Value);
-  {$WARNING 77082: Toffee: Internal error when passing `#` char literals to mapped function}
-  //mapped.appendString(NSString.stringWithCharacters(@Value) length(1));
+  mapped.appendString(NSString.stringWithCharacters(@Value) length(1));
   result := mapped;
   {$ENDIF}
 end;
