@@ -48,7 +48,7 @@ uses System.Globalization;
 
 constructor XmlTokenizer(aXml: String);
 begin
-  Xml := aXml+#0;
+  Xml := aXml;
   fData := Xml.ToCharArray;
   Token := XmlTokenKind.BOF;
 end;
@@ -107,9 +107,13 @@ end;
 
 method XmlTokenizer.Parse;
 begin
+  if (fPos >= fData.length) then begin
+    Token := XmlTokenKind.EOF;
+    exit;
+  end;
   if (fPos>0) and
-    ((fData[fPos-1] = '>') or ((fPos > (fPos-fLength-1)) and (Token = XmlTokenKind.Whitespace) and (fData[fPos-fLength-1] = '>')))
-    and (fData[fPos] <> #0) and (not(CharIsWhitespace(fData[fPos]))) and (fData[fPos] <> '<') then ParseSymbolData()
+    ((fData[fPos-1] = '>') or ((fData.length > (fPos-fLength-1)) and (Token = XmlTokenKind.Whitespace) and (fData[fPos-fLength-1] = '>')))
+    and (fPos < fData.length) and (not(CharIsWhitespace(fData[fPos]))) and (fData[fPos] <> '<') then ParseSymbolData()
   else
     if CharIsNameStart(fData[fPos]) then ParseName
     else if (fData.Length >= fPos+XmlConsts.TAG_DECL_CLOSE.Length) and (new String(fData,fPos,XmlConsts.TAG_DECL_CLOSE.Length) = XmlConsts.TAG_DECL_CLOSE) then begin
@@ -187,7 +191,7 @@ begin
         end
         else Token := XmlTokenKind.SlashSymbol;
         end;
-      #0: Token := XmlTokenKind.EOF;
+      //#0: Token := XmlTokenKind.EOF;
       '[': begin
         Token := XmlTokenKind.OpenSquareBracket;
         Value := nil;
@@ -214,11 +218,10 @@ begin
     fPos := fPos + fLength;
     fLastRow := fRow;
     fLastRowStart := fRowStart;
-    Parse;
+    if fPos < fData.Length then Parse
+    else Token := XmlTokenKind.EOF;
     if (Token = XmlTokenKind.EOF) or (Token = XmlTokenKind.SyntaxError) then
       exit false;
-    //if IgnoreWhitespaces and (Token = XMLTokenKind.Whitespace) then
-    //  continue;
     exit true;
   end;
 end;
@@ -230,7 +233,7 @@ begin
 
   var lPosition := fPos;
 
-  while CharIsWhitespace(fData[lPosition]) do begin
+  while (lPosition < fData.length) and CharIsWhitespace(fData[lPosition])  do begin
     if fData[lPosition] = #13 then begin
       if fData[lPosition + 1] = #10 then
         inc(lPosition);
@@ -256,7 +259,7 @@ method XmlTokenizer.ParseName;
 begin
   var lPosition := fPos + 1;
   var colonSymbol := 0;
-  while CharIsName(fData[lPosition]) do begin
+  while (lPosition < fData.length) and CharIsName(fData[lPosition]) do begin
     if fData[lPosition] = ':' then begin
       inc(colonSymbol);
         if (fData.Length < (lPosition+1)) then begin
@@ -297,6 +300,9 @@ begin
 
   inc(fPos);
   loop begin
+    if (fPos >= fData.length) then begin
+      Token := XmlTokenKind.EOF; exit;
+    end;
     var ch := fData[fPos];
     if ch = lQuoteChar then break;
     case ch of
@@ -328,10 +334,10 @@ begin
         exit;
         //raise new Exception("Syntax error at "+Row+"/"+Column+"Symbol '<' is not allowed in attribute value");
       end;
-      #0: begin
+      {#0: begin
         Token := XmlTokenKind.EOF;
         exit;
-      end;
+      end;}
       else lValue.Append(ch);
     end;
     inc(fPos);
@@ -382,7 +388,7 @@ begin
   var lPosition := fPos;
   var start := fPos;
   var lPos: Integer;
-  while ((fData[lPosition] <> '<') and (fData[lPosition] <> #0)) do begin
+  while ((lPosition < fData.length) and (fData[lPosition] <> '<'){ and (fData[lPosition] <> #0)}) do begin
     case fData[lPosition] of
       '>' :Value := Value+'&gt;';
       '&': begin
@@ -406,8 +412,8 @@ begin
           else if fData[lPosition + 1] = #10 then
             inc(lPosition);
             lPos := lPosition+1;
-            while CharIsWhitespace(fData[lPos]) do inc(lPos);
-            if (fData[lPos] <> '<') and (fData[lPos] <> #0) then begin
+            while (lPos < fData.length) and CharIsWhitespace(fData[lPos]) do inc(lPos);
+            if (fData[lPos] <> '<') {and (fData[lPos] <> #0)} then begin
               fRowStart := lPosition + 1;
               inc(fRow);
               Value := Value+fData[lPosition-1]+fData[lPosition];
@@ -415,8 +421,8 @@ begin
         end;
       #10: begin
         lPos := lPosition+1;
-          while CharIsWhitespace(fData[lPos]) do inc(lPos);
-          if (fData[lPos] <> '<') and (fData[lPos] <> #0) then begin
+          while (lPos < fData.length) and CharIsWhitespace(fData[lPos]) do inc(lPos);
+          if (fData[lPos] <> '<'){ and (fData[lPos] <> #0)} then begin
             fRowStart := lPosition + 1;
             inc(fRow);
             Value := Value+fData[lPosition];
@@ -428,7 +434,7 @@ begin
   end;
   while CharIsWhitespace(fData[lPosition-1]) do
     lPosition := lPosition -1;
-  fLength := lPosition - fPos; //Value.Trim.Length;
+  fLength := lPosition - fPos; 
   Value := Value.Trim;
   Token := XmlTokenKind.SymbolData;
 end;
@@ -438,6 +444,11 @@ begin
   var lPosition := fPos+4;
   var Comment := true;
   while Comment do begin
+    if (lPosition >= fData.length) then begin
+      Token := XmlTokenKind.EOF;
+      fPos := lPosition;
+      exit;
+    end;
     case fData[lPosition] of
       #13: begin
         if (fData.Length > lPosition+1) and (fData[lPosition + 1] = #10) then inc(lPosition);
@@ -449,11 +460,11 @@ begin
         inc(fRow);
       end;
       '-': if (fData.Length > lPosition+1) and (fData[lPosition+1] = '-') then Comment := false;
-      #0: begin
+      {#0: begin
         Token :=XmlTokenKind.EOF;
         fPos := lPosition;
         exit;
-      end
+      end}
     end;
     inc(lPosition);
   end;
@@ -474,6 +485,11 @@ begin
   var lPosition := fPos+9;
   var CData := true;
   while CData do begin
+    if (lPosition >= fData.length) then begin
+      Token := XmlTokenKind.EOF;
+      fPos := lPosition;
+      exit;
+    end;
     case fData[lPosition] of
       #13: begin
         if (fData.Length > lPosition+1) and (fData[lPosition + 1] = #10) then inc(lPosition);
@@ -485,11 +501,11 @@ begin
         inc(fRow);
       end;
       ']': if (fData.Length > lPosition+1) and (fData[lPosition+1] = ']') then CData := false;
-      #0: begin
+      {#0: begin
         Token := XmlTokenKind.EOF;
         fPos := lPosition;
         exit;
-      end
+      end}
     end;
     inc(lPosition);
   end;
