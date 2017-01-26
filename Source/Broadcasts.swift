@@ -25,10 +25,23 @@ public class Notification {
 }
 #endif
 
+#if TOFFEE
+fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
+	/*weak*/ var receiver: Object
+	weak var object: Object?
+	var token: id;
+	init (_ receiver: Object, _ object: Object?, _ token: id) {
+		self.receiver = receiver
+		self.object = object
+		self.token = token
+	}
+}
+#endif
+
 public static class RemObjects.Elements.RTL.BroadcastManager {
 
 	#if TOFFEE
-	private let subscriptions = Dictionary<String,List<(Object,Object?,id)>>() // receiver, object, token
+	private let subscriptions = Dictionary<String,List<BroadcastManagerSubscription>>() // receiver, object, token
 	#else
 	private let subscriptions = Dictionary<String,List<(Object,Object?,Block)>>()    // receiver, block
 	#endif
@@ -46,10 +59,10 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		__lock self {
 			var subs = subscriptions[broadcast]
 			if subs == nil {
-				subs = List<(Object,Object?,id)>()
+				subs = List<BroadcastManagerSubscription>()
 				subscriptions[broadcast] = subs
 			}
-			subs!.Add((receiver, object, token))
+			subs!.Add(BroadcastManagerSubscription(receiver, object, token))
 		}
 		#else
 		__lock self {
@@ -74,7 +87,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	}
 
 	#if TOFFEE
-	public func subscribe(_ receiver: Object, selector: SEL, toBroadcast broadcast: String, object: Object? = nil) {
+	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, selector: SEL, object: Object? = nil) {
 		NSNotificationCenter.defaultCenter.addObserver(receiver, selector: selector, name: broadcast, object: object)
 	}
 	#endif
@@ -84,21 +97,27 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
 		__lock self {
 			if let subs = subscriptions[broadcast] {
-				for s in subs {
-					if s.0 == receiver {
-						NSNotificationCenter.defaultCenter.removeObserver(s.2)
+				for s in subs.copy() {
+					if s.receiver == receiver || s.receiver == nil {
+						NSNotificationCenter.defaultCenter.removeObserver(s.token)
 						subs.Remove(s)
 					}
+				}
+				if subs.Count == 0 {
+					subscriptions.Remove(broadcast)
 				}
 			}
 		}
 		#else
 		__lock self {
 			if let subs = subscriptions[broadcast] {
-				for s in subs {
+				for s in subs.copy() {
 					if s.0 == receiver {
 						subs.Remove(s)
 					}
+				}
+				if subs.Count == 0 {
+					subscriptions.Remove(broadcast)
 				}
 			}
 		}
@@ -109,11 +128,16 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver)
 		__lock self {
-			for subs in subscriptions.Values {
-				for s in subs {
-					if s.0 == receiver {
-						NSNotificationCenter.defaultCenter.removeObserver(s.2)
-						subs.Remove(s)
+			for k in subscriptions.Keys {
+				if let subs = subscriptions[k] {
+					for s in subs.copy() {
+						if s.receiver == receiver || s.receiver == nil {
+							NSNotificationCenter.defaultCenter.removeObserver(s.token)
+							subs.Remove(s)
+						}
+					}
+					if subs.Count == 0 {
+						subscriptions.Remove(k)
 					}
 				}
 			}
@@ -126,6 +150,9 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 						if s.0 == receiver {
 							subs.Remove(s)
 						}
+					}
+					if subs.Count == 0 {
+						subscriptions.Remove(k)
 					}
 				}
 			}
