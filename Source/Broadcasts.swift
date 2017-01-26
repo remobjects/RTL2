@@ -97,7 +97,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
 		__lock self {
 			if let subs = subscriptions[broadcast] {
-				for s in subs.copy() {
+				for s in subs.UniqueCopy() {
 					if s.receiver == receiver || s.receiver == nil {
 						NSNotificationCenter.defaultCenter.removeObserver(s.token)
 						subs.Remove(s)
@@ -111,7 +111,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		#else
 		__lock self {
 			if let subs = subscriptions[broadcast] {
-				for s in subs.copy() {
+				for s in subs.UniqueCopy() {
 					if s.0 == receiver {
 						subs.Remove(s)
 					}
@@ -130,7 +130,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		__lock self {
 			for k in subscriptions.Keys {
 				if let subs = subscriptions[k] {
-					for s in subs.copy() {
+					for s in subs.UniqueCopy() {
 						if s.receiver == receiver || s.receiver == nil {
 							NSNotificationCenter.defaultCenter.removeObserver(s.token)
 							subs.Remove(s)
@@ -146,7 +146,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		__lock self {
 			for k in subscriptions.Keys {
 				if let subs = subscriptions[k] {
-					for s in subs? {
+					for s in subs.UniqueCopy() {
 						if s.0 == receiver {
 							subs.Remove(s)
 						}
