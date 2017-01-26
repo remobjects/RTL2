@@ -72,8 +72,8 @@ type
     method ToBoolean(aValue: Byte): Boolean;
     method ToBoolean(aValue: not nullable String): Boolean;
 
-    method ToUtf8Bytes(aValue: not nullable String): array of Byte; //inline;
-    method Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String; //inline;// aLength breaks when inlined (macOS).
+    method ToUtf8Bytes(aValue: not nullable String): array of Byte; inline;
+    method Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String; inline;// aLength breaks when inlined (macOS).
 
     //method ToHexString(aValue: Int32; aWidth: Integer := 0): not nullable String;
     method ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;

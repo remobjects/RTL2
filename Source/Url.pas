@@ -111,7 +111,7 @@ type
     method UrlWithFragment(aFragment: nullable String): not nullable Url;
     method UrlWithoutFragment(): not nullable Url; inline;
 
-    method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; //inline;
+    method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; inline;
     method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; inline;
     method UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
 
