@@ -7,7 +7,7 @@ type
   PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray;{$ENDIF};
 
   ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray where T is class;{$ENDIF}
-  protected
+  private
     method GetItem(&Index: Integer): T;
 
   public
@@ -57,6 +57,7 @@ type
 
   List<T> = public class (ImmutableList<T>, sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray where T is class;{$ENDIF}
   private
+    method GetItem(&Index: Integer): T;
     method SetItem(&Index: Integer; Value: T);
 
   public
@@ -94,7 +95,7 @@ type
     method SubList(aStartIndex: Int32): List<T>; reintroduce; inline;
     method SubList(aStartIndex: Int32; aLength: Int32): List<T>; reintroduce; inline;
 
-    property Item[i: Integer]: T read inherited GetItem(i) write SetItem; default;
+    property Item[i: Integer]: T read GetItem write SetItem; default;
   end;
 
   ImmutableListProxy<T> = public class
@@ -216,6 +217,15 @@ begin
 end;
 
 method ImmutableList<T>.GetItem(&Index: Integer): T;
+begin
+  {$IF TOFFEE}
+  exit NullHelper.ValueOf(mapped.objectAtIndex(&Index));
+  {$ELSE}
+  exit mapped[&Index];
+  {$ENDIF}
+end;
+
+method List<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
   exit NullHelper.ValueOf(mapped.objectAtIndex(&Index));
