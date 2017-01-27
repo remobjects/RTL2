@@ -112,7 +112,7 @@ begin
     exit;
   end;
   if (fPos>0) and
-    ((fData[fPos-1] = '>') or ((fData.length > (fPos-fLength-1)) and (Token = XmlTokenKind.Whitespace) and (fData[fPos-fLength-1] = '>')))
+    ((fData[fPos-1] = '>') or (((fPos-fLength) > 0) and (Token = XmlTokenKind.Whitespace) and (fData[fPos-fLength-1] = '>')))
     and (fPos < fData.length) and (not(CharIsWhitespace(fData[fPos]))) and (fData[fPos] <> '<') then ParseSymbolData()
   else
     if CharIsNameStart(fData[fPos]) then ParseName
@@ -306,17 +306,17 @@ begin
     var ch := fData[fPos];
     if ch = lQuoteChar then break;
     case ch of
-      '>': lValue.Append('&gt;');
+      {'>': lValue.Append('&gt;');}
       //'"' : if ch lQuoteChar then lValue.Append('&quot;') else lValue.Append(ch);
       //'''': if ch lQuoteChar then lValue.Append('apos') else lValue.Append(ch);
-      '&' : begin
+      {'&' : begin
           var lEntity := ParseEntity();
           if assigned(lEntity) then begin
             lValue.Append(lEntity);
           end
           else
             lValue.Append("&");
-        end;
+        end;}
       #13: begin
         if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
         fRowStart := fPos + 1;

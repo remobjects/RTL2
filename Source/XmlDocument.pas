@@ -166,6 +166,7 @@ type
     WSleft, WSright: String;
     innerWSleft, innerWSright: String;
     QuoteChar: Char := '"';
+    originalRawValue: String;
   private
     fLocalName: String;
     fValue: String;

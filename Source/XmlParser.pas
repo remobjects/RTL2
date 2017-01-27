@@ -12,6 +12,8 @@ type
     method GetNamespaceForPrefix(aPrefix:not nullable String; aParent: XmlElement): XmlNamespace;
     method ReadProcessingInstruction(aParent: XmlElement): XmlProcessingInstruction;
     method ReadDocumentType: XmlDocumentType;
+    method ParseEntity(S: String): nullable String;
+    method ResolveEntity(S: not nullable String): nullable String;
   assembly
     fLineBreak: String;
   public
@@ -75,6 +77,7 @@ type
     NewLineForElements: Boolean := true;
     NewLineForAttributes: Boolean := false;
     NewLineSymbol: XmlNewLineSymbol  := XmlNewLineSymbol.PlatformDefault;
+    PreserveExactStringsForUnchnagedValues: Boolean := false;
   end;
 
 implementation
@@ -290,7 +293,17 @@ begin
   else begin
     result := new XmlAttribute(aParent, StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
     XmlAttribute(result).LocalName := lLocalName;
+    XmlAttribute(result).originalRawValue := lValue;
+   { var str: String := lValue;
+    var ind := str.IndexOf("&");
+    for ind := 0 to lValue.Length-1 do begin
+      if lValue[ind] = "&" then 
+    end;
+    while ind > -1 do begin
+      lValue := ParseEntity(str.Substring(ind, str.Length - ind));
+    end;}
     XmlAttribute(result).Value := lValue;
+    
     XmlAttribute(result).QuoteChar := lQuoteChar;
     XmlAttribute(result).WSleft := lWSleft;
     XmlAttribute(result).innerWSleft := linnerWSleft;
@@ -555,6 +568,64 @@ begin
   Expected(XmlTokenKind.TagClose);
   result.EndLine := Tokenizer.Row;
   result.EndColumn := Tokenizer.Column;
+end;
+
+method XmlParser.ParseEntity(S: String): nullable String;
+begin
+  result := S;
+  {if (fData[fPos] <> '&') or (fData.Length = fPos+1) then exit nil;
+
+  var lPos := fPos;
+  inc(lPos);
+  var lEntity := new StringBuilder("&");
+  while lPos < fData.Length do begin
+    var ch := fData[lPos];
+    case ch of
+      ';': begin
+          lEntity.Append(ch);
+          fPos := lPos;
+          break;
+        end;
+      'a'..'z','A'..'Z','0'..'9','#': begin
+          lEntity.Append(ch);
+        end;
+      else begin
+        exit nil;
+      end;
+    end;
+    inc(lPos);
+  end;
+
+  var lEntityString := lEntity.ToString();
+  var lResolvedEntity := ResolveEntity(lEntityString);
+  if assigned(lResolvedEntity) then
+    result := lResolvedEntity
+  else
+    result := lEntityString;}
+end;
+
+method XmlParser.ResolveEntity(S: not nullable String): nullable String;
+begin
+  if S.StartsWith("&#x") then begin
+    var lHex := S.Substring(3, length(S)-4);
+    try
+      var lValue := Convert.HexStringToInt32(lHex);
+      result := chr(lValue);
+    except
+    end;
+  end
+  else if S.StartsWith("&#") then begin
+    var lDec := S.Substring(2, length(S)-3);
+    var lValue := Convert.TryToInt32(lDec);
+    if assigned(lValue) then result := chr(lValue);
+  end
+  else case S of
+    "&lt;": result := "<";
+    "&gt;": result := ">";
+    "&amp;": result := "&";
+    "&apos;": result := "'";
+    "&quot;": result := """";
+  end;
 end;
 
 end.
