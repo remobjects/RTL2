@@ -332,12 +332,7 @@ begin
         Token := XmlTokenKind.SyntaxError;
         Value := "Syntax error. Symbol '<' is not allowed in attribute value";
         exit;
-        //raise new Exception("Syntax error at "+Row+"/"+Column+"Symbol '<' is not allowed in attribute value");
       end;
-      {#0: begin
-        Token := XmlTokenKind.EOF;
-        exit;
-      end;}
       else lValue.Append(ch);
     end;
     inc(fPos);
@@ -390,8 +385,8 @@ begin
   var lPos: Integer;
   while ((lPosition < fData.length) and (fData[lPosition] <> '<'){ and (fData[lPosition] <> #0)}) do begin
     case fData[lPosition] of
-      '>' :Value := Value+'&gt;';
-      '&': begin
+      //'>' :Value := Value+'&gt;';
+      {'&': begin
           fPos := lPosition;
           var lEntity := ParseEntity();
           if assigned(lEntity) then begin
@@ -402,7 +397,7 @@ begin
           end
           else
             Value := Value+"&";
-        end;
+        end;}
       #13 : begin
           if (fData.length<lPosition+1) then begin
             Token := XmlTokenKind.EOF;
@@ -460,11 +455,6 @@ begin
         inc(fRow);
       end;
       '-': if (fData.Length > lPosition+1) and (fData[lPosition+1] = '-') then Comment := false;
-      {#0: begin
-        Token :=XmlTokenKind.EOF;
-        fPos := lPosition;
-        exit;
-      end}
     end;
     inc(lPosition);
   end;
@@ -501,11 +491,6 @@ begin
         inc(fRow);
       end;
       ']': if (fData.Length > lPosition+1) and (fData[lPosition+1] = ']') then CData := false;
-      {#0: begin
-        Token := XmlTokenKind.EOF;
-        fPos := lPosition;
-        exit;
-      end}
     end;
     inc(lPosition);
   end;

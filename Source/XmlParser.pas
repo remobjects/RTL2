@@ -293,16 +293,8 @@ begin
   else begin
     result := new XmlAttribute(aParent, StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
     XmlAttribute(result).LocalName := lLocalName;
-    XmlAttribute(result).originalRawValue := lValue;
-   { var str: String := lValue;
-    var ind := str.IndexOf("&");
-    for ind := 0 to lValue.Length-1 do begin
-      if lValue[ind] = "&" then 
-    end;
-    while ind > -1 do begin
-      lValue := ParseEntity(str.Substring(ind, str.Length - ind));
-    end;}
-    XmlAttribute(result).Value := lValue;
+    var lparsedValue := ParseEntity(lValue);
+    XmlAttribute(result).Value := lparsedValue;
     
     XmlAttribute(result).QuoteChar := lQuoteChar;
     XmlAttribute(result).WSleft := lWSleft;
@@ -401,7 +393,9 @@ begin
                 if (WSValue <>"") then begin
                   result.AddNode(new XmlText(result, Value := WSValue));
                 end;
-              result.AddNode(new XmlText(result, Value := Tokenizer.Value, StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column));//add node;
+              var lParsedValue := ParseEntity(Tokenizer.Value);
+              result.AddNode(new XmlText(result, Value := {Tokenizer.Value}lParsedValue, originalRawValue := Tokenizer.Value, 
+                StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column));//add node;
               WSValue := "";
             end;
             XmlTokenKind.Comment: begin
@@ -572,36 +566,37 @@ end;
 
 method XmlParser.ParseEntity(S: String): nullable String;
 begin
-  result := S;
-  {if (fData[fPos] <> '&') or (fData.Length = fPos+1) then exit nil;
-
-  var lPos := fPos;
-  inc(lPos);
-  var lEntity := new StringBuilder("&");
-  while lPos < fData.Length do begin
-    var ch := fData[lPos];
-    case ch of
-      ';': begin
-          lEntity.Append(ch);
-          fPos := lPos;
-          break;
-        end;
-      'a'..'z','A'..'Z','0'..'9','#': begin
-          lEntity.Append(ch);
-        end;
-      else begin
-        exit nil;
+  var i := 0;
+  result :="";
+  while i < S.Length do begin
+    if S[i] = '&' then begin
+      var lEntity := new StringBuilder("&");
+      var j := i+1;
+      while j < S.Length do begin
+        var ch := S[j];
+          case ch of
+            ';': begin
+              lEntity.Append(ch);
+              break;
+            end;
+            'a'..'z','A'..'Z','0'..'9','#': begin
+              lEntity.Append(ch);
+            end;
+            else break;
+          end;
+          inc(j);
       end;
-    end;
-    inc(lPos);
+      var lEntityString := lEntity.ToString();
+      var lResolvedEntity := ResolveEntity(lEntityString);
+      if assigned(lResolvedEntity) then
+        result := result + lResolvedEntity
+      else
+        result := result + lEntityString;
+      if (j <> i+1) then i := j;
+    end
+    else result := result + S[i];
+    inc(i)
   end;
-
-  var lEntityString := lEntity.ToString();
-  var lResolvedEntity := ResolveEntity(lEntityString);
-  if assigned(lResolvedEntity) then
-    result := lResolvedEntity
-  else
-    result := lEntityString;}
 end;
 
 method XmlParser.ResolveEntity(S: not nullable String): nullable String;
