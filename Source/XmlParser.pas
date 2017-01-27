@@ -78,6 +78,21 @@ type
     NewLineForAttributes: Boolean := false;
     NewLineSymbol: XmlNewLineSymbol  := XmlNewLineSymbol.PlatformDefault;
     PreserveExactStringsForUnchnagedValues: Boolean := false;
+    WriteNewLineAtEnd: Boolean := false;
+    WriteBOM: Boolean := false;
+
+  assembly
+
+    method NewLineString: String;
+    begin
+      case NewLineSymbol of
+        XmlNewLineSymbol.PlatformDefault: result := Environment.LineBreak;
+        XmlNewLineSymbol.LF: result := #10;
+        XmlNewLineSymbol.CRLF: result := #13#10;
+        XmlNewLineSymbol.Preserve: result := nil;
+      end;
+    end;
+
   end;
 
 implementation
@@ -86,24 +101,14 @@ constructor XmlParser( XmlString: String);
 begin
   Tokenizer := new XmlTokenizer(XmlString);
   FormatOptions := new XmlFormattingOptions;
-  case FormatOptions.NewLineSymbol of
-    XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
-    XmlNewLineSymbol.LF: fLineBreak := #10;
-    XmlNewLineSymbol.CRLF: fLineBreak := #13#10;
-
-  end;
+  fLineBreak := FormatOptions.NewLineString;
 end;
 
 constructor XmlParser(XmlString: String; aOptions: XmlFormattingOptions);
 begin
   Tokenizer := new XmlTokenizer(XmlString);
   FormatOptions := aOptions;
-  case FormatOptions.NewLineSymbol of
-    XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
-    XmlNewLineSymbol.LF: fLineBreak := #10;
-    XmlNewLineSymbol.CRLF: fLineBreak := #13#10;
-  end;
-
+  fLineBreak := FormatOptions.NewLineString;
 end;
 
 method XmlParser.Parse: XmlDocument;
@@ -295,7 +300,7 @@ begin
     XmlAttribute(result).LocalName := lLocalName;
     var lparsedValue := ParseEntity(lValue);
     XmlAttribute(result).Value := lparsedValue;
-    
+
     XmlAttribute(result).QuoteChar := lQuoteChar;
     XmlAttribute(result).WSleft := lWSleft;
     XmlAttribute(result).innerWSleft := linnerWSleft;
@@ -394,7 +399,7 @@ begin
                   result.AddNode(new XmlText(result, Value := WSValue));
                 end;
               var lParsedValue := ParseEntity(Tokenizer.Value);
-              result.AddNode(new XmlText(result, Value := {Tokenizer.Value}lParsedValue, originalRawValue := Tokenizer.Value, 
+              result.AddNode(new XmlText(result, Value := {Tokenizer.Value}lParsedValue, originalRawValue := Tokenizer.Value,
                 StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column));//add node;
               WSValue := "";
             end;
@@ -538,7 +543,7 @@ begin
       Tokenizer.Next;
       Expected(XmlTokenKind.AttributeValue);
       result.SystemId := Tokenizer.Value;
-      Tokenizer.Next; 
+      Tokenizer.Next;
     end
     else raise new XmlException("SYSTEM, PUBLIC or square brackets expected", Tokenizer.Row, Tokenizer.Column);
     Expected(XmlTokenKind.Whitespace, XmlTokenKind.TagClose);

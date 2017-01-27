@@ -32,7 +32,7 @@ type
     method Subdata(Range: Range): Binary;
     method Subdata(aStartIndex: Integer; aCount: Integer): Binary;
 
-    method ToArray: array of Byte;
+    method ToArray: not nullable array of Byte;
     property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
   end;
 
@@ -233,12 +233,12 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableBinary.ToArray: array of Byte;
+method ImmutableBinary.ToArray: not nullable array of Byte;
 begin
   {$IF COOPER}
-  exit fData.toByteArray;
+  result := fData.toByteArray as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToArray;
+  result := mapped.ToArray as not nullable;
   {$ELSEIF TOFFEE}
   result := new Byte[mapped.length];
   mapped.getBytes(result) length(mapped.length);

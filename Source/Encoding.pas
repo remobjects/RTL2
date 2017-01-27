@@ -12,7 +12,8 @@ type
     method GetName: not nullable String;
     method GetIsUTF8: Boolean;
   public
-    method GetBytes(aValue: String): not nullable array of Byte;
+    method GetBytes(aValue: String): not nullable array of Byte; inline;
+    method GetBytes(aValue: String) includeBOM(aBOM: Boolean): not nullable array of Byte;
 
     method GetString(aValue: not nullable array of Byte): String;
     method GetString(aValue: not nullable array of Byte; aOffset: Integer; aCount: Integer): String;
@@ -38,6 +39,12 @@ implementation
 
 method Encoding.GetBytes(aValue: String): not nullable array of Byte;
 begin
+  result := GetBytes(aValue) includeBOM(false);
+end;
+
+method Encoding.GetBytes(aValue: String) includeBOM(aBOM: Boolean): not nullable array of Byte;
+begin
+  {$WARNING Still needs to handle BOM option for non-Toffee and non-UTF-8}
   ArgumentNullException.RaiseIfNil(aValue, "aValue");
   {$IF COOPER}
   var Buffer := java.nio.charset.Charset(self).encode(aValue);
@@ -57,9 +64,17 @@ begin
               //"ASCII","USASCII","UTFASCII": TextConvert.StringToASCII(aValue);
             end;
   {$ELSEIF TOFFEE}
-  result := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as Binary).ToArray;
-  if not assigned(result) then
+  var lResult := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as Binary);
+  if not assigned(lResult) then
     raise new FormatException("Unable to convert data");
+  if isUTF8 and aBOM then begin
+    var lBOM: array of Byte := [$EF, $BB, $BF];
+    var lResult2 := new Binary();
+    lResult2.Write(lBOM);
+    lResult2.Write(lResult);
+    lResult := lResult2;
+  end;
+  result := lResult.ToArray();
   {$ENDIF}
 end;
 

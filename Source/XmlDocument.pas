@@ -345,11 +345,7 @@ end;
 method XmlDocument.ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
 begin
   fFormatOptions := aFormatOptions;
-  case aFormatOptions.NewLineSymbol of
-    XmlNewLineSymbol.PlatformDefault, XmlNewLineSymbol.Preserve: fLineBreak := Environment.LineBreak;
-    XmlNewLineSymbol.LF: fLineBreak := #10;
-    XmlNewLineSymbol.CRLF: fLineBreak := #13#10;
-  end;
+  fLineBreak := aFormatOptions.NewLineString;
 
   var lPreserveExactStringsForUnchnagedValues := aFormatOptions.PreserveExactStringsForUnchnagedValues;
   result:="";
@@ -376,15 +372,16 @@ begin
       lFormatInsideTags := true;
     end;
     for each aNode in fNodes do
-      result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags, lPreserveExactStringsForUnchnagedValues)
+      result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags, lPreserveExactStringsForUnchnagedValues);
   end
   else begin
     if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then lFormatInsideTags := true;
     if (Version <> nil) and aFormatOptions.NewLineForElements then result := result + fLineBreak;
-      for each aNode in fNodes do begin
+      for each aNode in fNodes do
         if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
           result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags, lPreserveExactStringsForUnchnagedValues)+fLineBreak;
-      end;
+      if not aFormatOptions.WriteNewLineAtEnd then
+        result := result.TrimEnd();
   end;
 end;
 
@@ -395,7 +392,10 @@ end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
 begin
-  FileUtils.WriteText(aFileName.FullPath, self.ToString(true, aFormatOptions));
+  var lStringValue := self.ToString(true, aFormatOptions);
+  var lEncoding := coalesce(RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding), RemObjects.Elements.RTL.Encoding.UTF8);
+  var lBytes := lEncoding.GetBytes(lStringValue) includeBOM(aFormatOptions.WriteBOM);
+  FileUtils.WriteBytes(aFileName.FullPath, lBytes);
 end;
 
 
@@ -477,7 +477,7 @@ begin
       end
       else if XmlDocumentType(self).SystemId <> nil then
         result := result + " SYSTEM "+XmlDocumentType(self).SystemId;
-      if XmlDocumentType(self).Declaration <> nil then 
+      if XmlDocumentType(self).Declaration <> nil then
         result := result + " ["+XmlDocumentType(self).Declaration+"]";
       result := result + ">";
     end;
@@ -1055,7 +1055,7 @@ begin
   if (Prefix <> "") and (Prefix <> nil) then result := result+':'+Prefix;
   if not(aFormatInsideTags) and (innerWSleft <> nil) then result := result + innerWSleft;
   result := result + "=";
-  if not(aFormatInsideTags) and (innerWSright <> nil) then result := result + innerWSright;  
+  if not(aFormatInsideTags) and (innerWSright <> nil) then result := result + innerWSright;
   result := result +QuoteChar+ Url.ToString+QuoteChar;
 end;
 
