@@ -48,7 +48,7 @@ type
 
     class method UrlWithString(aUrlString: nullable String): Url;
     class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
-    //class method UrlWithFilePath(aPath: not nullable String) aRelativeToUrl(aUrl) isDirectory(aIsDirectory: Boolean := false): Url;
+    class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithUnixPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
 
@@ -191,6 +191,14 @@ begin
   if aPath.IsAbsoluteWindowsPath then
     aPath := "/"+aPath; // Windows paths always get an extra "/"
   result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
+end;
+
+class method Url.UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
+begin
+  if aPath.IsAbsolutePath then
+    result := UrlWithFilePath(aPath) isDirectory(aIsDirectory)
+  else
+    result := UrlWithFilePath(Path.Combine(aUrl.FilePath, aPath)) isDirectory(aIsDirectory).CanonicalVersion;
 end;
 
 class method Url.UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
@@ -773,7 +781,11 @@ begin
     inc(i);
     inc(j);
   end;
-  result := Convert.Utf8BytesToString(lResultBytes, j);
+  try
+    result := Convert.Utf8BytesToString(lResultBytes, j);
+  except
+    result := Encoding.ASCII.GetString(lResultBytes, 0, j);
+  end;
   /*result := "";
   for b: Int32 := 0 to j-1 do
     result := result+chr(lResultBytes[b]);*/
