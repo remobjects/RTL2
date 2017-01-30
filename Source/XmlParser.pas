@@ -102,6 +102,10 @@ begin
   Tokenizer := new XmlTokenizer(XmlString);
   FormatOptions := new XmlFormattingOptions;
   fLineBreak := FormatOptions.NewLineString;
+  if fLineBreak = nil then 
+    if XmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
+    else if XmlString.IndexOf(#10) > -1 then fLineBreak := #10
+      else fLineBreak := Environment.LineBreak;
 end;
 
 constructor XmlParser(XmlString: String; aOptions: XmlFormattingOptions);
@@ -109,6 +113,10 @@ begin
   Tokenizer := new XmlTokenizer(XmlString);
   FormatOptions := aOptions;
   fLineBreak := FormatOptions.NewLineString;
+  if fLineBreak = nil then 
+    if XmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
+    else if XmlString.IndexOf(#10) > -1 then fLineBreak := #10
+      else fLineBreak := Environment.LineBreak;
 end;
 
 method XmlParser.Parse: XmlDocument;

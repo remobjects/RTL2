@@ -346,7 +346,7 @@ method XmlDocument.ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormatti
 begin
   fFormatOptions := aFormatOptions;
   fLineBreak := aFormatOptions.NewLineString;
-
+  if (fLineBreak = nil) and (fXmlParser <> nil) then fLineBreak := fXmlParser.fLineBreak;
   var lPreserveExactStringsForUnchnagedValues := aFormatOptions.PreserveExactStringsForUnchnagedValues;
   result:="";
   var lFormatInsideTags := false;
@@ -997,7 +997,6 @@ begin
   end;
   if &Namespace<>nil then result := result+&Namespace.Prefix+":";
   result := result + LocalName;
-  {$WARNING TODO, preserve whietspace around =}
   if not(aFormatInsideTags) and (innerWSleft <> nil) then result := result + innerWSleft;
   result := result + "=";
   if not(aFormatInsideTags) and (innerWSright <> nil) then result := result + innerWSright;
