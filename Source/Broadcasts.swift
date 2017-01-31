@@ -92,13 +92,13 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	}
 	#endif
 
-	public func unsubscribe(_ receiver: Object, fromBroadcast broadcast: String) {
+	public func unsubscribe(_ receiver: Object, fromBroadcast broadcast: String, object: Object? = nil) {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
 		__lock self {
 			if let subs = subscriptions[broadcast] {
 				for s in subs.UniqueCopy() {
-					if s.receiver == receiver || s.receiver == nil {
+					if s.receiver == nil || (s.receiver == receiver && (s.object == object || s.object == nil || object == nil)) {
 						NSNotificationCenter.defaultCenter.removeObserver(s.token)
 						subs.Remove(s)
 					}
