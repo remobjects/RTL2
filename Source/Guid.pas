@@ -145,6 +145,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 class method Guid.TryParse(aValue: String): Guid;
 begin
   if (aValue.Length <> 38) and (aValue.Length <> 36) then

@@ -3,6 +3,7 @@
 interface
 
 type
+  {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
   TimeZone = public class {$IFDEF ECHOES}mapped to System.TimeZoneInfo{$ELSEIF TOFFEE}mapped to NSTimeZone{$ELSEIF COOPER}mapped to java.util.TimeZone{$ENDIF}
   private
     class method get_LocalTimeZone: not nullable TimeZone;

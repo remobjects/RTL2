@@ -319,6 +319,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 class method String.CharacterIsLetter(Value: Char): Boolean;
 begin
   {$IF COOPER}
@@ -344,6 +345,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 class method String.CharacterIsLetterOrNumber(Value: Char): Boolean;
 begin
   {$IF COOPER}
@@ -758,6 +760,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.ToLower(aLocale: Locale): not nullable String;
 begin
   {$IF COOPER}
@@ -800,6 +803,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.ToUpper(aLocale: Locale): not nullable String;
 begin
   {$IF COOPER}
@@ -851,6 +855,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.Trim(const TrimChars: array of Char): not nullable String;
 begin
   {$IF COOPER}

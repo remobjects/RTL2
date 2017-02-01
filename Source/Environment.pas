@@ -151,6 +151,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Environment.GetUserHomeFolder: Folder;
 begin
   {$IF COOPER}
@@ -313,7 +314,7 @@ begin
   {$ENDIF}
 end;
 
-method GetIsMono: Boolean;
+method Environment.GetIsMono: Boolean;
 begin
   {$IF ECHOES}
   result := assigned(System.Type.GetType("Mono.Runtime"));
@@ -321,7 +322,5 @@ begin
   result := false;
   {$ENDIF}
 end;
-
-
 
 end.

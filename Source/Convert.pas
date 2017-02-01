@@ -379,6 +379,7 @@ begin
     result[i] := Byte((HexValue(aData[i shl 1]) shl 4) + HexValue(aData[(i shl 1) + 1]));
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.HexStringToInt32(aValue: not nullable String): UInt32;
 begin
   {$IF COOPER}
@@ -394,6 +395,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.HexStringToInt64(aValue: not nullable String): UInt64;
 begin
   {$IF COOPER}
@@ -519,6 +521,7 @@ begin
     raise new FormatException(String.Format("Invalid double value '{0}' for locale {1}", aValue, aLocale.Identifier));
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.TryToDouble(aValue: nullable String; aLocale: Locale): nullable Double;
 begin
   if String.IsNullOrWhiteSpace(aValue) then
@@ -605,6 +608,7 @@ begin
   result := ord(aValue);
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.ToByte(aValue: not nullable String): Byte;
 begin
   if aValue = nil then

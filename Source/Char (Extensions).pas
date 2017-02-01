@@ -14,6 +14,7 @@ interface
 
 {$GLOBALS ON}
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method LowerChar(aChar: Char): Char; assembly;
 begin
   {$IF COOPER}
@@ -28,6 +29,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method UpperChar(aChar: Char): Char; assembly;
 begin
   {$IF COOPER}
