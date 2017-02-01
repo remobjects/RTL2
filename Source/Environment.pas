@@ -19,6 +19,8 @@ type
     method GetEnvironmentVariable(Name: String): String;
     method GetCurrentDirectory: String;
 
+    method GetIsMono: Boolean;
+
     method GetUserHomeFolder: Folder;
     method GetApplicationSupportFolder: Folder;
 
@@ -42,6 +44,8 @@ type
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
     property ApplicationContext: ApplicationContext read write;
+
+    property IsMono: Boolean read GetIsMono;
 
     property EnvironmentVariable[Name: String]: String read GetEnvironmentVariable;
     property CurrentDirectory: String read GetCurrentDirectory;
@@ -308,5 +312,16 @@ begin
   exit Foundation.NSFileManager.defaultManager().currentDirectoryPath;
   {$ENDIF}
 end;
+
+method GetIsMono: Boolean;
+begin
+  {$IF ECHOES}
+  result := assigned(System.Type.GetType("Mono.Runtime"));
+  {$ELSE}
+  result := false;
+  {$ENDIF}
+end;
+
+
 
 end.

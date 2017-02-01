@@ -65,6 +65,11 @@ type
   ArgumentNullException = public class(ArgumentException)
   public
 
+    constructor;
+    begin
+      inherited constructor(RTLErrorMessages.ARG_NULL_ERROR2)
+    end;
+
     constructor(aMessage: String);
     begin
       inherited constructor(RTLErrorMessages.ARG_NULL_ERROR, aMessage)
@@ -80,6 +85,11 @@ type
 
   ArgumentOutOfRangeException = public class(ArgumentException)
   public
+
+    constructor;
+    begin
+      inherited constructor(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR2)
+    end;
 
     constructor(aMessage: String);
     begin
@@ -196,7 +206,9 @@ type
     class const OUT_OF_RANGE_ERROR = "Range ({0},{1}) exceeds data length {2}";
     class const NEGATIVE_VALUE_ERROR = "{0} can not be negative";
     class const ARG_OUT_OF_RANGE_ERROR = "{0} argument was out of range of valid values.";
+    class const ARG_OUT_OF_RANGE_ERROR2 = "Argument was out of range of valid values.";
     class const ARG_NULL_ERROR = "Argument {0} can not be nil";
+    class const ARG_NULL_ERROR2 = "Argument can not be nil";
     class const TYPE_RANGE_ERROR = "Specified value exceeds range of {0}";
     class const COLLECTION_EMPTY = "Collection is empty";
     class const KEY_NOTFOUND = "Entry with specified key does not exist";

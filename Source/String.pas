@@ -25,6 +25,8 @@ type
     constructor(Value: array of Char; Offset: Integer; Count: Integer);
     constructor(aChar: Char; aCount: Integer);
 
+    class property &Empty: String read "";
+
     class operator &Add(Value1: String; Value2: String): not nullable String;
     class operator &Add(Value1: String; Value2: Object): not nullable String;
     class operator &Add(Value1: Object; Value2: String): not nullable String;

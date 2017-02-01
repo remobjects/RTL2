@@ -60,6 +60,9 @@ type
     property Fragment: String read fFragment;
     property User: String read fUser;
 
+    property HostAndPort: nullable String read GetHostNameAndPort;
+    property PathAndQueryString: nullable String read GetPathAndQueryString;
+
     [ToString]
     method ToString: String; override;
     method ToAbsoluteString: String;

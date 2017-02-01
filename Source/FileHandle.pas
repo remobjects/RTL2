@@ -11,14 +11,14 @@ type
   PlatformFileAccess = System.IO.FileAccess;
   PlatformFileShare = System.IO.FileShare;
   PlatformFileStream = System.IO.FileStream;
-  PlatformSeekOrigin = System.IO.SeekOrigin;
+  PlatformSeekOrigin = public System.IO.SeekOrigin;
   {$ENDIF}
   {$IF ISLAND}
   PlatformFileMode = RemObjects.Elements.System.FileMode;
   PlatformFileAccess = RemObjects.Elements.System.FileAccess;
   PlatformFileShare = RemObjects.Elements.System.FileShare;
   PlatformFileStream = RemObjects.Elements.System.FileStream;
-  PlatformSeekOrigin = RemObjects.Elements.System.SeekOrigin;
+  PlatformSeekOrigin = public RemObjects.Elements.System.SeekOrigin;
   {$ENDIF}
 
   FileHandle = public class mapped to {$IF COOPER}java.io.RandomAccessFile{$ELSEIF WINDOWS_PHONE OR NETFX_CORE}Stream{$ELSEIF ECHOES OR ISLAND}PlatformFileStream{$ELSEIF TOFFEE}NSFileHandle{$ENDIF}

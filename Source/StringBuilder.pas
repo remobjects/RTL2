@@ -19,6 +19,7 @@ type
     method Append(Value: Char): StringBuilder; inline;
     method AppendLine: StringBuilder;  inline;
     method AppendLine(Value: nullable String): StringBuilder; inline;
+    method AppendFormat(aFormat: String; params aParams: array of Object): StringBuilder; inline;
 
     method Clear; inline;
     method Delete(StartIndex, Count: Integer): StringBuilder; inline;
@@ -117,6 +118,11 @@ begin
   mapped.appendString(Environment.LineBreak);
   exit mapped;
   {$ENDIF}
+end;
+
+method StringBuilder.AppendFormat(aFormat: String; params aParams: array of Object): StringBuilder;
+begin
+  result := Append(String.Format(aFormat, aParams));
 end;
 
 method StringBuilder.AppendLine: StringBuilder;
