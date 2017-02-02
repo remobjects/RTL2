@@ -90,6 +90,8 @@ class method Task.Run(aCommand: not nullable String; aArguments: array of String
 begin
   using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
     {$IF ECHOES}
+    (lTask as PlatformTask).StartInfo.RedirectStandardOutput := true;
+    (lTask as PlatformTask).StartInfo.RedirectStandardError := true;
     lTask.Start();
     lTask.WaitFor();
     aStdOut := (lTask as PlatformTask).StandardOutput.ReadToEnd;

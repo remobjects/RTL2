@@ -73,7 +73,7 @@ type
   );
 
   {$IF COOPER}
-  ThreadRunnable = unit class(Runnable)
+  BlockRunnable = unit class(Runnable)
   private
     var fBlock: block;
     method Run();
@@ -93,7 +93,7 @@ implementation
 constructor Thread(aEntrypoint: not nullable block);
 begin
   {$IF COOPER}
-  result := new PlatformThread(new ThreadRunnable(aEntrypoint));
+  result := new PlatformThread(new BlockRunnable(aEntrypoint));
   {$ELSEIF ECHOES}
   result := new PlatformThread(a -> aEntrypoint);
   {$ELSEIF ISLAND}
