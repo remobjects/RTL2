@@ -88,16 +88,6 @@ type
   end;
   {$ENDIF}
 
-  {$IF TOFFEE}
-  NSThread_Extension_RTL2 = extension class(Thread)
-  unit
-    method RTL2EntryPointHelper(aEntrypoint: block);
-    begin
-      aEntrypoint();
-    end;
-  end;
-  {$ENDIF}
-
 implementation
 
 constructor Thread(aEntrypoint: not nullable block);
@@ -109,7 +99,7 @@ begin
   {$ELSEIF ISLAND}
   result := new PlatformThread(a -> aEntrypoint);
   {$ELSEIF TOFFEE}
-  result := new PlatformThread withTarget(self) selector(selector(EntryPointHelper:)) object(aEntrypoint);
+  result := new PlatformThread withBlock(aEntrypoint);
   {$ENDIF}
 end;
 
