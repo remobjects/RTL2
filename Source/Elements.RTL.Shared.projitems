@@ -113,6 +113,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NativeXmlDocument.pas">
       <VirtualFolder>Xml</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Thread.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
