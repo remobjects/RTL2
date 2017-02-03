@@ -789,9 +789,6 @@ begin
   except
     result := Encoding.ASCII.GetString(lResultBytes, 0, j);
   end;
-  /*result := "";
-  for b: Int32 := 0 to j-1 do
-    result := result+chr(lResultBytes[b]);*/
 end;
 
 class method Url.UrlEncodeString(aString: String): String;
