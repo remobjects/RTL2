@@ -20,10 +20,8 @@ type
   PlatformType = RemObjects.Elements.System.Type;
   {$ENDIF}
 
-  {$IF ECHOES OR COOPER}
+  {$IF ECHOES OR COOPER OR ISLAND}
   &Type = public class mapped to PlatformType
-  {$ELSEIF ISLAND}
-  &Type = public record mapped to PlatformType
   {$ELSEIF TOFFEE}
   &Type = public class
   {$ENDIF}
@@ -50,7 +48,7 @@ type
     property Interfaces: ImmutableList<&Type> read Get_Interfaces;
     property Methods: ImmutableList<&Method> read Get_Methods;
     property Name: String read mapped.Name;
-    property BaseType: &Type read mapped.GetTypeInfo().BaseType;
+    property BaseType: nullable &Type read mapped.GetTypeInfo().BaseType;
     property IsClass: Boolean read mapped.GetTypeInfo().IsClass;
     property IsInterface: Boolean read mapped.GetTypeInfo().IsInterface;
     property IsArray: Boolean read mapped.IsArray;
@@ -61,7 +59,7 @@ type
     property Methods: ImmutableList<&Method> read mapped.GetMethods().ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
-    property BaseType: &Type read mapped.BaseType;
+    property BaseType: nullable &Type read mapped.BaseType;
     property IsClass: Boolean read mapped.IsClass;
     property IsInterface: Boolean read mapped.IsInterface;
     property IsArray: Boolean read mapped.IsArray;
@@ -72,7 +70,7 @@ type
     property Methods: ImmutableList<&Method> read mapped.Methods.ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
-    property BaseType: &Type read mapped.BaseType;
+    property BaseType: nullable &Type read mapped.BaseType;
     property IsClass: Boolean read mapped.Flags = IslandTypeFlags.Class;
     property IsInterface: Boolean read mapped.Flags = IslandTypeFlags.Interface;
     property IsArray: Boolean read mapped.Flags = IslandTypeFlags.Array;
@@ -83,7 +81,7 @@ type
     property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
-    property BaseType: &Type read mapped.getSuperclass();
+    property BaseType: nullable &Type read mapped.getSuperclass();
     property IsClass: Boolean read (not mapped.isInterface()) and (not mapped.isPrimitive());
     property IsInterface: Boolean read mapped.isInterface();
     property IsArray: Boolean read mapped.isArray();
@@ -100,7 +98,7 @@ type
     //operator Explicit(aClass: rtl.Class): &Type;
     //operator Explicit(aProtocol: Protocol): &Type;
     property Name: String read getName;
-    property BaseType: &Type read if IsClass then new &Type withClass(class_getSuperclass(fClass));
+    property BaseType: nullable &Type read if IsClass then new &Type withClass(class_getSuperclass(fClass));
     property IsClass: Boolean read assigned(fClass) or fIsID;
     property IsInterface: Boolean read assigned(fProtocol);
     property IsArray: Boolean read false;
