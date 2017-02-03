@@ -114,6 +114,9 @@
       <VirtualFolder>Xml</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Thread.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\MethodInfo.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\ParameterInfo.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
