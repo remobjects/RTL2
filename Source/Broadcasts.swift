@@ -2,17 +2,18 @@
 typealias Block = (_ sender: Notification)->()
 
 #if TOFFEE
-public typealias Notification = NSNotification
-/*public __mapped class Notification => NSNotification {
+public __mapped class Notification => NSNotification {
 	public var data: ImmutableDictionary<String,Object>? {
-		get {
-			return __mapped.userInfo
-		}
+		return __mapped.userInfo
 	}
+	public var object: Object? {
+		return __mapped.object
+	}
+
 	init(object: Object?, data: ImmutableDictionary<String,Object>?) {
-		let result = NSNotification(name: "Notification", object: object, userInfo: data)
+		return NSNotification(name: "Notification", object: object, userInfo: data)
 	}
-}*/
+}
 #else
 public class Notification {
 	public private(set) var object: Object?
@@ -55,7 +56,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 
 	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: (_ sender: Notification)->(), object: Object?) {
 		#if TOFFEE
-		let token = NSNotificationCenter.defaultCenter.addObserver(for: broadcast, object: object, queue: nil, usingBlock: block);
+		let token = NSNotificationCenter.defaultCenter.addObserver(for: broadcast, object: object, queue: nil, usingBlock: { n in block(n) });
 		__lock self {
 			var subs = subscriptions[broadcast]
 			if subs == nil {

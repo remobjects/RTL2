@@ -46,9 +46,9 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gc.fx" />
-    <Reference Include="Island.fx" />
-    <Reference Include="rtl.fx" />
+    <Reference Include="gc" />
+    <Reference Include="Island" />
+    <Reference Include="rtl" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
