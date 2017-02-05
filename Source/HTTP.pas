@@ -83,6 +83,7 @@ type
     method GetContentAsBinarySynchronous: not nullable Binary;
     {$IF XML}method GetContentAsXmlSynchronous: not nullable XmlDocument;{$ENDIF}
     {$IF JSON}method GetContentAsJsonSynchronous: not nullable JsonDocument;{$ENDIF}
+    method SaveContentAsFileSynchronous(aTargetFile: File);
     {$ENDIF}
   end;
 
@@ -446,6 +447,12 @@ begin
   result := JsonDocument.FromBinary(GetContentAsBinarySynchronous());
 end;
 {$ENDIF}
+
+method HttpResponse.SaveContentAsFileSynchronous(aTargetFile: File);
+begin
+  FileUtils.WriteBinary(aTargetFile, GetContentAsBinarySynchronous());
+  {$HINT implement mor eefficiently}
+end;
 {$ENDIF}
 
 { Http }

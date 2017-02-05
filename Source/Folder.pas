@@ -30,6 +30,8 @@ type
     method Delete;
     method Rename(NewName: String): Folder;
 
+    method CopyContentsTo(aNewFolder: Folder; aRecursive: Boolean := true);
+
     method GetFile(FileName: String): File;
     method GetFiles: not nullable List<File>;
     method GetFiles(aRecursive: Boolean): not nullable List<File>;
@@ -128,6 +130,16 @@ begin
   if not aRecursive then exit GetFiles();
   result := new List<File>();
   DoGetFiles(self, result)
+end;
+
+method Folder.CopyContentsTo(aNewFolder: Folder; aRecursive: Boolean := true);
+begin
+  aNewFolder.Create();
+  for each f in GetFiles() do
+    File(f).CopyTo(Path.Combine(aNewFolder, Path.GetFileName(f)));
+  if aRecursive then
+    for each f in GetSubfolders() do
+      Folder(f).CopyContentsTo(Path.Combine(aNewFolder, Path.getFileName(f)));
 end;
 
 {$IF WINDOWS_PHONE OR NETFX_CORE}

@@ -15,8 +15,8 @@ type
   public
     constructor(aPath: not nullable String);
 
-    method &Copy(NewPathAndName: not nullable File): not nullable File;
-    method &Copy(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
+    method CopyTo(NewPathAndName: not nullable File): not nullable File;
+    method CopyTo(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
     method Delete;
     method Exists: Boolean; inline;
     method Move(NewPathAndName: not nullable File): not nullable File;
@@ -24,7 +24,7 @@ type
     method Open(Mode: FileOpenMode): not nullable FileHandle;
     method Rename(NewName: not nullable String): not nullable File;
 
-    class method &Copy(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
+    class method CopyTo(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
     class method Move(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
     class method Rename(FileName: not nullable File; NewName: not nullable String): not nullable File;
     class method Exists(FileName: nullable File): Boolean; inline;
@@ -58,12 +58,12 @@ begin
   {$ENDIF}
 end;
 
-method File.&Copy(NewPathAndName: not nullable File): not nullable File;
+method File.CopyTo(NewPathAndName: not nullable File): not nullable File;
 begin
-  result := self.&Copy(new Folder(Path.GetParentDirectory(NewPathAndName.FullPath)), Path.GetFileName(NewPathAndName.Name));
+  result := self.CopyTo(new Folder(Path.GetParentDirectory(NewPathAndName.FullPath)), Path.GetFileName(NewPathAndName.Name));
 end;
 
-method File.&Copy(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
+method File.CopyTo(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
 begin
   ArgumentNullException.RaiseIfNil(Destination, "Destination");
   ArgumentNullException.RaiseIfNil(NewName, "NewName");
@@ -96,9 +96,9 @@ begin
   {$ENDIF}
 end;
 
-class method File.Copy(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
+class method File.CopyTo(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
 begin
-  result := FileName.Copy(NewPathAndName);
+  result := FileName.CopyTo(NewPathAndName);
 end;
 
 method File.Delete;

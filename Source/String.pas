@@ -71,7 +71,8 @@ type
     method LastIndexOf(const Value: String; StartIndex: Integer): Integer;
     method Substring(StartIndex: Int32): not nullable String; inline;
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String; inline;
-    method Split(Separator: String): not nullable ImmutableList<String>;
+    method Split(Separator: not nullable String): not nullable ImmutableList<String>;
+    method SplitAtFirstOccurrenceOf(Separator: not nullable String): not nullable ImmutableList<String>;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Insert(aIndex: Int32; aNewValue: String): not nullable String; inline;
@@ -608,7 +609,7 @@ begin
   {$ENDIF}
 end;
 
-method String.Split(Separator: String): not nullable ImmutableList<String>;
+method String.Split(Separator: not nullable String): not nullable ImmutableList<String>;
 begin
   if IsNullOrEmpty(Separator) then
     exit new ImmutableList<String>(self);
@@ -640,6 +641,15 @@ begin
   {$ELSEIF TOFFEE}
   result := mapped.componentsSeparatedByString(Separator);
   {$ENDIF}
+end;
+
+method String.SplitAtFirstOccurrenceOf(Separator: not nullable String): not nullable ImmutableList<String>;
+begin
+  var p := IndexOf(Separator);
+  if p > -1 then
+    result := new ImmutableList<String>(Substring(0, p), Substring(p+Separator.Length))
+  else
+    result := new ImmutableList<String>(self);
 end;
 
 method String.Replace(OldValue: String; NewValue: String): not nullable String;
