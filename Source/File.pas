@@ -140,7 +140,7 @@ begin
   if NewPathAndName.Exists then
     raise new IOException(RTLErrorMessages.FILE_EXISTS, NewPathAndName);
   {$IF COOPER}
-  result := &Copy(NewPathAndName) as not nullable;
+  result := CopyTo(NewPathAndName) as not nullable;
   JavaFile.delete;
   {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
   exit mapped.CopyAsync(new Folder(NewPathAndName.FullPath), NewPathAndName.Name, NameCollisionOption.FailIfExists).Await();
