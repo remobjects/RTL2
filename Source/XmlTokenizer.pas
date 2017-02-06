@@ -76,7 +76,7 @@ end;
 
 method XmlTokenizer.CharIsName(C: Char): Boolean;
 begin
-  exit CharIsNameStart(C) or ((C >='0') and (C <= '9')) or (C = '-')
+  exit CharIsNameStart(C) or ((C >='0') and (C <= '9')) or (C = '-') or (C = '.')
   {exit (((C >= 'a') and (C<='z')) or ((C >= 'A') and (C <= 'Z')) or
    (C = '_') or (C = ':') or (C = '-') or ((C >='0') and (C <= '9'))); }
 end;

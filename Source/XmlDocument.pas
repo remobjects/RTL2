@@ -387,6 +387,7 @@ end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File);
 begin
+  if Encoding = nil then Encoding := "utf-8";
   FileUtils.WriteText(aFileName.FullPath, self.ToString(false, new XmlFormattingOptions), RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding));
 end;
 
