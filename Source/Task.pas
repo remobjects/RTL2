@@ -230,6 +230,7 @@ begin
   var lResult := new System.Diagnostics.Process();
   lResult.StartInfo := new System.Diagnostics.ProcessStartInfo();
   lResult.StartInfo.FileName := aCommand;
+  lResult.StartInfo.CreateNoWindow := true;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
     lResult.StartInfo.WorkingDirectory := aWorkingDirectory;
   if length(aArguments) > 0 then
