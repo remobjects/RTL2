@@ -48,8 +48,8 @@ type
     method JoinedString(aSeparator: nullable String := nil): not nullable String;
 
     //76766: Echoes: Problem with using generic type in property reader
-    property FirstObject: T read self[0];
-    property LastObject: T read self[Count-1];
+    property FirstObject: not nullable T read self[0];
+    property LastObject: not nullable T read self[Count-1];
 
     property Count: Integer read {$IF COOPER}mapped.Size{$ELSE}mapped.count{$ENDIF}; inline;
     property Item[i: Integer]: T read GetItem; default;
