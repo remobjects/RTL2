@@ -53,6 +53,7 @@ type
     end;
 
     property Message: String read reason;
+    property StackTrace: String read (callStackSymbols as List<String>).JoinedString(Environment.LineBreak);
     {$ENDIF}
   end;
 
