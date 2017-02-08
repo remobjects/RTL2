@@ -134,7 +134,8 @@ begin
   {$ELSEIF ECHOES}
   exit System.IO.File.Exists(FileName);
   {$ELSEIF TOFFEE}
-  exit NSFileManager.defaultManager.fileExistsAtPath(FileName);
+  var isDirectory := false;
+  result := NSFileManager.defaultManager.fileExistsAtPath(FileName) isDirectory(var isDirectory) and not isDirectory;
   {$ENDIF}
 end;
 
