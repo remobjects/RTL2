@@ -503,16 +503,7 @@ begin
     {$IF NOT NETFX_CORE}
     webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     {$ENDIF}
-    case aRequest.Mode of
-      HttpRequestMode.Get: webRequest.Method := 'GET';
-      HttpRequestMode.Post: webRequest.Method := 'POST';
-      HttpRequestMode.Head: webRequest.Method := 'HEAD';
-      HttpRequestMode.Put: webRequest.Method := 'PUT';
-      HttpRequestMode.Delete: webRequest.Method := 'DELETE';
-      HttpRequestMode.Patch: webRequest.Method := 'PATCH';
-      HttpRequestMode.Options: webRequest.Method := 'OPTIONS';
-      HttpRequestMode.Trace: webRequest.Method := 'TRACE';
-    end;
+    webRequest.Method := StringForRequestType(aRequest.Mode);
 
     for each k in aRequest.Headers.Keys do
       webRequest.Headers[k] := aRequest.Headers[k];
@@ -687,9 +678,9 @@ begin
 *)
   var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
   if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
-    if nsHttpUrlResponse.statusCode >= 300 then
-      raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), nsHttpUrlResponse);
     result := new HttpResponse(data, nsHttpUrlResponse);
+    if nsHttpUrlResponse.statusCode >= 300 then
+      raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), result);
   end
   else if assigned(error) then begin
     if assigned(nsHttpUrlResponse) then
@@ -699,7 +690,7 @@ begin
   end
   else begin
     if assigned(nsHttpUrlResponse) then
-      raise new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), nsHttpUrlResponse)
+      raise new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), new HttpResponse(nil, nsHttpUrlResponse))
     else
       raise new RTLException("Request failed without providing an error.");
   end;
