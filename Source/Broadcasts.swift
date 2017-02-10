@@ -186,7 +186,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			NSNotificationCenter.defaultCenter.postNotificationName(broadcast, object: object, userInfo: data)
 			#else
 			__lock self {
-				for s in subscriptions[broadcast] {
+				for s in subscriptions[broadcast]?.UniqueCopy() {
 					s.2(Notification(object: object, data: data))
 				}
 			}
