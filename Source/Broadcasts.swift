@@ -187,7 +187,9 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			#else
 			__lock self {
 				for s in subscriptions[broadcast]?.UniqueCopy() {
-					s.2(Notification(object: object, data: data))
+					if s.1 == nil || s.1 == object {
+						s.2(Notification(object: object, data: data))
+					}
 				}
 			}
 			#endif
