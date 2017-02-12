@@ -48,7 +48,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	#endif
 
 	#if ECHOES
-	private let lock = System.Threading.ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion)
+	private let lock = System.Threading.ReaderWriterLockSlim(System.Threading.LockRecursionPolicy.SupportsRecursion)
 	#endif
 
 	private func lockRead(_ callback: () -> () ) {
