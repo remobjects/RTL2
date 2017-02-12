@@ -47,6 +47,34 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	private let subscriptions = Dictionary<String,List<(Object,Object?,Block)>>()    // receiver, block
 	#endif
 
+	#if ECHOES
+	private let lock = System.Threading.ReaderWriterLockSlim()
+	#endif
+
+	private func lockRead(_ callback: () -> () ) {
+		#if ECHOES
+		lock.EnterReadLock()
+		defer { lock.ExitReadLock() }
+		callback()
+		#else
+		__lock self {
+			callback()
+		}
+		#endif
+	}
+
+	private func lockWrite(_ callback: () -> () ) {
+		#if ECHOES
+		lock.EnterWriteLock()
+		defer { lock.ExitWriteLock() }
+		callback()
+		#else
+		__lock self {
+			callback()
+		}
+		#endif
+	}
+
 	//func subscribe(_ object: Object, toBroadcast broadcast: String, block: (Dictionary<String,Any>)->()) {
 	//}
 
@@ -57,7 +85,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: (_ sender: Notification)->(), object: Object?) {
 		#if TOFFEE
 		let token = NSNotificationCenter.defaultCenter.addObserver(for: broadcast, object: object, queue: nil, usingBlock: { n in block(n) });
-		__lock self {
+		lockWrite() {
 			var subs = subscriptions[broadcast]
 			if subs == nil {
 				subs = List<BroadcastManagerSubscription>()
@@ -66,7 +94,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			subs!.Add(BroadcastManagerSubscription(receiver, object, token))
 		}
 		#else
-		__lock self {
+		lockWrite() {
 			var subs = subscriptions[broadcast]
 			if subs == nil {
 				subs = List<(Object,Object?,Block)>()
@@ -96,7 +124,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	public func unsubscribe(_ receiver: Object, fromBroadcast broadcast: String, object: Object? = nil) {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
-		__lock self {
+		lockWrite() {
 			if let subs = subscriptions[broadcast] {
 				for s in subs.UniqueCopy() {
 					if s.receiver == nil || (s.receiver == receiver && (s.object == object || s.object == nil || object == nil)) {
@@ -110,7 +138,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			}
 		}
 		#else
-		__lock self {
+		lockWrite() {
 			if let subs = subscriptions[broadcast] {
 				for s in subs.UniqueCopy() {
 					if s.0 == receiver {
@@ -128,7 +156,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	public func unsubscribe(_ receiver: Object) {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver)
-		__lock self {
+		lockWrite() {
 			for k in subscriptions.Keys {
 				if let subs = subscriptions[k] {
 					for s in subs.UniqueCopy() {
@@ -144,7 +172,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			}
 		}
 		#else
-		__lock self {
+		lockWrite() {
 			for k in subscriptions.Keys {
 				if let subs = subscriptions[k] {
 					for s in subs.UniqueCopy() {
@@ -185,7 +213,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			#if TOFFEE
 			NSNotificationCenter.defaultCenter.postNotificationName(broadcast, object: object, userInfo: data)
 			#else
-			__lock self {
+			lockRead() {
 				for s in subscriptions[broadcast]?.UniqueCopy() {
 					if s.1 == nil || s.1 == object {
 						s.2(Notification(object: object, data: data))
