@@ -394,7 +394,7 @@ end;
 method XmlDocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
 begin
   var lStringValue := self.ToString(true, aFormatOptions);
-  var lEncoding := coalesce(RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding), RemObjects.Elements.RTL.Encoding.UTF8);
+  var lEncoding := coalesce(if assigned(Encoding) then RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding), RemObjects.Elements.RTL.Encoding.UTF8);
   var lBytes := lEncoding.GetBytes(lStringValue) includeBOM(aFormatOptions.WriteBOM);
   FileUtils.WriteBytes(aFileName.FullPath, lBytes);
 end;
