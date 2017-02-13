@@ -141,11 +141,17 @@ begin
     end;
     //(lTask as PlatformTask).BeginErrorReadLine();
   end;
+  if assigned(aFinishedCallback) then
+    (lTask as PlatformTask).Exited += method (sender: Object; e: System.EventArgs) begin
+      aFinishedCallback(lTask.ExitCode);
+    end;
   lTask.Start();
+
   if assigned(aStdOutCallback) then
     (lTask as PlatformTask).BeginOutputReadLine();
   if assigned(aStdErrCallback) then
     (lTask as PlatformTask).BeginErrorReadLine();
+
   {$ELSEIF TOFFEE}
   if assigned(aStdOutCallback) then
     (lTask as PlatformTask).standardOutput := NSPipe.pipe();
@@ -193,13 +199,13 @@ begin
     end);
 
   lTask.Start();
-  {$ENDIF}
 
   async begin
     lTask.WaitFor();
     if assigned(aFinishedCallback) then
       aFinishedCallback(lTask.ExitCode);
   end;
+  {$ENDIF}
 end;
 
 {$IF TOFFEE}
