@@ -10,7 +10,7 @@ type
   public
     method ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
 
-    method Combine(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+    method Combine(aBasePath: nullable String; params aPaths: array of String): nullable String;
     method CombineUnixPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
     method CombineWindowsPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
 
@@ -53,8 +53,11 @@ begin
     result := aFileName + "." + NewExtension as not nullable;
 end;
 
-method Path.Combine(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+method Path.Combine(aBasePath: nullable String; params aPaths: array of String): nullable String;
 begin
+  if not assigned(aBasePath) then
+    exit nil;
+
   result := aBasePath;
   if result.EndsWith(Folder.Separator) and (length(aPaths) > 0) then
     result := result.Substring(0, result.Length-1);
