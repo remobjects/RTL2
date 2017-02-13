@@ -22,9 +22,9 @@ type
     property Values: sequence of U read GetValues;
     property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
 
-    method UniqueCopy: ImmutableDictionary<T,U>;
-    method UniqueMutableCopy: Dictionary<T,U>;
-    method MutableVersion: Dictionary<T,U>;
+    method UniqueCopy: not nullable ImmutableDictionary<T,U>;
+    method UniqueMutableCopy: not nullable Dictionary<T,U>;
+    method MutableVersion: not nullable Dictionary<T,U>;
 
     {$IF NOT ECHOES}
     method GetSequence: sequence of KeyValuePair<T,U>;
@@ -233,7 +233,7 @@ begin
 end;
 {$ENDIF}
 
-method ImmutableDictionary<T,U>.UniqueCopy: ImmutableDictionary<T,U>;
+method ImmutableDictionary<T,U>.UniqueCopy: not nullable ImmutableDictionary<T,U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := UniqueMutableCopy();
@@ -242,7 +242,7 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableDictionary<T,U>.UniqueMutableCopy: Dictionary<T,U>;
+method ImmutableDictionary<T,U>.UniqueMutableCopy: not nullable Dictionary<T,U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := new Dictionary<T,U>();
@@ -253,7 +253,7 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableDictionary<T,U>.MutableVersion: Dictionary<T,U>;
+method ImmutableDictionary<T,U>.MutableVersion: not nullable Dictionary<T,U>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := self;

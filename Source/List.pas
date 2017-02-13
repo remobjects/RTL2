@@ -37,9 +37,9 @@ type
     method ToArray: not nullable array of T; {$IF COOPER}inline;{$ENDIF}
     method ToList<U>: not nullable ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
 
-    method UniqueCopy: ImmutableList<T>;
-    method UniqueMutableCopy: List<T>;
-    method MutableVersion: List<T>;
+    method UniqueCopy: not nullable ImmutableList<T>;
+    method UniqueMutableCopy: not nullable List<T>;
+    method MutableVersion: not nullable List<T>;
 
     method SubList(aStartIndex: Int32): ImmutableList<T>; inline;
     method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>; inline;
@@ -577,7 +577,7 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableList<T>.UniqueCopy: ImmutableList<T>;
+method ImmutableList<T>.UniqueCopy: not nullable ImmutableList<T>;
 begin
   {$IF COOPER}
   result := new ImmutableList<T>(self);
@@ -588,7 +588,7 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableList<T>.UniqueMutableCopy: List<T>;
+method ImmutableList<T>.UniqueMutableCopy: not nullable List<T>;
 begin
   {$IF COOPER}
   result := new List<T>(self);
@@ -599,7 +599,7 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableList<T>.MutableVersion: List<T>;
+method ImmutableList<T>.MutableVersion: not nullable List<T>;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := self;

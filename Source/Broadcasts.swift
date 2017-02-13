@@ -41,10 +41,12 @@ fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
 
 public static class RemObjects.Elements.RTL.BroadcastManager {
 
+	typealias SubscriptionList = List<(Object,Object?,Block)>
+
 	#if TOFFEE
 	private let subscriptions = Dictionary<String,List<BroadcastManagerSubscription>>() // receiver, object, token
 	#else
-	private let subscriptions = Dictionary<String,List<(Object,Object?,Block)>>()    // receiver, block
+	private let subscriptions = Dictionary<String,SubscriptionList>()    // receiver, block
 	#endif
 
 	#if ECHOES
@@ -97,7 +99,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		lockWrite() {
 			var subs = subscriptions[broadcast]
 			if subs == nil {
-				subs = List<(Object,Object?,Block)>()
+				subs = SubscriptionList()
 				subscriptions[broadcast] = subs
 			}
 			subs!.Add((receiver, object, block))
@@ -213,11 +215,13 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			#if TOFFEE
 			NSNotificationCenter.defaultCenter.postNotificationName(broadcast, object: object, userInfo: data)
 			#else
+			var subs: SubscriptionList?
 			lockRead() {
-				for s in subscriptions[broadcast]?.UniqueCopy() {
-					if s.1 == nil || s.1 == object {
-						s.2(Notification(object: object, data: data))
-					}
+				subs = subscriptions[broadcast]?.UniqueCopy()
+			}
+			for s in subs {
+				if s.1 == nil || s.1 == object {
+					s.2(Notification(object: object, data: data))
 				}
 			}
 			#endif
