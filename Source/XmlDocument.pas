@@ -13,6 +13,7 @@ type
   private
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
+    fDefaultVersion := "1.0";
 
     method GetNodes: ImmutableList<XmlNode>;
     method GetRoot: not nullable XmlElement;
@@ -351,8 +352,14 @@ begin
   result:="";
   var lFormatInsideTags := false;
   if Version <> nil then result := '<?xml version="'+Version+'"';
-  if Encoding <> nil then result := result + ' encoding="'+Encoding+'"';
-  if Standalone <> nil then result := result + ' standalone="'+Standalone+'"';
+  if (Encoding <> nil) then begin
+    if result = "" then result := '<?xml version="'+fDefaultVersion+'"';
+    result := result + ' encoding="'+Encoding+'"';
+  end;
+  if Standalone <> nil then begin 
+    if result = "" then result := '<?xml version="'+fDefaultVersion+'"';
+    result := result + ' standalone="'+Standalone+'"';
+  end;
   if result <> "" then result := result + "?>";
   if not(aSaveFormatted) or
     (aSaveFormatted and
@@ -376,7 +383,7 @@ begin
   end
   else begin
     if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then lFormatInsideTags := true;
-    if (Version <> nil) and aFormatOptions.NewLineForElements then result := result + fLineBreak;
+    if (Version <> nil) or (Encoding <> nil) or (Standalone <> nil) and aFormatOptions.NewLineForElements then result := result + fLineBreak;
       for each aNode in fNodes do
         if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
           result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags, lPreserveExactStringsForUnchnagedValues)+fLineBreak;
