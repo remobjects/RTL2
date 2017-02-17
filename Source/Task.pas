@@ -200,10 +200,9 @@ begin
 
   lTask.Start();
 
-  async begin
+  if assigned(aFinishedCallback) then async begin
     lTask.WaitFor();
-    if assigned(aFinishedCallback) then
-      aFinishedCallback(lTask.ExitCode);
+    aFinishedCallback(lTask.ExitCode);
   end;
   {$ENDIF}
 end;
