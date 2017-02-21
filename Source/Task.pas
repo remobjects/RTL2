@@ -243,6 +243,7 @@ begin
   for each k in aEnvironment:Keys do
     lResult.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
   lResult.StartInfo.UseShellExecute := false;
+  lResult.EnableRaisingEvents := true;
   {$ELSEIF TOFFEE}
   var lResult := new NSTask();
   lResult.launchPath := aCommand;
