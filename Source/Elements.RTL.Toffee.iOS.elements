@@ -18,6 +18,8 @@
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
     <CrossPlatform>True</CrossPlatform>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <Architecture>arm64;armv7s;armv7</Architecture>
+    <SimulatorArchitectures>x86_64;i386</SimulatorArchitectures>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <Optimize>false</Optimize>
