@@ -44,6 +44,11 @@ type
 
   end;
 
+  {$IF COOPER}
+  InvalidCastException = public class(RTLException)
+  end;
+  {$ENDIF}
+
   Exception_Helpers = public extension class(Exception)
   public
     {$IF TOFFEE}

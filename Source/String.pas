@@ -18,7 +18,6 @@ type
   String = public partial class mapped to PlatformString
   private
     method get_Chars(aIndex: Int32): Char; inline;
-    class method Compare(Value1, Value2: String): Integer;
   public
     constructor(Value: array of Byte; Encoding: Encoding := nil);
     constructor(Value: array of Char);
@@ -47,6 +46,8 @@ type
     class method IsNullOrWhiteSpace(Value: String): Boolean;
     class method &Join(Separator: nullable String; Values: not nullable array of String): not nullable String;
     class method &Join(Separator: nullable String; Values: not nullable ImmutableList<String>): not nullable String;
+
+    class method Compare(Value1, Value2: String): Integer;
 
     method CompareTo(Value: String): Integer;
     method CompareToIgnoreCase(Value: String): Integer;
@@ -250,13 +251,7 @@ begin
   if not assigned(Second) then
     exit 1;
 
-  {$IF COOPER}
-  exit First.compareTo(Second);
-  {$ELSEIF ECHOES OR ISLAND}
   exit First.CompareTo(Second);
-  {$ELSEIF TOFFEE}
-  exit First.compare(Second);
-  {$ENDIF}
 end;
 
 class operator String.Equal(Value1: String; Value2: String): Boolean;
@@ -270,13 +265,7 @@ begin
   if (First = nil) or (Second = nil) then
     exit false;
 
-  {$IF COOPER}
-  exit First.compareTo(Second) = 0;
-  {$ELSEIF ECHOES OR ISLAND}
   exit First.CompareTo(Second) = 0;
-  {$ELSEIF TOFFEE}
-  exit First.compare(Second) = 0;
-  {$ENDIF}
 end;
 
 class operator String.NotEqual(Value1: String; Value2: String): Boolean;

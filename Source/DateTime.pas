@@ -37,6 +37,8 @@ type
     constructor (aDateTime: PlatformDateTime);
     {$ENDIF}
 
+    class method Compare(Value1, Value2: DateTime): Integer;
+
     method AddDays(Value: Integer): DateTime;
     method AddHours(Value: Integer): DateTime;
     method AddMinutes(Value: Integer): DateTime;
@@ -92,6 +94,10 @@ type
     class operator Greater(a, b: DateTime): Boolean;
     class operator GreaterOrEqual(a,b: DateTime): Boolean;
 
+    {$IF COOPER}
+    operator Implicit(aDateTime: java.util.Date): DateTime;
+    operator Implicit(aDateTime: DateTime): java.util.Date;
+    {$ENDIF}
     {$IF ECHOES OR ISLAND}
     operator Implicit(aDateTime: PlatformDateTime): DateTime;
     operator Implicit(aDateTime: DateTime): PlatformDateTime;
@@ -465,6 +471,23 @@ end;
 // Comparing Dates
 //
 
+class method DateTime.Compare(Value1, Value2: DateTime): Integer;
+begin
+  var First := PlatformDateTime(Value1);
+  var Second := PlatformDateTime(Value2);
+
+  if (First = nil) and (Second = nil) then
+    exit 0;
+
+  if not assigned(First) then
+    exit -1;
+
+  if not assigned(Second) then
+    exit 1;
+
+  exit First.CompareTo(Second);
+end;
+
 method DateTime.CompareTo(Value: DateTime): Integer;
 begin
   {$IF COOPER}
@@ -522,6 +545,21 @@ begin
   result := a.Ticks >= b.Ticks;
 end;
 
+{$IF COOPER}
+operator DateTime.Implicit(aDateTime: java.util.Date): DateTime;
+begin
+  result := Calendar.Instance;
+  (result as PlatformDateTime).setTime(aDateTime);
+end;
+
+operator DateTime.Implicit(aDateTime: DateTime): java.util.Date;
+begin
+  if not assigned(aDateTime) then
+    exit nil;
+  result := (aDateTime as PlatformDateTime).getTime();
+end;
+{$ENDIF}
+
 {$IF ECHOES OR ISLAND}
 operator DateTime.Implicit(aDateTime: PlatformDateTime): DateTime;
 begin
@@ -532,7 +570,7 @@ operator DateTime.Implicit(aDateTime: DateTime): PlatformDateTime;
 begin
   if not assigned(aDateTime) then
     raise new InvalidCastException("Cannot cast null DateTime to platform DateTime type.");
-  result := aDateTime.fDateTime
+  result := aDateTime.fDateTime;
 end;
 {$ENDIF}
 
