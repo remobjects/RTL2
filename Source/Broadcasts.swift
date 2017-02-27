@@ -37,16 +37,27 @@ fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
 		self.token = token
 	}
 }
+#else
+fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
+	var receiver: Object
+	var object: Object?
+	var block: (Notification)->()
+	init (_ receiver: Object, _ object: Object?, _ block: (Notification)->()) {
+		self.receiver = receiver
+		self.object = object
+		self.block = block
+	}
+}
 #endif
 
 public static class RemObjects.Elements.RTL.BroadcastManager {
 
-	typealias SubscriptionList = List<(Object,Object?,Block)>
+	typealias SubscriptionList = List<BroadcastManagerSubscription>
 
 	#if TOFFEE
-	private let subscriptions = Dictionary<String,List<BroadcastManagerSubscription>>() // receiver, object, token
+	private let subscriptions = Dictionary<String,SubscriptionList>() // receiver, object, token
 	#else
-	private let subscriptions = Dictionary<String,SubscriptionList>()    // receiver, block
+	private let subscriptions = Dictionary<String,SubscriptionList>() // receiver, block
 	#endif
 
 	#if ECHOES
@@ -102,7 +113,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 				subs = SubscriptionList()
 				subscriptions[broadcast] = subs
 			}
-			subs!.Add((receiver, object, block))
+			subs!.Add(BroadcastManagerSubscription(receiver, object, block))
 		}
 		#endif
 	}
@@ -143,7 +154,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		lockWrite() {
 			if let subs = subscriptions[broadcast] {
 				for s in subs.UniqueCopy() {
-					if s.0 == receiver {
+					if s.receiver == receiver {
 						subs.Remove(s)
 					}
 				}
@@ -178,7 +189,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			for k in subscriptions.Keys {
 				if let subs = subscriptions[k] {
 					for s in subs.UniqueCopy() {
-						if s.0 == receiver {
+						if s.receiver == receiver {
 							subs.Remove(s)
 						}
 					}
@@ -220,8 +231,8 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 				subs = subscriptions[broadcast]?.UniqueCopy()
 			}
 			for s in subs {
-				if s.1 == nil || s.1 == object {
-					s.2(Notification(object: object, data: data))
+				if s.object == nil || s.object == object {
+					s.block(Notification(object: object, data: data))
 				}
 			}
 			#endif
