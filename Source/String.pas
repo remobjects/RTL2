@@ -239,33 +239,27 @@ end;
 
 class method String.Compare(Value1: String; Value2: String): Integer;
 begin
-  var First := PlatformString(Value1);
-  var Second := PlatformString(Value2);
-
-  if (First = nil) and (Second = nil) then
+  if not assigned(Value1) and not assigned(Value2) then
     exit 0;
 
-  if not assigned(First) then
+  if not assigned(Value1) then
     exit -1;
 
-  if not assigned(Second) then
+  if not assigned(Value2) then
     exit 1;
 
-  exit First.CompareTo(Second);
+  exit Value1.CompareTo(Value2);
 end;
 
 class operator String.Equal(Value1: String; Value2: String): Boolean;
 begin
-  var First := PlatformString(Value1);
-  var Second := PlatformString(Value2);
-
-  if (First = nil) and (Second = nil) then
+  if not assigned(Value1) and not assigned(Value2) then
     exit true;
 
-  if (First = nil) or (Second = nil) then
+  if not assigned(Value1) or not assigned(Value2) then
     exit false;
 
-  exit First.CompareTo(Second) = 0;
+  exit Value1.CompareTo(Value2) = 0;
 end;
 
 class operator String.NotEqual(Value1: String; Value2: String): Boolean;

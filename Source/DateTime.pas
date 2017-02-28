@@ -473,19 +473,16 @@ end;
 
 class method DateTime.Compare(Value1, Value2: DateTime): Integer;
 begin
-  var First := PlatformDateTime(Value1);
-  var Second := PlatformDateTime(Value2);
-
-  if (First = nil) and (Second = nil) then
+  if not assigned(Value1) and not assigned(Value2) then
     exit 0;
 
-  if not assigned(First) then
+  if not assigned(Value1) then
     exit -1;
 
-  if not assigned(Second) then
+  if not assigned(Value2) then
     exit 1;
 
-  exit First.CompareTo(Second);
+  exit Value1.CompareTo(Value2);
 end;
 
 method DateTime.CompareTo(Value: DateTime): Integer;
