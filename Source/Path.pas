@@ -39,13 +39,13 @@ implementation
 
 method Path.ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
 begin
-  if length(NewExtension) = 0 then
-    exit GetFileNameWithoutExtension(aFileName);
-
   var lIndex := aFileName.LastIndexOf(".");
 
   if lIndex <> -1 then
     aFileName := aFileName.Substring(0, lIndex);
+
+  if length(NewExtension) = 0 then
+    exit aFileName;
 
   if NewExtension[0] = '.' then
     result := aFileName + NewExtension
