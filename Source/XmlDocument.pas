@@ -119,6 +119,7 @@ type
 
   public
     constructor withName(aLocalName: not nullable String);
+    constructor withName(aLocalName: not nullable String) Value(aValue: not nullable String);
 
     property &Namespace: XmlNamespace read GetNamespace write SetNamespace;
     property DefinedNamespaces: not nullable sequence of XmlNamespace read GetNamespaces;
@@ -149,8 +150,10 @@ type
     method AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
+    method AddElements(aElements: not nullable sequence of XmlElement);
     method RemoveElement(aElement: not nullable XmlElement);
     method RemoveElementsWithName(aName: not nullable String; aNamespace: nullable XmlNamespace := nil);
+    method RemoveAllElements;
 
     method ReplaceElement(aExistingElement: not nullable XmlElement) withElement(aNewElement: not nullable XmlElement);
 
@@ -293,7 +296,9 @@ begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
   {$IF NOT ISLAND}
-  else if aUrl.Scheme in ["http", "https"] then
+  //77333: Toffee: "in" operator is broken for mapped strings
+  //else if aUrl.Scheme in ["http", "https"] then
+  else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then
     result := Http.GetXml(new HttpRequest(aUrl))
   {$ENDIF}
   else
@@ -530,6 +535,14 @@ begin
   fLocalName := aLocalName;
 end;
 
+constructor XmlElement withName(aLocalName: not nullable String) Value(aValue: not nullable String);
+begin
+  constructor withParent(nil);
+  fLocalName := aLocalName;
+  Value := aValue;
+end;
+
+
 method XmlElement.ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
 begin
   if aNamespace = nil then
@@ -612,6 +625,12 @@ begin
   fIsEmpty := false;
 end;
 
+method XmlElement.AddElements(aElements: not nullable sequence of XmlElement);
+begin
+  for each e in aElements do
+    AddElement(e);
+end;
+
 method XmlElement.AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
 begin
   if (fNodes.Count = 0)  and (aIndex = 0) then AddElement(aElement)
@@ -685,6 +704,12 @@ end;
 method XmlElement.RemoveElementsWithName(aName: not nullable String; aNamespace: nullable XmlNamespace := nil);
 begin
   for each e in ElementsWithName(aName, aNamespace).ToList() do
+    RemoveElement(e);
+end;
+
+method XmlElement.RemoveAllElements;
+begin
+  for each e in Elements.ToList() do
     RemoveElement(e);
 end;
 
