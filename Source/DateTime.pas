@@ -57,14 +57,9 @@ type
     method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
     method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
 
-    /*{$IF TOFFEE}
-    method description: NSString; override; inline;
-    {$ELSE}
-    {$IF COOPER}
+    {$IF ECHOES OR ISLAND}
     method ToString: PlatformString; override;
-    {$ELSEIF ECHOES}
-    method ToString: PlatformString; override;
-    {$ENDIF}*/
+    {$ENDIF}
 
     property Hour: Integer read {$IF COOPER}mapped.get(Calendar.HOUR_OF_DAY){$ELSEIF ECHOES OR ISLAND}fDateTime.Hour{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSHourCalendarUnit){$ENDIF};
     property Minute: Integer read {$IF COOPER}mapped.get(Calendar.MINUTE){$ELSEIF ECHOES OR ISLAND}fDateTime.Minute{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSMinuteCalendarUnit){$ENDIF};
@@ -212,14 +207,12 @@ end;
 // ToString
 //
 
-/*{$IF TOFFEE}
-method DateTime.description: PlatformString;
-{$ELSE}
+{$IF ECHOES OR ISLAND}
 method DateTime.ToString: PlatformString;
-{$ENDIF}
 begin
   result := ToString(DEFAULT_FORMAT);
-end;*/
+end;
+{$ENDIF}
 
 method DateTime.ToString(Format: String; aTimeZone: TimeZone := nil): String;
 begin
