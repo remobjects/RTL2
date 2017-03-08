@@ -906,7 +906,7 @@ end;
 
 method Url.hash: NSUInteger;
 begin
-  result := (ToAbsoluteString as PlatformString).hash;
+  result := (CanonicalVersion.ToAbsoluteString as PlatformString).hash;
 end;
 {$ENDIF}
 

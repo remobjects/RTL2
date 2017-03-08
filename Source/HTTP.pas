@@ -451,7 +451,7 @@ end;
 method HttpResponse.SaveContentAsFileSynchronous(aTargetFile: File);
 begin
   FileUtils.WriteBinary(aTargetFile, GetContentAsBinarySynchronous());
-  {$HINT implement mor eefficiently}
+  {$HINT implement more efficiently}
 end;
 {$ENDIF}
 

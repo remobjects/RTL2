@@ -68,11 +68,12 @@ type
 
     method SetDocument(aDoc: XmlDocument);
     method GetNodeType : XmlNodeType;
+    constructor withParent(aParent: XmlNode := nil);
   protected
     method CharIsWhitespace(C: String): Boolean;
     method ConvertEntity(S: String; C: nullable Char): String;
   public
-    constructor (aParent: XmlNode := nil);
+    constructor; empty;
     property Parent: nullable XmlNode read fParent;
     property Document: nullable XmlDocument read coalesce(Parent:Document, fDocument) write SetDocument;
     property NodeType: XmlNodeType read GetNodeType;
@@ -86,8 +87,6 @@ type
   end;
 
   XmlElement = public class(XmlNode)
-  unit
-    fIsEmpty: Boolean := true;
   private
     fLocalName : String;
     fAttributes: List<XmlAttribute> := new List<XmlAttribute>;
@@ -113,9 +112,14 @@ type
     method GetNamespaces: not nullable sequence of XmlNamespace;
     method GetDefaultNamespace: XmlNamespace;
 
+  assembly
+    fIsEmpty: Boolean := true;
+    constructor withParent(aParent: XmlNode := nil);
+    constructor withParent(aParent: XmlNode) Indent(aIndent: String := "");
+
   public
-    constructor (aParent: XmlNode := nil);
-    constructor (aParent: XmlNode := nil; aIndent: String := "");
+    constructor withName(aLocalName: not nullable String);
+    constructor withName(aLocalName: not nullable String) Value(aValue: not nullable String);
 
     property &Namespace: XmlNamespace read GetNamespace write SetNamespace;
     property DefinedNamespaces: not nullable sequence of XmlNamespace read GetNamespaces;
@@ -146,8 +150,10 @@ type
     method AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
+    method AddElements(aElements: not nullable sequence of XmlElement);
     method RemoveElement(aElement: not nullable XmlElement);
     method RemoveElementsWithName(aName: not nullable String; aNamespace: nullable XmlNamespace := nil);
+    method RemoveAllElements;
 
     method ReplaceElement(aExistingElement: not nullable XmlElement) withElement(aNewElement: not nullable XmlElement);
 
@@ -179,7 +185,7 @@ type
     method SetLocalName(aValue: not nullable String);
     method SetValue(aValue: not nullable String);
   public
-    constructor (aParent: XmlNode := nil);
+    constructor withParent(aParent: XmlNode := nil);
     constructor (aLocalName: not nullable String; aNamespace: nullable XmlNamespace; aValue: not nullable String);
     property &Namespace: XmlNamespace read GetNamespace write SetNamespace;
     property LocalName: not nullable String read GetLocalName write SetLocalName;
@@ -202,16 +208,16 @@ type
   end;
 
   XmlNamespace = public class(XmlNode)
-  assembly
-    WSleft, WSright: String;
-    innerWSleft, innerWSright: String;
-    QuoteChar: Char := '"';
   private
     method GetPrefix: String;
     method SetPrefix(aPrefix: String);
     fPrefix: String;
+  assembly
+    WSleft, WSright: String;
+    innerWSleft, innerWSright: String;
+    QuoteChar: Char := '"';
+    constructor withParent(aParent: XmlNode := nil);
   public
-    constructor(aParent: XmlNode := nil);
     constructor(aPrefix: String; aUrl: not nullable Url);
     property Prefix: String read GetPrefix write SetPrefix;
     property Url: Url;
@@ -290,7 +296,9 @@ begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
   {$IF NOT ISLAND}
-  else if aUrl.Scheme in ["http", "https"] then
+  //77333: Toffee: "in" operator is broken for mapped strings
+  //else if aUrl.Scheme in ["http", "https"] then
+  else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then
     result := Http.GetXml(new HttpRequest(aUrl))
   {$ENDIF}
   else
@@ -330,7 +338,7 @@ end;
 
 class method XmlDocument.WithRootElement(aName: not nullable String): nullable XmlDocument;
 begin
-  result := new XmlDocument(new XmlElement(nil, LocalName := aName));
+  result := new XmlDocument(new XmlElement withName(aName));
 end;
 
 method XmlDocument.ToString(): String;
@@ -356,7 +364,7 @@ begin
     if result = "" then result := '<?xml version="'+fDefaultVersion+'"';
     result := result + ' encoding="'+Encoding+'"';
   end;
-  if Standalone <> nil then begin 
+  if Standalone <> nil then begin
     if result = "" then result := '<?xml version="'+fDefaultVersion+'"';
     result := result + ' standalone="'+Standalone+'"';
   end;
@@ -436,7 +444,7 @@ begin
   result := fNodes;
 end;
 
-constructor XmlNode(aParent: XmlNode);
+constructor XmlNode withParent(aParent: XmlNode);
 begin
   fParent := aParent;
 end;
@@ -507,18 +515,33 @@ begin
 end;
 
 { XmlElement }
-constructor XmlElement(aParent: XmlNode);
+
+constructor XmlElement withParent(aParent: XmlNode);
 begin
-  inherited constructor (aParent);
+  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Element;
 end;
 
-constructor XmlElement(aParent: XmlNode; aIndent: String);
+constructor XmlElement withParent(aParent: XmlNode) Indent(aIndent: String);
 begin
-  inherited constructor (aParent);
+  inherited constructor withParent(aParent);
   Indent := aIndent;
   fNodeType := XmlNodeType.Element;
 end;
+
+constructor XmlElement withName(aLocalName: not nullable String);
+begin
+  constructor withParent(nil);
+  fLocalName := aLocalName;
+end;
+
+constructor XmlElement withName(aLocalName: not nullable String) Value(aValue: not nullable String);
+begin
+  constructor withParent(nil);
+  fLocalName := aLocalName;
+  Value := aValue;
+end;
+
 
 method XmlElement.ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
 begin
@@ -602,6 +625,12 @@ begin
   fIsEmpty := false;
 end;
 
+method XmlElement.AddElements(aElements: not nullable sequence of XmlElement);
+begin
+  for each e in aElements do
+    AddElement(e);
+end;
+
 method XmlElement.AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
 begin
   if (fNodes.Count = 0)  and (aIndex = 0) then AddElement(aElement)
@@ -629,7 +658,7 @@ end;
 
 method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
 begin
-  result := new XmlElement(self);
+  result := new XmlElement withParent(self);
   result.Namespace := aNamespace;
   result.LocalName := aName;
   if length(aValue) > 0 then
@@ -639,7 +668,7 @@ end;
 
 method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
 begin
-  result := new XmlElement(self);
+  result := new XmlElement withParent(self);
   result.Namespace := aNamespace;
   result.LocalName := aName;
   if length(aValue) > 0 then
@@ -675,6 +704,12 @@ end;
 method XmlElement.RemoveElementsWithName(aName: not nullable String; aNamespace: nullable XmlNamespace := nil);
 begin
   for each e in ElementsWithName(aName, aNamespace).ToList() do
+    RemoveElement(e);
+end;
+
+method XmlElement.RemoveAllElements;
+begin
+  for each e in Elements.ToList() do
     RemoveElement(e);
 end;
 
@@ -935,9 +970,9 @@ end;
 
 { XmlAttribute }
 
-constructor XmlAttribute(aParent: XmlNode);
+constructor XmlAttribute withParent(aParent: XmlNode);
 begin
-  inherited constructor (aParent);
+  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Attribute;
 end;
 
@@ -945,7 +980,7 @@ constructor XmlAttribute(aLocalName: not nullable String; aNamespace: nullable X
 begin
   fLocalName := aLocalName;
   fNamespace := aNamespace;
-  inherited constructor(nil);
+  inherited constructor;
   setValue(aValue);
   fNodeType := XmlNodeType.Attribute;
 end;
@@ -1015,15 +1050,15 @@ begin
 end;
 
 { XmlNamespace}
-constructor XmlNamespace(aParent: XmlNode);
+constructor XmlNamespace withParent(aParent: XmlNode);
 begin
-  inherited constructor(aParent);
+  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Namespace;
 end;
 
 constructor XmlNamespace(aPrefix: String; aUrl: not nullable Url);
 begin
-  inherited constructor(nil);
+  inherited constructor;
   Prefix := aPrefix;
   Url := aUrl;
   fNodeType := XmlNodeType.Namespace;
@@ -1069,14 +1104,14 @@ end;
 {XmlComment}
 constructor XmlComment(aParent: XmlNode);
 begin
-  inherited constructor (aParent);
+  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Comment;
 end;
 
 {XmlCData}
 constructor XmlCData(aParent: XmlNode);
 begin
-  inherited constructor (aParent);
+  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.CData;
 end;
 
@@ -1084,7 +1119,7 @@ end;
 
 constructor XmlText(aParent: XmlNode);
 begin
-  inherited constructor (aParent);
+  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Text;
 end;
 
@@ -1103,13 +1138,13 @@ end;
 
 constructor XmlProcessingInstruction(aParent: XmlNode);
 begin
-  inherited constructor (aParent);
+  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.ProcessingInstruction;
 end;
 
 constructor XmlDocumentType(aParent: XmlNode);
 begin
-  inherited constructor (aParent);
+  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.DocumentType;
 end;
 

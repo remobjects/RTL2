@@ -102,7 +102,7 @@ begin
   Tokenizer := new XmlTokenizer(XmlString);
   FormatOptions := new XmlFormattingOptions;
   fLineBreak := FormatOptions.NewLineString;
-  if fLineBreak = nil then 
+  if fLineBreak = nil then
     if XmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
     else if XmlString.IndexOf(#10) > -1 then fLineBreak := #10
       else fLineBreak := Environment.LineBreak;
@@ -113,7 +113,7 @@ begin
   Tokenizer := new XmlTokenizer(XmlString);
   FormatOptions := aOptions;
   fLineBreak := FormatOptions.NewLineString;
-  if fLineBreak = nil then 
+  if fLineBreak = nil then
     if XmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
     else if XmlString.IndexOf(#10) > -1 then fLineBreak := #10
       else fLineBreak := Environment.LineBreak;
@@ -300,11 +300,25 @@ begin
       if lLocalName.StartsWith("xmlns:") then
         lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
       else if lLocalName = "xmlns" then lLocalName:="";
-    result := new XmlNamespace(aParent, Prefix := lLocalName, Url := Url.UrlWithString(lValue), StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol,
-      WSleft := lWSleft, innerWSleft := linnerWSleft, innerWSright := linnerWSright, WSright := lWSright, QuoteChar := lQuoteChar);
+    result := new XmlNamespace withParent(aParent);
+    (result as XmlNamespace).Prefix := lLocalName;
+    (result as XmlNamespace).Url := Url.UrlWithString(lValue);
+    result.StartLine := lStartRow;
+    result.StartColumn := lStartCol;
+    result.EndLine := lEndRow;
+    result.EndColumn := lEndCol;
+    (result as XmlNamespace).WSleft := lWSleft;
+    (result as XmlNamespace).innerWSleft := linnerWSleft;
+    (result as XmlNamespace).innerWSright := linnerWSright;
+    (result as XmlNamespace).WSright := lWSright;
+    (result as XmlNamespace).QuoteChar := lQuoteChar
   end
   else begin
-    result := new XmlAttribute(aParent, StartLine := lStartRow, StartColumn := lStartCol, EndLine := lEndRow, EndColumn := lEndCol);
+    result := new XmlAttribute withParent(aParent);
+    result.StartLine := lStartRow;
+    result.StartColumn := lStartCol;
+    result.EndLine := lEndRow;
+    result.EndColumn := lEndCol;
     XmlAttribute(result).LocalName := lLocalName;
     var lparsedValue := ParseEntity(lValue);
     XmlAttribute(result).Value := lparsedValue;
@@ -322,7 +336,7 @@ method XmlParser.ReadElement(aParent: XmlElement; aIndent: String):XmlElement;
 begin
   var WS := "";
   Expected(XmlTokenKind.TagOpen);
-  result := new XmlElement(aParent, aIndent);
+  result := new XmlElement withParent(aParent) Indent(aIndent);
   if aIndent <> nil then
     aIndent := aIndent + FormatOptions.Indentation;
   result.StartLine := Tokenizer.Row;
