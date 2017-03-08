@@ -18,7 +18,7 @@ type
     method CopyTo(NewPathAndName: not nullable File): not nullable File;
     method CopyTo(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
     method Delete;
-    method Exists: Boolean; inline;
+    method Exists: Boolean; {$IF NOT COOPER}inline;{$ENDIF}
     method Move(NewPathAndName: not nullable File): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
     method Open(Mode: FileOpenMode): not nullable FileHandle;
@@ -29,6 +29,10 @@ type
     class method Rename(aFileName: not nullable File; NewName: not nullable String): not nullable File;
     class method Exists(aFileName: nullable File): Boolean; inline;
     class method Delete(aFileName: not nullable File); inline;
+
+    method ReadText(Encoding: Encoding := nil): String;
+    method ReadBytes: array of Byte;
+    method ReadBinary: Binary;
 
     class method ReadText(aFileName: String; Encoding: Encoding := nil): String;
     class method ReadBytes(aFileName: String): array of Byte;
@@ -51,10 +55,6 @@ type
 
     property DateCreated: DateTime read getDateCreated;
     property DateModified: DateTime read getDateModified;
-
-    method ReadText(Encoding: Encoding := nil): String;
-    method ReadBytes: array of Byte;
-    method ReadBinary: Binary;
   end;
 
 implementation
@@ -147,12 +147,12 @@ begin
     result := false;
   end;
   {$ELSEIF ECHOES}
-  result := System.IO.File.Exists(aFileName);
+  result := System.IO.File.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFile.Exists;
   {$ELSEIF TOFFEE}
   var isDirectory := false;
-  result := NSFileManager.defaultManager.fileExistsAtPath(aFileName) isDirectory(var isDirectory) and not isDirectory;
+  result := NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) and not isDirectory;
   {$ENDIF}
 end;
 
