@@ -3,7 +3,7 @@
 interface
 
 type
-  File = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFile{$ELSE}PlatformString{$ENDIF}
+  File = public class mapped to {$IF NETSTANDARD}Windows.Storage.StorageFile{$ELSE}PlatformString{$ENDIF}
   private
     method getDateModified: DateTime;
     method getDateCreated: DateTime;
@@ -18,19 +18,33 @@ type
     method CopyTo(NewPathAndName: not nullable File): not nullable File;
     method CopyTo(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
     method Delete;
-    method Exists: Boolean; inline;
+    method Exists: Boolean; {$IF NOT COOPER}inline;{$ENDIF}
     method Move(NewPathAndName: not nullable File): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
     method Open(Mode: FileOpenMode): not nullable FileHandle;
     method Rename(NewName: not nullable String): not nullable File;
 
-    class method CopyTo(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
-    class method Move(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
-    class method Rename(FileName: not nullable File; NewName: not nullable String): not nullable File;
-    class method Exists(FileName: nullable File): Boolean; inline;
-    class method Delete(FileName: not nullable File); inline;
+    class method CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
+    class method Move(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
+    class method Rename(aFileName: not nullable File; NewName: not nullable String): not nullable File;
+    class method Exists(aFileName: nullable File): Boolean; inline;
+    class method Delete(aFileName: not nullable File); inline;
 
-    {$IF WINDOWS_PHONE OR NETFX_CORE}
+    method ReadText(Encoding: Encoding := nil): String;
+    method ReadBytes: array of Byte;
+    method ReadBinary: Binary;
+
+    class method ReadText(aFileName: String; Encoding: Encoding := nil): String;
+    class method ReadBytes(aFileName: String): array of Byte;
+    class method ReadBinary(aFileName: String): Binary;
+    class method WriteBytes(aFileName: String; Content: array of Byte);
+    class method WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
+    class method WriteBinary(aFileName: String; Content: Binary);
+    class method AppendText(aFileName: String; Content: String);
+    class method AppendBytes(aFileName: String; Content: array of Byte);
+    class method AppendBinary(aFileName: String; Content: Binary);
+
+    {$IF NETSTANDARD}
     property FullPath: not nullable String read mapped.Path;
     property Name: not nullable String read mapped.Name;
     {$ELSE}
@@ -41,17 +55,13 @@ type
 
     property DateCreated: DateTime read getDateCreated;
     property DateModified: DateTime read getDateModified;
-
-    method ReadText(Encoding: Encoding := nil): String;
-    method ReadBytes: array of Byte;
-    method ReadBinary: Binary;
   end;
 
 implementation
 
 constructor File(aPath: not nullable String);
 begin
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   exit StorageFile.GetFileFromPathAsync(aPath).Await();
   {$ELSE}
   exit File(aPath);
@@ -68,7 +78,7 @@ begin
   ArgumentNullException.RaiseIfNil(Destination, "Destination");
   ArgumentNullException.RaiseIfNil(NewName, "NewName");
 
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   result := mapped.CopyAsync(Destination, NewName, NameCollisionOption.FailIfExists).Await;
   {$ELSE}
   var lNewFile := File(Path.Combine(Destination, NewName));
@@ -96,9 +106,9 @@ begin
   {$ENDIF}
 end;
 
-class method File.CopyTo(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
+class method File.CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
 begin
-  result := FileName.CopyTo(NewPathAndName);
+  result := aFileName.CopyTo(NewPathAndName);
 end;
 
 method File.Delete;
@@ -107,7 +117,7 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   JavaFile.delete;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   mapped.DeleteAsync.AsTask.Wait;
   {$ELSEIF ECHOES}
   System.IO.File.Delete(mapped);
@@ -120,19 +130,35 @@ begin
   {$ENDIF}
 end;
 
-class method File.Delete(FileName: not nullable File);
+class method File.Delete(aFileName: not nullable File);
 begin
-  FileName.Delete()
+  aFileName.Delete()
 end;
 
 method File.Exists: Boolean;
 begin
-  result := FileUtils.Exists(mapped);
+  if length(mapped) = 0 then exit false;
+  {$IF COOPER}
+  result := JavaFile.exists;
+  {$ELSEIF NETSTANDARD}
+  try
+    result := assigned(GetFile(aFileName));
+  except
+    result := false;
+  end;
+  {$ELSEIF ECHOES}
+  result := System.IO.File.Exists(mapped);
+  {$ELSEIF ISLAND}
+  result := IslandFile.Exists;
+  {$ELSEIF TOFFEE}
+  var isDirectory := false;
+  result := NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) and not isDirectory;
+  {$ENDIF}
 end;
 
-class method File.Exists(FileName: nullable File): Boolean;
+class method File.Exists(aFileName: nullable File): Boolean;
 begin
-  result := FileUtils.Exists(FileName);
+  result := aFileName:Exists;
 end;
 
 method File.Move(NewPathAndName: not nullable File): not nullable File;
@@ -142,7 +168,7 @@ begin
   {$IF COOPER}
   result := CopyTo(NewPathAndName) as not nullable;
   JavaFile.delete;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   exit mapped.CopyAsync(new Folder(NewPathAndName.FullPath), NewPathAndName.Name, NameCollisionOption.FailIfExists).Await();
   {$ELSEIF ECHOES}
   System.IO.File.Move(mapped, NewPathAndName);
@@ -163,9 +189,9 @@ begin
   result := Move(new File(Path.Combine(DestinationFolder.FullPath, NewName)));
 end;
 
-class method File.Move(FileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
+class method File.Move(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
 begin
-  result := FileName.Move(NewPathAndName);
+  result := aFileName.Move(NewPathAndName);
 end;
 
 method File.Rename(NewName: not nullable String): not nullable File;
@@ -174,9 +200,9 @@ begin
   exit Move(lNewFile);
 end;
 
-class method File.Rename(FileName: not nullable File; NewName: not nullable String): not nullable File;
+class method File.Rename(aFileName: not nullable File; NewName: not nullable String): not nullable File;
 begin
-  result := FileName.Rename(NewName);
+  result := aFileName.Rename(NewName);
 end;
 
 method File.Open(Mode: FileOpenMode): not nullable FileHandle;
@@ -189,17 +215,17 @@ end;
 
 method File.ReadText(Encoding: Encoding := nil): String;
 begin
-  result := FileUtils.ReadText(self.FullPath, Encoding);
+  result := ReadText(self.FullPath, Encoding);
 end;
 
 method File.ReadBytes: array of Byte;
 begin
-  result := FileUtils.ReadBytes(self.FullPath);
+  result := ReadBytes(self.FullPath);
 end;
 
 method File.ReadBinary: Binary;
 begin
-  result := FileUtils.ReadBinary(self.FullPath);
+  result := ReadBinary(self.FullPath);
 end;
 
 method File.getDateCreated: DateTime;
@@ -208,7 +234,7 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   result := mapped.DateCreated.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
@@ -225,7 +251,7 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified()));
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
@@ -234,6 +260,87 @@ begin
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate)
   {$ENDIF}
+end;
+
+//
+//
+//
+
+class method File.ReadText(aFileName: String; Encoding: Encoding := nil): String;
+begin
+  exit new String(ReadBytes(aFileName), Encoding);
+end;
+
+class method File.ReadBytes(aFileName: String): array of Byte;
+begin
+  exit ReadBinary(aFileName).ToArray;
+end;
+
+class method File.ReadBinary(aFileName: String): Binary;
+begin
+  var Handle := new FileHandle(aFileName, FileOpenMode.ReadOnly);
+  try
+    Handle.Seek(0, SeekOrigin.Begin);
+    exit Handle.Read(Handle.Length);
+  finally
+    Handle.Close;
+  end;
+end;
+
+class method File.WriteBytes(aFileName: String; Content: array of Byte);
+begin
+  var Handle := new FileHandle(aFileName, FileOpenMode.Create);
+  try
+    Handle.Length := 0;
+    Handle.Write(Content);
+  finally
+    Handle.Close;
+  end;
+end;
+
+class method File.WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
+begin
+  if not assigned(aEncoding) then
+    aEncoding := Encoding.Default;
+  WriteBytes(aFileName, Content.ToByteArray(aEncoding));
+end;
+
+class method File.WriteBinary(aFileName: String; Content: Binary);
+begin
+  var Handle := new FileHandle(aFileName, FileOpenMode.Create);
+  try
+    Handle.Length := 0;
+    Handle.Write(Content);
+  finally
+    Handle.Close;
+  end;
+end;
+
+class method File.AppendText(aFileName: String; Content: String);
+begin
+  AppendBytes(aFileName, Content.ToByteArray);
+end;
+
+class method File.AppendBytes(aFileName: String; Content: array of Byte);
+begin
+  var Handle := new FileHandle(aFileName, FileOpenMode.ReadWrite);
+  try
+    Handle.Seek(0, SeekOrigin.End);
+    Handle.Write(Content);
+  finally
+    Handle.Close;
+  end;
+end;
+
+class method File.AppendBinary(aFileName: String; Content: Binary);
+begin
+  var Handle := new FileHandle(aFileName, FileOpenMode.ReadWrite);
+  try
+    Handle.Seek(0, SeekOrigin.End);
+    Handle.Write(Content);
+  finally
+    Handle.Close;
+  end;
 end;
 
 end.

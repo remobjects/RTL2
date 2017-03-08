@@ -21,7 +21,7 @@ type
   PlatformSeekOrigin = public RemObjects.Elements.System.SeekOrigin;
   {$ENDIF}
 
-  FileHandle = public class mapped to {$IF COOPER}java.io.RandomAccessFile{$ELSEIF WINDOWS_PHONE OR NETFX_CORE}Stream{$ELSEIF ECHOES OR ISLAND}PlatformFileStream{$ELSEIF TOFFEE}NSFileHandle{$ENDIF}
+  FileHandle = public class mapped to {$IF COOPER}java.io.RandomAccessFile{$ELSEIF NETSTANDARD}Stream{$ELSEIF ECHOES OR ISLAND}PlatformFileStream{$ELSEIF TOFFEE}NSFileHandle{$ENDIF}
   private
     method GetLength: Int64;
     method SetLength(value: Int64);
@@ -55,7 +55,7 @@ begin
   {$IF COOPER}
   var lMode: String := if Mode = FileOpenMode.ReadOnly then "r" else "rw";
   exit new java.io.RandomAccessFile(FileName, lMode);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   var lFile: Windows.Storage.StorageFile := Windows.Storage.StorageFile.GetFileFromPathAsync(FileName).Await;
   var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
   exit lFile.OpenAsync(lMode).Await.AsStream;
@@ -94,7 +94,7 @@ begin
   {$IF COOPER}
   var lMode: String := if Mode = FileOpenMode.ReadOnly then "r" else "rw";
   exit new java.io.RandomAccessFile(aFile, lMode);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
   exit Windows.Storage.StorageFile(aFile).OpenAsync(lMode).Await.AsStream;
   {$ELSEIF ECHOES}// OR ISLAND}
@@ -112,7 +112,7 @@ method FileHandle.Close;
 begin
   {$IF COOPER}
   mapped.close;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   mapped.Dispose;
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Close;
@@ -125,7 +125,7 @@ method FileHandle.Flush;
 begin
   {$IF COOPER}
   mapped.Channel.force(false);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   mapped.Flush;
   {$ELSEIF ECHOES}// OR ISLAND}
   mapped.Flush;
@@ -169,7 +169,7 @@ begin
 
   {$IF COOPER}
   exit mapped.read(Buffer, Offset, Count);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   exit mapped.Read(Buffer, Offset, Count);
   {$ELSEIF ECHOES}// OR ISLAND}
   exit mapped.Read(Buffer, Offset, Count);
@@ -203,7 +203,7 @@ begin
 
   {$IF COOPER}
   mapped.write(Buffer, Offset, Count);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   mapped.Write(Buffer, Offset, Count);
   {$ELSEIF ECHOES}// OR ISLAND}
   mapped.Write(Buffer, Offset, Count);
@@ -237,7 +237,7 @@ begin
     SeekOrigin.Current: mapped.seek(Position + Offset);
     SeekOrigin.End: mapped.seek(Length + Offset);
   end;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   mapped.Seek(Offset, System.IO.SeekOrigin(Origin));
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Seek(Offset, PlatformSeekOrigin(Origin));
@@ -254,7 +254,7 @@ method FileHandle.GetLength: Int64;
 begin
   {$IF COOPER}
   exit mapped.length;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   exit mapped.Length;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Length;
@@ -269,7 +269,7 @@ method FileHandle.SetLength(value: Int64);
 begin
   {$IF COOPER}
   mapped.setLength(Value);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   var Origin := mapped.Position;
   mapped.SetLength(value);
   if Origin > value then
@@ -292,7 +292,7 @@ method FileHandle.GetPosition: Int64;
 begin
   {$IF COOPER}
   exit mapped.FilePointer;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   exit mapped.Position;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Position;
@@ -305,7 +305,7 @@ method FileHandle.SetPosition(value: Int64);
 begin
   {$IF COOPER}
   Seek(value, SeekOrigin.Begin);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   mapped.Position := value;
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Position := value;

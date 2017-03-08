@@ -403,7 +403,7 @@ end;
 method XmlDocument.SaveToFile(aFileName: not nullable File);
 begin
   if Encoding = nil then Encoding := "utf-8";
-  FileUtils.WriteText(aFileName.FullPath, self.ToString(false, new XmlFormattingOptions), RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding));
+  File.WriteText(aFileName.FullPath, self.ToString(false, new XmlFormattingOptions), RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding));
 end;
 
 method XmlDocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
@@ -411,7 +411,7 @@ begin
   var lStringValue := self.ToString(true, aFormatOptions);
   var lEncoding := coalesce(if assigned(Encoding) then RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding), RemObjects.Elements.RTL.Encoding.UTF8);
   var lBytes := lEncoding.GetBytes(lStringValue) includeBOM(aFormatOptions.WriteBOM);
-  FileUtils.WriteBytes(aFileName.FullPath, lBytes);
+  File.WriteBytes(aFileName.FullPath, lBytes);
 end;
 
 

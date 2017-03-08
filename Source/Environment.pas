@@ -57,7 +57,7 @@ method Environment.GetEnvironmentVariable(Name: String): String;
 begin
   {$IF COOPER}
   exit System.getenv(Name);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   raise new NotSupportedException("GetEnvironmentVariable not supported on this platfrom");
   {$ELSEIF ECHOES}
   exit System.Environment.GetEnvironmentVariable(Name);
@@ -96,7 +96,7 @@ begin
   result := Accounts[0].name;
   {$ELSEIF COOPER}
   result := System.getProperty("user.name");
-  {$ELSEIF WINDOWS_PHONE}
+  {$ELSEIF NETSTANDARD}
   result := Windows.Networking.Proximity.PeerFinder.DisplayName;
   {$ELSEIF NETFX_CORE}
   result := Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
@@ -191,7 +191,7 @@ begin
   else if lOSName.Contains("linux") then exit OperatingSystem.Linux
   else if lOSName.Contains("mac") then exit OperatingSystem.macOS
   else exit OperatingSystem.Unknown;
-  {$ELSEIF WINDOWS_PHONE}
+  {$ELSEIF NETSTANDARD}
   exit OperatingSystem.WindowsPhone;
   {$ELSEIF NETFX_CORE}
   exit OperatingSystem.Windows
@@ -257,7 +257,7 @@ method Environment.GetOSName: String;
 begin
   {$IF COOPER}
   exit System.getProperty("os.name");
-  {$ELSEIF WINDOWS_PHONE}
+  {$ELSEIF NETSTANDARD}
   exit System.Environment.OSVersion.Platform.ToString();
   {$ELSEIF NETFX_CORE}
   exit "Microsoft Windows NT 6.2";
@@ -284,7 +284,7 @@ method Environment.GetOSVersion: String;
 begin
   {$IF COOPER}
   System.getProperty("os.version");
-  {$ELSEIF WINDOWS_PHONE}
+  {$ELSEIF NETSTANDARD}
   exit System.Environment.OSVersion.Version.ToString;
   {$ELSEIF NETFX_CORE}
   exit "6.2";
@@ -303,7 +303,7 @@ begin
   exit System.getProperty("user.dir");
   {$ELSEIF NETFX_CORE}
   exit Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   exit System.Environment.CurrentDirectory;
   {$ELSEIF ECHOES}
   exit System.Environment.CurrentDirectory;

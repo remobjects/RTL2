@@ -109,7 +109,7 @@ end;
 method Thread.GetPriority: ThreadPriority;
 begin
   {$IF ECHOES}
-    {$IF WINDOWS_PHONE}
+    {$IF NETSTANDARD}
     exit ThreadPriority.Normal;
     {$ELSE}
     exit ThreadPriority(mapped.Priority);
@@ -128,7 +128,7 @@ end;
 method Thread.SetPriority(Value: ThreadPriority);
 begin
   {$IF ECHOES}
-    {$IF WINDOWS_PHONE}
+    {$IF NETSTANDARD}
     raise new SugarException("Changing thread priority is not supported on Windows Phone");
     {$ELSE}
     mapped.Priority := System.Threading.ThreadPriority(Value);
