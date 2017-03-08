@@ -7,7 +7,7 @@ uses com.remobjects.elements.linq;
 {$ENDIF}
 
 type
-  Folder = public class mapped to {$IF WINDOWS_PHONE OR NETFX_CORE}Windows.Storage.StorageFolder{$ELSE}PlatformString{$ENDIF}
+  Folder = public class mapped to {$IF NETSTANDARD}Windows.Storage.StorageFolder{$ELSE}PlatformString{$ENDIF}
   private
     class method GetSeparator: Char;
     {$IF COOPER}
@@ -45,7 +45,7 @@ type
 
     class property Separator: Char read GetSeparator;
 
-    {$IF WINDOWS_PHONE OR NETFX_CORE}
+    {$IF NETSTANDARD}
     property FullPath: not nullable String read mapped.Path;
     property Name: not nullable String read mapped.Name;
     {$ELSE}
@@ -55,7 +55,7 @@ type
     property &Extension: not nullable String read Path.GetExtension(FullPath);
   end;
 
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   extension method Windows.Foundation.IAsyncOperation<TResult>.Await<TResult>: TResult;
   {$ENDIF}
 
@@ -68,7 +68,7 @@ type
     {$IF COOPER}method DeleteFolder(Value: java.io.File);{$ENDIF}
     {$IF TOFFEE}method IsDirectory(Value: String): Boolean;{$ENDIF}
   end;
-{$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+{$ELSEIF NETSTANDARD}
 type
   FolderHelper = static class
   public
@@ -79,7 +79,7 @@ type
 
 constructor Folder(aPath: not nullable String);
 begin
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   exit Windows.Storage.StorageFolder.GetFolderFromPathAsync(aPath).Await;
   {$ELSE}
   exit Folder(aPath);
@@ -142,7 +142,7 @@ begin
       Folder(f).CopyContentsTo(Path.Combine(aNewFolder, Path.getFileName(f)));
 end;
 
-{$IF WINDOWS_PHONE OR NETFX_CORE}
+{$IF NETSTANDARD}
 class method FolderHelper.GetFile(Folder: Windows.Storage.StorageFolder; FileName: String): Windows.Storage.StorageFile;
 begin
   ArgumentNullException.RaiseIfNil(Folder, "Folder");

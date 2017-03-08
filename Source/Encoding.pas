@@ -129,7 +129,7 @@ begin
   try
     {$IF COOPER}
     exit java.nio.charset.Charset.forName(aName);
-    {$ELSEIF WINDOWS_PHONE}
+    {$ELSEIF NETSTANDARD}
     result := CustomEncoding.ForName(aName);
 
     if result = nil then

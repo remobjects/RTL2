@@ -413,7 +413,7 @@ begin
   {$IF COOPER}
   exit mapped.equalsIgnoreCase(Value); // aready invariant, on Java
   {$ELSEIF ECHOES}
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   exit mapped.Equals(Value, StringComparison.OrdinalIgnoreCase); {$HINT TODO}
   {$ELSE}
   exit mapped.Equals(Value, StringComparison.InvariantCultureIgnoreCase);
@@ -759,7 +759,7 @@ begin
   {$IF COOPER}
   exit mapped.toLowerCase(aLocale) as not nullable;
   {$ELSEIF ECHOES}
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   exit mapped.ToLower as not nullable; {$HINT TODO}
   {$ELSE}
   exit mapped.ToLower(aLocale) as not nullable;
@@ -802,7 +802,7 @@ begin
   {$IF COOPER}
   exit mapped.toUpperCase(aLocale) as not nullable;
   {$ELSEIF ECHOES}
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   exit mapped.ToUpper as not nullable; {$HINT TODO}
   {$ELSE}
   exit mapped.ToUpper(aLocale) as not nullable;

@@ -78,7 +78,7 @@ type
     {$IF JSON}method GetContentAsJson(contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);{$ENDIF}
     method SaveContentAsFile(aTargetFile: File; contentCallback: not nullable HttpContentResponseBlock<File>);
 
-    {$IF NOT ECHOES OR (NOT WINDOWS_PHONE AND NOT NETFX_CORE)}
+    {$IF NOT ECHOES OR NOT NETSTANDARD}
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
     method GetContentAsBinarySynchronous: not nullable Binary;
     {$IF XML}method GetContentAsXmlSynchronous: not nullable XmlDocument;{$ENDIF}
@@ -106,7 +106,7 @@ type
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
-    {$IF NOT ECHOES OR (NOT WINDOWS_PHONE AND NOT NETFX_CORE)}
+    {$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
     {$ENDIF}
 
@@ -116,7 +116,7 @@ type
     {$IF JSON}method ExecuteRequestAsJson(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);{$ENDIF}
     method ExecuteRequestAndSaveAsFile(aRequest: not nullable HttpRequest; aTargetFile: not nullable File; contentCallback: not nullable HttpContentResponseBlock<File>);
 
-    {$IF NOT ECHOES OR (NOT WINDOWS_PHONE AND NOT NETFX_CORE)}
+    {$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
     method GetString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest): not nullable String;
     method GetBinary(aRequest: not nullable HttpRequest): not nullable Binary;
     {$IF XML}method GetXml(aRequest: not nullable HttpRequest): not nullable XmlDocument;{$ENDIF}
@@ -233,7 +233,7 @@ begin
   Response := aResponse;
   Code := Int32(aResponse.StatusCode);
   Headers := new Dictionary<String,String>();
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   for each k: String in aResponse.Headers:AllKeys do
     Headers[k.ToString] := aResponse.Headers[k];
   {$ELSE}
@@ -356,7 +356,7 @@ begin
     contentCallback(new HttpResponseContent<File>(Content := aTargetFile));
   end;
   {$ELSEIF ECHOES}
-  {$IF WINDOWS_PHONE OR NETFX_CORE}
+  {$IF NETSTANDARD}
   try
     using responseStream := Response.GetResponseStream() do begin
       var storageFile := Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync(aTargetFile.Name, Windows.Storage.CreationCollisionOption.ReplaceExisting).Await();
@@ -394,7 +394,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT ECHOES OR (NOT WINDOWS_PHONE AND NOT NETFX_CORE)}
+{$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
 method HttpResponse.GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
 begin
   if aEncoding = nil then aEncoding := Encoding.Default;
@@ -450,8 +450,8 @@ end;
 
 method HttpResponse.SaveContentAsFileSynchronous(aTargetFile: File);
 begin
-  FileUtils.WriteBinary(aTargetFile, GetContentAsBinarySynchronous());
-  {$HINT implement more efficiently}
+  File.WriteBinary(aTargetFile, GetContentAsBinarySynchronous());
+  {$HINT implement mor eefficiently}
 end;
 {$ENDIF}
 
@@ -509,7 +509,7 @@ begin
       webRequest.Headers[k] := aRequest.Headers[k];
 
     if assigned(aRequest.Content) then begin
-    {$IF WINDOWS_PHONE}
+    {$IF NETSTANDARD}
       // I don't want to mess with BeginGetRequestStream/EndGetRequestStream methods here
       // HttpWebRequest.GetRequestStreamAsync() is not available in WP 8.0
       var getRequestStreamTask := System.Threading.Tasks.Task<System.IO.Stream>.Factory.FromAsync(@webRequest.BeginGetRequestStream, @webRequest.EndGetRequestStream, nil);
@@ -579,7 +579,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT ECHOES OR (NOT WINDOWS_PHONE AND NOT NETFX_CORE)}
+{$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 begin
   {$IF COOPER}
@@ -772,7 +772,7 @@ begin
   end);
 end;
 
-{$IF NOT ECHOES OR (NOT WINDOWS_PHONE AND NOT NETFX_CORE)}
+{$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
 method Http.GetString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest): not nullable String;
 begin
   result := ExecuteRequestSynchronous(aRequest).GetContentAsStringSynchronous(aEncoding);
@@ -800,7 +800,7 @@ end;
 
 (*
 
-{$IF WINDOWS_PHONE}
+{$IF NETSTANDARD}
 class method Http.InternalDownload(anUrl: Url): System.Threading.Tasks.Task<System.Net.HttpWebResponse>;
 begin
   var Request: System.Net.HttpWebRequest := System.Net.WebRequest.CreateHttp(anUrl);
@@ -827,7 +827,7 @@ class method Http.Download(anUrl: Url): HttpResponse<Binary>;
 begin
   try
   {$IF COOPER}
-  {$ELSEIF WINDOWS_PHONE}
+  {$ELSEIF NETSTANDARD}
     var Response := InternalDownload(anUrl).Result;
 
     if Response.StatusCode <> System.Net.HttpStatusCode.OK then
@@ -895,7 +895,7 @@ begin
     on E: Exception do begin
       var Actual := E;
 
-      {$IF WINDOWS_PHONE OR NETFX_CORE}
+      {$IF NETSTANDARD}
       if E is AggregateException then
         Actual := AggregateException(E).InnerException;
       {$ENDIF}

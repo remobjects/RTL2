@@ -25,7 +25,7 @@ type
     property OffsetToUTC: TimeSpan read TimeSpan.FromMilliseconds(mapped.RawOffset);
     {$ELSEIF ECHOES}
     property Name: String read mapped.DisplayName;
-    {$IF NOT WINDOWS_PHONE AND NOT NETFX_CORE}
+    {$IF NOT NETSTANDARD}
     property Identifier: String read mapped.Id;
     {$ENDIF}
     property OffsetToUTC: TimeSpan read mapped.BaseUtcOffset;
@@ -46,7 +46,7 @@ class method TimeZone.get_TimeZoneNames: not nullable sequence of String;
 begin
   {$IF COOPER}
   result := java.util.TimeZone.getAvailableIDs() as not nullable;
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   // Windows Phone 8.1 and Windows 8.1 do not expose any managed API for enumerating TimeZones
   raise new NotSupportedException();
   {$ELSEIF ECHOES}
@@ -75,7 +75,7 @@ class method TimeZone.get_TimeZoneWithName(aName: String): nullable TimeZone;
 begin
   {$IF COOPER}
   result := java.util.TimeZone.getTimeZone(aName);
-  {$ELSEIF WINDOWS_PHONE OR NETFX_CORE}
+  {$ELSEIF NETSTANDARD}
   // Windows Phone 8.1 and Windows 8.1 do not expose any managed API for this
   raise new NotSupportedException();
   {$ELSEIF ECHOES}

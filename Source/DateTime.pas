@@ -260,7 +260,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
-    {$IF WINDOWS_PHONE OR NETFX_CORE}
+    {$IF NETSTANDARD}
     result := fDateTime.ToString;
     {$ELSE}
     result := fDateTime.ToShortDateString;
@@ -281,7 +281,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
-    {$IF WINDOWS_PHONE OR NETFX_CORE}
+    {$IF NETSTANDARD}
     result := fDateTime.ToString();
     {$ELSE}
     result := fDateTime.ToShortTimeString();
@@ -302,7 +302,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
-    {$IF WINDOWS_PHONE OR NETFX_CORE}
+    {$IF NETSTANDARD}
     result := ToShortDateString();
     {$ELSE}
     result := ToShortDateString();
@@ -323,7 +323,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
-    {$IF WINDOWS_PHONE OR NETFX_CORE}
+    {$IF NETSTANDARD}
     result := fDateTime.ToString;
     {$ELSE}
     result := fDateTime.ToShortDateString;
