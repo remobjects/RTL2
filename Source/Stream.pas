@@ -41,91 +41,83 @@ type
     property CanWrite: Boolean read GetCanWrite; 
   end;
 
-  PlatformInternalMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.nio.ByteBuffer{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};
-
-  PlatformMemoryStream = public class
-  private
-    fInternalStream: PlatformInternalMemoryStream;
-    {$IF TOFFEE}
-    fPosition: Int64;
-    {$ENDIF}
-    {$IF TOFFEE OR COOPER}
-    method ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
-    {$ENDIF}
-  public
-    constructor;
-    constructor(aCapacity: Integer);
-    method GetLength: Int64; 
-    method SetLength(Value: Int64);
-    method SetPosition(aValue: Int64); 
-    method GetPosition: Int64;
-    method GetBuffer: array of Byte;
-    
-    method &Read(Buffer: array of Byte; Count: Int32): Int32;
-    method &Write(Buffer: array of Byte; Count: Int32): Int32;
-    method Seek(Offset: Int64; Origin: SeekOrigin): Int64;
-  end;
-
-  MemoryStream = public class(Stream)
-  private
-    fInternalStream: PlatformMemoryStream;
+  {$IF ECHOES OR ISLAND}
+  PlatformInternalStream = {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ENDIF};
+  WrappedPlatformStream = public abstract class(Stream)
   protected
-    method DoGetCanRead: Boolean; override;
-    method DoGetCanSeek: Boolean; override;
-    method DoGetCanWrite: Boolean; override;
+    fPlatformStream: PlatformInternalStream;
+  public
     method DoGetLength: Int64; override;
     method DoSetLength(Value: Int64); override;
     method DoSetPosition(Value: Int64); override;
     method DoGetPosition: Int64; override;
+    
+    method &Read(Buffer: array of Byte; Count: Int32): Int32; override;
+    method &Write(Buffer: array of Byte; Count: Int32): Int32; override;
+    method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
+  end;
+  {$ENDIF}
+
+  PlatformInternalMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.nio.ByteBuffer{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};  
+  
+  MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
+  private
+    {$IF TOFFEE}
+    fPosition: Int64;
+    {$ENDIF}
+    {$IF TOFFEE OR COOPER}
+    fInternalStream: PlatformInternalMemoryStream;
+    method ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
+  protected
+    method DoGetLength: Int64; override;
+    method DoSetLength(Value: Int64); override;
+    method DoSetPosition(Value: Int64); override;
+    method DoGetPosition: Int64; override;
+    {$ENDIF}
+  protected
+    method DoGetCanRead: Boolean; override;
+    method DoGetCanSeek: Boolean; override;
+    method DoGetCanWrite: Boolean; override;
     method GetBytes: array of Byte; virtual;
 
   public
     constructor;
     constructor(aCapacity: Integer);
+    {$IF TOFFEE OR COOPER}
     method &Read(Buffer: array of Byte; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
+    {$ENDIF}
     method Close; override;
     method Flush; override;
+
     property Bytes: array of Byte read GetBytes;
   end;
   
   PlatformInternalFileStream = {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ENDIF};
   
-  PlatformIntFileStream = public class
+  FileStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
+  {$IF COOPER OR TOFFEE}
   private
     fInternalStream: PlatformInternalFileStream;
-  public
-    constructor(FileName: String; Mode: FileOpenMode);
-    method GetLength: Int64;
-    method SetLength(Value: Int64);
-    method SetPosition(Value: Int64);
-    method GetPosition: Int64;
-
-    method &Read(Buffer: array of Byte; Count: Int32): Int32;
-    method &Write(Buffer: array of Byte; Count: Int32): Int32;
-    method Seek(Offset: Int64; Origin: SeekOrigin): Int64;
-    method Close;
-    method Flush;
-  end;
-
-  FileStream = public class(Stream)
-  private
-    fInternalStream: PlatformIntFileStream;
   protected
-    method DoGetCanRead: Boolean; override;
-    method DoGetCanSeek: Boolean; override;
-    method DoGetCanWrite: Boolean; override;
     method DoGetLength: Int64; override;
     method DoSetLength(Value: Int64); override;
     method DoSetPosition(Value: Int64); override;
     method DoGetPosition: Int64; override;
+  {$ENDIF}
+  protected
+    method DoGetCanRead: Boolean; override;
+    method DoGetCanSeek: Boolean; override;
+    method DoGetCanWrite: Boolean; override;
 
   public
     constructor(FileName: String; Mode: FileOpenMode);
+    {$IF COOPER OR TOFFEE}
     method &Read(Buffer: array of Byte; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
+    {$ENDIF}
     method Close; override;
     method Flush; override;
   end;
@@ -221,170 +213,67 @@ begin
   DoSetLength(Value);
 end;
 
-constructor PlatformMemoryStream;
+{$IF ECHOES OR ISLAND}
+method WrappedPlatformStream.DoGetLength: Int64; 
 begin
-  // TODO refactor, constructor(aCapacity)
-  {$IF COOPER}
-  fInternalStream := java.nio.ByteBuffer.allocateDirect(0);
-  {$ELSEIF ECHOES}
-  fInternalStream := new System.IO.MemoryStream();
+  result := fPlatformStream.Length;
+end;
+
+method WrappedPlatformStream.DoSetLength(Value: Int64);
+begin
+  fPlatformStream.SetLength(Value);
+end;
+
+method WrappedPlatformStream.DoSetPosition(Value: Int64); 
+begin
+  fPlatformStream.Position := Value;
+end;
+
+method WrappedPlatformStream.DoGetPosition: Int64; 
+begin
+  result := fPlatformStream.Position;
+end;
+
+method WrappedPlatformStream.Read(Buffer: array of Byte; Count: Int32): Int32;
+begin
+  {$IF ECHOES}
+  result := fPlatformStream.Read(Buffer, 0, Count);
   {$ELSEIF ISLAND}
-  fInternalStream := new RemObjects.Elements.System.MemoryStream();
-  {$ELSEIF TOFFEE}
-  fInternalStream := new NSMutableData();
-  fPosition := 0;
+  result := fPlatformStream.Read(Buffer, Count);
   {$ENDIF}
 end;
 
-constructor PlatformMemoryStream(aCapacity: Integer);
+method WrappedPlatformStream.Write(Buffer: array of Byte; Count: Int32): Int32;
 begin
-  {$IF COOPER}
-  fInternalStream := java.nio.ByteBuffer.allocateDirect(aCapacity);
-  {$ELSEIF ECHOES}
-  fInternalStream := new System.IO.MemoryStream(aCapacity);
+  {$IF ECHOES}
+  result := fPlatformStream.Read(Buffer, 0, Count);
   {$ELSEIF ISLAND}
-  fInternalStream := new RemObjects.Elements.System.MemoryStream(aCapacity);
-  {$ELSEIF TOFFEE}
-  fInternalStream := NSMutableData.dataWithCapacity(aCapacity);
-  fPosition := 0;
+  result := fPlatformStream.Read(Buffer, Count);
   {$ENDIF}
 end;
 
-method PlatformMemoryStream.GetLength: Int64; 
+method WrappedPlatformStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
-  {$IF COOPER}
-  result := fInternalStream.capacity;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := fInternalStream.Length;
-  {$ELSEIF TOFFEE}
-  result := fInternalStream.length;
+  {$IF ECHOES}
+  result := fPlatformStream.Seek(Offset, System.IO.SeekOrigin(Origin));
+  {$ELSEIF ISLAND}
+  result := fPlatformStream.Seek(Offset, RemObjects.Elements.System.SeekOrigin(Origin));
   {$ENDIF}
 end;
+{$ENDIF}
 
-method PlatformMemoryStream.SetLength(Value: Int64);
-begin
-  {$IF COOPER}
-  var lOldPos := fInternalStream.position;
-  var lNewStream := java.nio.ByteBuffer.allocate(Value);
-  var lTemp := new Byte[fInternalStream.capacity];
-  fInternalStream.position(0);
-  fInternalStream.get(lTemp, 0, lTemp.length);
-  lNewStream.put(lTemp, 0, lTemp.length);
-  lNewStream.position(lOldPos);
-  fInternalStream := lNewStream;
-  {$ELSEIF ECHOES OR ISLAND}
-  fInternalStream.SetLength(Value);
-  {$ELSEIF TOFFEE}
-  fInternalStream.length := Value;
-  {$ENDIF}
-end;
-
-method PlatformMemoryStream.SetPosition(aValue: Int64); 
-begin
-  {$IF COOPER}
-  fInternalStream.position(aValue);
-  {$ELSEIF ECHOES OR ISLAND}
-  fInternalStream.Position := aValue;
-  {$ELSEIF TOFFEE}
-  fPosition := aValue;
-  {$ENDIF}
-end;
-
-method PlatformMemoryStream.GetPosition: Int64; 
-begin
-  {$IF COOPER}
-  result := fInternalStream.position;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := fInternalStream.Position;
-  {$ELSEIF TOFFEE}
-  result := fPosition;
-  {$ENDIF}
-end;
-
-method PlatformMemoryStream.GetBuffer: array of Byte;
+method MemoryStream.GetBytes: array of Byte;
 begin
   {$IF COOPER}
   result := fInternalStream.array;
   {$ELSEIF ECHOES}
-  result := fInternalStream.GetBuffer;
+  result := System.IO.MemoryStream(fPlatformStream).GetBuffer;
   {$ELSEIF ISLAND}
-  result := fInternalStream.ToArray;
+  result := RemObjects.Elements.System.MemoryStream(fPlatformStream).ToArray;
   {$ELSEIF TOFFEE}
   result := new Byte[GetLength];
   fInternalStream.getBytes(result) range(NSMakeRange(0, result.length));
   {$ENDIF}
-end;
-
-method PlatformMemoryStream.Read(Buffer: array of Byte; Count: Int32): Int32;
-begin
-  {$IF COOPER}
-  if fInternalStream.remaining < Count then
-    result := fInternalStream.remaining
-  else
-    result := Count;
-  fInternalStream.get(Buffer, 0, result);
-  {$ELSEIF ECHOES}
-  result := fInternalStream.Read(Buffer, 0, Count);
-  {$ELSEIF ISLAND}
-  result := fInternalStream.Read(Buffer, Count);
-  {$ELSEIF TOFFEE}
-  fInternalStream.getBytes(Buffer) range(NSMakeRange(fPosition, Count));
-  inc(fPosition, Count);
-  {$ENDIF}
-end;
-
-method PlatformMemoryStream.Write(Buffer: array of Byte; Count: Int32): Int32;
-begin
-  {$IF COOPER}
-  if fInternalStream.remaining < Count then
-    result := fInternalStream.remaining
-  else
-    result := Count;
-  fInternalStream.put(Buffer, 0, result);
-  {$ELSEIF ECHOES}
-  result := fInternalStream.Read(Buffer, 0, Count);
-  {$ELSEIF ISLAND}
-  result := fInternalStream.Read(Buffer, Count);
-  {$ELSEIF TOFFEE}
-  fInternalStream.replaceBytesInRange(NSMakeRange(fPosition, Count)) withBytes(Buffer);
-  inc(fPosition, Count);
-  {$ENDIF}
-end;
-
-{$IF TOFFEE OR COOPER}
-method PlatformMemoryStream.ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
-begin
-  case Origin of
-    SeekOrigin.Begin:
-      result := Offset;
-
-    SeekOrigin.Current:
-      result := GetPosition + Offset;
-
-    SeekOrigin.End:
-      result := GetLength + Offset;
-  end;
-end;
-{$ENDIF}
-
-method PlatformMemoryStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
-begin
-  {$IF COOPER}
-  result := ConvertSeekOffset(Offset, Origin);
-  fInternalStream.position(result);
-  {$ELSEIF ECHOES}
-  result := fInternalStream.Seek(Offset, System.IO.SeekOrigin(Origin));
-  {$ELSEIF ISLAND}
-  result := fInternalStream.Seek(Offset, RemObjects.Elements.System.SeekOrigin(Origin));
-  {$ELSEIF TOFFEE}
-  result := ConvertSeekOffset(Offset, Origin);
-  fPosition := result;
-  {$ENDIF}
-end;
-
-method MemoryStream.GetBytes: array of Byte;
-begin
-  result := fInternalStream.GetBuffer;
 end;
 
 method MemoryStream.DoGetCanRead: Boolean;
@@ -402,50 +291,133 @@ begin
   result := true;
 end;
 
+{$IF COOPER OR TOFFEE}
 method MemoryStream.DoGetLength: Int64;
 begin
-  result := fInternalStream.GetLength;
+  {$IF COOPER}
+  result := fInternalStream.capacity;
+  {$ELSEIF TOFFEE}
+  result := fInternalStream.length;
+  {$ENDIF}
 end;
 
 method MemoryStream.DoSetLength(Value: Int64);
 begin
-  fInternalStream.SetLength(Value);
+  {$IF COOPER}
+  var lOldPos := fInternalStream.position;
+  var lNewStream := java.nio.ByteBuffer.allocate(Value);
+  var lTemp := new Byte[fInternalStream.capacity];
+  fInternalStream.position(0);
+  fInternalStream.get(lTemp, 0, lTemp.length);
+  lNewStream.put(lTemp, 0, lTemp.length);
+  lNewStream.position(lOldPos);
+  fInternalStream := lNewStream;
+  {$ELSEIF TOFFEE}
+  fInternalStream.length := Value;
+  {$ENDIF}
 end;
 
 method MemoryStream.DoSetPosition(Value: Int64);
 begin
-  fInternalStream.SetPosition(Value);
+  {$IF COOPER}
+  fInternalStream.position(Value);
+  {$ELSEIF TOFFEE}
+  fPosition := Value;
+  {$ENDIF}
 end;
 
 method MemoryStream.DoGetPosition: Int64;
 begin
-  result := fInternalStream.GetPosition;
+  {$IF COOPER}
+  result := fInternalStream.position;
+  {$ELSEIF TOFFEE}
+  result := fPosition;
+  {$ENDIF}
 end;
+{$ENDIF}
 
 constructor MemoryStream;
 begin
-  fInternalStream := new PlatformMemoryStream;
+  {$IF COOPER}
+  fInternalStream := java.nio.ByteBuffer.allocateDirect(0);
+  {$ELSEIF ECHOES}
+  fPlatformStream := new System.IO.MemoryStream()
+  {$ELSEIF ISLAND}
+  fPlatformStream := new RemObjects.Elements.System.MemoryStream();
+  {$ELSEIF TOFFEE}
+  fInternalStream := new NSMutableData();
+  fPosition := 0;
+  {$ENDIF}
 end;
 
 constructor MemoryStream(aCapacity: Integer);
 begin
-  fInternalStream := new PlatformMemoryStream(aCapacity);
+  {$IF COOPER}
+  fInternalStream := java.nio.ByteBuffer.allocateDirect(aCapacity);
+  {$ELSEIF ECHOES}
+  fPlatformStream := new System.IO.MemoryStream(aCapacity)
+  {$ELSEIF ISLAND}
+  fPlatformStream := new RemObjects.Elements.System.MemoryStream(aCapacity);
+  {$ELSEIF TOFFEE}
+  fInternalStream := NSMutableData.dataWithCapacity(aCapacity);
+  fPosition := 0;
+  {$ENDIF}
+end;
+
+{$IF COOPER OR TOFFEE}
+method MemoryStream.ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
+begin
+  case Origin of
+    SeekOrigin.Begin:
+      result := Offset;
+
+    SeekOrigin.Current:
+      result := GetPosition + Offset;
+
+    SeekOrigin.End:
+      result := GetLength + Offset;
+  end;
 end;
 
 method MemoryStream.Read(Buffer: array of Byte; Count: Int32): Int32;
 begin
-  result := fInternalStream.Read(Buffer, Count);
+  {$IF COOPER}
+  if fInternalStream.remaining < Count then
+    result := fInternalStream.remaining
+  else
+    result := Count;
+  fInternalStream.get(Buffer, 0, result);
+  {$ELSEIF TOFFEE}
+  fInternalStream.getBytes(Buffer) range(NSMakeRange(fPosition, Count));
+  inc(fPosition, Count);
+  {$ENDIF}
 end;
 
 method MemoryStream.Write(Buffer: array of Byte; Count: Int32): Int32;
 begin
-  result := fInternalStream.Write(Buffer, Count);
+  {$IF COOPER}
+  if fInternalStream.remaining < Count then
+    result := fInternalStream.remaining
+  else
+    result := Count;
+  fInternalStream.put(Buffer, 0, result);
+  {$ELSEIF TOFFEE}
+  fInternalStream.replaceBytesInRange(NSMakeRange(fPosition, Count)) withBytes(Buffer);
+  inc(fPosition, Count);
+  {$ENDIF}
 end;
 
 method MemoryStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
-  result := fInternalStream.Seek(Offset, Origin);
+  {$IF COOPER}
+  result := ConvertSeekOffset(Offset, Origin);
+  fInternalStream.position(result);
+  {$ELSEIF TOFFEE}
+  result := ConvertSeekOffset(Offset, Origin);
+  fPosition := result;
+  {$ENDIF}
 end;
+{$ENDIF}
 
 method MemoryStream.Close;
 begin
@@ -457,7 +429,67 @@ begin
   // No OP
 end;
 
-constructor PlatformIntFileStream(FileName: String; Mode: FileOpenMode);
+method FileStream.DoGetCanRead: Boolean;
+begin
+  result := true;
+end;
+
+method FileStream.DoGetCanSeek: Boolean;
+begin
+  result := true;
+end;
+
+method FileStream.DoGetCanWrite: Boolean;
+begin
+  result := true;
+end;
+
+{$IF COOPER OR TOFFEE}
+method FileStream.DoGetLength: Int64;
+begin
+  {$IF COOPER}
+  result := fInternalStream.length;
+  {$ELSEIF TOFFEE}
+  var lOrigin := fInternalStream.offsetInFile;
+  result := fInternalStream.seekToEndOfFile;
+  fInternalStream.seekToFileOffset(lOrigin);
+  {$ENDIF}
+end;
+
+method FileStream.DoSetLength(Value: Int64);
+begin
+  {$IF COOPER}
+  fInternalStream.setLength(Value);
+  {$ELSEIF TOFFEE}
+  var lOrigin := fInternalStream.offsetInFile;
+  fInternalStream.truncateFileAtOffset(Value);
+  if lOrigin > Value then
+    Seek(0, SeekOrigin.Begin)
+  else
+    Seek(lOrigin, SeekOrigin.Begin);
+  {$ENDIF}
+end;
+
+method FileStream.DoSetPosition(Value: Int64);
+begin
+  {$IF COOPER}
+  Seek(Value, SeekOrigin.Begin);
+  {$ELSEIF TOFFEE}
+  Seek(Value, SeekOrigin.Begin);
+  {$ENDIF}
+end;
+
+method FileStream.DoGetPosition: Int64;
+begin
+  {$IF COOPER}
+  result := fInternalStream.FilePointer;
+  {$ELSEIF TOFFEE}
+  result := fInternalStream.offsetInFile;
+  {$ENDIF}
+end;
+{$ENDIF}
+
+constructor FileStream(FileName: String; Mode: FileOpenMode);
 begin
   {$IF COOPER}
   var lMode: String := if Mode = FileOpenMode.ReadOnly then "r" else "rw";
@@ -473,7 +505,7 @@ begin
                                          FileOpenMode.Create: PlatformFileMode.Create;
                                          else PlatformFileMode.OpenOrCreate;
                                        end;
-  fInternalStream := new PlatformFileStream(FileName, lMode, lAccess, PlatformFileShare.Read);
+  fPlatformStream := new PlatformFileStream(FileName, lMode, lAccess, PlatformFileShare.Read);
   {$ELSEIF TOFFEE}
   case Mode of
     FileOpenMode.ReadOnly: fInternalStream := NSFileHandle.fileHandleForReadingAtPath(FileName);
@@ -492,68 +524,14 @@ begin
   {$ENDIF}
 end;
 
-method PlatformIntFileStream.GetLength: Int64;
-begin
-  {$IF COOPER}
-  result := fInternalStream.length;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := fInternalStream.Length;
-  {$ELSEIF TOFFEE}
-  var lOrigin := fInternalStream.offsetInFile;
-  result := fInternalStream.seekToEndOfFile;
-  fInternalStream.seekToFileOffset(lOrigin);
-  {$ENDIF}
-end;
-
-method PlatformIntFileStream.SetLength(Value: Int64);
-begin
-  {$IF COOPER}
-  fInternalStream.setLength(Value);
-  {$ELSEIF ECHOES OR ISLAND}
-  fInternalStream.SetLength(value);
-  {$ELSEIF TOFFEE}
-  var lOrigin := fInternalStream.offsetInFile;
-  fInternalStream.truncateFileAtOffset(Value);
-  if lOrigin > Value then
-    Seek(0, SeekOrigin.Begin)
-  else
-    Seek(lOrigin, SeekOrigin.Begin);
-  {$ENDIF}
-end;
-
-method PlatformIntFileStream.SetPosition(Value: Int64);
-begin
-  {$IF COOPER}
-  Seek(Value, SeekOrigin.Begin);
-  {$ELSEIF ECHOES OR ISLAND}
-  fInternalStream.Position := value;
-  {$ELSEIF TOFFEE}
-  Seek(Value, SeekOrigin.Begin);
-  {$ENDIF}
-end;
-
-method PlatformIntFileStream.GetPosition: Int64;
-begin
-  {$IF COOPER}
-  result := fInternalStream.FilePointer;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := fInternalStream.Position;
-  {$ELSEIF TOFFEE}
-  result := fInternalStream.offsetInFile;
-  {$ENDIF}
-end;
-
-method PlatformIntFileStream.Read(Buffer: array of Byte; Count: Int32): Int32;
+{$IF COOPER OR TOFFEE}
+method FileStream.Read(Buffer: array of Byte; Count: Int32): Int32;
 begin
   if Count = 0 then
     exit 0;
 
   {$IF COOPER}
   result := fInternalStream.read(Buffer, 0, Count);
-  {$ELSEIF ECHOES}
-  result := fInternalStream.Read(Buffer, 0, Count);
-  {$ELSEIF ISLAND}
-  result := fInternalStream.Read(Buffer, 0, Count);
   {$ELSEIF TOFFEE}
   var lBin := fInternalStream.readDataOfLength(Count);
   lBin.getBytes(Buffer) length(lBin.length);
@@ -562,24 +540,20 @@ begin
   {$ENDIF}
 end;
 
-method PlatformIntFileStream.Write(Buffer: array of Byte; Count: Int32): Int32;
+method FileStream.Write(Buffer: array of Byte; Count: Int32): Int32;
 begin
   if Count = 0 then
     exit;
 
   {$IF COOPER}
   fInternalStream.write(Buffer, 0, Count);
-  {$ELSEIF ECHOES}
-  fInternalStream.Write(Buffer, 0, Count);
-  {$ELSEIF ISLAND}
-  fInternalStream.Write(Buffer, Count);
   {$ELSEIF TOFFEE}
   var lBin := new NSData withBytes(Buffer) length(Count);
   fInternalStream.writeData(lBin);
   {$ENDIF}
 end;
 
-method PlatformIntFileStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
+method FileStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
   {$IF COOPER}
   case Origin of
@@ -587,8 +561,6 @@ begin
     SeekOrigin.Current: fInternalStream.seek(GetPosition + Offset);
     SeekOrigin.End: fInternalStream.seek(GetLength + Offset);
   end;
-  {$ELSEIF ECHOES OR ISLAND}
-  fInternalStream.Seek(Offset, PlatformSeekOrigin(Origin));
   {$ELSEIF TOFFEE}
   case Origin of
     SeekOrigin.Begin: fInternalStream.seekToFileOffset(Offset);
@@ -597,93 +569,28 @@ begin
   end;
   {$ENDIF}
 end;
+{$ENDIF}
 
-method PlatformIntFileStream.Close;
+method FileStream.Close;
 begin
   {$IF COOPER}
   fInternalStream.close;
   {$ELSEIF ECHOES OR ISLAND}
-  fInternalStream.Close;
+  PlatformInternalFileStream(fPlatformStream).Close;
   {$ELSEIF TOFFEE}
   fInternalStream.closeFile;
   {$ENDIF}
 end;
 
-method PlatformIntFileStream.Flush;
+method FileStream.Flush;
 begin
   {$IF COOPER}
   fInternalStream.Channel.force(false);
   {$ELSEIF ECHOES OR ISLAND}
-  fInternalStream.Flush;
+  PlatformInternalFileStream(fPlatformStream).Flush;
   {$ELSEIF TOFFEE}
   fInternalStream.synchronizeFile;
   {$ENDIF}
 end;
-
-method FileStream.DoGetCanRead: Boolean;
-begin
-  result := true;
-end;
-
-method FileStream.DoGetCanSeek: Boolean;
-begin
-  result := true;
-end;
-
-method FileStream.DoGetCanWrite: Boolean;
-begin
-  result := true;
-end;
-
-method FileStream.DoGetLength: Int64;
-begin
-  fInternalStream.GetLength;
-end;
-
-method FileStream.DoSetLength(Value: Int64);
-begin
-  fInternalStream.SetLength(Value);
-end;
-
-method FileStream.DoSetPosition(Value: Int64);
-begin
-  fInternalStream.SetPosition(Value);
-end;
-
-method FileStream.DoGetPosition: Int64;
-begin
-  fInternalStream.GetPosition;
-end;
-
-constructor FileStream(FileName: String; Mode: FileOpenMode);
-begin
-  fInternalStream := new PlatformIntFileStream(FileName, Mode);
-end;
-
-method FileStream.Read(Buffer: array of Byte; Count: Int32): Int32;
-begin
-  fInternalStream.Read(Buffer, Count);
-end;
-
-method FileStream.Write(Buffer: array of Byte; Count: Int32): Int32;
-begin
-  fInternalStream.Write(Buffer, Count);
-end;
-
-method FileStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
-begin
-  fInternalStream.Seek(Offset, Origin);
-end;
-
-method FileStream.Close;
-begin
-  fInternalStream.Close;
-end;
-
-method FileStream.Flush;
-begin
-  fInternalStream.Flush;
-end;
-
 
 end.
