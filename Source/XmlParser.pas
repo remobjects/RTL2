@@ -19,7 +19,7 @@ type
   public
     constructor (XmlString: String);
     constructor (XmlString: String; aOptions: XmlFormattingOptions);
-    method Parse: XmlDocument;
+    method Parse: not nullable XmlDocument;
     FormatOptions: XmlFormattingOptions;
   end;
 
@@ -119,7 +119,7 @@ begin
       else fLineBreak := Environment.LineBreak;
 end;
 
-method XmlParser.Parse: XmlDocument;
+method XmlParser.Parse: not nullable XmlDocument;
 begin
   var WS: String :="";
   Tokenizer.Next;

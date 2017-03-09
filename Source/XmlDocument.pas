@@ -22,13 +22,15 @@ type
   public
     class method FromFile(aFileName: not nullable File): not nullable XmlDocument;
     class method FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
-    class method FromString(aString: not nullable String): nullable XmlDocument;
-    class method FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
-    class method WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
-    class method WithRootElement(aName: not nullable String): nullable XmlDocument;
+    class method FromString(aString: not nullable String): not nullable XmlDocument;
+    class method FromBinary(aBinary: not nullable Binary): not nullable XmlDocument;
+    class method WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
+    class method WithRootElement(aName: not nullable String): not nullable XmlDocument;
 
     class method TryFromFile(aFileName: not nullable File): nullable XmlDocument;
     class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
+    class method TryFromString(aString: not nullable String): nullable XmlDocument;
+    class method TryFromBinary(aBinary: not nullable Binary): nullable XmlDocument;
 
     [ToString]
     method ToString(): String; override;
@@ -319,24 +321,39 @@ begin
   {$ENDIF}
 end;
 
-class method XmlDocument.FromString(aString: not nullable String): nullable XmlDocument;
+class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
   var lXmlParser := new XmlParser(aString);
   result := lXmlParser.Parse();
   result.fXmlParser := lXmlParser;
 end;
 
-class method XmlDocument.FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
+class method XmlDocument.TryFromString(aString: not nullable String): nullable XmlDocument;
+begin
+  try
+    result := FromString(aString);
+  except
+    on XmlException do
+      exit nil;
+  end;
+end;
+
+class method XmlDocument.FromBinary(aBinary: not nullable Binary): not nullable XmlDocument;
 begin
   result := XmlDocument.FromString(new String(aBinary.ToArray));
 end;
 
-class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
+class method XmlDocument.TryFromBinary(aBinary: not nullable Binary): nullable XmlDocument;
+begin
+  result := XmlDocument.TryFromString(new String(aBinary.ToArray));
+end;
+
+class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
 begin
   result := new XmlDocument(aElement);
 end;
 
-class method XmlDocument.WithRootElement(aName: not nullable String): nullable XmlDocument;
+class method XmlDocument.WithRootElement(aName: not nullable String): not nullable XmlDocument;
 begin
   result := new XmlDocument(new XmlElement withName(aName));
 end;

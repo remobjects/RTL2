@@ -18,6 +18,9 @@ type
     class method FromFile(aFile: not nullable File): not nullable JsonDocument;
     class method FromBinary(aBinary: not nullable Binary; aEncoding: Encoding := nil): not nullable JsonDocument;
     class method FromString(aString: not nullable String): not nullable JsonDocument;
+    class method TryFromFile(aFile: not nullable File): nullable JsonDocument;
+    class method TryFromBinary(aBinary: not nullable Binary; aEncoding: Encoding := nil): nullable JsonDocument;
+    class method TryFromString(aString: not nullable String): nullable JsonDocument;
     class method CreateDocument: not nullable JsonDocument;
 
     constructor;
@@ -102,6 +105,37 @@ end;
 class method JsonDocument.FromString(aString: not nullable String): not nullable JsonDocument;
 begin
   result := new JsonDocument(new JsonDeserializer(aString).Deserialize)
+end;
+
+class method JsonDocument.TryFromFile(aFile: not nullable File): nullable JsonDocument;
+begin
+  try
+    result := new JsonDocument(new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize);
+  except
+    on E: JsonException do
+      exit nil;
+  end;
+end;
+
+class method JsonDocument.TryFromBinary(aBinary: not nullable Binary; aEncoding: Encoding := nil): nullable JsonDocument;
+begin
+  try
+    if aEncoding = nil then aEncoding := Encoding.Default;
+    result := new JsonDocument(new JsonDeserializer(new String(aBinary.ToArray, aEncoding)).Deserialize);
+  except
+    on E: JsonException do
+      exit nil;
+  end;
+end;
+
+class method JsonDocument.TryFromString(aString: not nullable String): nullable JsonDocument;
+begin
+  try
+    result := new JsonDocument(new JsonDeserializer(aString).Deserialize)
+  except
+    on E: JsonException do
+      exit nil;
+  end;
 end;
 
 class method JsonDocument.CreateDocument: not nullable JsonDocument;
