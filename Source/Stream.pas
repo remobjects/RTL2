@@ -246,9 +246,10 @@ end;
 method WrappedPlatformStream.Write(Buffer: array of Byte; Count: Int32): Int32;
 begin
   {$IF ECHOES}
-  result := fPlatformStream.Read(Buffer, 0, Count);
+  fPlatformStream.Write(Buffer, 0, Count);
+  result := Count;
   {$ELSEIF ISLAND}
-  result := fPlatformStream.Read(Buffer, Count);
+  result := fPlatformStream.Write(Buffer, Count);
   {$ENDIF}
 end;
 
@@ -404,6 +405,7 @@ begin
   {$ELSEIF TOFFEE}
   fInternalStream.replaceBytesInRange(NSMakeRange(fPosition, Count)) withBytes(Buffer);
   inc(fPosition, Count);
+  result := Count;
   {$ENDIF}
 end;
 
