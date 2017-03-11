@@ -102,7 +102,7 @@ type
     method SetNamespace(aNamespace: XmlNamespace);
     method GetLocalName: not nullable String;
     method SetLocalName(aValue: not nullable String);
-    method GetValue: nullable String;
+    //method GetValue: nullable String;
     method SetValue(aValue: nullable String);
     method GetAttributes: not nullable sequence of XmlAttribute;
     method GetAttribute(aName: not nullable String): nullable XmlAttribute;
@@ -127,7 +127,7 @@ type
     property DefinedNamespaces: not nullable sequence of XmlNamespace read GetNamespaces;
     property DefaultNamespace: XmlNamespace read  GetDefaultNamespace;
     property LocalName: not nullable String read GetLocalName write SetLocalName;
-    property Value: nullable String read GetValue write SetValue;
+    property Value: nullable String read GetValue(true) write SetValue;
     property IsEmpty: Boolean read fIsEmpty;
     property EndTagName: String;
 
@@ -139,6 +139,7 @@ type
     property &Namespace[aUrl: Url]: nullable XmlNamespace read GetNamespace;
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
 
+    method GetValue (aWithNested: Boolean): nullable String;
     method ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
     method ElementsWithNamespace(aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
     method FirstElementWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlElement;
@@ -799,7 +800,7 @@ begin
   else result := coalesce(fDefaultNamespace, XmlElement(Parent).DefaultNamespace);
 end;
 
-method XmlElement.GetValue: nullable String;
+{method XmlElement.GetValue: nullable String;
 begin
   result := "";
   for each lNode in Nodes do begin
@@ -807,8 +808,24 @@ begin
     if lNode.NodeType = XmlNodeType.Text then result := result+XmlText(lNode).Value
     else if lNode.NodeType = XmlNodeType.Element then result := result+XmlElement(lNode).GetValue;
   end;
-end;
+end;}
 
+method XmlElement.GetValue(aWithNested: Boolean): nullable String;
+begin
+  result := ""; 
+  for each lNode in Nodes do begin
+    
+    if (lNode.NodeType = XmlNodeType.Text) and (XmlText(lNode).Value.Trim <> "") then begin 
+        if result <> "" then result := result+" ";
+        result := result+XmlText(lNode).Value.Trim
+    end
+    else if lNode.NodeType = XmlNodeType.Element then 
+      if aWithNested then begin
+        if result <> "" then result := result+" ";
+          result := result+XmlElement(lNode).GetValue(true);
+      end
+  end    
+end;
 method XmlElement.SetValue(aValue: nullable String);
 begin
   fNodes.RemoveAll;
