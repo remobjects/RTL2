@@ -452,7 +452,7 @@ method HttpResponse.TryGetContentAsXmlSynchronous: nullable XmlDocument;
 begin
   var lBinary := GetContentAsBinarySynchronous(); // try?
   if assigned(lBinary) then
-    result := XmlDocument.TryFromBinary(GetContentAsBinarySynchronous()) as not nullable;
+    result := XmlDocument.TryFromBinary(lBinary) as not nullable;
 end;
 {$ENDIF}
 

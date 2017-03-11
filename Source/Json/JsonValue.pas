@@ -109,11 +109,11 @@ begin
     case c of
       '\': sb.Append("\\");
       '"': sb.Append('\"');
-      #9: sb.Append('\t');
       #8: sb.Append('\b');
+      #9: sb.Append('\t');
+      #10: sb.Append('\n');
       #12: sb.Append('\f');
       #13: sb.Append('\r');
-      #10: sb.Append('\n');
       #32..#33,
       #35..#91,
       #93..#127: sb.Append(c);
