@@ -24,8 +24,10 @@ type
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; abstract;
     method Close; abstract;
     method Flush; abstract;
-    method &Read(Buffer: array of Byte; Count: Int32): Int32; abstract;
-    method &Write(Buffer: array of Byte; Count: Int32): Int32; abstract;
+    method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; abstract;
+    method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; abstract;
+    method &Read(Buffer: array of Byte; Count: Int32): Int32; inline;
+    method &Write(Buffer: array of Byte; Count: Int32): Int32; inline;
 
     method ReadString(out Value: String): Int32; virtual;
     method WriteString(Value: String): Int32; virtual;
@@ -52,8 +54,8 @@ type
     method DoSetPosition(Value: Int64); override;
     method DoGetPosition: Int64; override;
     
-    method &Read(Buffer: array of Byte; Count: Int32): Int32; override;
-    method &Write(Buffer: array of Byte; Count: Int32): Int32; override;
+    method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
+    method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
   end;
   {$ENDIF}
@@ -84,8 +86,8 @@ type
     constructor;
     constructor(aCapacity: Integer);
     {$IF TOFFEE OR COOPER}
-    method &Read(Buffer: array of Byte; Count: Int32): Int32; override;
-    method &Write(Buffer: array of Byte; Count: Int32): Int32; override;
+    method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
+    method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
     {$ENDIF}
     method Close; override;
@@ -114,8 +116,8 @@ type
   public
     constructor(FileName: String; Mode: FileOpenMode);
     {$IF COOPER OR TOFFEE}
-    method &Read(Buffer: array of Byte; Count: Int32): Int32; override;
-    method &Write(Buffer: array of Byte; Count: Int32): Int32; override;
+    method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
+    method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
     {$ENDIF}
     method Close; override;
@@ -123,6 +125,16 @@ type
   end;
 
 implementation
+
+method Stream.&Read(Buffer: array of Byte; Count: Int32): Int32; 
+begin
+  result := &Read(Buffer, 0, Count);
+end;
+
+method Stream.&Write(Buffer: array of Byte; Count: Int32): Int32;
+begin
+  result := &Write(Buffer, 0, Count);
+end;
 
 method Stream.ReadString(out Value: String): Int32;
 begin
@@ -234,22 +246,22 @@ begin
   result := fPlatformStream.Position;
 end;
 
-method WrappedPlatformStream.Read(Buffer: array of Byte; Count: Int32): Int32;
+method WrappedPlatformStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   {$IF ECHOES}
-  result := fPlatformStream.Read(Buffer, 0, Count);
+  result := fPlatformStream.Read(Buffer, Offset, Count);
   {$ELSEIF ISLAND}
-  result := fPlatformStream.Read(Buffer, Count);
+  result := fPlatformStream.Read(Buffer, Offset, Count);
   {$ENDIF}
 end;
 
-method WrappedPlatformStream.Write(Buffer: array of Byte; Count: Int32): Int32;
+method WrappedPlatformStream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   {$IF ECHOES}
-  fPlatformStream.Write(Buffer, 0, Count);
+  fPlatformStream.Write(Buffer, Offset, Count);
   result := Count;
   {$ELSEIF ISLAND}
-  result := fPlatformStream.Write(Buffer, Count);
+  result := fPlatformStream.Write(Buffer, Offset, Count);
   {$ENDIF}
 end;
 
@@ -380,30 +392,30 @@ begin
   end;
 end;
 
-method MemoryStream.Read(Buffer: array of Byte; Count: Int32): Int32;
+method MemoryStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   {$IF COOPER}
   if fInternalStream.remaining < Count then
     result := fInternalStream.remaining
   else
     result := Count;
-  fInternalStream.get(Buffer, 0, result);
+  fInternalStream.get(Buffer, Offset, result);
   {$ELSEIF TOFFEE}
-  fInternalStream.getBytes(Buffer) range(NSMakeRange(fPosition, Count));
+  fInternalStream.getBytes(@Buffer[Offset]) range(NSMakeRange(fPosition, Count));
   inc(fPosition, Count);
   {$ENDIF}
 end;
 
-method MemoryStream.Write(Buffer: array of Byte; Count: Int32): Int32;
+method MemoryStream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   {$IF COOPER}
   if fInternalStream.remaining < Count then
     result := fInternalStream.remaining
   else
     result := Count;
-  fInternalStream.put(Buffer, 0, result);
+  fInternalStream.put(Buffer, Offset, result);
   {$ELSEIF TOFFEE}
-  fInternalStream.replaceBytesInRange(NSMakeRange(fPosition, Count)) withBytes(Buffer);
+  fInternalStream.replaceBytesInRange(NSMakeRange(fPosition, Count)) withBytes(@Buffer[Offset]);
   inc(fPosition, Count);
   result := Count;
   {$ENDIF}
@@ -527,30 +539,30 @@ begin
 end;
 
 {$IF COOPER OR TOFFEE}
-method FileStream.Read(Buffer: array of Byte; Count: Int32): Int32;
+method FileStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   if Count = 0 then
     exit 0;
 
   {$IF COOPER}
-  result := fInternalStream.read(Buffer, 0, Count);
+  result := fInternalStream.read(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   var lBin := fInternalStream.readDataOfLength(Count);
-  lBin.getBytes(Buffer) length(lBin.length);
+  lBin.getBytes(@Buffer[Offset]) length(lBin.length);
 
   result := lBin.length;
   {$ENDIF}
 end;
 
-method FileStream.Write(Buffer: array of Byte; Count: Int32): Int32;
+method FileStream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   if Count = 0 then
     exit;
 
   {$IF COOPER}
-  fInternalStream.write(Buffer, 0, Count);
+  fInternalStream.write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
-  var lBin := new NSData withBytes(Buffer) length(Count);
+  var lBin := new NSData withBytes(@Buffer[Offset]) length(Count);
   fInternalStream.writeData(lBin);
   {$ENDIF}
 end;
