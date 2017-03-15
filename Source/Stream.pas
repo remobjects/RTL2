@@ -4,22 +4,6 @@ interface
 
 type
   Stream = public abstract class
-  protected
-    method DoGetLength: Int64; virtual;
-    method DoSetPosition(Value: Int64); virtual;
-    method DoGetPosition: Int64; virtual;
-    method DoGetCanRead: Boolean; abstract;
-    method DoGetCanSeek: Boolean; abstract;
-    method DoGetCanWrite: Boolean; abstract;
-    method DoSetLength(Value: Int64); abstract;
-    
-    method GetLength: Int64; 
-    method SetPosition(Value: Int64); 
-    method GetPosition: Int64; 
-    method GetCanRead: Boolean; 
-    method GetCanSeek: Boolean; 
-    method GetCanWrite: Boolean; 
-    method SetLength(Value: Int64); 
   public
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; abstract;
     method Close; abstract;
@@ -28,6 +12,9 @@ type
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; abstract;
     method &Read(Buffer: array of Byte; Count: Int32): Int32; inline;
     method &Write(Buffer: array of Byte; Count: Int32): Int32; inline;
+    method GetLength: Int64; virtual;
+    method SetPosition(Value: Int64); virtual; 
+    method GetPosition: Int64; virtual;
 
     method ReadString(out Value: String): Int32; virtual;
     method WriteString(Value: String): Int32; virtual;
@@ -36,27 +23,29 @@ type
 
     method CopyTo(Destination: Stream); virtual;
 
-    property Length: Int64 read GetLength write SetLength;
-    property Position: Int64 read GetPosition write SetPosition;
-    property CanRead: Boolean read GetCanRead; 
-    property CanSeek: Boolean read GetCanSeek; 
-    property CanWrite: Boolean read GetCanWrite; 
+    property Length: Int64 read GetLength; virtual;
+    property Position: Int64 read GetPosition write SetPosition; virtual;
+    property CanRead: Boolean read; abstract;
+    property CanSeek: Boolean read; abstract;
+    property CanWrite: Boolean read; abstract;
   end;
 
   {$IF ECHOES OR ISLAND}
-  PlatformInternalStream = {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ENDIF};
+  PlatformStream = {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ENDIF};
   WrappedPlatformStream = public abstract class(Stream)
   protected
-    fPlatformStream: PlatformInternalStream;
-  public
-    method DoGetLength: Int64; override;
-    method DoSetLength(Value: Int64); override;
-    method DoSetPosition(Value: Int64); override;
-    method DoGetPosition: Int64; override;
-    
+    fPlatformStream: PlatformStream;
+  public    
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
+    method GetLength: Int64; override;
+    method SetLength(Value: Int64); 
+    method SetPosition(Value: Int64); override;
+    method GetPosition: Int64; override;
+
+    property Length: Int64 read GetLength; override;
+    property Position: Int64 read GetPosition write SetPosition; override;
   end;
   {$ENDIF}
 
@@ -70,18 +59,12 @@ type
     {$IF TOFFEE OR COOPER}
     fInternalStream: PlatformInternalMemoryStream;
     method ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
-  protected
-    method DoGetLength: Int64; override;
-    method DoSetLength(Value: Int64); override;
-    method DoSetPosition(Value: Int64); override;
-    method DoGetPosition: Int64; override;
     {$ENDIF}
   protected
-    method DoGetCanRead: Boolean; override;
-    method DoGetCanSeek: Boolean; override;
-    method DoGetCanWrite: Boolean; override;
+    method GetCanRead: Boolean;
+    method GetCanSeek: Boolean;
+    method GetCanWrite: Boolean;
     method GetBytes: array of Byte; virtual;
-
   public
     constructor;
     constructor(aCapacity: Integer);
@@ -89,11 +72,21 @@ type
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
+    method GetLength: Int64; override;
+    method SetLength(Value: Int64);
+    method SetPosition(Value: Int64); override;
+    method GetPosition: Int64; override;
+
+    property Length: Int64 read GetLength; override;
+    property Position: Int64 read GetPosition write SetPosition; override;
     {$ENDIF}
     method Close; override;
     method Flush; override;
 
     property Bytes: array of Byte read GetBytes;
+    property CanRead: Boolean read GetCanRead; override;
+    property CanSeek: Boolean read GetCanSeek; override;
+    property CanWrite: Boolean read GetCanWrite; override;
   end;
   
   PlatformInternalFileStream = {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ENDIF};
@@ -102,16 +95,11 @@ type
   {$IF COOPER OR TOFFEE}
   private
     fInternalStream: PlatformInternalFileStream;
-  protected
-    method DoGetLength: Int64; override;
-    method DoSetLength(Value: Int64); override;
-    method DoSetPosition(Value: Int64); override;
-    method DoGetPosition: Int64; override;
   {$ENDIF}
   protected
-    method DoGetCanRead: Boolean; override;
-    method DoGetCanSeek: Boolean; override;
-    method DoGetCanWrite: Boolean; override;
+    method GetCanRead: Boolean;
+    method GetCanSeek: Boolean;
+    method GetCanWrite: Boolean;
 
   public
     constructor(FileName: String; Mode: FileOpenMode);
@@ -119,9 +107,19 @@ type
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
+    method GetLength: Int64; override;
+    method SetLength(Value: Int64);
+    method SetPosition(Value: Int64); override;
+    method GetPosition: Int64; override;
+
+    property Length: Int64 read GetLength; override;
+    property Position: Int64 read GetPosition write SetPosition; override;
     {$ENDIF}
     method Close; override;
     method Flush; override;
+    property CanRead: Boolean read GetCanRead; override;
+    property CanSeek: Boolean read GetCanSeek; override;
+    property CanWrite: Boolean read GetCanWrite; override;
   end;
 
 implementation
@@ -171,7 +169,7 @@ begin
   end;
 end;
 
-method Stream.DoGetLength: Int64;
+method Stream.GetLength: Int64;
 begin
   if not CanSeek then raise new NotSupportedException();
   var lPos := Seek(0, SeekOrigin.Current);
@@ -180,68 +178,33 @@ begin
   result := lTemp;
 end;
 
-method Stream.DoSetPosition(Value: Int64);
-begin
-  Seek(Value, SeekOrigin.Begin);
-end;
-
-method Stream.DoGetPosition: Int64;
+method Stream.GetPosition: Int64;
 begin
   result := Seek(0, SeekOrigin.Current);
 end;
 
-method Stream.GetLength: Int64;
-begin
-  result := DoGetLength;
-end;
-
-method Stream.GetPosition: Int64;
-begin
-  result := DoGetPosition;
-end;
-
 method Stream.SetPosition(Value: Int64);
 begin
-  DoSetPosition(Value);
-end;
-
-method Stream.GetCanRead: Boolean; 
-begin
-  result := DoGetCanRead;
-end;
-
-method Stream.GetCanSeek: Boolean; 
-begin
-  result := DoGetCanSeek;
-end;
-
-method Stream.GetCanWrite: Boolean; 
-begin
-  result := DoGetCanWrite;
-end;
-
-method Stream.SetLength(Value: Int64); 
-begin
-  DoSetLength(Value);
+  Seek(Value, SeekOrigin.Begin);
 end;
 
 {$IF ECHOES OR ISLAND}
-method WrappedPlatformStream.DoGetLength: Int64; 
+method WrappedPlatformStream.GetLength: Int64; 
 begin
   result := fPlatformStream.Length;
 end;
 
-method WrappedPlatformStream.DoSetLength(Value: Int64);
+method WrappedPlatformStream.SetLength(Value: Int64);
 begin
   fPlatformStream.SetLength(Value);
 end;
 
-method WrappedPlatformStream.DoSetPosition(Value: Int64); 
+method WrappedPlatformStream.SetPosition(Value: Int64); 
 begin
   fPlatformStream.Position := Value;
 end;
 
-method WrappedPlatformStream.DoGetPosition: Int64; 
+method WrappedPlatformStream.GetPosition: Int64; 
 begin
   result := fPlatformStream.Position;
 end;
@@ -289,23 +252,23 @@ begin
   {$ENDIF}
 end;
 
-method MemoryStream.DoGetCanRead: Boolean;
+method MemoryStream.GetCanRead: Boolean;
 begin
   result := true;
 end;
 
-method MemoryStream.DoGetCanSeek: Boolean;
+method MemoryStream.GetCanSeek: Boolean;
 begin
   result := true;
 end;
 
-method MemoryStream.DoGetCanWrite: Boolean;
+method MemoryStream.GetCanWrite: Boolean;
 begin
   result := true;
 end;
 
 {$IF COOPER OR TOFFEE}
-method MemoryStream.DoGetLength: Int64;
+method MemoryStream.GetLength: Int64;
 begin
   {$IF COOPER}
   result := fInternalStream.capacity;
@@ -314,7 +277,7 @@ begin
   {$ENDIF}
 end;
 
-method MemoryStream.DoSetLength(Value: Int64);
+method MemoryStream.SetLength(Value: Int64);
 begin
   {$IF COOPER}
   var lOldPos := fInternalStream.position;
@@ -330,7 +293,7 @@ begin
   {$ENDIF}
 end;
 
-method MemoryStream.DoSetPosition(Value: Int64);
+method MemoryStream.SetPosition(Value: Int64);
 begin
   {$IF COOPER}
   fInternalStream.position(Value);
@@ -339,7 +302,7 @@ begin
   {$ENDIF}
 end;
 
-method MemoryStream.DoGetPosition: Int64;
+method MemoryStream.GetPosition: Int64;
 begin
   {$IF COOPER}
   result := fInternalStream.position;
@@ -443,23 +406,23 @@ begin
   // No OP
 end;
 
-method FileStream.DoGetCanRead: Boolean;
+method FileStream.GetCanRead: Boolean;
 begin
   result := true;
 end;
 
-method FileStream.DoGetCanSeek: Boolean;
+method FileStream.GetCanSeek: Boolean;
 begin
   result := true;
 end;
 
-method FileStream.DoGetCanWrite: Boolean;
+method FileStream.GetCanWrite: Boolean;
 begin
   result := true;
 end;
 
 {$IF COOPER OR TOFFEE}
-method FileStream.DoGetLength: Int64;
+method FileStream.GetLength: Int64;
 begin
   {$IF COOPER}
   result := fInternalStream.length;
@@ -470,7 +433,7 @@ begin
   {$ENDIF}
 end;
 
-method FileStream.DoSetLength(Value: Int64);
+method FileStream.SetLength(Value: Int64);
 begin
   {$IF COOPER}
   fInternalStream.setLength(Value);
@@ -484,7 +447,7 @@ begin
   {$ENDIF}
 end;
 
-method FileStream.DoSetPosition(Value: Int64);
+method FileStream.SetPosition(Value: Int64);
 begin
   {$IF COOPER}
   Seek(Value, SeekOrigin.Begin);
@@ -493,7 +456,7 @@ begin
   {$ENDIF}
 end;
 
-method FileStream.DoGetPosition: Int64;
+method FileStream.GetPosition: Int64;
 begin
   {$IF COOPER}
   result := fInternalStream.FilePointer;
