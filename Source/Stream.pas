@@ -49,7 +49,7 @@ type
   end;
   {$ENDIF}
 
-  PlatformInternalMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.nio.ByteBuffer{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};  
+  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.nio.ByteBuffer{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};  
   
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
@@ -57,7 +57,7 @@ type
     fPosition: Int64;
     {$ENDIF}
     {$IF TOFFEE OR COOPER}
-    fInternalStream: PlatformInternalMemoryStream;
+    fInternalStream: PlatformMemoryStream;
     method ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
     {$ENDIF}
   protected
