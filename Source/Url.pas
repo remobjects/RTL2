@@ -439,8 +439,8 @@ begin
       if baseComponents.count-1 >= aThreshold then
         exit local;
 
-      baseUrl := String.Join("/", baseComponents.ToArray());
-      local := String.Join("/", localComponents.ToArray());
+      baseUrl := baseComponents.JoinedString("/");
+      local := localComponents.JoinedString("/");
 
       var relative := "";
       for j: Integer := baseComponents.count-1 downto 1 do
@@ -723,7 +723,7 @@ begin
 
   {$HINT needs to fix case to match disk case, if present? }
 
-  var lNewPath := String.Join("/", lParts.ToArray());
+  var lNewPath := lParts.JoinedString("/");
   if lNewPath ≠ fPath then begin
     fCanonicalVersion := CopyWithPath(lNewPath);
     result := fCanonicalVersion;

@@ -34,6 +34,7 @@ type
     {$ENDIF}
 
     property DirectorySeparatorChar: Char read Folder.Separator;
+    property PathListSeparatorChar: Char read if Environment.OS = OperatingSystem.Windows then ';' else ':';
   end;
 
 implementation
