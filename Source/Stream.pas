@@ -16,11 +16,6 @@ type
     method SetPosition(Value: Int64); virtual; 
     method GetPosition: Int64; virtual;
 
-    method ReadString(out Value: String): Int32; virtual;
-    method WriteString(Value: String): Int32; virtual;
-    method ReadInteger(out Value: Int32): Int32; virtual;
-    method WriteInteger(Value: Int32): Int32; virtual;
-
     method CopyTo(Destination: Stream); virtual;
 
     property Length: Int64 read GetLength; virtual;
@@ -132,26 +127,6 @@ end;
 method Stream.&Write(Buffer: array of Byte; Count: Int32): Int32;
 begin
   result := &Write(Buffer, 0, Count);
-end;
-
-method Stream.ReadString(out Value: String): Int32;
-begin
-
-end;
-
-method Stream.WriteString(Value: String): Int32;
-begin
-
-end;
-
-method Stream.ReadInteger(out Value: Int32): Int32;
-begin
-
-end;
-
-method Stream.WriteInteger(Value: Int32): Int32;
-begin
-
 end;
 
 method Stream.CopyTo(Destination: Stream);
