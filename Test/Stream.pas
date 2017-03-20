@@ -34,7 +34,6 @@ type
     method FileStreamTests;
     begin
       var lPath := Environment.UserHomeFolder + '\tests';
-      writeLn(lPath);
       var lStream := new FileStream(lPath, FileOpenMode.Create);      
       var lArray := new Byte[5];
       var lToRead := new Byte[5];
