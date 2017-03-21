@@ -7,6 +7,7 @@ type
   private
     method getDateModified: DateTime;
     method getDateCreated: DateTime;
+    method getSize: Int64;
     {$IF COOPER}
     property JavaFile: java.io.File read new java.io.File(mapped);
     {$ELSEIF ISLAND}
@@ -55,6 +56,7 @@ type
 
     property DateCreated: DateTime read getDateCreated;
     property DateModified: DateTime read getDateModified;
+    property Size: Int64 read getSize;
   end;
 
 implementation
@@ -258,7 +260,24 @@ begin
   {$ELSEIF ISLAND}
   result := new DateTime(IslandFile.DateModified);
   {$ELSEIF TOFFEE}
-  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate)
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
+  {$ENDIF}
+end;
+
+method File.getSize: Int64;
+begin
+  if not Exists then
+    raise new FileNotFoundException(FullPath);
+  {$IF COOPER}
+  result := JavaFile.length;
+  {$ELSEIF NETSTANDARD}
+  //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
+  {$ELSEIF ECHOES}
+  result := new System.IO.FileInfo(mapped).Length;
+  {$ELSEIF ISLAND}
+  result := IslandFile.Length;
+  {$ELSEIF TOFFEE}
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):fileSize;
   {$ENDIF}
 end;
 
