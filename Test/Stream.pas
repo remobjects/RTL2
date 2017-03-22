@@ -19,6 +19,7 @@ type
       Assert.AreEqual(lStream.Position, 0);
 
       var lTmp := lStream.Read(lToRead, 1);
+      Assert.AreEqual(lTmp, 1);
       Assert.AreEqual(lStream.Position, 1);
       Assert.AreEqual(lToRead[0], 9);
       lStream.Read(lToRead, 4);
@@ -43,6 +44,7 @@ type
       lStream := new FileStream(lPath, FileOpenMode.ReadOnly);
 
       var lTmp := lStream.Read(lToRead, 1);
+      Assert.AreEqual(lTmp, 1);
       Assert.AreEqual(lStream.Position, 1);
       Assert.AreEqual(lToRead[0], 9);
       lStream.Read(lToRead, 4);
