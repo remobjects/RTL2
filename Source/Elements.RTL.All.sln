@@ -1,0 +1,24 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# RemObjects Fire
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.All", "Elements.RTL.All.elements", "{6F89F939-4116-4B8B-B0A8-71E6F56ED4BD}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Shared", "Elements.RTL.Shared.elements", "{ABEC8ACC-B076-406C-871B-581E8AF0A453}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F89F939-4116-4B8B-B0A8-71E6F56ED4BD}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{6F89F939-4116-4B8B-B0A8-71E6F56ED4BD}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{6F89F939-4116-4B8B-B0A8-71E6F56ED4BD}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{6F89F939-4116-4B8B-B0A8-71E6F56ED4BD}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{ABEC8ACC-B076-406C-871B-581E8AF0A453}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{ABEC8ACC-B076-406C-871B-581E8AF0A453}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
