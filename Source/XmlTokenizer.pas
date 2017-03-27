@@ -16,14 +16,12 @@ type
     method CharIsWhitespace(C: Char): Boolean;
     method CharIsNameStart(C: Char): Boolean;
     method CharIsName(C: Char): Boolean;
-    method ResolveEntity(S: not nullable String): nullable String;
 
     method Parse;
 
     method ParseWhitespace;
     method ParseName;
     method ParseValue;
-    method ParseEntity(): nullable String;
     method ParseSymbolData;
     method ParseComment;
     method ParseCData;
@@ -77,32 +75,6 @@ end;
 method XmlTokenizer.CharIsName(C: Char): Boolean;
 begin
   exit CharIsNameStart(C) or ((C >='0') and (C <= '9')) or (C = '-') or (C = '.')
-  {exit (((C >= 'a') and (C<='z')) or ((C >= 'A') and (C <= 'Z')) or
-   (C = '_') or (C = ':') or (C = '-') or ((C >='0') and (C <= '9'))); }
-end;
-
-method XmlTokenizer.ResolveEntity(S: not nullable String): nullable String;
-begin
-  if S.StartsWith("&#x") then begin
-    var lHex := S.Substring(3, length(S)-4);
-    try
-      var lValue := Convert.HexStringToInt32(lHex);
-      result := chr(lValue);
-    except
-    end;
-  end
-  else if S.StartsWith("&#") then begin
-    var lDec := S.Substring(2, length(S)-3);
-    var lValue := Convert.TryToInt32(lDec);
-    if assigned(lValue) then result := chr(lValue);
-  end
-  else case S of
-    "&lt;": result := "<";
-    "&gt;": result := ">";
-    "&amp;": result := "&";
-    "&apos;": result := "'";
-    "&quot;": result := """";
-  end;
 end;
 
 method XmlTokenizer.Parse;
@@ -306,17 +278,6 @@ begin
     var ch := fData[fPos];
     if ch = lQuoteChar then break;
     case ch of
-      {'>': lValue.Append('&gt;');}
-      //'"' : if ch lQuoteChar then lValue.Append('&quot;') else lValue.Append(ch);
-      //'''': if ch lQuoteChar then lValue.Append('apos') else lValue.Append(ch);
-      {'&' : begin
-          var lEntity := ParseEntity();
-          if assigned(lEntity) then begin
-            lValue.Append(lEntity);
-          end
-          else
-            lValue.Append("&");
-        end;}
       #13: begin
         if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
         fRowStart := fPos + 1;
@@ -344,39 +305,6 @@ begin
   Token := XmlTokenKind.AttributeValue;
 end;
 
-method XmlTokenizer.ParseEntity: nullable String;
-begin
-  if (fData[fPos] <> '&') or (fData.Length = fPos+1) then exit nil;
-
-  var lPos := fPos;
-  inc(lPos);
-  var lEntity := new StringBuilder("&");
-  while lPos < fData.Length do begin
-    var ch := fData[lPos];
-    case ch of
-      ';': begin
-          lEntity.Append(ch);
-          fPos := lPos;
-          break;
-        end;
-      'a'..'z','A'..'Z','0'..'9','#': begin
-          lEntity.Append(ch);
-        end;
-      else begin
-        exit nil;
-      end;
-    end;
-    inc(lPos);
-  end;
-
-  var lEntityString := lEntity.ToString();
-  var lResolvedEntity := ResolveEntity(lEntityString);
-  if assigned(lResolvedEntity) then
-    result := lResolvedEntity
-  else
-    result := lEntityString;
-end;
-
 method XmlTokenizer.ParseSymbolData;
 begin
   Value := "";
@@ -385,19 +313,6 @@ begin
   var lPos: Integer;
   while ((lPosition < fData.length) and (fData[lPosition] <> '<'){ and (fData[lPosition] <> #0)}) do begin
     case fData[lPosition] of
-      //'>' :Value := Value+'&gt;';
-      {'&': begin
-          fPos := lPosition;
-          var lEntity := ParseEntity();
-          if assigned(lEntity) then begin
-            Value := Value+lEntity;
-            lPosition := fPos;
-            fPos := start;
-            //continue; // don't inc
-          end
-          else
-            Value := Value+"&";
-        end;}
       #13 : begin
           if (fData.length<lPosition+1) then begin
             Token := XmlTokenKind.EOF;
