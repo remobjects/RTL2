@@ -19,6 +19,7 @@ type
       Assert.AreEqual(lStream.Position, 0);
 
       var lTmp := lStream.Read(lToRead, 1);
+      Assert.AreEqual(lTmp, 1);
       Assert.AreEqual(lStream.Position, 1);
       Assert.AreEqual(lToRead[0], 9);
       lStream.Read(lToRead, 4);
@@ -34,7 +35,6 @@ type
     method FileStreamTests;
     begin
       var lPath := Environment.UserHomeFolder + '\tests';
-      writeLn(lPath);
       var lStream := new FileStream(lPath, FileOpenMode.Create);      
       var lArray := new Byte[5];
       var lToRead := new Byte[5];
@@ -44,6 +44,7 @@ type
       lStream := new FileStream(lPath, FileOpenMode.ReadOnly);
 
       var lTmp := lStream.Read(lToRead, 1);
+      Assert.AreEqual(lTmp, 1);
       Assert.AreEqual(lStream.Position, 1);
       Assert.AreEqual(lToRead[0], 9);
       lStream.Read(lToRead, 4);

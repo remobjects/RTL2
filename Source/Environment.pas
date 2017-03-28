@@ -202,6 +202,7 @@ begin
     PlatformID.Win32S,
     PlatformID.Win32Windows: exit OperatingSystem.Windows;
     PlatformID.Xbox: exit OperatingSystem.Xbox;
+    PlatformID.MacOSX: exit OperatingSystem.macOS;
     PlatformID.Unix: case unameWrapper() of
                        "Linux": exit OperatingSystem.Linux;
                        "Darwin": exit OperatingSystem.macOS;

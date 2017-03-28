@@ -25,6 +25,7 @@ type
     method GetFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
     method GetPathWithoutExtension(aFileName: not nullable String): not nullable String;
     method GetFullPath(RelativePath: not nullable String): not nullable String;
+    method GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): not nullable String;
 
     method GetNetworkServerName(aFileName: not nullable String): nullable String;
 
@@ -33,6 +34,7 @@ type
     {$ENDIF}
 
     property DirectorySeparatorChar: Char read Folder.Separator;
+    property PathListSeparatorChar: Char read if Environment.OS = OperatingSystem.Windows then ';' else ':';
   end;
 
 implementation
@@ -197,6 +199,11 @@ begin
   {$ELSEIF TOFFEE}
   exit (RelativePath as NSString).stringByStandardizingPath;
   {$ENDIF}
+end;
+
+method path.GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): not nullable String;
+begin
+  result := Url.UrlWithFilePath(aFullPath).FilePathRelativeToUrl(Url.UrlWithFilePath(aBasePath)) Always(true);
 end;
 
 method Path.GetNetworkServerName(aFileName: not nullable String): nullable String;

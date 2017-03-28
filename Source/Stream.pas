@@ -44,11 +44,11 @@ type
   end;
   {$ENDIF}
 
-  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.nio.ByteBuffer{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};  
+  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};  
   
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
-    {$IF TOFFEE}
+    {$IF COOPER OR TOFFEE}
     fPosition: Int64;
     {$ENDIF}
     {$IF TOFFEE OR COOPER}
@@ -216,7 +216,7 @@ end;
 method MemoryStream.GetBytes: array of Byte;
 begin
   {$IF COOPER}
-  result := fInternalStream.array;
+  result := fInternalStream.toByteArray;
   {$ELSEIF ECHOES}
   result := System.IO.MemoryStream(fPlatformStream).GetBuffer;
   {$ELSEIF ISLAND}
@@ -246,7 +246,7 @@ end;
 method MemoryStream.GetLength: Int64;
 begin
   {$IF COOPER}
-  result := fInternalStream.capacity;
+  result := fInternalStream.size;
   {$ELSEIF TOFFEE}
   result := fInternalStream.length;
   {$ENDIF}
@@ -255,14 +255,7 @@ end;
 method MemoryStream.SetLength(Value: Int64);
 begin
   {$IF COOPER}
-  var lOldPos := fInternalStream.position;
-  var lNewStream := java.nio.ByteBuffer.allocate(Value);
-  var lTemp := new Byte[fInternalStream.capacity];
-  fInternalStream.position(0);
-  fInternalStream.get(lTemp, 0, lTemp.length);
-  lNewStream.put(lTemp, 0, lTemp.length);
-  lNewStream.position(lOldPos);
-  fInternalStream := lNewStream;
+  // NO OP
   {$ELSEIF TOFFEE}
   fInternalStream.length := Value;
   {$ENDIF}
@@ -271,7 +264,7 @@ end;
 method MemoryStream.SetPosition(Value: Int64);
 begin
   {$IF COOPER}
-  fInternalStream.position(Value);
+  fPosition := Value;
   {$ELSEIF TOFFEE}
   fPosition := Value;
   {$ENDIF}
@@ -280,7 +273,7 @@ end;
 method MemoryStream.GetPosition: Int64;
 begin
   {$IF COOPER}
-  result := fInternalStream.position;
+  result := fPosition;
   {$ELSEIF TOFFEE}
   result := fPosition;
   {$ENDIF}
@@ -290,7 +283,7 @@ end;
 constructor MemoryStream;
 begin
   {$IF COOPER}
-  fInternalStream := java.nio.ByteBuffer.allocateDirect(0);
+  fInternalStream := new java.io.ByteArrayOutputStream();
   {$ELSEIF ECHOES}
   fPlatformStream := new System.IO.MemoryStream()
   {$ELSEIF ISLAND}
@@ -304,7 +297,7 @@ end;
 constructor MemoryStream(aCapacity: Integer);
 begin
   {$IF COOPER}
-  fInternalStream := java.nio.ByteBuffer.allocateDirect(aCapacity);
+  fInternalStream := new java.io.ByteArrayOutputStream(aCapacity);
   {$ELSEIF ECHOES}
   fPlatformStream := new System.IO.MemoryStream(aCapacity)
   {$ELSEIF ISLAND}
@@ -332,42 +325,33 @@ end;
 
 method MemoryStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
-  {$IF COOPER}
-  if fInternalStream.remaining < Count then
-    result := fInternalStream.remaining
+  if (fPosition + Count) >= self.Length then 
+    result := self.Length - fPosition
   else
     result := Count;
-  fInternalStream.get(Buffer, Offset, result);
+  {$IF COOPER}
+  System.arraycopy(fInternalStream.toByteArray, fPosition, Buffer, Offset, result);
   {$ELSEIF TOFFEE}
-  fInternalStream.getBytes(@Buffer[Offset]) range(NSMakeRange(fPosition, Count));
-  inc(fPosition, Count);
+  fInternalStream.getBytes(@Buffer[Offset]) range(NSMakeRange(fPosition, result));
   {$ENDIF}
+  inc(fPosition, result);
 end;
 
 method MemoryStream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   {$IF COOPER}
-  if fInternalStream.remaining < Count then
-    result := fInternalStream.remaining
-  else
-    result := Count;
-  fInternalStream.put(Buffer, Offset, result);
+  fInternalStream.write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   fInternalStream.replaceBytesInRange(NSMakeRange(fPosition, Count)) withBytes(@Buffer[Offset]);
+  {$ENDIF}
   inc(fPosition, Count);
   result := Count;
-  {$ENDIF}
 end;
 
 method MemoryStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
-  {$IF COOPER}
-  result := ConvertSeekOffset(Offset, Origin);
-  fInternalStream.position(result);
-  {$ELSEIF TOFFEE}
   result := ConvertSeekOffset(Offset, Origin);
   fPosition := result;
-  {$ENDIF}
 end;
 {$ENDIF}
 
@@ -497,6 +481,7 @@ begin
   if Count = 0 then
     exit;
 
+  result := Count;
   {$IF COOPER}
   fInternalStream.write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}

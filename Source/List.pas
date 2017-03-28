@@ -551,7 +551,7 @@ begin
   {$IF COOPER}
   result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
   {$ELSEIF ECHOES OR ISLAND}
-  var lArray := new T[Count];
+  var lArray := new T[aLength];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
   result := new List<T>(lArray);
   {$ELSEIF TOFFEE}
@@ -569,7 +569,7 @@ begin
   {$IF COOPER}
   result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
   {$ELSEIF ECHOES OR ISLAND}
-  var lArray := new T[Count];
+  var lArray := new T[aLength];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
   result := new List<T>(lArray);
   {$ELSEIF TOFFEE}

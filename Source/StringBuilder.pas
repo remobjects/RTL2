@@ -220,7 +220,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Chars[&Index] := Value;
   {$ELSEIF TOFFEE}
-  mapped.replaceCharactersInRange(NSMakeRange(&Index, &Index)) withString(Value);
+  mapped.replaceCharactersInRange(NSMakeRange(&Index, 1)) withString(Value);
   {$ENDIF}
 end;
 

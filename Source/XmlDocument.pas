@@ -22,13 +22,15 @@ type
   public
     class method FromFile(aFileName: not nullable File): not nullable XmlDocument;
     class method FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
-    class method FromString(aString: not nullable String): nullable XmlDocument;
-    class method FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
-    class method WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
-    class method WithRootElement(aName: not nullable String): nullable XmlDocument;
+    class method FromString(aString: not nullable String): not nullable XmlDocument;
+    class method FromBinary(aBinary: not nullable Binary): not nullable XmlDocument;
+    class method WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
+    class method WithRootElement(aName: not nullable String): not nullable XmlDocument;
 
     class method TryFromFile(aFileName: not nullable File): nullable XmlDocument;
     class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
+    class method TryFromString(aString: not nullable String): nullable XmlDocument;
+    class method TryFromBinary(aBinary: not nullable Binary): nullable XmlDocument;
 
     [ToString]
     method ToString(): String; override;
@@ -100,7 +102,7 @@ type
     method SetNamespace(aNamespace: XmlNamespace);
     method GetLocalName: not nullable String;
     method SetLocalName(aValue: not nullable String);
-    method GetValue: nullable String;
+    //method GetValue: nullable String;
     method SetValue(aValue: nullable String);
     method GetAttributes: not nullable sequence of XmlAttribute;
     method GetAttribute(aName: not nullable String): nullable XmlAttribute;
@@ -125,7 +127,7 @@ type
     property DefinedNamespaces: not nullable sequence of XmlNamespace read GetNamespaces;
     property DefaultNamespace: XmlNamespace read  GetDefaultNamespace;
     property LocalName: not nullable String read GetLocalName write SetLocalName;
-    property Value: nullable String read GetValue write SetValue;
+    property Value: nullable String read GetValue(true) write SetValue;
     property IsEmpty: Boolean read fIsEmpty;
     property EndTagName: String;
 
@@ -137,6 +139,7 @@ type
     property &Namespace[aUrl: Url]: nullable XmlNamespace read GetNamespace;
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
 
+    method GetValue (aWithNested: Boolean): nullable String;
     method ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
     method ElementsWithNamespace(aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
     method FirstElementWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlElement;
@@ -319,24 +322,39 @@ begin
   {$ENDIF}
 end;
 
-class method XmlDocument.FromString(aString: not nullable String): nullable XmlDocument;
+class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
   var lXmlParser := new XmlParser(aString);
   result := lXmlParser.Parse();
   result.fXmlParser := lXmlParser;
 end;
 
-class method XmlDocument.FromBinary(aBinary: not nullable Binary): nullable XmlDocument;
+class method XmlDocument.TryFromString(aString: not nullable String): nullable XmlDocument;
+begin
+  try
+    result := FromString(aString);
+  except
+    on XmlException do
+      exit nil;
+  end;
+end;
+
+class method XmlDocument.FromBinary(aBinary: not nullable Binary): not nullable XmlDocument;
 begin
   result := XmlDocument.FromString(new String(aBinary.ToArray));
 end;
 
-class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): nullable XmlDocument;
+class method XmlDocument.TryFromBinary(aBinary: not nullable Binary): nullable XmlDocument;
+begin
+  result := XmlDocument.TryFromString(new String(aBinary.ToArray));
+end;
+
+class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
 begin
   result := new XmlDocument(aElement);
 end;
 
-class method XmlDocument.WithRootElement(aName: not nullable String): nullable XmlDocument;
+class method XmlDocument.WithRootElement(aName: not nullable String): not nullable XmlDocument;
 begin
   result := new XmlDocument(new XmlElement withName(aName));
 end;
@@ -782,7 +800,7 @@ begin
   else result := coalesce(fDefaultNamespace, XmlElement(Parent).DefaultNamespace);
 end;
 
-method XmlElement.GetValue: nullable String;
+{method XmlElement.GetValue: nullable String;
 begin
   result := "";
   for each lNode in Nodes do begin
@@ -790,8 +808,24 @@ begin
     if lNode.NodeType = XmlNodeType.Text then result := result+XmlText(lNode).Value
     else if lNode.NodeType = XmlNodeType.Element then result := result+XmlElement(lNode).GetValue;
   end;
-end;
+end;}
 
+method XmlElement.GetValue(aWithNested: Boolean): nullable String;
+begin
+  result := ""; 
+  for each lNode in Nodes do begin
+    
+    if (lNode.NodeType = XmlNodeType.Text) and (XmlText(lNode).Value.Trim <> "") then begin 
+        if result <> "" then result := result+" ";
+        result := result+XmlText(lNode).Value.Trim
+    end
+    else if lNode.NodeType = XmlNodeType.Element then 
+      if aWithNested then begin
+        if result <> "" then result := result+" ";
+          result := result+XmlElement(lNode).GetValue(true);
+      end
+  end    
+end;
 method XmlElement.SetValue(aValue: nullable String);
 begin
   fNodes.RemoveAll;

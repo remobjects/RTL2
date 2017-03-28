@@ -16,21 +16,21 @@ type
     method GetLastWindowsPathComponent: String;
 
   assembly
-    method GetLastPathComponentWithSeparatorChar(aSeparator: Char): not nullable String;
+    method GetLastPathComponentWithSeparatorChar(aSeparator: String): not nullable String;
 
   public
 
     property FileExists: Boolean read File.Exists(self);
     property FolderExists: Boolean read Folder.Exists(self);
-    property FileOrFolderExists: Boolean read Folder.Exists(self) or Folder.Exists(self);
+    property FileOrFolderExists: Boolean read File.Exists(self) or Folder.Exists(self);
 
     property LastPathComponent: String read Path.GetFilename(self);             // uses the platform-specific folder separator
     property LastUnixPathComponent: String read GetLastUnixPathComponent;       // always uses `/`
     property LastWindowsPathComponent: String read GetLastWindowsPathComponent; // always uses `\`
 
-    property PathWithoutExtension: String read Path.GetPathWithoutExtension(self);
-    property PathExtension: String read Path.GetExtension(self);
-    property NetworkServerName: nullable String read Path.GetNetworkServerName(self);
+    property PathWithoutExtension: String read Path.GetPathWithoutExtension(self); inline;
+    property PathExtension: String read Path.GetExtension(self); inline;
+    property NetworkServerName: nullable String read Path.GetNetworkServerName(self); inline;
 
     property IsWindowsPath: Boolean read (Length > 2) and ((self[1] = ':') or StartsWith("\\")); // Drive letter or Windows network path
 
@@ -72,7 +72,7 @@ type
 
 implementation
 
-method String.GetLastPathComponentWithSeparatorChar(aSeparator: Char): not nullable String;
+method String.GetLastPathComponentWithSeparatorChar(aSeparator: String): not nullable String;
 begin
   if RemObjects.Elements.System.length(self) = 0 then
     exit "";

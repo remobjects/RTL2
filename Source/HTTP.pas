@@ -82,7 +82,9 @@ type
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
     method GetContentAsBinarySynchronous: not nullable Binary;
     {$IF XML}method GetContentAsXmlSynchronous: not nullable XmlDocument;{$ENDIF}
+    {$IF XML}method TryGetContentAsXmlSynchronous: nullable XmlDocument;{$ENDIF}
     {$IF JSON}method GetContentAsJsonSynchronous: not nullable JsonDocument;{$ENDIF}
+    {$IF JSON}method TryGetContentAsJsonSynchronous: nullable JsonDocument;{$ENDIF}
     method SaveContentAsFileSynchronous(aTargetFile: File);
     {$ENDIF}
   end;
@@ -103,11 +105,15 @@ type
     property Session := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration); lazy;
     {$ENDIF}
     method StringForRequestType(aMode: HttpRequestMode): String;
+    {$IF NOT ECHOES OR NOT NETSTANDARD}
+    method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
+    {$ENDIF}
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
-    {$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
+    {$IF NOT ECHOES OR NOT NETSTANDARD}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
+    method TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
     {$ENDIF}
 
     method ExecuteRequestAsString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<String>);
@@ -120,7 +126,9 @@ type
     method GetString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest): not nullable String;
     method GetBinary(aRequest: not nullable HttpRequest): not nullable Binary;
     {$IF XML}method GetXml(aRequest: not nullable HttpRequest): not nullable XmlDocument;{$ENDIF}
+    {$IF XML}method TryGetXml(aRequest: not nullable HttpRequest): nullable XmlDocument;{$ENDIF}
     {$IF JSON}method GetJson(aRequest: not nullable HttpRequest): not nullable JsonDocument;{$ENDIF}
+    {$IF JSON}method TryGetJson(aRequest: not nullable HttpRequest): nullable JsonDocument;{$ENDIF}
     //todo: method GetAndSaveAsFile(...);
     {$ENDIF}
   end;
@@ -439,12 +447,26 @@ begin
   if not assigned(result) then
     raise new RTLException("Could not parse result as XML.");
 end;
+
+method HttpResponse.TryGetContentAsXmlSynchronous: nullable XmlDocument;
+begin
+  var lBinary := GetContentAsBinarySynchronous(); // try?
+  if assigned(lBinary) then
+    result := XmlDocument.TryFromBinary(lBinary) as not nullable;
+end;
 {$ENDIF}
 
 {$IF JSON}
 method HttpResponse.GetContentAsJsonSynchronous: not nullable JsonDocument;
 begin
   result := JsonDocument.FromBinary(GetContentAsBinarySynchronous());
+end;
+
+method HttpResponse.TryGetContentAsJsonSynchronous: nullable JsonDocument;
+begin
+  var lBinary := GetContentAsBinarySynchronous(); // try?
+  if assigned(lBinary) then
+    result := JsonDocument.TryFromBinary(lBinary);
 end;
 {$ENDIF}
 
@@ -582,6 +604,16 @@ end;
 {$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 begin
+  result := ExecuteRequestSynchronous(aRequest, true) as not nullable;
+end;
+
+method Http.TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
+begin
+  result := ExecuteRequestSynchronous(aRequest, false);
+end;
+
+method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
+begin
   {$IF COOPER}
   var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
@@ -595,8 +627,11 @@ begin
   end;
 
   result := new HttpResponse(lConnection);
-  if lConnection.ResponseCode >= 300 then
-    raise new HttpException(String.Format("Unable to complete request. Error code: {0}", lConnection.responseCode), result);
+  if lConnection.ResponseCode >= 300 then begin
+    if not aThrowOnError then exit nil;
+    raise new HttpException(String.Format("Unable to complete request. Error code: {0}", lConnection.responseCode), result)
+  end;
+
   {$ELSEIF ECHOES}
   using webRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do begin
     {$IF NOT NETFX_CORE}
@@ -618,10 +653,13 @@ begin
     try
       var webResponse := webRequest.GetResponse() as HttpWebResponse;
       result := new HttpResponse(webResponse);
-      if webResponse.StatusCode >= 300 then
-        raise new HttpException(String.Format("Unable to complete request. Error code: {0}", webResponse.StatusCode), result);
+      if webResponse.StatusCode >= 300 then begin
+        if not aThrowOnError then exit nil;
+        raise new HttpException(String.Format("Unable to complete request. Error code: {0}", webResponse.StatusCode), result)
+      end;
     except
       on E: System.Net.WebException do begin
+        if not aThrowOnError then exit nil;
         if E.Response is HttpWebResponse then
           raise new HttpException(E.Message, new HttpResponse(E.Response as HttpWebResponse))
         else
@@ -649,46 +687,24 @@ begin
   // we're aware it's deprecated. but async calls do have their use in console apps.
   var data := NSURLConnection.sendSynchronousRequest(nsUrlRequest) returningResponse(var nsUrlResponse) error(var error);
   {$SHOW W28}
-(*
-  var data : NSData;
 
-  var outerExecutionBlock: NSBlockOperation := NSBlockOperation.blockOperationWithBlock(method begin
-
-    var semaphore := dispatch_semaphore_create(0);
-    var session := NSURLSession.sharedSession;
-
-    var task := session. dataTaskWithRequest(nsUrlRequest) completionHandler(method (internalData:NSData; internalResponse:NSURLResponse; internalError:NSError)begin
-
-      nsUrlResponse := internalResponse;
-      error := internalError;
-      data := internalData;
-
-      dispatch_semaphore_signal(semaphore);
-    end);
-
-    task.resume;
-
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-
-  end);
-
-  var workerQueue := new NSOperationQueue();
-  workerQueue.addOperations([outerExecutionBlock]) waitUntilFinished(true);
-
-*)
   var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
   if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
     result := new HttpResponse(data, nsHttpUrlResponse);
-    if nsHttpUrlResponse.statusCode >= 300 then
-      raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), result);
+    if nsHttpUrlResponse.statusCode >= 300 then begin
+      if not aThrowOnError then exit nil;
+      raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), result)
+    end;
   end
   else if assigned(error) then begin
+    if not aThrowOnError then exit nil;
     if assigned(nsHttpUrlResponse) then
       raise new HttpException(error.description, new HttpResponse(nil, nsHttpUrlResponse))
     else
-      raise new RTLException withError(error)
+      raise new RTLException withError(error);
   end
   else begin
+    if not aThrowOnError then exit nil;
     if assigned(nsHttpUrlResponse) then
       raise new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), new HttpResponse(nil, nsHttpUrlResponse))
     else
@@ -788,12 +804,26 @@ method Http.GetXml(aRequest: not nullable HttpRequest): not nullable XmlDocument
 begin
   result := ExecuteRequestSynchronous(aRequest).GetContentAsXmlSynchronous;
 end;
+
+method Http.TryGetXml(aRequest: not nullable HttpRequest): nullable XmlDocument;
+begin
+  var lRequest := TryExecuteRequestSynchronous(aRequest);
+  if assigned(lRequest) then
+    result := lRequest.TryGetContentAsXmlSynchronous;
+end;
 {$ENDIF}
 
 {$IF JSON}
 method Http.GetJson(aRequest: not nullable HttpRequest): not nullable JsonDocument;
 begin
   result := ExecuteRequestSynchronous(aRequest).GetContentAsJsonSynchronous;
+end;
+
+method Http.TryGetJson(aRequest: not nullable HttpRequest): nullable JsonDocument;
+begin
+  var lRequest := TryExecuteRequestSynchronous(aRequest);
+  if assigned(lRequest) then
+    result := lRequest.TryGetContentAsJsonSynchronous;
 end;
 {$ENDIF}
 {$ENDIF}
