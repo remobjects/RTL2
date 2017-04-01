@@ -66,6 +66,7 @@ type
     constructor(Items: ImmutableList<T>);
     constructor(params anArray: array of T);
     constructor withCapacity(aCapacity: Integer);
+    constructor withRepeatedValue(aValue: T; aCount: Integer);
 
     method &Add(aItem: T); inline;
     method &Add(Items: nullable ImmutableList<T>); inline;
@@ -196,6 +197,21 @@ begin
   {$ELSEIF TOFFEE}
   result := Foundation.NSMutableArray.arrayWithCapacity(aCapacity)
   {$ENDIF}
+end;
+
+constructor List<T> withRepeatedValue(aValue: T; aCount: Integer);
+begin
+  {$IF COOPER}
+  result := new java.util.ArrayList<T>(aCount);
+  {$ELSEIF ECHOES}
+  result := new System.Collections.Generic.List<T>(aCount);
+  {$ELSEIF ISLAND}
+  result := new RemObjects.Elements.System.List<T>(aCount);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSMutableArray.arrayWithCapacity(aCount)
+  {$ENDIF}
+  for i: Integer := 0 to aCount-1 do
+    result.Add(aValue);
 end;
 
 method List<T>.Add(aItem: T);
