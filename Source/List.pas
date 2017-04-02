@@ -208,7 +208,7 @@ begin
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.List<T>(aCount);
   {$ELSEIF TOFFEE}
-  result := Foundation.NSMutableArray.arrayWithCapacity(aCount)
+  result := Foundation.NSMutableArray.arrayWithCapacity(aCount);
   {$ENDIF}
   for i: Integer := 0 to aCount-1 do
     result.Add(aValue);
