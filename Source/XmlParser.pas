@@ -68,7 +68,7 @@ type
     LF,
     CRLF);
 
-  XmlFormattingOptions = public record
+  XmlFormattingOptions = public class
   public
     WhitespaceStyle: XmlWhitespaceStyle := XmlWhitespaceStyle.PreserveAllWhitespace;
     EmptyTagSyle: XmlTagStyle := XmlTagStyle.Preserve;
@@ -80,6 +80,21 @@ type
     PreserveExactStringsForUnchnagedValues: Boolean := false;
     WriteNewLineAtEnd: Boolean := false;
     WriteBOM: Boolean := false;
+
+    method UniqueCopy: XmlFormattingOptions;
+    begin
+      result := new XmlFormattingOptions;
+      result.WhitespaceStyle := WhitespaceStyle;
+      result.EmptyTagSyle := EmptyTagSyle;
+      result.SpaceBeforeSlashInEmptyTags := SpaceBeforeSlashInEmptyTags;
+      result.Indentation := Indentation;
+      result.NewLineForElements := NewLineForElements;
+      result.NewLineForAttributes := NewLineForAttributes;
+      result.NewLineSymbol := NewLineSymbol;
+      result.PreserveExactStringsForUnchnagedValues := PreserveExactStringsForUnchnagedValues;
+      result.WriteNewLineAtEnd := WriteNewLineAtEnd;
+      result.WriteBOM := WriteBOM;
+    end;
 
   assembly
 
