@@ -22,6 +22,7 @@ type
     method GetIsMono: Boolean;
 
     method GetUserHomeFolder: Folder;
+    method GetTempFolder: Folder;
     method GetApplicationSupportFolder: Folder;
 
     {$IF ECHOES}
@@ -38,6 +39,7 @@ type
     property MachineName: String read GetMachineName;
 
     property UserHomeFolder: nullable Folder read GetUserHomeFolder;
+    property TempFolder: nullable Folder read GetTempFolder;
     property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
 
     property OS: OperatingSystem read GetOS;
@@ -167,6 +169,32 @@ begin
   {$WARNING Not Implemented for Island yet}
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.homeDirectoryForCurrentUser.path;
+  {$ENDIF}
+end;
+
+method Environment.GetTempFolder: Folder;
+begin
+  {$IF COOPER}
+  result := System.getProperty('java.io.tmpdir');
+  {$ELSEIF ECHOES}
+  result := System.IO.Path.GetTempPath;
+  {$ELSEIF ISLAND}
+  {$IF WINDOWS}
+  var lMax := rtl.MAX_PATH;
+  var lBuf := new Char[lMax + 1];
+  var lLen := rtl.GetTempPath(lMax, @lBuf[0]);
+  result := if lLen <> 0 then new String(lBuf, 0, lLen) else '';
+  {$ELSEIF POSIX}
+  var lString := 'TMPDIR';
+  var lTmp := rtl.getenv(lString.ToAnsiChars);
+  var lDir: String := '';
+  if lTmp <> nil then
+    lDir := RemObjects.Elements.System.String.FromPAnsiChars(lTmp);
+  result := if lDir <> '' then lDir else rtl.P_tmpdir;
+  {$ENDIF}
+  {$ELSEIF TOFFEE}
+  var lTemp := NSTemporaryDirectory();
+  result := if lTemp = nil then '/tmp' else lTemp;   
   {$ENDIF}
 end;
 

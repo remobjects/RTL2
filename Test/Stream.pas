@@ -34,7 +34,7 @@ type
 
     method FileStreamTests;
     begin
-      var lPath := Path.Combine(Environment.UserHomeFolder, 'rtl2_tests');
+      var lPath := Path.Combine(Environment.TempFolder, 'rtl2_tests');
       var lStream := new FileStream(lPath, FileOpenMode.Create);
       var lArray := new Byte[5];
       var lToRead := new Byte[5];
