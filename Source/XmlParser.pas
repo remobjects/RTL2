@@ -12,7 +12,7 @@ type
     method GetNamespaceForPrefix(aPrefix:not nullable String; aParent: XmlElement): XmlNamespace;
     method ReadProcessingInstruction(aParent: XmlElement): XmlProcessingInstruction;
     method ReadDocumentType: XmlDocumentType;
-    method ParseEntity(S: String): nullable String;
+    method ParseEntities(S: String): nullable String;
     method ResolveEntity(S: not nullable String): nullable String;
   assembly
     fLineBreak: String;
@@ -335,7 +335,7 @@ begin
     result.EndLine := lEndRow;
     result.EndColumn := lEndCol;
     XmlAttribute(result).LocalName := lLocalName;
-    var lparsedValue := ParseEntity(lValue);
+    var lparsedValue := ParseEntities(lValue);
     XmlAttribute(result).Value := lparsedValue;
 
     XmlAttribute(result).QuoteChar := lQuoteChar;
@@ -435,7 +435,7 @@ begin
                 if (WSValue <>"") then begin
                   result.AddNode(new XmlText(result, Value := WSValue));
                 end;
-              var lParsedValue := ParseEntity(Tokenizer.Value);
+              var lParsedValue := ParseEntities(Tokenizer.Value);
               result.AddNode(new XmlText(result, Value := {Tokenizer.Value}lParsedValue, originalRawValue := Tokenizer.Value,
                 StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column));//add node;
               WSValue := "";
@@ -606,38 +606,42 @@ begin
   result.EndColumn := Tokenizer.Column;
 end;
 
-method XmlParser.ParseEntity(S: String): nullable String;
+method XmlParser.ParseEntities(S: String): nullable String;
 begin
   var i := 0;
-  result :="";
-  while i < S.Length do begin
-    if S[i] = '&' then begin
-      var lEntity := new StringBuilder("&");
-      var j := i+1;
-      while j < S.Length do begin
-        var ch := S[j];
-          case ch of
-            ';': begin
-              lEntity.Append(ch);
-              break;
-            end;
-            'a'..'z','A'..'Z','0'..'9','#': begin
-              lEntity.Append(ch);
-            end;
-            else break;
-          end;
-          inc(j);
+  result := S;
+  var len := length(result);
+  while i < len do begin
+    if result[i] = '&' then begin
+      var lStart := i;
+      var lEntity: String;
+      inc(i);
+      while i < length(result) do begin
+        var ch := result[i];
+        if ch = ';' then begin
+          inc(i);
+          lEntity := S.Substring(lStart, i-lStart);
+          break;
+        end
+        else if ch in ['a'..'z','A'..'Z','0'..'9','#'] then begin
+          inc(i);
+        end
+        else begin
+          break;
+        end;
       end;
-      var lEntityString := lEntity.ToString();
-      var lResolvedEntity := ResolveEntity(lEntityString);
-      if assigned(lResolvedEntity) then
-        result := result + lResolvedEntity
-      else
-        result := result + lEntityString;
-      if (j <> i+1) then i := j;
+      if assigned(lEntity) then begin
+        var lResolvedEntity := ResolveEntity(lEntity);
+        if assigned(lResolvedEntity) then begin
+          result := result.Replace(lStart, length(lEntity), lResolvedEntity);
+          var diff := (length(lEntity)-length(lResolvedEntity));
+          i := i-diff;
+          len := len-diff
+        end;
+      end;
     end
-    else result := result + S[i];
-    inc(i)
+    else
+      inc(i);
   end;
 end;
 
