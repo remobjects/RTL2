@@ -13,6 +13,10 @@ Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Cooper"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Echoes", "Elements.RTL2.Tests.Echoes.elements", "{4FE86A5E-1886-47EC-921E-D93AE32079B2}"
 EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Island.Linux", "Elements.RTL2.Tests.Island.Linux.elements", "{46DF78FE-F074-498D-B963-1B3BCF267740}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Island.Windows", "Elements.RTL2.Tests.Island.Windows.elements", "{01C6C71A-8EB4-4A43-B13C-A25F64551EAB}"
+EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Shared", "Elements.RTL2.Tests.Shared.elements", "{9EAFE57A-81AB-42B5-A0FA-2FD186093D91}"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Toffee.iOS", "Elements.RTL2.Tests.Toffee.iOS.elements", "{54C9267B-E5C0-44BE-8D1B-A6EF55B9336D}"
@@ -45,6 +49,14 @@ Global
 		{4FE86A5E-1886-47EC-921E-D93AE32079B2}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{4FE86A5E-1886-47EC-921E-D93AE32079B2}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
 		{4FE86A5E-1886-47EC-921E-D93AE32079B2}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{46DF78FE-F074-498D-B963-1B3BCF267740}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{46DF78FE-F074-498D-B963-1B3BCF267740}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{46DF78FE-F074-498D-B963-1B3BCF267740}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{46DF78FE-F074-498D-B963-1B3BCF267740}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{01C6C71A-8EB4-4A43-B13C-A25F64551EAB}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{01C6C71A-8EB4-4A43-B13C-A25F64551EAB}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{01C6C71A-8EB4-4A43-B13C-A25F64551EAB}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{01C6C71A-8EB4-4A43-B13C-A25F64551EAB}.Release|AnyCPU.Build.0 = Release|AnyCPU
 		{54C9267B-E5C0-44BE-8D1B-A6EF55B9336D}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{54C9267B-E5C0-44BE-8D1B-A6EF55B9336D}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{54C9267B-E5C0-44BE-8D1B-A6EF55B9336D}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
