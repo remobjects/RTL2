@@ -370,6 +370,8 @@ begin
   exit mapped.compareTo(Value);
   {$ELSEIF ECHOES}
   exit mapped.Compare(mapped, Value, StringComparison.Ordinal);
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.String.Compare(mapped, Value);
   {$ELSEIF TOFFEE}
   exit mapped.compare(Value);
   {$ENDIF}
@@ -381,6 +383,9 @@ begin
   exit mapped.compareToIgnoreCase(Value);
   {$ELSEIF ECHOES}
   exit mapped.Compare(mapped, Value, StringComparison.OrdinalIgnoreCase);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.caseInsensitiveCompare(Value);
   {$ENDIF}
@@ -392,6 +397,9 @@ begin
   exit mapped.equals(Value); {$HINT needs to take locale into account!}
   {$ELSEIF ECHOES}
   exit mapped.Equals(Value, StringComparison.Ordinal);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.compare(Value) = 0;
   {$ENDIF}
@@ -403,6 +411,9 @@ begin
   exit mapped.equalsIgnoreCase(Value); {$HINT needs to take locale into account!}
   {$ELSEIF ECHOES}
   exit mapped.Equals(Value, StringComparison.OrdinalIgnoreCase);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.caseInsensitiveCompare(Value) = 0;
   {$ENDIF}
@@ -418,6 +429,9 @@ begin
   {$ELSE}
   exit mapped.Equals(Value, StringComparison.InvariantCultureIgnoreCase);
   {$ENDIF}
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   // RemObjects.Elements.System.length as workaround for issue in 8.3; not needed in 8.4
   exit mapped.compare(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(0, RemObjects.Elements.System.length(self))) locale(Locale.Invariant) = 0;
@@ -469,7 +483,7 @@ end;
 
 method String.IndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES}// OR ISLAND}
+  {$IF COOPER OR ECHOES OR ISLAND}
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
@@ -484,7 +498,7 @@ begin
   if Value.Length = 0 then
     exit 0;
 
-  {$IF COOPER OR ECHOES}// OR ISLAND}
+  {$IF COOPER OR ECHOES OR ISLAND}
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
@@ -496,7 +510,7 @@ method String.IndexOfAny(const AnyOf: array of Char): Integer;
 begin
   {$IF COOPER OR TOFFEE}
   result := IndexOfAny(AnyOf, 0);
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   result := mapped.IndexOfAny(AnyOf);
   {$ENDIF}
 end;
@@ -513,6 +527,9 @@ begin
   result := -1;
   {$ELSEIF ECHOES}// OR ISLAND}
   result := mapped.IndexOfAny(AnyOf, StartIndex);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
   var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
@@ -523,7 +540,7 @@ end;
 method String.LastIndexOf(Value: Char): Integer;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
-  result := mapped.lastIndexOf(Value);
+  result := mapped.LastIndexOf(Value);
   {$ELSEIF TOFFEE}
   result := LastIndexOf(NSString.stringWithFormat("%c", Value));
   {$ENDIF}
@@ -549,6 +566,9 @@ method String.LastIndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
   {$IF COOPER OR ECHOES}// OR ISLAND}
   result := mapped.LastIndexOf(Value, StartIndex);
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemeted for Island}
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   result := LastIndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
   {$ENDIF}
@@ -556,8 +576,8 @@ end;
 
 method String.LastIndexOf(const Value: String; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES}
-  result := mapped.lastIndexOf(Value, StartIndex);
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := mapped.LastIndexOf(Value, StartIndex);
   if (result = StartIndex) and (Value.Length > 1) then
     result := -1;
   {$ELSEIF TOFFEE}
