@@ -263,9 +263,7 @@ begin
   var lQuoteChar := fData[fPos];
   if (lQuoteChar ≠ '"') and (lQuoteChar ≠ '''') then exit;
 
-  var lValue := new StringBuilder();
-  lValue.Append(lQuoteChar);
-
+  var lStart := fPos;
   inc(fPos);
   loop begin
     if (fPos >= fData.length) then begin
@@ -278,25 +276,21 @@ begin
         if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
         fRowStart := fPos + 1;
         inc(fRow);
-        lValue.Append(fData[fPos-1]+fData[fPos]);
       end;
       #10: begin
         fRowStart := fPos + 1;
         inc(fRow);
-        lValue.Append(ch);
       end;
       '<' : begin
         Token := XmlTokenKind.SyntaxError;
         Value := "Syntax error. Symbol '<' is not allowed in attribute value";
         exit;
       end;
-      else lValue.Append(ch);
     end;
     inc(fPos);
   end;
 
-  lValue.Append(lQuoteChar);
-  Value := lValue.ToString();
+  Value := new String(fData, lStart, fPos-lStart+1);
   fLength := 1;
   Token := XmlTokenKind.AttributeValue;
 end;
