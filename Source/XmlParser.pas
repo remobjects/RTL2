@@ -620,7 +620,7 @@ begin
         var ch := result[i];
         if ch = ';' then begin
           inc(i);
-          lEntity := S.Substring(lStart, i-lStart);
+          lEntity := result.Substring(lStart, i-lStart);
           break;
         end
         else if ch in ['a'..'z','A'..'Z','0'..'9','#'] then begin
