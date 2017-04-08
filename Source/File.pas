@@ -308,6 +308,9 @@ end;
 
 class method File.WriteBytes(aFileName: String; Content: array of Byte);
 begin
+  {$IF TOFFEE}
+  (new Binary(Content) as NSData).writeToURL(NSURL.fileURLWithPath(aFileName)) atomically(true);
+  {$ELSE}
   var Handle := new FileHandle(aFileName, FileOpenMode.Create);
   try
     Handle.Length := 0;
@@ -315,6 +318,7 @@ begin
   finally
     Handle.Close;
   end;
+  {$ENDIF}
 end;
 
 class method File.WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
@@ -326,6 +330,9 @@ end;
 
 class method File.WriteBinary(aFileName: String; Content: Binary);
 begin
+  {$IF TOFFEE}
+  (Content as NSData).writeToURL(NSURL.fileURLWithPath(aFileName)) atomically(true);
+  {$ELSE}
   var Handle := new FileHandle(aFileName, FileOpenMode.Create);
   try
     Handle.Length := 0;
@@ -333,6 +340,7 @@ begin
   finally
     Handle.Close;
   end;
+  {$ENDIF}
 end;
 
 class method File.AppendText(aFileName: String; Content: String);
