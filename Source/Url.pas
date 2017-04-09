@@ -187,12 +187,12 @@ end;
 
 class method Url.UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
 begin
+  if aPath.IsAbsoluteWindowsPath then
+    aPath := "/"+aPath; // Windows paths always get an extra "/"
   {$IF NOT KNOWN_UNIX}
   if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
     aPath := aPath.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "/");
   {$ENDIF}
-  if aPath.IsAbsoluteWindowsPath then
-    aPath := "/"+aPath; // Windows paths always get an extra "/"
   result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
 end;
 
