@@ -77,7 +77,15 @@ type
     property IsFileUrl: Boolean read fScheme = "file";
     property FileExists: Boolean read IsFileUrl and File.Exists(Path);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(Path);
-    property IsAbsoluteWindowsFileURL: Boolean read IsFileUrl and (Path:Length ≥ 3) and ((Path[2] = ':') or ((Path[1] = '/') and (Path[1] = '/')));
+    property IsAbsoluteWindowsFileURL: Boolean
+      read IsFileUrl
+        and (((Path:Length ≥ 3) and ((Path[2] = ':') or // absolute drive path, eg `C:`
+                                     (Path[1] = '/') and (Path[2] = '/'))) or // network path with `\\`
+             (length(fHost) > 0));
+    property IsAbsoluteWindowsDriveLetterFileURL: Boolean
+      read IsFileUrl and (Path:Length ≥ 3) and (Path[2] = ':');
+    property IsAbsoluteWindowsNetworkDriveFileURL: Boolean
+      read IsFileUrl and (((Path:Length ≥ 3) and (Path[1] = '/') and (Path[2] = '/')) or (length(fHost) > 0));
     //property IsAbsoluteUnixFileURL: Boolean read IsFileUrl and (Path:StartsWith("/"));
 
     method IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
@@ -206,8 +214,23 @@ end;
 
 class method Url.UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
 begin
-  if aPath.IsAbsoluteWindowsPath then
-    aPath := "/"+aPath; // Windows paths always get an extra "/"
+  if aPath.IsAbsoluteWindowsPath then begin
+    if (length(aPath) ≥ 2) and (aPath[0] = '\') and (aPath[1] = '\') then begin
+      aPath := aPath.Substring(2);
+      var p := aPath.IndexOf("\");
+      if p > 0 then begin
+        var lHost := aPath.Substring(0, p);
+        aPath := aPath.Substring(p);
+        aPath := aPath.Replace("\", "/");
+        result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
+        result.fHost := lHost;
+        exit;
+      end;
+    end
+    else begin
+      aPath := "/"+aPath; // Windows paths always get an extra "/"
+    end;
+  end;
   aPath := aPath.Replace("\", "/");
   result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
 end;
@@ -231,10 +254,8 @@ begin
     aUrlString := aUrlString.Substring(lProtocolPosition + 3); /* skip over :// */
   end;
 
-  if fScheme = "file" then begin
-    fPath := RemovePercentEncodingsFromPath(aUrlString, true);
-    exit true;
-  end;
+  if (fScheme = "file") and aUrlString.StartsWith("///") then
+    aUrlString := aUrlString.Substring(3); // compensate for old fake/wrong Windows network path URLs
 
   var lHostAndPort: String;
   lProtocolPosition := aUrlString.IndexOf('/');
@@ -356,7 +377,9 @@ method Url.GetWindowsPath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then begin
     result := fPath.Replace('/', '\');
-    if IsAbsoluteWindowsFileURL then
+    if length(fHost) > 0 then
+      result := "\\"+fHost+result
+    else if IsAbsoluteWindowsFileURL then
       result := result.SubString(1);
   end;
 end;
@@ -384,14 +407,14 @@ end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
 begin
-  var SelfIsAbsoluteWIndowsUrl := IsAbsoluteWindowsFileURL;
-  var BaseIsAbsoluteWIndowsUrl := aUrl.IsAbsoluteWindowsFileURL;
-  if SelfIsAbsoluteWIndowsUrl ≠ BaseIsAbsoluteWIndowsUrl then begin
+  var SelfIsAbsoluteWindowsUrl := IsAbsoluteWindowsFileURL;
+  var BaseIsAbsoluteWindowsUrl := aUrl.IsAbsoluteWindowsFileURL;
+  if SelfIsAbsoluteWindowsUrl ≠ BaseIsAbsoluteWindowsUrl then begin
     exit nil; // can never be relative;
   end
-  else if SelfIsAbsoluteWIndowsUrl and BaseIsAbsoluteWIndowsUrl then begin
-    var SelfIsDriveletter := Path[2] = ":";
-    var BaseIsDriveletter := aUrl.Path[2] = ":";
+  else if SelfIsAbsoluteWindowsUrl and BaseIsAbsoluteWindowsUrl then begin
+    var SelfIsDriveletter := IsAbsoluteWindowsDriveLetterFileURL;
+    var BaseIsDriveletter := aUrl.IsAbsoluteWindowsDriveLetterFileURL;
     if SelfIsDriveletter ≠ BaseIsDriveletter then begin
       exit nil; // can never be relative;
     end
@@ -400,7 +423,6 @@ begin
       result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
     end
     else begin// both network urls
-      if WindowsPath.NetworkServerName:ToLowerInvariant() ≠ aUrl.WindowsPath.NetworkServerName:ToLowerInvariant() then exit nil; // different server, can never be relative;
       result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
     end;
   end
@@ -411,7 +433,7 @@ end;
 
 method Url.DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String;
 begin
-  if (Scheme = aUrl.Scheme) and (Host = aUrl.Host) and (Port = aUrl.Port) then begin
+  if (Scheme = aUrl.Scheme) and (Host:ToLowerInvariant() = aUrl.Host:ToLowerInvariant()) and (Port = aUrl.Port) then begin
     if IsFileUrl and assigned(fPath) then begin
 
       var baseUrl := aUrl.CanonicalVersion.Path;
