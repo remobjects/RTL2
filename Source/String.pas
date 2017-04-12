@@ -398,8 +398,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.Equals(Value, StringComparison.Ordinal);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+  exit mapped.Equals(Value);
   {$ELSEIF TOFFEE}
   exit mapped.compare(Value) = 0;
   {$ENDIF}
@@ -412,8 +411,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.Equals(Value, StringComparison.OrdinalIgnoreCase);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+  exit mapped.EqualsIgnoreCase(Value);
   {$ELSEIF TOFFEE}
   exit mapped.caseInsensitiveCompare(Value) = 0;
   {$ENDIF}
