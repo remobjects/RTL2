@@ -223,7 +223,8 @@ begin
         aPath := aPath.Substring(p);
         aPath := aPath.Replace("\", "/");
         result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
-        result.fHost := lHost;
+        if length(lHost) > 0 then
+          result.fHost := lHost;
         exit;
       end;
     end
@@ -301,6 +302,7 @@ begin
       fPort := nil;
     end;
   end;
+  if length(fHost) = 0 then fHost := nil;
   lProtocolPosition := aUrlString.IndexOf(#63);
   if lProtocolPosition ≥ 0 then begin
     fPath := RemovePercentEncodingsFromPath(aUrlString.Substring(0, lProtocolPosition), true);
@@ -433,43 +435,48 @@ end;
 
 method Url.DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String;
 begin
-  if (Scheme = aUrl.Scheme) and (Host:ToLowerInvariant() = aUrl.Host:ToLowerInvariant()) and (Port = aUrl.Port) then begin
-    if IsFileUrl and assigned(fPath) then begin
+  if (Scheme ≠ aUrl.Scheme) then
+    exit nil;
+  if not ((length(aUrl.Host) = 0) and (length(Host) = 0) or (Host:ToLowerInvariant() = aUrl.Host:ToLowerInvariant())) then
+    exit nil;
+  if (Port ≠ aUrl.Port) then
+    exit nil;
 
-      var baseUrl := aUrl.CanonicalVersion.Path;
-      var local := CanonicalVersion.fPath;
-      if not baseUrl.EndsWith("/") then
-        baseUrl := baseUrl+"/";
+  if IsFileUrl and assigned(fPath) then begin
 
-      if local.StartsWith(baseUrl) then
-        exit local.Substring(length(baseUrl));
-      if aThreshold <= 0 then
-        exit local;
+    var baseUrl := aUrl.CanonicalVersion.Path;
+    var local := CanonicalVersion.fPath;
+    if not baseUrl.EndsWith("/") then
+      baseUrl := baseUrl+"/";
 
-      var baseComponents := baseUrl.Split("/");
-      var localComponents := local.Split("/");
-      var len := Math.Min(baseComponents.Count, localComponents.Count);
-      var i := 0;
-      if aCaseInsensitive then
-        while (i < len) and (baseComponents[i].ToLowerInvariant() = localComponents[i].ToLowerInvariant()) do inc(i)
-      else
-        while (i < len) and (baseComponents[i] = localComponents[i]) do inc(i);
+    if local.StartsWith(baseUrl) then
+      exit local.Substring(length(baseUrl));
+    if aThreshold <= 0 then
+      exit local;
 
-      baseComponents := baseComponents.SubList(i);
-      localComponents := localComponents.SubList(i);
+    var baseComponents := baseUrl.Split("/");
+    var localComponents := local.Split("/");
+    var len := Math.Min(baseComponents.Count, localComponents.Count);
+    var i := 0;
+    if aCaseInsensitive then
+      while (i < len) and (baseComponents[i].ToLowerInvariant() = localComponents[i].ToLowerInvariant()) do inc(i)
+    else
+      while (i < len) and (baseComponents[i] = localComponents[i]) do inc(i);
 
-      if baseComponents.count-1 >= aThreshold then
-        exit local;
+    baseComponents := baseComponents.SubList(i);
+    localComponents := localComponents.SubList(i);
 
-      baseUrl := baseComponents.JoinedString("/");
-      local := localComponents.JoinedString("/");
+    if baseComponents.count-1 >= aThreshold then
+      exit local;
 
-      var relative := "";
-      for j: Integer := baseComponents.count-1 downto 1 do
-        relative := "../"+relative;
+    baseUrl := baseComponents.JoinedString("/");
+    local := localComponents.JoinedString("/");
 
-      result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
-    end;
+    var relative := "";
+    for j: Integer := baseComponents.count-1 downto 1 do
+      relative := "../"+relative;
+
+    result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
   end;
 end;
 
