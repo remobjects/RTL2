@@ -66,11 +66,12 @@ type
     constructor(Items: ImmutableList<T>);
     constructor(params anArray: array of T);
     constructor withCapacity(aCapacity: Integer);
+    constructor withRepeatedValue(aValue: T; aCount: Integer);
 
     method &Add(aItem: T); inline;
-    method &Add(Items: ImmutableList<T>); inline;
-    method &Add(params Items: array of T);
-    method &Add(Items: sequence of T); inline;
+    method &Add(Items: nullable ImmutableList<T>); inline;
+    method &Add(params Items: nullable array of T);
+    method &Add(Items: nullable sequence of T); inline;
 
     method &Remove(aItem: T): Boolean; inline;
     method &Remove(aItems: List<T>); inline;
@@ -198,6 +199,21 @@ begin
   {$ENDIF}
 end;
 
+constructor List<T> withRepeatedValue(aValue: T; aCount: Integer);
+begin
+  {$IF COOPER}
+  result := new java.util.ArrayList<T>(aCount);
+  {$ELSEIF ECHOES}
+  result := new System.Collections.Generic.List<T>(aCount);
+  {$ELSEIF ISLAND}
+  result := new RemObjects.Elements.System.List<T>(aCount);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSMutableArray.arrayWithCapacity(aCount);
+  {$ENDIF}
+  for i: Integer := 0 to aCount-1 do
+    result.Add(aValue);
+end;
+
 method List<T>.Add(aItem: T);
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
@@ -234,33 +250,38 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.Add(Items: ImmutableList<T>);
+method List<T>.Add(Items: nullable ImmutableList<T>);
 begin
-  {$IF COOPER}
-  mapped.AddAll(Items);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.AddRange(Items);
-  {$ELSEIF TOFFEE}
-  mapped.addObjectsFromArray(Items);
-  {$ENDIF}
+  if assigned(Items) then begin
+    {$IF COOPER}
+    mapped.AddAll(Items);
+    {$ELSEIF ECHOES OR ISLAND}
+    mapped.AddRange(Items);
+    {$ELSEIF TOFFEE}
+    mapped.addObjectsFromArray(Items);
+    {$ENDIF}
+  end;
 end;
 
-method List<T>.Add(Items: sequence of T);
+method List<T>.Add(Items: nullable sequence of T);
 begin
-  {$IF COOPER}
-  mapped.AddAll(Items.ToList());
-  {$ELSEIF ECHOES}
-  mapped.AddRange(Items);
-  {$ELSEIF ISLAND}
-  mapped.AddRange(Items.ToList());
-  {$ELSEIF TOFFEE}
-  mapped.addObjectsFromArray(Items.array());
-  {$ENDIF}
+  if assigned(Items) then begin
+    {$IF COOPER}
+    mapped.AddAll(Items.ToList());
+    {$ELSEIF ECHOES}
+    mapped.AddRange(Items);
+    {$ELSEIF ISLAND}
+    mapped.AddRange(Items.ToList());
+    {$ELSEIF TOFFEE}
+    mapped.addObjectsFromArray(Items.array());
+    {$ENDIF}
+  end;
 end;
 
-method List<T>.Add(params Items: array of T);
+method List<T>.Add(params Items: nullable array of T);
 begin
-  ListHelpers.AddRange(self, Items);
+  if assigned(Items) then
+    ListHelpers.AddRange(self, Items);
 end;
 
 method List<T>.RemoveAll;

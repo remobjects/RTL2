@@ -1,59 +1,57 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
-    <PropertyGroup>
-        <RootNamespace>RemObjects.Elements.RTL.Tests</RootNamespace>
-        <ProjectGuid>ACFD95B4-2D7F-4C23-9AA1-86C6615A1DA5</ProjectGuid>
-        <OutputType>executable</OutputType>
-        <AssemblyName>Elements.RTL2.Tests.Toffee.macOS</AssemblyName>
-        <AllowGlobals>False</AllowGlobals>
-        <AllowLegacyWith>False</AllowLegacyWith>
-        <AllowLegacyOutParams>False</AllowLegacyOutParams>
-        <AllowLegacyCreate>False</AllowLegacyCreate>
-        <AllowUnsafeCode>False</AllowUnsafeCode>
-        <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-        <SDK>macOS</SDK>
-        <MangleTypeNames>True</MangleTypeNames>
-        <EntitlementsFile>Entitlements.entitlements</EntitlementsFile>
-        <DefaultUses>Foundation;RemObjects.Elements.Linq;RemObjects.Elements.RTL</DefaultUses>
-        <DebugZombieEnabled>True</DebugZombieEnabled>
-        <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-        <Optimize>False</Optimize>
-        <OutputPath>bin\Debug\</OutputPath>
-        <GenerateDebugInfo>True</GenerateDebugInfo>
-        <DefineConstants>DEBUG;TRACE;</DefineConstants>
-        <CaptureConsoleOutput>False</CaptureConsoleOutput>
-        <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-        <Optimize>true</Optimize>
-        <OutputPath>.\bin\Release</OutputPath>
-        <GenerateDebugInfo>True</GenerateDebugInfo>
-        <EnableAsserts>False</EnableAsserts>
-        <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-        <CaptureConsoleOutput>False</CaptureConsoleOutput>
-        <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-    </PropertyGroup>
-    <ItemGroup>
-        <Reference Include="Foundation"/>
-        <Reference Include="libEUnit">
-            <HintPath>..\..\git\EUnit\bin\Debug\macOS\libEUnit.fx</HintPath>
-        </Reference>
-        <Reference Include="libxml2"/>
-        <Reference Include="libToffee"/>
-        <Reference Include="rtl"/>
-        <Reference Include="libElements">
-            <HintPath>../Source/bin/Debug/macOS/libElements.fx</HintPath>
-        </Reference>
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Include="Program.pas"/>
-        <None Include="Entitlements.entitlements"/>
-    </ItemGroup>
-    <ItemGroup>
-        <Folder Include="Properties\"/>
-    </ItemGroup>
-    <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets"/>
-    <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared"/>
+  <PropertyGroup>
+    <RootNamespace>RemObjects.Elements.RTL.Tests</RootNamespace>
+    <ProjectGuid>ACFD95B4-2D7F-4C23-9AA1-86C6615A1DA5</ProjectGuid>
+    <OutputType>executable</OutputType>
+    <AssemblyName>Elements.RTL2.Tests.Toffee.macOS</AssemblyName>
+    <AllowGlobals>False</AllowGlobals>
+    <AllowLegacyWith>False</AllowLegacyWith>
+    <AllowLegacyOutParams>False</AllowLegacyOutParams>
+    <AllowLegacyCreate>False</AllowLegacyCreate>
+    <AllowUnsafeCode>False</AllowUnsafeCode>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <SDK>macOS</SDK>
+    <MangleTypeNames>True</MangleTypeNames>
+    <EntitlementsFile>Entitlements.entitlements</EntitlementsFile>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq;RemObjects.Elements.RTL</DefaultUses>
+    <DebugZombieEnabled>True</DebugZombieEnabled>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>False</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <OutputPath>.\bin\Release</OutputPath>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <EnableAsserts>False</EnableAsserts>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Foundation" />
+    <Reference Include="libEUnit"></Reference>
+    <Reference Include="libxml2" />
+    <Reference Include="libToffee" />
+    <Reference Include="rtl" />
+    <Reference Include="libElements">
+      <HintPath>..\Source\bin\Debug\macOS\libElements.fx</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.pas" />
+    <None Include="Entitlements.entitlements" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
+  <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared" />
 </Project>

@@ -77,7 +77,15 @@ type
     property IsFileUrl: Boolean read fScheme = "file";
     property FileExists: Boolean read IsFileUrl and File.Exists(Path);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(Path);
-    property IsAbsoluteWindowsFileURL: Boolean read IsFileUrl and (Path:Length ≥ 3) and ((Path[2] = ':') or ((Path[1] = '/') and (Path[1] = '/')));
+    property IsAbsoluteWindowsFileURL: Boolean
+      read IsFileUrl
+        and (((Path:Length ≥ 3) and ((Path[2] = ':') or // absolute drive path, eg `C:`
+                                     (Path[1] = '/') and (Path[2] = '/'))) or // network path with `\\`
+             (length(fHost) > 0));
+    property IsAbsoluteWindowsDriveLetterFileURL: Boolean
+      read IsFileUrl and (Path:Length ≥ 3) and (Path[2] = ':');
+    property IsAbsoluteWindowsNetworkDriveFileURL: Boolean
+      read IsFileUrl and (((Path:Length ≥ 3) and (Path[1] = '/') and (Path[2] = '/')) or (length(fHost) > 0));
     //property IsAbsoluteUnixFileURL: Boolean read IsFileUrl and (Path:StartsWith("/"));
 
     method IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
@@ -189,7 +197,7 @@ class method Url.UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDire
 begin
   {$IF NOT KNOWN_UNIX}
   if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
-    aPath := aPath.Replace(RemObjects.Elements.RTL.Path.DirectorySeparatorChar, "/");
+    exit UrlWithWindowsPath(aPath) isDirectory(aIsDirectory);
   {$ENDIF}
   if aPath.IsAbsoluteWindowsPath then
     aPath := "/"+aPath; // Windows paths always get an extra "/"
@@ -206,8 +214,24 @@ end;
 
 class method Url.UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
 begin
-  if aPath.IsAbsoluteWindowsPath then
-    aPath := "/"+aPath; // Windows paths always get an extra "/"
+  if aPath.IsAbsoluteWindowsPath then begin
+    if (length(aPath) ≥ 2) and (aPath[0] = '\') and (aPath[1] = '\') then begin
+      aPath := aPath.Substring(2);
+      var p := aPath.IndexOf("\");
+      if p > 0 then begin
+        var lHost := aPath.Substring(0, p);
+        aPath := aPath.Substring(p);
+        aPath := aPath.Replace("\", "/");
+        result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
+        if length(lHost) > 0 then
+          result.fHost := lHost;
+        exit;
+      end;
+    end
+    else begin
+      aPath := "/"+aPath; // Windows paths always get an extra "/"
+    end;
+  end;
   aPath := aPath.Replace("\", "/");
   result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
 end;
@@ -231,10 +255,8 @@ begin
     aUrlString := aUrlString.Substring(lProtocolPosition + 3); /* skip over :// */
   end;
 
-  if fScheme = "file" then begin
-    fPath := RemovePercentEncodingsFromPath(aUrlString, true);
-    exit true;
-  end;
+  if (fScheme = "file") and aUrlString.StartsWith("///") then
+    aUrlString := aUrlString.Substring(3); // compensate for old fake/wrong Windows network path URLs
 
   var lHostAndPort: String;
   lProtocolPosition := aUrlString.IndexOf('/');
@@ -280,6 +302,7 @@ begin
       fPort := nil;
     end;
   end;
+  if length(fHost) = 0 then fHost := nil;
   lProtocolPosition := aUrlString.IndexOf(#63);
   if lProtocolPosition ≥ 0 then begin
     fPath := RemovePercentEncodingsFromPath(aUrlString.Substring(0, lProtocolPosition), true);
@@ -356,7 +379,9 @@ method Url.GetWindowsPath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then begin
     result := fPath.Replace('/', '\');
-    if IsAbsoluteWindowsFileURL then
+    if length(fHost) > 0 then
+      result := "\\"+fHost+result
+    else if IsAbsoluteWindowsFileURL then
       result := result.SubString(1);
   end;
 end;
@@ -384,14 +409,14 @@ end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
 begin
-  var SelfIsAbsoluteWIndowsUrl := IsAbsoluteWindowsFileURL;
-  var BaseIsAbsoluteWIndowsUrl := aUrl.IsAbsoluteWindowsFileURL;
-  if SelfIsAbsoluteWIndowsUrl ≠ BaseIsAbsoluteWIndowsUrl then begin
+  var SelfIsAbsoluteWindowsUrl := IsAbsoluteWindowsFileURL;
+  var BaseIsAbsoluteWindowsUrl := aUrl.IsAbsoluteWindowsFileURL;
+  if SelfIsAbsoluteWindowsUrl ≠ BaseIsAbsoluteWindowsUrl then begin
     exit nil; // can never be relative;
   end
-  else if SelfIsAbsoluteWIndowsUrl and BaseIsAbsoluteWIndowsUrl then begin
-    var SelfIsDriveletter := Path[2] = ":";
-    var BaseIsDriveletter := aUrl.Path[2] = ":";
+  else if SelfIsAbsoluteWindowsUrl and BaseIsAbsoluteWindowsUrl then begin
+    var SelfIsDriveletter := IsAbsoluteWindowsDriveLetterFileURL;
+    var BaseIsDriveletter := aUrl.IsAbsoluteWindowsDriveLetterFileURL;
     if SelfIsDriveletter ≠ BaseIsDriveletter then begin
       exit nil; // can never be relative;
     end
@@ -400,7 +425,6 @@ begin
       result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
     end
     else begin// both network urls
-      if WindowsPath.NetworkServerName:ToLowerInvariant() ≠ aUrl.WindowsPath.NetworkServerName:ToLowerInvariant() then exit nil; // different server, can never be relative;
       result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
     end;
   end
@@ -411,43 +435,48 @@ end;
 
 method Url.DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String;
 begin
-  if (Scheme = aUrl.Scheme) and (Host = aUrl.Host) and (Port = aUrl.Port) then begin
-    if IsFileUrl and assigned(fPath) then begin
+  if (Scheme ≠ aUrl.Scheme) then
+    exit nil;
+  if not ((length(aUrl.Host) = 0) and (length(Host) = 0) or (Host:ToLowerInvariant() = aUrl.Host:ToLowerInvariant())) then
+    exit nil;
+  if (Port ≠ aUrl.Port) then
+    exit nil;
 
-      var baseUrl := aUrl.CanonicalVersion.Path;
-      var local := CanonicalVersion.fPath;
-      if not baseUrl.EndsWith("/") then
-        baseUrl := baseUrl+"/";
+  if IsFileUrl and assigned(fPath) then begin
 
-      if local.StartsWith(baseUrl) then
-        exit local.Substring(length(baseUrl));
-      if aThreshold <= 0 then
-        exit local;
+    var baseUrl := aUrl.CanonicalVersion.Path;
+    var local := CanonicalVersion.fPath;
+    if not baseUrl.EndsWith("/") then
+      baseUrl := baseUrl+"/";
 
-      var baseComponents := baseUrl.Split("/");
-      var localComponents := local.Split("/");
-      var len := Math.Min(baseComponents.Count, localComponents.Count);
-      var i := 0;
-      if aCaseInsensitive then
-        while (i < len) and (baseComponents[i].ToLowerInvariant() = localComponents[i].ToLowerInvariant()) do inc(i)
-      else
-        while (i < len) and (baseComponents[i] = localComponents[i]) do inc(i);
+    if local.StartsWith(baseUrl) then
+      exit local.Substring(length(baseUrl));
+    if aThreshold <= 0 then
+      exit local;
 
-      baseComponents := baseComponents.SubList(i);
-      localComponents := localComponents.SubList(i);
+    var baseComponents := baseUrl.Split("/");
+    var localComponents := local.Split("/");
+    var len := Math.Min(baseComponents.Count, localComponents.Count);
+    var i := 0;
+    if aCaseInsensitive then
+      while (i < len) and (baseComponents[i].ToLowerInvariant() = localComponents[i].ToLowerInvariant()) do inc(i)
+    else
+      while (i < len) and (baseComponents[i] = localComponents[i]) do inc(i);
 
-      if baseComponents.count-1 >= aThreshold then
-        exit local;
+    baseComponents := baseComponents.SubList(i);
+    localComponents := localComponents.SubList(i);
 
-      baseUrl := baseComponents.JoinedString("/");
-      local := localComponents.JoinedString("/");
+    if baseComponents.count-1 >= aThreshold then
+      exit local;
 
-      var relative := "";
-      for j: Integer := baseComponents.count-1 downto 1 do
-        relative := "../"+relative;
+    baseUrl := baseComponents.JoinedString("/");
+    local := localComponents.JoinedString("/");
 
-      result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
-    end;
+    var relative := "";
+    for j: Integer := baseComponents.count-1 downto 1 do
+      relative := "../"+relative;
+
+    result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
   end;
 end;
 

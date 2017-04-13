@@ -16,12 +16,15 @@ type
     method GetOS: OperatingSystem;
     method GetOSName: String;
     method GetOSVersion: String;
+    method GetOSBitness: Int32;
+    method GetProcessBitness: Int32;
     method GetEnvironmentVariable(Name: String): String;
     method GetCurrentDirectory: String;
 
     method GetIsMono: Boolean;
 
     method GetUserHomeFolder: Folder;
+    method GetTempFolder: Folder;
     method GetApplicationSupportFolder: Folder;
 
     {$IF ECHOES}
@@ -38,11 +41,15 @@ type
     property MachineName: String read GetMachineName;
 
     property UserHomeFolder: nullable Folder read GetUserHomeFolder;
+    property TempFolder: nullable Folder read GetTempFolder;
     property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
 
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
+    property OSBitness: Int32 read GetOSBitness;
+    property ProcessBitness: Int32 read GetProcessBitness;
+
     property ApplicationContext: ApplicationContext read write;
 
     property IsMono: Boolean read GetIsMono;
@@ -167,6 +174,32 @@ begin
   {$WARNING Not Implemented for Island yet}
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.homeDirectoryForCurrentUser.path;
+  {$ENDIF}
+end;
+
+method Environment.GetTempFolder: Folder;
+begin
+  {$IF COOPER}
+  result := System.getProperty('java.io.tmpdir');
+  {$ELSEIF ECHOES}
+  result := System.IO.Path.GetTempPath;
+  {$ELSEIF ISLAND}
+  {$IF WINDOWS}
+  var lMax := rtl.MAX_PATH;
+  var lBuf := new Char[lMax + 1];
+  var lLen := rtl.GetTempPath(lMax, @lBuf[0]);
+  result := if lLen <> 0 then new String(lBuf, 0, lLen) else '';
+  {$ELSEIF POSIX}
+  var lString := 'TMPDIR';
+  var lTmp := rtl.getenv(lString.ToAnsiChars);
+  var lDir: String := '';
+  if lTmp <> nil then
+    lDir := RemObjects.Elements.System.String.FromPAnsiChars(lTmp);
+  result := if lDir <> '' then lDir else rtl.P_tmpdir;
+  {$ENDIF}
+  {$ELSEIF TOFFEE}
+  var lTemp := NSTemporaryDirectory();
+  result := if lTemp = nil then '/tmp' else lTemp;
   {$ENDIF}
 end;
 
@@ -295,6 +328,41 @@ begin
   exit RemObjects.Elements.System.Environment.OSVersion;
   {$ELSEIF TOFFEE}
   exit NSProcessInfo.processInfo.operatingSystemVersionString;
+  {$ENDIF}
+end;
+
+method Environment.GetOSBitness: Int32;
+begin
+  if GetProcessBitness = 64 then exit 64;
+  {$IF COOPER}
+  result := 0;
+  {$ELSEIF NETSTANDARD}
+  result := 0;
+  {$ELSEIF ECHOES}
+  result := if System.Environment.Is64BitOperatingSystem then 64 else 32;
+  {$ELSEIF ISLAND}
+  result := 0;
+  {$ELSEIF TOFFEE}
+    {$IF OSX}
+    result := 64;
+    {$ELSEIF IOS}
+    result := 0;
+    {$ELSEIF WATCHOS}
+    result := 32;
+    {$ELSEIF TVOS}
+    result := 64;
+    {$ELSE}
+      {$ERROR Unsupported Toffee platform}
+    {$ENDIF}
+  {$ENDIF}
+end;
+
+method Environment.GetProcessBitness: Int32;
+begin
+  {$IF COOPER}
+  result := Convert.TryToInt32(System.getProperty("sun.arch.data.model"));
+  {$ELSE}
+  result := sizeOf(IntPtr)*8;
   {$ENDIF}
 end;
 

@@ -94,6 +94,11 @@ begin
   exit new TimeSpan(((((((((d * 24) + h) * 60) + m) * 60) + s) * 1000) + ms) * TicksPerMillisecond);
 end;
 
+method TimeSpan.get_TotalMilliSeconds: Double;
+begin
+  exit Double(Ticks) / TicksPerMillisecond;
+end;
+
 method TimeSpan.get_TotalSeconds: Double;
 begin
   exit Double(Ticks) / TicksPerSecond;
@@ -127,6 +132,11 @@ begin
   {$ENDIF}
 end;
 
+method TimeSpan.get_Milliseconds: Integer;
+begin
+  exit (Ticks / TicksPerMillisecond) mod 1000;
+end;
+
 method TimeSpan.get_Seconds: Integer;
 begin
   exit (Ticks / TicksPerSecond) mod 60;
@@ -144,12 +154,7 @@ end;
 
 method TimeSpan.get_Days: Integer;
 begin
-  exit (Ticks / TicksPerDay) mod 24;
-end;
-
-method TimeSpan.get_Milliseconds: Integer;
-begin
-  exit (Ticks / TicksPerMillisecond) mod 1000;
+  exit (Ticks / TicksPerDay);
 end;
 
 method TimeSpan.Add(ts: TimeSpan): TimeSpan;
@@ -349,11 +354,6 @@ begin
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
-end;
-
-method TimeSpan.get_TotalMilliSeconds: Double;
-begin
-  exit Double(Ticks) / TicksPerMillisecond;
 end;
 
 end.
