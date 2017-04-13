@@ -923,8 +923,6 @@ begin
   result := Trim([#13, #10]);
 end;
 
-
-
 method String.StartsWith(Value: String): Boolean;
 begin
   result := StartsWith(Value, False);
@@ -945,6 +943,11 @@ begin
     result := mapped.StartsWith(Value, StringComparison.OrdinalIgnoreCase)
   else
     result := mapped.StartsWith(Value);
+  {$ELSEIF ISLAND}
+  if IgnoreCase then
+    result := mapped.ToLower().StartsWith(Value.ToLower(), false)
+  else
+    result := mapped.StartsWith(Value, false);
   {$ELSEIF TOFFEE}
   if Value.Length > mapped.length then
     result := false
@@ -977,6 +980,11 @@ begin
     result := mapped.EndsWith(Value, StringComparison.OrdinalIgnoreCase)
   else
     result := mapped.EndsWith(Value);
+  {$ELSEIF ISLAND}
+  if IgnoreCase then
+    result := mapped.ToLower().EndsWith(Value.ToLower(), false)
+  else
+    result := mapped.EndsWith(Value, false);
   {$ELSEIF TOFFEE}
   if Value.Length > mapped.length then
     result := false
