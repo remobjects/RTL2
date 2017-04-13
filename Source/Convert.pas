@@ -383,12 +383,11 @@ end;
 method Convert.HexStringToInt32(aValue: not nullable String): UInt32;
 begin
   {$IF COOPER}
-  exit Integer.parseInt(aValue, 16);
+  result := Integer.parseInt(aValue, 16);
   {$ELSEIF ECHOES}
-  exit Int32.Parse(aValue, System.Globalization.NumberStyles.HexNumber);
+  result := Int32.Parse(aValue, System.Globalization.NumberStyles.HexNumber);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("Convert.HexStringToInt32() is not implemented for Island yet.");
+  result := RemObjects.Elements.System.Convert.HexStringToUInt64(aValue) as Int32;
   {$ELSEIF TOFFEE}
   var scanner: NSScanner := NSScanner.scannerWithString(aValue);
   scanner.scanHexInt(var result);
@@ -399,12 +398,11 @@ end;
 method Convert.HexStringToInt64(aValue: not nullable String): UInt64;
 begin
   {$IF COOPER}
-  exit Long.parseLong(aValue, 16);
+  result := Long.parseLong(aValue, 16);
   {$ELSEIF ECHOES}
-  exit Int64.Parse(aValue, System.Globalization.NumberStyles.HexNumber);
+  result := Int64.Parse(aValue, System.Globalization.NumberStyles.HexNumber);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("Convert.HexStringToInt64() is not implemented for Island yet.");
+  result := RemObjects.Elements.System.Convert.HexStringToUInt64(aValue);
   {$ELSEIF TOFFEE}
   var scanner: NSScanner := NSScanner.scannerWithString(aValue);
   scanner.scanHexLongLong(var result);
