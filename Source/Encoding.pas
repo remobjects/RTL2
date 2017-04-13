@@ -101,14 +101,14 @@ begin
   result := mapped.GetString(aValue, aOffset, aCount);
   {$ELSEIF ISLAND}
   result := case fName.ToUpper.Replace("-","") of
-              "UTF8": TextConvert.UTF8ToString(aValue /*, aOffset, aCunt*/);
-              "UTF16": TextConvert.UTF16ToString(aValue /*, aOffset, aCunt*/);
-              "UTF16BE": TextConvert.UTF16BEToString(aValue /*, aOffset, aCunt*/);
-              "UTF16LE": TextConvert.UTF16LEToString(aValue /*, aOffset, aCunt*/);
-              "UTF32": TextConvert.UTF32ToString(aValue /*, aOffset, aCunt*/);
-              "UTF32BE": TextConvert.UTF32BEToString(aValue /*, aOffset, aCunt*/);
-              "UTF32LE": TextConvert.UTF32LEToString(aValue /*, aOffset, aCunt*/);
-              //"ASCII","USASCII","UTFASCII": TextConvert.ASCIIToString(aValue /*, aOffset, aCunt*/);
+              "UTF8": TextConvert.UTF8ToString(aValue, aOffset, aCount);
+              "UTF16": TextConvert.UTF16ToString(aValue, aOffset, aCount);
+              "UTF16BE": TextConvert.UTF16BEToString(aValue, aOffset, aCount);
+              "UTF16LE": TextConvert.UTF16LEToString(aValue, aOffset, aCount);
+              "UTF32": TextConvert.UTF32ToString(aValue, aOffset, aCount);
+              "UTF32BE": TextConvert.UTF32BEToString(aValue, aOffset, aCount);
+              "UTF32LE": TextConvert.UTF32LEToString(aValue, aOffset, aCount);
+              "ASCII","USASCII","UTFASCII": TextConvert.ASCIIToString(aValue, aOffset, aCount);
             end;
   {$ELSEIF TOFFEE}
   result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(self.AsNSStringEncoding);
