@@ -4,7 +4,7 @@
     <ProductVersion>3.5</ProductVersion>
     <RootNamespace>Elements.RTL2.Tests.Island.Windows</RootNamespace>
     <ProjectGuid>{01C6C71A-8EB4-4A43-B13C-A25F64551EAB}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Executable</OutputType>
     <AssemblyName>Elements.RTL2.Tests.Island.Windows</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
     <AllowLegacyWith>False</AllowLegacyWith>
@@ -53,4 +53,5 @@
     <Compile Include="Program.pas" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
+  <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared" />
 </Project>

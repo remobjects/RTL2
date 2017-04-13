@@ -1,0 +1,36 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# RemObjects Fire
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Linux", "..\Source\Elements.RTL.Island.Linux.elements", "{163F84DC-DC6B-4535-994F-0865D3A84D20}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Shared", "..\Source\Elements.RTL.Shared.elements", "{ABEC8ACC-B076-406C-871B-581E8AF0A453}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Island.Linux", "Elements.RTL2.Tests.Island.Linux.elements", "{46DF78FE-F074-498D-B963-1B3BCF267740}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Shared", "Elements.RTL2.Tests.Shared.elements", "{9EAFE57A-81AB-42B5-A0FA-2FD186093D91}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "RemObjects.Elements.EUnit (Island/Linux)", "..\..\git\EUnit\RemObjects.Elements.EUnit.Island.Linux.elements", "{0CAD688B-CD37-4FC1-B3DD-039BE70440A2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{46DF78FE-F074-498D-B963-1B3BCF267740}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{46DF78FE-F074-498D-B963-1B3BCF267740}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{46DF78FE-F074-498D-B963-1B3BCF267740}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{46DF78FE-F074-498D-B963-1B3BCF267740}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{0CAD688B-CD37-4FC1-B3DD-039BE70440A2}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{0CAD688B-CD37-4FC1-B3DD-039BE70440A2}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{0CAD688B-CD37-4FC1-B3DD-039BE70440A2}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{0CAD688B-CD37-4FC1-B3DD-039BE70440A2}.Release|AnyCPU.Build.0 = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
