@@ -22,7 +22,7 @@ type
     {$ENDIF}
 
     class method CreateEmptyGuid: not nullable Guid;
-    {$IF ECHOES}
+    {$IF ECHOES OR ISLAND}
     class method Exchange(Value: array of Byte; Index1, Index2: Integer);
     {$ENDIF}
   public
@@ -81,7 +81,11 @@ begin
   Exchange(aValue, 6, 7);
   fGuid := New PlatformGuid(aValue);
   {$ELSEIF ISLAND}
-  {$HINT Check if Island needs the same exchage trick as Echoes}
+  //reverse byte order to normal (Island reverse first 4 bytes and next two 2 bytes groups, to match .NET)
+  Exchange(aValue, 0, 3);
+  Exchange(aValue, 1, 2);
+  Exchange(aValue, 4, 5);
+  Exchange(aValue, 6, 7);
   fGuid := New PlatformGuid(aValue);
   {$ELSEIF TOFFEE}
   var lBytes: uuid_t;
@@ -208,7 +212,11 @@ begin
   exit Value;
   {$ELSEIF ISLAND}
   var Value := fGuid.ToByteArray;
-  {$HINT Check if Island needs the same exchage trick as Echoes}
+  //reverse byte order to normal (Island reverse first 4 bytes and next two 2 bytes groups, to match .NET)
+  Exchange(Value, 0, 3);
+  Exchange(Value, 1, 2);
+  Exchange(Value, 4, 5);
+  Exchange(Value, 6, 7);
   exit Value;
   {$ELSEIF TOFFEE}
   result := new Byte[sizeOf(uuid_t)];
@@ -260,7 +268,7 @@ begin
   result := self.ToString(GuidFormat.Default);
 end;
 
-{$IF ECHOES}
+{$IF ECHOES OR ISLAND}
 class method Guid.Exchange(Value: array of Byte; Index1: Integer; Index2: Integer);
 begin
   var Temp := Value[Index1];
