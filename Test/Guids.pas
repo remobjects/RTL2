@@ -54,6 +54,7 @@ type
       var s := Convert.ToHexString(b);
       Assert.AreEqual(s, "C4511C21B9AE4C7795E18D43622F4A5C");
       var g2 := new Guid(b);
+      s := Convert.ToHexString(b);
       Assert.AreEqual(g.ToString, g2.ToString);
       Assert.AreEqual(g,g2);
       Assert.IsTrue(g = g2);
@@ -61,12 +62,8 @@ type
 
       var s2 := Convert.ToHexString(new Binary(b));
       var s3 := Convert.ToHexString(new Binary(b).ToArray);
-      writeLn(s);
-      writeLn(s2);
-      writeLn(s3);
       Assert.AreEqual(s,s2);
       Assert.AreEqual(s,s3);
-
     end;
 
   end;
