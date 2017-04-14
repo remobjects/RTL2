@@ -14,7 +14,6 @@ interface
 
 {$GLOBALS ON}
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method LowerChar(aChar: Char): Char; assembly;
 begin
   {$IF COOPER}
@@ -22,14 +21,12 @@ begin
   {$ELSEIF ECHOES}// OR ISLAND}
   result := Char.ToLower(aChar);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("LowerChar() is not implemented for Island yet.");
+  result := aChar.ToLower();
   {$ELSEIF TOFFEE}
   result := chr(tolower(ord(aChar)));
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method UpperChar(aChar: Char): Char; assembly;
 begin
   {$IF COOPER}
@@ -37,8 +34,7 @@ begin
   {$ELSEIF ECHOES}// OR ISLAND}
   result := Char.ToUpper(aChar);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("UpperChar() is not implemented for Island yet.");
+  result := aChar.ToUpper();
   {$ELSEIF TOFFEE}
   result := chr(toupper(ord(aChar)));
   {$ENDIF}
