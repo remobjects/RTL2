@@ -75,18 +75,22 @@ begin
   result := new java.util.UUID(bb.getLong, bb.getLong);
   {$ELSEIF ECHOES}
   //reverse byte order to normal (.NET reverse first 4 bytes and next two 2 bytes groups)
-  Exchange(aValue, 0, 3);
-  Exchange(aValue, 1, 2);
-  Exchange(aValue, 4, 5);
-  Exchange(aValue, 6, 7);
-  fGuid := New PlatformGuid(aValue);
+  var aFixedValue := new Byte[16];
+  &Array.Copy(aValue, aFixedValue, 16);
+  Exchange(aFixedValue, 0, 3);
+  Exchange(aFixedValue, 1, 2);
+  Exchange(aFixedValue, 4, 5);
+  Exchange(aFixedValue, 6, 7);
+  fGuid := New PlatformGuid(aFixedValue);
   {$ELSEIF ISLAND}
   //reverse byte order to normal (Island reverse first 4 bytes and next two 2 bytes groups, to match .NET)
-  Exchange(aValue, 0, 3);
-  Exchange(aValue, 1, 2);
-  Exchange(aValue, 4, 5);
-  Exchange(aValue, 6, 7);
-  fGuid := New PlatformGuid(aValue);
+  var aFixedValue := new Byte[16];
+  &Array.Copy(aValue, aFixedValue, 0, 16);
+  Exchange(aFixedValue, 0, 3);
+  Exchange(aFixedValue, 1, 2);
+  Exchange(aFixedValue, 4, 5);
+  Exchange(aFixedValue, 6, 7);
+  fGuid := New PlatformGuid(aFixedValue);
   {$ELSEIF TOFFEE}
   var lBytes: uuid_t;
   memcpy(lBytes, aValue, sizeOf(uuid_t));
