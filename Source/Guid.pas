@@ -85,7 +85,7 @@ begin
   {$ELSEIF ISLAND}
   //reverse byte order to normal (Island reverse first 4 bytes and next two 2 bytes groups, to match .NET)
   var aFixedValue := new Byte[16];
-  &Array.Copy(aValue, aFixedValue, 0, 16);
+  &Array.Copy(aValue, aFixedValue, 16);
   Exchange(aFixedValue, 0, 3);
   Exchange(aFixedValue, 1, 2);
   Exchange(aFixedValue, 4, 5);
