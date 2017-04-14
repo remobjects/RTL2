@@ -654,7 +654,7 @@ begin
     exit nil;
 
   var lNewPath := fPath;
-  if Path.EndsWith('/') then
+  if lNewPath.EndsWith('/') then
     lNewPath := lNewPath.Substring(0, length(lNewPath)-1);
   var p := lNewPath.LastIndexOf('/');
   if p > -1 then begin
