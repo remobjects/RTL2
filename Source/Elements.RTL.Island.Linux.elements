@@ -53,7 +53,9 @@
   <ItemGroup>
     <Reference Include="rtl" />
     <Reference Include="gc" />
-    <Reference Include="Island" />
+    <Reference Include="Island">
+      <HintPath>..\..\IslandRTL\Source\Bin\Debug\Linux\x86_64\Island.fx</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Linux.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
