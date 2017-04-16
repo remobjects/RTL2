@@ -1,6 +1,7 @@
 ﻿namespace Elements.RTL2.Tests.Shared;
 
 uses
+  RemObjects.Elements.RTL,
   RemObjects.Elements.EUnit;
 
 type
@@ -50,13 +51,19 @@ type
 
       var g := new Guid("C4511C21-B9AE-4C77-95E1-8D43622F4A5C");
       var b := g.ToByteArray;
-      var s := Convert.ToHexString(new Binary(b));
+      var s := Convert.ToHexString(b);
       Assert.AreEqual(s, "C4511C21B9AE4C7795E18D43622F4A5C");
       var g2 := new Guid(b);
+      s := Convert.ToHexString(b);
       Assert.AreEqual(g.ToString, g2.ToString);
       Assert.AreEqual(g,g2);
       Assert.IsTrue(g = g2);
       Assert.IsFalse(g ≠ g2);
+
+      var s2 := Convert.ToHexString(new Binary(b));
+      var s3 := Convert.ToHexString(new Binary(b).ToArray);
+      Assert.AreEqual(s,s2);
+      Assert.AreEqual(s,s3);
     end;
 
   end;

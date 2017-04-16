@@ -118,7 +118,8 @@ begin
   exit ms;
   {$ELSEIF ISLAND}
   var ms := new PlatformBinary();
-  ms.Write(anArray, anArray.Length);
+  if length(anArray) > 0 then
+    ms.Write(anArray, 0, length(anArray));
   exit ms;
   {$ELSEIF TOFFEE}
   exit NSMutableData.dataWithBytes(anArray) length(length(anArray));

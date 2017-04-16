@@ -1,6 +1,7 @@
 ﻿namespace Elements.RTL2.Tests.Shared;
 
 uses
+  RemObjects.Elements.RTL,
   RemObjects.Elements.EUnit;
 
 type

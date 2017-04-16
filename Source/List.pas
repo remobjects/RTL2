@@ -639,7 +639,7 @@ begin
   for each e in self index i do begin
     if (i ≠ 0) and assigned(aSeparator) then
       lResult.Append(aSeparator);
-    lResult.Append(e.ToString());
+    lResult.Append(e:ToString());
   end;
   result := lResult.ToString() as not nullable;
   {$ELSEIF TOFFEE}

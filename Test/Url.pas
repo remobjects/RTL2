@@ -72,6 +72,8 @@ type
     begin
       var lUrl := Url.UrlWithWindowsPath("\\SHARE\Program Files\Test\Test.txt");
       Assert.IsTrue(lUrl.IsFileUrl);
+      Assert.IsTrue(lUrl.IsAbsoluteWindowsNetworkDriveFileURL);
+      Assert.IsFalse(lUrl.IsAbsoluteWindowsDriveLetterFileURL);
       Assert.IsTrue(lUrl.IsAbsoluteWindowsFileURL);
       Assert.AreEqual(lUrl.Host,        "SHARE");
       Assert.AreEqual(lUrl.Path,        "/Program Files/Test/Test.txt");
@@ -178,6 +180,8 @@ type
       Assert.AreEqual(Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), "Test");
       Assert.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), nil);
       Assert.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), nil);
+      //Assert.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), "C:\Users\mh\Desktop\Test");
+      //Assert.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), "\\RIBBONS\Users\mh\Desktop\Test");
 
       var lWindowsDriveLetterUrl := Url.UrlWithWindowsPath("C:\Users\mh\Desktop");
       Assert.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "..");
@@ -189,6 +193,9 @@ type
       Assert.AreEqual(Url.UrlWithWindowsPath("D:\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), nil);
       Assert.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), nil);
       Assert.AreEqual(Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), nil);
+      //Assert.AreEqual(Url.UrlWithWindowsPath("D:\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "D:\");
+      //Assert.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "\\RIBBONS\Users\mh\Desktop\Test");
+      //Assert.AreEqual(Url.UrlWithUnixPath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "/Users/mh/Desktop/Test");
 
       var lWindowsNetworkUrl := Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop");
       Assert.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "..");
@@ -200,6 +207,21 @@ type
       Assert.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\Users\mh\Desktop").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), nil);
       Assert.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), nil);
       Assert.AreEqual(Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), nil);
+      //Assert.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "\\FLOORSHOW\");
+      //Assert.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\Users\mh\Desktop").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "\\FLOORSHOW\Users\mh\Desktop");
+      //Assert.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "C:\Users\mh\Desktop\Test");
+      //Assert.AreEqual(Url.UrlWithUnixPath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "/Users/mh/Desktop/Test");
+    end;
+
+    method Dummy2();
+    begin
+      var baseUrl := Url.UrlWithString("file:///Users/mh/Code/git/EUnit/");
+      var url2 := Url.UrlWithString("file:///Users/mh/Code/IslandRTL/Source/Bin/Debug/Linux/x86_64/Island.fx");
+      var url := Url.UrlWithUnixPath("/Users/mh/Code/IslandRTL/Source/Bin/Debug/Linux/x86_64/Island.fx");
+      writeLn(url2);
+      writeLn(url);
+      var path := url.FilePathRelativeToUrl(baseURL) Threshold(3);
+      writeLn(path);
     end;
 
     method Dummy();
