@@ -13,7 +13,7 @@
     <AssemblyName>elements</AssemblyName>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
     <OutputPath>.\bin\Debug</OutputPath>
     <DefineConstants>DEBUG;TRACE;</DefineConstants>
@@ -30,7 +30,7 @@
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
     <OutputPath>.\bin\Release</OutputPath>
     <GenerateDebugInfo>False</GenerateDebugInfo>

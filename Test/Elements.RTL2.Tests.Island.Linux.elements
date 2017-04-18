@@ -2,26 +2,29 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
-    <ProjectGuid>F9394C75-0042-42C1-B0DC-B5ACB2C0C3A7</ProjectGuid>
-    <OutputType>exe</OutputType>
-    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-    <AllowLegacyCreate>False</AllowLegacyCreate>
+    <RootNamespace>Elements.RTL2.Tests.Island.Linux</RootNamespace>
+    <ProjectGuid>{46DF78FE-F074-498D-B963-1B3BCF267740}</ProjectGuid>
+    <OutputType>Executable</OutputType>
+    <AssemblyName>Elements.RTL2.Tests.Island.Linux</AssemblyName>
+    <AllowGlobals>False</AllowGlobals>
+    <AllowLegacyWith>False</AllowLegacyWith>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
-    <DefaultUses>com.remobjects.elements.linq;RemObjects.Elements.RTL</DefaultUses>
-    <RootNamespace>RemObjects.Elements.RTL.Tests</RootNamespace>
+    <AllowLegacyCreate>False</AllowLegacyCreate>
+    <AllowUnsafeCode>False</AllowUnsafeCode>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>.\bin\Debug</OutputPath>
     <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <StartMode>Project</StartMode>
-    <RegisterForComInterop>False</RegisterForComInterop>
-    <CpuType>anycpu</CpuType>
+    <CpuType>x86</CpuType>
     <RuntimeVersion>v25</RuntimeVersion>
+    <Architecture>x86_64</Architecture>
     <XmlDoc>False</XmlDoc>
-    <GeneratePDB>True</GeneratePDB>
-    <GenerateMDB>True</GenerateMDB>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>
@@ -34,37 +37,24 @@
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <StartMode>Project</StartMode>
     <RegisterForComInterop>False</RegisterForComInterop>
-    <CpuType>anycpu</CpuType>
+    <CpuType>x86</CpuType>
     <RuntimeVersion>v25</RuntimeVersion>
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="cooper">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="remobjects.elements.eunit">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="rt" />
-    <Reference Include="sugar">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="swift">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="elements">
-      <HintPath>..\Source\bin\Debug\elements.jar</HintPath>
-      <Private>True</Private>
+    <Reference Include="gc" />
+    <Reference Include="Island" />
+    <Reference Include="rtl" />
+    <Reference Include="Elements" />
+    <Reference Include="EUnit">
+      <HintPath>..\..\git\EUnit\bin\Debug\Linux\x86_64\EUnit.fx</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
-    <Compile Include="..\Source\Cooper\EnumerationSequence.pas" />
-    <Compile Include="..\Source\Cooper\LocaleUtils.pas" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Cooper.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Linux.targets" />
   <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared" />
 </Project>

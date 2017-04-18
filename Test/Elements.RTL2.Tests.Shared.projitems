@@ -20,5 +20,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)String_Trim.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Guids.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlEntities.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)XmlFormatting.pas" />
   </ItemGroup>
 </Project>

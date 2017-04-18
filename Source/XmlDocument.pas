@@ -576,17 +576,33 @@ end;
 
 method XmlElement.FirstElementWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlElement;
 begin
-  result := ElementsWithName(aLocalName, aNamespace).FirstOrDefault();
-  if (result = nil) then begin
+  if assigned(aNamespace) then begin
+    for each e in fElements do
+      if (e.LocalName = aLocalName) and (e.Namespace = aNamespace) then
+        exit e;
+  end
+  else begin
+    for each e in fElements do
+      if e.LocalName = aLocalName then
+        exit e;
+
     var lBracePos := aLocalName.IndexOf('{');
-    if (lBracePos = 0) and (aLocalName.IndexOf('}') > lBracePos) then begin
-      result := ElementsWithName(aLocalName.Substring(aLocalName.IndexOf('}')+1, aLocalName.Length - aLocalName.IndexOf('}')-1 ),
-        &Namespace[ Url.UrlWithString(aLocalName.Substring(1, aLocalName.IndexOf('}')-1))]).FirstOrDefault;
+    if (lBracePos = 0) then begin
+      var lClosingBracePos := aLocalName.IndexOf('}');
+      if lClosingBracePos > lBracePos then begin
+        aNamespace := &Namespace[Url.UrlWithString(aLocalName.Substring(1, lClosingBracePos-1))];
+        if assigned(aNamespace) then
+          result := FirstElementWithName(aLocalName.Substring(lClosingBracePos+1, aLocalName.Length-lClosingBracePos-1), aNamespace);
+      end;
     end
     else begin
       var lPrefixPos := aLocalName.IndexOf(':');
-    if (lPrefixPos > 0) and (&Namespace[aLocalName.Substring(0, lPrefixPos)] <> nil) then
-      result := ElementsWithName(aLocalName.Substring(lPrefixPos+1, aLocalName.Length-lPrefixPos-1), &Namespace[aLocalName.Substring(0, lPrefixPos)]).FirstOrDefault
+      if (lPrefixPos > 0) then begin
+        var lNamespaceString := aLocalName.Substring(0, lPrefixPos);
+        aNamespace := &Namespace[lNamespaceString];
+        if assigned(aNamespace) then
+          result := FirstElementWithName(aLocalName.Substring(lPrefixPos+1, aLocalName.Length-lPrefixPos-1), aNamespace);
+      end;
     end;
   end;
 end;
@@ -812,19 +828,19 @@ end;}
 
 method XmlElement.GetValue(aWithNested: Boolean): nullable String;
 begin
-  result := ""; 
+  result := "";
   for each lNode in Nodes do begin
-    
-    if (lNode.NodeType = XmlNodeType.Text) and (XmlText(lNode).Value.Trim <> "") then begin 
+
+    if (lNode.NodeType = XmlNodeType.Text) and (XmlText(lNode).Value.Trim <> "") then begin
         if result <> "" then result := result+" ";
         result := result+XmlText(lNode).Value.Trim
     end
-    else if lNode.NodeType = XmlNodeType.Element then 
+    else if lNode.NodeType = XmlNodeType.Element then
       if aWithNested then begin
         if result <> "" then result := result+" ";
           result := result+XmlElement(lNode).GetValue(true);
       end
-  end    
+  end
 end;
 method XmlElement.SetValue(aValue: nullable String);
 begin

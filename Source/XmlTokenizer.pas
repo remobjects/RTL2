@@ -12,10 +12,10 @@ type
     fRowStart: Integer;
     fLength: Integer;
 
-    method CharIsIdentifier(C: Char): Boolean;
-    method CharIsWhitespace(C: Char): Boolean;
-    method CharIsNameStart(C: Char): Boolean;
-    method CharIsName(C: Char): Boolean;
+    method CharIsIdentifier(C: Char): Boolean; inline;
+    method CharIsWhitespace(C: Char): Boolean; inline;
+    method CharIsNameStart(C: Char): Boolean; inline;
+    method CharIsName(C: Char): Boolean; inline;
 
     method Parse;
 
@@ -63,18 +63,12 @@ end;
 
 method XmlTokenizer.CharIsNameStart(C: Char): Boolean;
 begin
-  {$IF ECHOES}
-    var category := CharUnicodeInfo.GetUnicodeCategory(C);
-    exit (category = UnicodeCategory.UppercaseLetter) or (category = UnicodeCategory.LowercaseLetter) or (category = UnicodeCategory.TitlecaseLetter)
-    or (category = UnicodeCategory.OtherLetter) or (category = UnicodeCategory.LetterNumber) or (C = '_') or (C = ':');
-  {$ELSE}
-    exit (((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or (C = '_') or (C = ':'));
-  {$ENDIF}
+  result := (((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or (C = '_') or (C = ':'));
 end;
 
 method XmlTokenizer.CharIsName(C: Char): Boolean;
 begin
-  exit CharIsNameStart(C) or ((C >='0') and (C <= '9')) or (C = '-') or (C = '.')
+  result := CharIsNameStart(C) or ((C >='0') and (C <= '9')) or (C = '-') or (C = '.')
 end;
 
 method XmlTokenizer.Parse;
@@ -231,21 +225,23 @@ method XmlTokenizer.ParseName;
 begin
   var lPosition := fPos + 1;
   var colonSymbol := 0;
-  while (lPosition < fData.length) and CharIsName(fData[lPosition]) do begin
-    if fData[lPosition] = ':' then begin
+  while (lPosition < fData.length) do begin
+    var ch := fData[lPosition];
+    if not CharIsName(ch) then break;
+    if ch = ':' then begin
       inc(colonSymbol);
-        if (fData.Length < (lPosition+1)) then begin
-          fPos := lPosition+1;
-          Token := XmlTokenKind.SyntaxError;
-          Value := "Name expected";
-          exit;
-        end
-        else if (CharIsNameStart(fData[lPosition+1]) = false) then begin
-          fPos := lPosition+1;
-          Token := XmlTokenKind.SyntaxError;
-          Value := "Name could't begin from "+fData[lPosition+1]+" symbol";
-          exit;
-        end;
+      if (fData.Length < (lPosition+1)) then begin
+        fPos := lPosition+1;
+        Token := XmlTokenKind.SyntaxError;
+        Value := "Name expected";
+        exit;
+      end
+      else if (CharIsNameStart(fData[lPosition+1]) = false) then begin
+        fPos := lPosition+1;
+        Token := XmlTokenKind.SyntaxError;
+        Value := "Name could't begin from "+fData[lPosition+1]+" symbol";
+        exit;
+      end;
     end;
     if colonSymbol > 1 then begin
       Value := ':';
@@ -267,9 +263,7 @@ begin
   var lQuoteChar := fData[fPos];
   if (lQuoteChar ≠ '"') and (lQuoteChar ≠ '''') then exit;
 
-  var lValue := new StringBuilder();
-  lValue.Append(lQuoteChar);
-
+  var lStart := fPos;
   inc(fPos);
   loop begin
     if (fPos >= fData.length) then begin
@@ -282,36 +276,31 @@ begin
         if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
         fRowStart := fPos + 1;
         inc(fRow);
-        lValue.Append(fData[fPos-1]+fData[fPos]);
       end;
       #10: begin
         fRowStart := fPos + 1;
         inc(fRow);
-        lValue.Append(ch);
       end;
       '<' : begin
         Token := XmlTokenKind.SyntaxError;
         Value := "Syntax error. Symbol '<' is not allowed in attribute value";
         exit;
       end;
-      else lValue.Append(ch);
     end;
     inc(fPos);
   end;
 
-  lValue.Append(lQuoteChar);
-  Value := lValue.ToString();
+  Value := new String(fData, lStart, fPos-lStart+1);
   fLength := 1;
   Token := XmlTokenKind.AttributeValue;
 end;
 
 method XmlTokenizer.ParseSymbolData;
 begin
-  Value := "";
   var lPosition := fPos;
-  var start := fPos;
+  var lStart := fPos;
   var lPos: Integer;
-  while ((lPosition < fData.length) and (fData[lPosition] <> '<'){ and (fData[lPosition] <> #0)}) do begin
+  while (lPosition < fData.length) and (fData[lPosition] <> '<') do begin
     case fData[lPosition] of
       #13 : begin
           if (fData.length<lPosition+1) then begin
@@ -326,7 +315,6 @@ begin
             if (fData[lPos] <> '<') {and (fData[lPos] <> #0)} then begin
               fRowStart := lPosition + 1;
               inc(fRow);
-              Value := Value+fData[lPosition-1]+fData[lPosition];
             end
         end;
       #10: begin
@@ -335,16 +323,15 @@ begin
           if (fData[lPos] <> '<'){ and (fData[lPos] <> #0)} then begin
             fRowStart := lPosition + 1;
             inc(fRow);
-            Value := Value+fData[lPosition];
           end
       end;
-    else Value := Value+ fData[lPosition];
     end;
     inc(lPosition);
   end;
+  Value := new String(fData, lStart, lPosition-lStart);
   while CharIsWhitespace(fData[lPosition-1]) do
-    lPosition := lPosition -1;
-  fLength := lPosition - fPos; 
+    lPosition := lPosition-1;
+  fLength := lPosition - fPos;
   Value := Value.Trim;
   Token := XmlTokenKind.SymbolData;
 end;
