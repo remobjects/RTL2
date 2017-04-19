@@ -216,8 +216,13 @@ end;
 method Dictionary<T, U>.SetItem(Key: T; Value: U);
 begin
   if not assigned(Value) then begin
-    if assigned(mapped.objectForKey(Key)) then
+    {$IF TOFFEE}
+    if assigned(mapped[Key]) then
       &Remove(Key);
+    {$ELSE}
+    if mapped.ContainsKey(Key) then
+      &Remove(Key);
+    {$ENDIF}
     exit;
   end;
   mapped[Key] := Value;
