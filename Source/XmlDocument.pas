@@ -642,7 +642,7 @@ begin
   if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then begin
     if fNodes.Count > 0 then begin
       var LastNodePos := fNodes.Count-1;
-      if (fNodes.Item[LastNodePos].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[LastNodePos]).Value = aElement.fParent.Indent) then begin
+      if XmlText(fNodes.Item[LastNodePos]):Value = aElement.fParent.Indent then begin
         fNodes.Insert(LastNodePos,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
         fNodes.Insert(LastNodePos+1,aElement);
         fNodes.Insert(LastNodePos+2 ,new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));
