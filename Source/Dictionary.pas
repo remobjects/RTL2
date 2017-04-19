@@ -145,7 +145,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.ContainsValue(Value);
   {$ELSEIF TOFFEE}
-  exit mapped.allValues.containsObject(NullHelper.ValueOf(Value));
+  exit mapped.allValues.containsObject(Value);
   {$ENDIF}
 end;
 
@@ -163,8 +163,6 @@ begin
     result := nil;
   {$ELSEIF TOFFEE}
   result := mapped.objectForKey(aKey);
-  if assigned(result) then
-    result := NullHelper.ValueOf(result);
   {$ENDIF}
 end;
 
@@ -177,8 +175,6 @@ begin
     result := nil;
   {$ELSEIF TOFFEE}
   result := mapped.objectForKey(aKey);
-  if assigned(result) then
-    result := NullHelper.ValueOf(result);
   {$ENDIF}
 end;
 
@@ -204,7 +200,7 @@ begin
   {$ENDIF}
 end;
 
-method Dictionary<T, U>.&Remove(Key: T): Boolean;
+method Dictionary<T, U>.Remove(Key: T): Boolean;
 begin
   {$IF COOPER}
   exit mapped.remove(Key) <> nil;
@@ -219,11 +215,12 @@ end;
 
 method Dictionary<T, U>.SetItem(Key: T; Value: U);
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  if not assigned(Value) then begin
+    if assigned(mapped.objectForKey(Key)) then
+      &Remove(Key);
+    exit;
+  end;
   mapped[Key] := Value;
-  {$ELSEIF TOFFEE}
-  mapped.setObject(NullHelper.ValueOf(Value)) forKey(Key);
-  {$ENDIF}
 end;
 
 {$IF NOT ECHOES}
@@ -270,8 +267,10 @@ end;
 {$IFDEF TOFFEE}
 method DictionaryHelpers.Add<T, U>(aSelf: NSMutableDictionary; aKey: T; aVal: U);
 begin
-  if aSelf.objectForKey(aKey) <> nil then raise new ArgumentException(RTLErrorMessages.KEY_EXISTS);
-  aSelf.setObject(NullHelper.ValueOf(aVal)) forKey(aKey);
+  if assigned(aVal) then
+    aSelf.setObject(aVal) forKey(aKey)
+  else if assigned(aSelf.objectForKey(aKey)) then
+    aSelf.removeobjectForKey(aKey);
 end;
 
 method DictionaryHelpers.GetSequence<T, U>(aSelf: NSDictionary) : sequence of KeyValuePair<T,U>;
