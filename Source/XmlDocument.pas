@@ -856,6 +856,20 @@ end;
 method XmlElement.GetAttribute(aName: not nullable String): nullable XmlAttribute;
 begin
   result := Attributes.Where(a -> a.LocalName = aName).FirstOrDefault;
+  if result = nil then begin 
+    var lPrefixPos := aName.IndexOf(':');
+    if (lPrefixPos > 0) then begin
+      var lNamespaceString := aName.Substring(0, lPrefixPos);
+      var lNamespace: XmlNamespace;
+      var lElement := self;
+      while (lNamespace = nil) and (lElement <> nil) do begin
+        lNamespace:= lElement.&Namespace[lNamespaceString];
+        lElement := XmlElement(lElement.Parent);
+      end;
+      if assigned(lNamespace) then
+        result := GetAttribute(aName.Substring(lPrefixPos+1, aName.Length-lPrefixPos-1), lNamespace);
+    end;
+  end;
 end;
 
 method XmlElement.GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
