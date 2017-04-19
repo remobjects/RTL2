@@ -37,7 +37,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Contains(Item);
   {$ELSE}
-  exit mapped.containsObject(NullHelper.ValueOf(Item));
+  exit mapped.containsObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 
@@ -48,7 +48,8 @@ begin
   {$ELSE}
   var n := mapped.lastObject;
   if n = nil then raise new StackEmptyException;
-  exit NullHelper.ValueOf(n);
+  if n = NSNull.null then n := nil;
+  result := n;
   {$ENDIF}
 end;
 
@@ -111,9 +112,9 @@ begin
   {$ELSE}
   var n := mapped.lastObject;
   if n = nil then raise new StackEmptyException;
-  n := NullHelper.ValueOf(n);
+  if n = NSNull.null then n := nil;
   mapped.removeLastObject;
-  exit n;
+  result := n;
   {$ENDIF}
 end;
 
@@ -122,7 +123,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   mapped.Push(Item);
   {$ELSE}
-  mapped.addObject(NullHelper.ValueOf(Item));
+  mapped.addObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 
