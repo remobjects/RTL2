@@ -63,7 +63,10 @@ type
   public
     constructor;
     constructor(aCapacity: Integer);
+    constructor(aValue: PlatformBinary);
+    operator Implicit(aValue: PlatformBinary): MemoryStream;
     {$IF TOFFEE OR COOPER}
+    method ToPlatformStream: PlatformBinary;
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
@@ -77,6 +80,7 @@ type
     {$ENDIF}
     method Close; override;
     method Flush; override;
+    method Clear;
 
     property Bytes: array of Byte read GetBytes;
     property CanRead: Boolean read GetCanRead; override;
@@ -308,6 +312,21 @@ begin
   {$ENDIF}
 end;
 
+constructor MemoryStream(aValue: PlatformBinary);
+begin
+  {$IF COOPER OR TOFFEE}
+  fInternalStream := aValue;
+  fPosition := 0;
+  {$ELSE IF ECHOES OR ISLAND}
+  fPlatformStream := aValue;
+  {$ENDIF}
+end;
+
+operator MemoryStream.Implicit(aValue: PlatformBinary): MemoryStream;
+begin
+  result := new MemoryStream(aValue);
+end;
+
 {$IF COOPER OR TOFFEE}
 method MemoryStream.ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
@@ -321,6 +340,11 @@ begin
     SeekOrigin.End:
       result := GetLength + Offset;
   end;
+end;
+
+method MemoryStream.ToPlatformStream: PlatformBinary;
+begin
+  result := fInternalStream;
 end;
 
 method MemoryStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
@@ -363,6 +387,18 @@ end;
 method MemoryStream.Flush;
 begin
   // No OP
+end;
+
+method MemoryStream.Clear;
+begin
+  {$IF COOPER}
+  fInternalStream.reset;
+  {$ELSEIF ECHOES OR ISLAND}
+  fPlatformStream.SetLength(0);
+  fPlatformStream.Position := 0;
+  {$ELSEIF TOFFEE}
+  fInternalStream.setLength(0);
+  {$ENDIF}
 end;
 
 method FileStream.GetCanRead: Boolean;

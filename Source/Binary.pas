@@ -3,7 +3,10 @@
 interface
 
 type
-  {$IF ECHOES}
+  {$IF COOPER}
+  ImmutablePlatformBinary = java.io.ByteArrayOutputStream;
+  PlatformBinary = java.io.ByteArrayOutputStream;
+  {$ELSEIF ECHOES}
   ImmutablePlatformBinary = System.IO.MemoryStream;
   PlatformBinary = System.IO.MemoryStream;
   {$ELSEIF ISLAND}
@@ -14,16 +17,14 @@ type
   PlatformBinary = Foundation.NSMutableData;
   {$ENDIF}
 
-
-  ImmutableBinary = public class {$IF ECHOES OR ISLAND OR TOFFEE}mapped to ImmutablePlatformBinary{$ENDIF}
-  {$IF COOPER}
+  ImmutableBinary = public class 
   protected
-    fData: java.io.ByteArrayOutputStream := new java.io.ByteArrayOutputStream();
-  {$ENDIF}
+    fStream: Stream;
   public
-    constructor; {$IF TOFFEE OR ECHOES}mapped to constructor();{$ELSE}empty;{$ENDIF}
+    constructor; 
     constructor(anArray: array of Byte);
     constructor(Bin: Binary);
+    constructor(Input: Stream);
 
     method &Read(Range: Range): array of Byte;
     method &Read(aStartIndex: Integer; aCount: Integer): array of Byte;
@@ -33,18 +34,14 @@ type
     method Subdata(aStartIndex: Integer; aCount: Integer): Binary;
 
     method ToArray: not nullable array of Byte;
-    property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
+    property Length: Integer read fStream.Length;
   end;
 
-  Binary = public class(ImmutableBinary) {$IF ECHOES OR ISLAND OR TOFFEE}mapped to PlatformBinary{$ENDIF}
+  Binary = public class(ImmutableBinary)
   public
-    constructor;
-    constructor(anArray: array of Byte);
-    constructor(Bin: Binary);
-
+    operator Implicit(aPlatformBinary: PlatformBinary): Binary;
     method Assign(Bin: Binary);
     method Clear;
-
 
     method &Write(Buffer: array of Byte; Offset: Integer; Count: Integer);
     method &Write(Buffer: array of Byte; Count: Integer);
@@ -53,106 +50,51 @@ type
 
     {$IF TOFFEE}
     operator Implicit(aData: NSData): Binary;
+    operator Implicit(aBinary: Binary): NSData;
     {$ENDIF}
   end;
+
+  BinaryReader = public ImmutableBinary;
+  BinaryWriter = public Binary;
 
 implementation
 
 { Binary }
+
+constructor ImmutableBinary;
+begin
+  fStream := new MemoryStream();
+end;
 
 constructor ImmutableBinary(anArray: array of Byte);
 begin
   if anArray = nil then
     raise new ArgumentNullException("Array");
 
-  {$IF COOPER}
-  fData.Write(anArray, 0, anArray.Length);
-  {$ELSEIF ECHOES}
-  var ms := new ImmutablePlatformBinary();
-  ms.Write(anArray, 0, anArray.Length);
-  exit ms;
-  {$ELSEIF ISLAND}
-  var ms := new ImmutablePlatformBinary();
-  ms.Write(anArray, anArray.Length);
-  exit ms;
-  {$ELSEIF TOFFEE}
-  exit NSData.dataWithBytes(anArray) length(length(anArray));
-  {$ENDIF}
+  fStream := new MemoryStream();
+  fStream.Write(anArray, anArray.Length);
 end;
 
 constructor ImmutableBinary(Bin: Binary);
 begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
-  {$IF COOPER}
-  if Bin <> nil then
-    fData.Write(Bin.ToArray, 0, Bin.Length);
-  {$ELSEIF ECHOES OR ISLAND}
-  var ms := new ImmutablePlatformBinary();
-  ImmutablePlatformBinary(Bin).WriteTo(ms);
-  exit ms;
-  {$ELSEIF TOFFEE}
-  exit NSData.dataWithData(Bin);
-  {$ENDIF}
+
+  fStream := Bin.fStream;
 end;
 
-constructor Binary;
+constructor ImmutableBinary(Input: Stream);
 begin
-  {$IF COOPER}
-  {$ELSEIF ECHOES OR ISLAND}
-  result := new ImmutablePlatformBinary();
-  {$ELSEIF TOFFEE}
-  result :=  NSData.data;
-  {$ENDIF}
+  fStream := Input;
 end;
 
-constructor Binary(anArray: array of Byte);
+operator Binary.Implicit(aPlatformBinary: PlatformBinary): Binary;
 begin
-  if anArray = nil then
-    raise new ArgumentNullException("Array");
-
-  {$IF COOPER}
-  inherited constructor(anArray);
-  {$ELSEIF ECHOES}
-  var ms := new PlatformBinary();
-  ms.Write(anArray, 0, anArray.Length);
-  exit ms;
-  {$ELSEIF ISLAND}
-  var ms := new PlatformBinary();
-  if length(anArray) > 0 then
-    ms.Write(anArray, 0, length(anArray));
-  exit ms;
-  {$ELSEIF TOFFEE}
-  exit NSMutableData.dataWithBytes(anArray) length(length(anArray));
-  {$ENDIF}
-end;
-
-constructor Binary(Bin: Binary);
-begin
-  ArgumentNullException.RaiseIfNil(Bin, "Bin");
-  {$IF COOPER}
-  Assign(Bin);
-  {$ELSEIF ECHOES OR ISLAND}
-  var ms := new PlatformBinary();
-  PlatformBinary(Bin).WriteTo(ms);
-  exit ms;
-  {$ELSEIF TOFFEE}
-  exit NSMutableData.dataWithData(Bin);
-  {$ENDIF}
+  result := new Binary(aPlatformBinary);
 end;
 
 method Binary.Assign(Bin: Binary);
 begin
-  {$IF COOPER}
-  Clear;
-  if Bin <> nil then
-    fData.Write(Bin.ToArray, 0, Bin.Length);
-  {$ELSEIF ECHOES OR ISLAND}
-  Clear;
-  if assigned(Bin) then
-    PlatformBinary(Bin).WriteTo(mapped);
-  {$ELSEIF TOFFEE}
-  mapped.setData(Bin);
-  {$ENDIF}
+  fStream := Bin.fStream;
 end;
 
 method ImmutableBinary.Read(Range: Range): array of Byte;
@@ -163,14 +105,8 @@ begin
   RangeHelper.Validate(Range, self.Length);
 
   result := new Byte[Range.Length];
-  {$IF COOPER}
-  System.arraycopy(fData.toByteArray, Range.Location, result, 0, Range.Length);
-  {$ELSEIF ECHOES}
-  mapped.Position := Range.Location;
-  mapped.Read(result, 0, Range.Length);
-  {$ELSEIF TOFFEE}
-  mapped.getBytes(result) range(Range);
-  {$ENDIF}
+  fStream.Position := Range.Location;
+  fStream.Read(result, 0, Range.Length);
 end;
 
 method ImmutableBinary.Read(aStartIndex: Integer; aCount: Integer): array of Byte;
@@ -204,67 +140,50 @@ begin
     exit;
 
   RangeHelper.Validate(new Range(Offset, Count), Buffer.Length);
-  {$IF COOPER}
-  fData.write(Buffer, Offset, Count);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Seek(0, PlatformSeekOrigin.End);
-  mapped.Write(Buffer, Offset, Count);
-  {$ELSEIF TOFFEE}
-  mapped.appendBytes(@Buffer[Offset]) length(Count);
-  {$ENDIF}
+  fStream.Seek(0, SeekOrigin.End);
+  fStream.Write(Buffer, Offset, Count);
 end;
 
 method Binary.Write(Buffer: array of Byte; Count: Integer);
 begin
-  &Write(Buffer, 0, Count);
+  fStream.Write(Buffer, 0, Count);
 end;
 
 method Binary.&Write(Buffer: array of Byte);
 begin
-  &Write(Buffer, RemObjects.Oxygene.System.length(Buffer));
+  fStream.Write(Buffer, RemObjects.Oxygene.System.length(Buffer));
 end;
 
 method Binary.Write(Bin: Binary);
 begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
-  {$IF COOPER OR ECHOES OR ISLAND}
-  &Write(Bin.ToArray, Bin.Length);
-  {$ELSEIF TOFFEE}
-  mapped.appendData(Bin);
-  {$ENDIF}
+
+  Bin.fStream.CopyTo(fStream);
 end;
 
 method ImmutableBinary.ToArray: not nullable array of Byte;
 begin
-  {$IF COOPER}
-  result := fData.toByteArray as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped.ToArray as not nullable;
-  {$ELSEIF TOFFEE}
-  result := new Byte[mapped.length];
-  mapped.getBytes(result) length(mapped.length);
-  {$ENDIF}
+  if fStream is MemoryStream then
+    result := (fStream as MemoryStream).Bytes
+  else 
+    result := new Byte[0];
 end;
 
 method Binary.Clear;
 begin
-  {$IF COOPER}
-  fData.reset;
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.SetLength(0);
-  mapped.Position := 0;
-  {$ELSEIF TOFFEE}
-  mapped.setLength(0);
-  {$ENDIF}
-end;
+  if fStream is MemoryStream then
+    (fStream as MemoryStream).Clear;
+  end;
 
 {$IF TOFFEE}
 operator Binary.Implicit(aData: NSData): Binary;
 begin
-  if aData is NSMutableData then
-    result := aData as NSMutableData
-  else
-    result := aData:mutableCopy;
+  result := new Binary(aData);
+end;
+
+operator Binary.Implicit(aBinary: Binary): NSData;
+begin
+  result := (aBinary.fStream as MemoryStream).ToPlatformStream;
 end;
 {$ENDIF}
 
