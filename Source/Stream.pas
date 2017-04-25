@@ -12,6 +12,8 @@ type
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; abstract;
     method &Read(Buffer: array of Byte; Count: Int32): Int32; inline;
     method &Write(Buffer: array of Byte; Count: Int32): Int32; inline;
+    method ReadByte: Int32; virtual;
+    method WriteByte(aValue: Byte); virtual;
     method GetLength: Int64; virtual;
     method SetPosition(Value: Int64); virtual; 
     method GetPosition: Int64; virtual;
@@ -78,9 +80,11 @@ type
     property Length: Int64 read GetLength; override;
     property Position: Int64 read GetPosition write SetPosition; override;
     {$ENDIF}
+    method ToArray: array of Byte;
     method Close; override;
     method Flush; override;
     method Clear;
+    method WriteTo(Destination: Stream);
 
     property Bytes: array of Byte read GetBytes;
     property CanRead: Boolean read GetCanRead; override;
@@ -131,6 +135,22 @@ end;
 method Stream.&Write(Buffer: array of Byte; Count: Int32): Int32;
 begin
   result := &Write(Buffer, 0, Count);
+end;
+
+method Stream.ReadByte: Int32;
+begin
+  var lArray := new Byte[1];
+  if &Read(lArray, 0, sizeOf(Byte)) = sizeOf(Byte) then
+    result := lArray[0]
+  else
+    result := -1;
+end;
+
+method Stream.WriteByte(aValue: Byte);
+begin
+  var lArray := new Byte[1];
+  lArray[0] := aValue;
+  &Write(lArray, 0, sizeOf(Byte));
 end;
 
 method Stream.CopyTo(Destination: Stream);
@@ -222,7 +242,7 @@ begin
   {$IF COOPER}
   result := fInternalStream.toByteArray;
   {$ELSEIF ECHOES}
-  result := System.IO.MemoryStream(fPlatformStream).GetBuffer;
+  result := System.IO.MemoryStream(fPlatformStream).ToArray;
   {$ELSEIF ISLAND}
   result := RemObjects.Elements.System.MemoryStream(fPlatformStream).ToArray;
   {$ELSEIF TOFFEE}
@@ -379,6 +399,11 @@ begin
 end;
 {$ENDIF}
 
+method MemoryStream.ToArray: array of Byte;
+begin
+  result := GetBytes;
+end;
+
 method MemoryStream.Close;
 begin
   // No OP
@@ -399,6 +424,17 @@ begin
   {$ELSEIF TOFFEE}
   fInternalStream.setLength(0);
   {$ENDIF}
+end;
+
+method MemoryStream.WriteTo(Destination: Stream);
+begin
+  var lOldPos := Position;
+  try
+    CopyTo(Destination);
+
+  finally
+    Position := lOldPos;
+  end;
 end;
 
 method FileStream.GetCanRead: Boolean;
