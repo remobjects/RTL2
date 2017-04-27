@@ -428,8 +428,7 @@ begin
   exit mapped.Equals(Value, StringComparison.InvariantCultureIgnoreCase);
   {$ENDIF}
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+  exit mapped.EqualsIgnoreCaseInvariant(Value);
   {$ELSEIF TOFFEE}
   // RemObjects.Elements.System.length as workaround for issue in 8.3; not needed in 8.4
   exit mapped.compare(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(0, RemObjects.Elements.System.length(self))) locale(Locale.Invariant) = 0;
