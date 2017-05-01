@@ -60,6 +60,26 @@ type
     property Message: String read reason;
     property StackTrace: String read (callStackSymbols as List<String>).JoinedString(Environment.LineBreak);
     {$ENDIF}
+
+    property CallStack: ImmutableList<String> read _GetCallStack;
+
+  private
+
+  {$error foo}
+
+    {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
+    method _GetCallStack: ImmutableList<String>;
+    begin
+      {$IF COOPER}
+      result := StackTrace.ToList();
+      {$ELSEIF ECHOES}
+      result := (StackTrace.Replace(#13, #10) as String).Split(#10);
+      {$ELSEIF ISLAND}
+      {$ELSEIF TOFFEE}
+      result := callstackSymbols;
+      {$ENDIF}
+    end;
+
   end;
 
   NotImplementedException = public class(RTLException);
