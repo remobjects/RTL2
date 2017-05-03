@@ -65,8 +65,6 @@ type
 
   private
 
-  {$error foo}
-
     {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
     method _GetCallStack: ImmutableList<String>;
     begin
