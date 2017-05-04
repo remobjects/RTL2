@@ -50,6 +50,7 @@ type
   
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
+    fCanWrite: Boolean := true;
     {$IF COOPER OR TOFFEE}
     fPosition: Int64;
     {$ENDIF}
@@ -66,6 +67,8 @@ type
     constructor;
     constructor(aCapacity: Integer);
     constructor(aValue: PlatformBinary);
+    constructor(aValue: array of Byte);
+    constructor(aValue: array of Byte; aCanWrite: Boolean);
     operator Implicit(aValue: PlatformBinary): MemoryStream;
     {$IF TOFFEE OR COOPER}
     method ToPlatformStream: PlatformBinary;
@@ -219,6 +222,9 @@ end;
 
 method WrappedPlatformStream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
+  if not CanWrite then
+    raise new Exception('Stream is read only');
+
   {$IF ECHOES}
   fPlatformStream.Write(Buffer, Offset, Count);
   result := Count;
@@ -263,7 +269,7 @@ end;
 
 method MemoryStream.GetCanWrite: Boolean;
 begin
-  result := true;
+  result := fCanWrite;
 end;
 
 {$IF COOPER OR TOFFEE}
@@ -342,6 +348,18 @@ begin
   {$ENDIF}
 end;
 
+constructor MemoryStream(aValue: array of Byte);
+begin
+  constructor(aValue, true);
+end;
+
+constructor MemoryStream(aValue: array of Byte; aCanWrite: Boolean);
+begin
+  constructor;
+  &write(aValue, 0, aValue.Length);
+  fCanWrite := aCanWrite;
+end;
+
 operator MemoryStream.Implicit(aValue: PlatformBinary): MemoryStream;
 begin
   result := new MemoryStream(aValue);
@@ -383,6 +401,9 @@ end;
 
 method MemoryStream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
+  if not CanWrite then
+    raise new Exception('Stream is read only');
+
   {$IF COOPER}
   fInternalStream.write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
