@@ -377,6 +377,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.CompareToIgnoreCase(Value: String): Integer;
 begin
   {$IF COOPER}
@@ -512,6 +513,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
 begin
   {$IF COOPER}
@@ -559,6 +561,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.LastIndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
   {$IF COOPER OR ECHOES}// OR ISLAND}
@@ -783,7 +786,7 @@ begin
   {$ENDIF}
   {$ELSEIF ISLAND}
   {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseStringWithLocale(aLocale);
   {$ENDIF}
@@ -826,7 +829,7 @@ begin
   {$ENDIF}
   {$ELSEIF ISLAND}
   {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("SOme String APIs are not implemented for Island yet.");
+  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseStringWithLocale(aLocale);
   {$ENDIF}

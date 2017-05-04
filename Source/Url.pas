@@ -69,6 +69,7 @@ type
 
     class method AddPercentEncodingsToPath(aString: String): String;
     class method RemovePercentEncodingsFromPath(aString: String; aAlsoRemovePlusCharacter: Boolean := false): String;
+    class method TryRemovePercentEncodingsFromPath(aString: String; aAlsoRemovePlusCharacter: Boolean := false): nullable String;
     class method UrlEncodeString(aString: String): String;
 
     //property PathWithoutLastComponent: String read GetPathWithoutLastComponent; // includes trailing "/" or "\", NOT decoded
@@ -782,6 +783,15 @@ begin
       lResult.Append(ch);
   end;
   result := lResult.ToString()
+end;
+
+class method Url.TryRemovePercentEncodingsFromPath(aString: String; aAlsoRemovePlusCharacter: Boolean := false): nullable String;
+begin
+  try
+    result := RemovePercentEncodingsFromPath(aString, aAlsoRemovePlusCharacter);
+  except
+    on UrlParserException do;
+  end;
 end;
 
 class method Url.RemovePercentEncodingsFromPath(aString: String; aAlsoRemovePlusCharacter: Boolean := false): String;

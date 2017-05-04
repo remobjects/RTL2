@@ -12,6 +12,11 @@ type
       result := (self as ImmutableList<T>).ToSortedList();
     end;
 
+    method ToSortedList(aComparison: Comparison<T>): ImmutableList<T>;
+    begin
+      result := (self as ImmutableList<T>).ToSortedList(aComparison);
+    end;
+
     method UniqueCopy: not nullable ImmutableList<T>;
     begin
       result := (self as ImmutableList<T>).UniqueCopy();
