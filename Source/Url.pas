@@ -771,16 +771,27 @@ end;
 class method Url.AddPercentEncodingsToPath(aString: String): String;
 begin
   var lResult := new StringBuilder();
-  for i: Int32 := 0 to length(aString)-1 do begin
+  var len := length(aString);
+  var i := 0;
+  while i < len do begin
     var ch := aString[i];
     var c: UInt16 := ord(ch);
-    if (c < 46) or (58 < c < 65) or (90 < c < 95) or (c = 96) or (122 < c) then begin
+    if ($00D7FF ≤ c < $00E000) and (i < len-1) then begin
+      writeLn(c);
+      var lBytes := Convert.ToUtf8Bytes(ch+aString[i+1]);
+      for each b in lBytes do
+        lResult.Append("%"+Convert.ToHexString(ord(b), 2));
+      inc(i);
+    end
+    else if (c < 46) or (58 < c < 65) or (90 < c < 95) or (c = 96) or (122 < c) then begin
       var lBytes := Convert.ToUtf8Bytes(ch);
       for each b in lBytes do
         lResult.Append("%"+Convert.ToHexString(ord(b), 2));
     end
-    else
+    else begin
       lResult.Append(ch);
+    end;
+    inc(i);
   end;
   result := lResult.ToString()
 end;

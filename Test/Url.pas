@@ -139,6 +139,18 @@ type
       Assert.AreEqual(lUrl.UnixPath, "/Foo/String+Helpers.cs");
     end;
 
+    method TestRemovePercentEncodings();
+    begin
+      var s1 := "VIPVC does not contain a declaration that matches this method signature: method VIPVC.didRecˆeiveMemoryWarning";
+      var s2 := Url.AddPercentEncodingsToPath(s1);
+      var s3 := Url.RemovePercentEncodingsFromPath(s2);
+
+      s1 := "Pro🙉gram";
+      s2 := Url.AddPercentEncodingsToPath(s1);
+      s3 := Url.RemovePercentEncodingsFromPath(s2);
+      Assert.AreEqual(s1,s3);
+    end;
+
     method TestCanonical();
     begin
       var lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/../Test.txt");
