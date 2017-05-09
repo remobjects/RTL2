@@ -776,7 +776,7 @@ begin
   while i < len do begin
     var ch := aString[i];
     var c: UInt16 := ord(ch);
-    if ($00D7FF ≤ c < $00E000) and (i < len-1) then begin
+    if ($00D7FF < c < $00E000) and (i < len-1) then begin
       writeLn(c);
       var lBytes := Convert.ToUtf8Bytes(ch+aString[i+1]);
       for each b in lBytes do
