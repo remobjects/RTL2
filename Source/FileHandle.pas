@@ -97,7 +97,7 @@ begin
   {$ELSEIF NETSTANDARD}
   var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
   exit Windows.Storage.StorageFile(aFile).OpenAsync(lMode).Await.AsStream;
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   var lMode: PlatformFileAccess := if Mode = FileOpenMode.ReadOnly then PlatformFileAccess.Read else PlatformFileAccess.ReadWrite;
   exit new PlatformFileStream(PlatformString(aFile), PlatformFileMode.Open, lMode);
   {$ELSEIF TOFFEE}
@@ -127,7 +127,7 @@ begin
   mapped.Channel.force(false);
   {$ELSEIF NETSTANDARD}
   mapped.Flush;
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Flush;
   {$ELSEIF TOFFEE}
   mapped.synchronizeFile;
@@ -171,7 +171,7 @@ begin
   exit mapped.read(Buffer, Offset, Count);
   {$ELSEIF NETSTANDARD}
   exit mapped.Read(Buffer, Offset, Count);
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Read(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   var Bin := mapped.readDataOfLength(Count);
@@ -205,7 +205,7 @@ begin
   mapped.write(Buffer, Offset, Count);
   {$ELSEIF NETSTANDARD}
   mapped.Write(Buffer, Offset, Count);
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.Write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   var Bin := new NSData withBytes(@Buffer[Offset]) length(Count);
@@ -276,7 +276,7 @@ begin
     Seek(0, SeekOrigin.Begin)
   else
     Seek(Origin, SeekOrigin.Begin);
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   mapped.SetLength(value);
   {$ELSEIF TOFFEE}
   var Origin := mapped.offsetInFile;

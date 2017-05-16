@@ -20,7 +20,7 @@ type
       //lXmlStyle.Indentation := #9;
 
       var xml := XmlDocument.FromString('<foo bar="a" baz="b" />');
-      writeLn(xml.ToString(lXmlStyle));
+      //writeLn(xml.ToString(lXmlStyle));
     end;
 
   end;

@@ -642,7 +642,7 @@ begin
   if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then begin
     if fNodes.Count > 0 then begin
       var LastNodePos := fNodes.Count-1;
-      if (fNodes.Item[LastNodePos].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[LastNodePos]).Value = aElement.fParent.Indent) then begin
+      if XmlText(fNodes.Item[LastNodePos]):Value = aElement.fParent.Indent then begin
         fNodes.Insert(LastNodePos,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
         fNodes.Insert(LastNodePos+1,aElement);
         fNodes.Insert(LastNodePos+2 ,new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));
@@ -856,6 +856,20 @@ end;
 method XmlElement.GetAttribute(aName: not nullable String): nullable XmlAttribute;
 begin
   result := Attributes.Where(a -> a.LocalName = aName).FirstOrDefault;
+  if result = nil then begin 
+    var lPrefixPos := aName.IndexOf(':');
+    if (lPrefixPos > 0) then begin
+      var lNamespaceString := aName.Substring(0, lPrefixPos);
+      var lNamespace: XmlNamespace;
+      var lElement := self;
+      while (lNamespace = nil) and (lElement <> nil) do begin
+        lNamespace:= lElement.&Namespace[lNamespaceString];
+        lElement := XmlElement(lElement.Parent);
+      end;
+      if assigned(lNamespace) then
+        result := GetAttribute(aName.Substring(lPrefixPos+1, aName.Length-lPrefixPos-1), lNamespace);
+    end;
+  end;
 end;
 
 method XmlElement.GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;

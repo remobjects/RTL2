@@ -109,7 +109,15 @@ type
   {$IF TOFFEE}
   NullHelper = public static class
   public
-    method ValueOf(Value: id): id;
+    //77623: Coalesce fails with generic types
+    method coalesce(a: id; b: id): id;
+    begin
+      if assigned(a) then
+        result := a
+      else
+        result := b;
+    end;
+
   end;
   {$ENDIF}
 
@@ -219,14 +227,14 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   mapped.Add(aItem);
   {$ELSEIF TOFFEE}
-  mapped.addObject(NullHelper.ValueOf(aItem));
+  mapped.addObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ENDIF}
 end;
 
 method List<T>.SetItem(&Index: Integer; Value: T);
 begin
   {$IF TOFFEE}
-  mapped[&Index] := NullHelper.ValueOf(Value);
+  mapped[&Index] := NullHelper.coalesce(Value, NSNull.null);
   {$ELSE}
   mapped[&Index] := Value;
   {$ENDIF}
@@ -235,7 +243,9 @@ end;
 method ImmutableList<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
-  exit NullHelper.ValueOf(mapped.objectAtIndex(&Index));
+  var lResult := mapped.objectAtIndex(&Index);
+  if lResult = NSNull.null then exit nil;
+  result := lResult;
   {$ELSE}
   exit mapped[&Index];
   {$ENDIF}
@@ -244,7 +254,9 @@ end;
 method List<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
-  exit NullHelper.ValueOf(mapped.objectAtIndex(&Index));
+  var lResult := mapped.objectAtIndex(&Index);
+  if lResult = NSNull.null then exit nil;
+  result := lResult;
   {$ELSE}
   exit mapped[&Index];
   {$ENDIF}
@@ -302,7 +314,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Contains(aItem);
   {$ELSEIF TOFFEE}
-  exit mapped.ContainsObject(NullHelper.ValueOf(aItem));
+  exit mapped.ContainsObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ENDIF}
 end;
 
@@ -353,7 +365,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.IndexOf(aItem);
   {$ELSEIF TOFFEE}
-  var lIndex := mapped.indexOfObject(NullHelper.ValueOf(aItem));
+  var lIndex := mapped.indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
   exit if lIndex = NSNotFound then -1 else Integer(lIndex);
   {$ENDIF}
 end;
@@ -365,7 +377,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Insert(&Index, aItem);
   {$ELSEIF TOFFEE}
-  mapped.insertObject(NullHelper.ValueOf(aItem)) atIndex(&Index);
+  mapped.insertObject(NullHelper.coalesce(aItem, NSNull.null)) atIndex(&Index);
   {$ENDIF}
 end;
 
@@ -405,7 +417,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Remove(aItem);
   {$ELSEIF TOFFEE}
-  var lIndex := mapped.indexOfObject(NullHelper.ValueOf(aItem));
+  var lIndex := mapped.indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
   if lIndex = NSNotFound then
     exit false;
   RemoveAt(lIndex);
@@ -678,10 +690,24 @@ end;*/
 { NullHelper }
 
 {$IF TOFFEE}
-class method NullHelper.ValueOf(Value: id): id;
+/*class method NullHelper.ValueOf(aValue: nullable id): nullable id;
 begin
-  exit if Value = NSNull.null then nil else if Value = nil then NSNull.null else Value;
+  exit if aValue = NSNull.null then nil else if aValue = nil then NSNull.null else aValue;
 end;
+
+class method NullHelper.WrapNil(aValue: nullable id): not nullable id;
+begin
+  if aValue = nil then
+    result := NSNull.null
+  else
+    result := aValue;
+end;
+
+class method NullHelper.UnWrapNSNull(aValue: not nullable id): nullable id;
+begin
+  if aValue ≠ NSNull.null then result := aValue;
+  // implied: else result := nil
+end;*/
 {$ENDIF}
 
 { ListHelpers }
@@ -769,7 +795,7 @@ end;
 
 method ListHelpers.LastIndexOf<T>(aSelf: NSArray; aItem: T): Integer;
 begin
-  var o := NullHelper.ValueOf(aItem);
+  var o := NullHelper.coalesce(aItem, NSNull.null);
   for i: Integer := aSelf.count -1 downto 0 do
     if aSelf[i] = o then exit i;
   exit -1;
@@ -785,9 +811,12 @@ end;
 method ListHelpers.ToArrayReverse<T>(aSelf: NSArray): not nullable array of T;
 begin
   result := new T[aSelf.count];
-  for i: Integer := aSelf.count - 1 downto 0 do
-    result[aSelf.count - i - 1] := NullHelper.ValueOf(aSelf.objectAtIndex(i));
-
+  for i: Integer := aSelf.count - 1 downto 0 do begin
+    var lValue := aSelf.objectAtIndex(i);
+    if lValue = NSNull.null then
+      lValue := nil;
+    result[aSelf.count - i - 1] := lValue;
+  end;
 end;
 
 {$ENDIF}

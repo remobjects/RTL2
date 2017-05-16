@@ -38,7 +38,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Contains(Item);
   {$ELSEIF TOFFEE}
-  exit mapped.containsObject(NullHelper.ValueOf(Item));
+  exit mapped.containsObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 
@@ -53,7 +53,10 @@ begin
   {$ELSEIF TOFFEE}
   if self.Count = 0 then
     raise new QueueEmptyException;
-  exit NullHelper.ValueOf(mapped.objectAtIndex(0));
+  var lResult := mapped.objectAtIndex(0);
+  if lResult = NSNull.null then
+    lResult := nil;
+  result := lResult;
   {$ENDIF}
 end;
 
@@ -120,7 +123,10 @@ begin
   {$ELSEIF TOFFEE}
   if self.Count = 0 then
     raise new QueueEmptyException;
-  result := NullHelper.ValueOf(mapped.objectAtIndex(0));
+  var lResult := mapped.objectAtIndex(0);
+  if lResult = NSNull.null then
+    lResult := nil;
+  result := lResult;
   mapped.removeObjectAtIndex(0);
   {$ENDIF}
 end;
@@ -132,7 +138,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Enqueue(Item);
   {$ELSEIF TOFFEE}
-  mapped.addObject(NullHelper.ValueOf(Item));
+  mapped.addObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 
