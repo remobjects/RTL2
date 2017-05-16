@@ -95,9 +95,9 @@ begin
   {$IF COOPER}
   result := new PlatformThread(new BlockRunnable(aEntrypoint));
   {$ELSEIF ECHOES}
-  result := new PlatformThread(a -> aEntrypoint);
+  result := new PlatformThread(a -> aEntrypoint());
   {$ELSEIF ISLAND}
-  result := new PlatformThread(a -> aEntrypoint);
+  result := new PlatformThread(a -> aEntrypoint());
   {$ELSEIF TOFFEE}
   result := new PlatformThread withBlock(aEntrypoint);
   {$ENDIF}
