@@ -936,6 +936,7 @@ begin
   if (&Namespace <> nil) and (&Namespace.Prefix<>"") and (&Namespace.Prefix <> nil) then
     result := result+&Namespace.Prefix+":";
   result := result + fLocalName;
+
   for each defNS in DefinedNamespaces do begin
     str := "";
     if not(aFormatInsideTags) and (defNS.WSleft <> nil) then str := defNS.WSleft;
@@ -979,9 +980,9 @@ begin
   if aSaveFormatted and (Document.fFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
     if Document.fFormatOptions.NewLineForElements  then lFormat := true;
     var i := 0;
-    if lFormat  and (fNodes.count > 0) then begin
-      var n := fNodes[0];
-      while n.Parent<>nil do begin
+    if lFormat  and (fNodes.count > 0) and (fNodes[0].Parent <> nil) then begin
+      var n := fNodes[0].Parent;
+      while (n.Parent <> nil) do begin
         indent := indent+Document.fFormatOptions.Indentation;
         n := n.Parent;
       end;
@@ -990,19 +991,24 @@ begin
     for each aNode in fNodes do begin
       if (aNode.NodeType = XmlNodeType.Text) then
         if (XmlText(aNode).Value.Trim <> "") then begin
-          if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i-1]).Value.Trim = "") then
-            result := result + fNodes[i-1].ToString(aSaveFormatted, aFormatInsideTags, aPreserveExactStringsForUnchnagedValues);
-          result := result+ aNode.ToString(aSaveFormatted, aFormatInsideTags, aPreserveExactStringsForUnchnagedValues);
-          if (i < fNodes.Count-1) and (fNodes[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i+1]).Value.Trim = "") then begin
-            str := fNodes[i+1].ToString(aSaveFormatted, aFormatInsideTags, aPreserveExactStringsForUnchnagedValues);
-            if str.IndexOf(Document.fLineBreak) > -1 then
-              str := str.Substring(0, str.LastIndexOf(Document.fLineBreak));
-            result := result + str;
+          if (aFormatInsideTags and Document.fFormatOptions.NewLineForAttributes) then begin
+            result := result + Document.fLineBreak+ indent + Document.fFormatOptions.Indentation+ aNode.toString(aSaveFormatted, aFormatInsideTags, aPreserveExactStringsForUnchnagedValues) + Document.fLineBreak+indent;
+          end
+          else begin
+            if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i-1]).Value.Trim = "") then
+              result := result + fNodes[i-1].ToString(aSaveFormatted, aFormatInsideTags, aPreserveExactStringsForUnchnagedValues);
+            result := result+ aNode.ToString(aSaveFormatted, aFormatInsideTags, aPreserveExactStringsForUnchnagedValues);
+            if (i < fNodes.Count-1) and (fNodes[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i+1]).Value.Trim = "") then begin
+              str := fNodes[i+1].ToString(aSaveFormatted, aFormatInsideTags, aPreserveExactStringsForUnchnagedValues);
+              if str.IndexOf(Document.fLineBreak) > -1 then
+                str := str.Substring(0, str.LastIndexOf(Document.fLineBreak));
+              result := result + str;
+            end;
           end;
         end;
       if (aNode.NodeType <> XmlNodeType.Text) then
         if lFormat then
-          result := result + Document.fLineBreak + indent + aNode.ToString(aSaveFormatted, aFormatInsideTags)
+          result := result + Document.fLineBreak + indent + Document.fFormatOptions.Indentation + aNode.ToString(aSaveFormatted, aFormatInsideTags)
         else result := result + aNode.tostring(aSaveFormatted, aFormatInsideTags);
       inc(i);
     end;
@@ -1021,7 +1027,8 @@ begin
       if fNodes.Count = 0 then result := result + ">";
       if lFormat and (Elements.Count > 0) then begin
         result := result +Document.fLineBreak;
-        if Indent.LastIndexOf(Document.fFormatOptions.Indentation) > -1 then result := result+Indent.Substring(0, Indent.LastIndexOf(Document.fFormatOptions.Indentation));
+        //if Indent.LastIndexOf(Document.fFormatOptions.Indentation) > -1 then result := result+Indent.Substring(0, Indent.LastIndexOf(Document.fFormatOptions.Indentation));
+        result := result+indent;
       end;
       result := result+"</";
       if (&Namespace <> nil) and (&Namespace.Prefix <> "") and (&Namespace.Prefix <> nil) then
