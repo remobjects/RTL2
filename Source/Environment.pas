@@ -24,6 +24,7 @@ type
     method GetIsMono: Boolean;
 
     method GetUserHomeFolder: Folder;
+    method GetDesktopFolder: Folder;
     method GetTempFolder: Folder;
     method GetApplicationSupportFolder: Folder;
 
@@ -41,6 +42,7 @@ type
     property MachineName: String read GetMachineName;
 
     property UserHomeFolder: nullable Folder read GetUserHomeFolder;
+    property DesktopFolder: nullable Folder read GetDesktopFolder;
     property TempFolder: nullable Folder read GetTempFolder;
     property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
 
@@ -177,6 +179,24 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND OR COOPER}[Warning("Not Implemented for Island")]{$ENDIF}
+method Environment.GetDesktopFolder: Folder;
+begin
+  {$IF COOPER}
+  {$IF ANDROID}
+  result := nil;
+  {$ELSE}
+  result := nil;
+  {$ENDIF}
+  {$ELSEIF ECHOES}
+  exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.DesktopDirectory));
+  {$ELSEIF ISLAND}
+  {$WARNING Not Implemented for Island yet}
+  {$ELSEIF TOFFEE}
+  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DesktopDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
+  {$ENDIF}
+end;
+
 method Environment.GetTempFolder: Folder;
 begin
   {$IF COOPER}
@@ -209,7 +229,7 @@ begin
   if OS = OperatingSystem.macOS then
     result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType);
   {$ELSEIF TOFFEE}
-  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.NSApplicationSupportDirectory, NSSearchPathDomainMask.NSUserDomainMask, true).objectAtIndex(0);
+  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
   if (length(result) > 0) and not Folder.Exists(result) then
     Folder.Create(result);
