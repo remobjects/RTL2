@@ -37,13 +37,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Foundation" />
-    <Reference Include="libEUnit"></Reference>
+    <Reference Include="libEUnit" />
     <Reference Include="libxml2" />
     <Reference Include="libToffee" />
     <Reference Include="rtl" />
-    <Reference Include="libElements">
-      <HintPath>..\Source\bin\Debug\macOS\libElements.fx</HintPath>
-    </Reference>
+    <Reference Include="libElements" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />

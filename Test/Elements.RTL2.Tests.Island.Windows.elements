@@ -44,7 +44,7 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EUnit.fx" />
+    <Reference Include="EUnit" />
     <Reference Include="gc" />
     <Reference Include="Island" />
     <Reference Include="rtl" />
