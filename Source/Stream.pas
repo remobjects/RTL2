@@ -12,6 +12,8 @@ type
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; abstract;
     method &Read(Buffer: array of Byte; Count: Int32): Int32; inline;
     method &Write(Buffer: array of Byte; Count: Int32): Int32; inline;
+    method ReadByte: Int32; virtual;
+    method WriteByte(aValue: Byte); virtual;
     method GetLength: Int64; virtual;
     method SetPosition(Value: Int64); virtual; 
     method GetPosition: Int64; virtual;
@@ -48,6 +50,7 @@ type
   
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
+    fCanWrite: Boolean := true;
     {$IF COOPER OR TOFFEE}
     fPosition: Int64;
     {$ENDIF}
@@ -63,7 +66,12 @@ type
   public
     constructor;
     constructor(aCapacity: Integer);
+    constructor(aValue: PlatformBinary);
+    constructor(aValue: array of Byte);
+    constructor(aValue: array of Byte; aCanWrite: Boolean);
+    operator Implicit(aValue: PlatformBinary): MemoryStream;
     {$IF TOFFEE OR COOPER}
+    method ToPlatformStream: PlatformBinary;
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
@@ -75,8 +83,11 @@ type
     property Length: Int64 read GetLength; override;
     property Position: Int64 read GetPosition write SetPosition; override;
     {$ENDIF}
+    method ToArray: array of Byte;
     method Close; override;
     method Flush; override;
+    method Clear;
+    method WriteTo(Destination: Stream);
 
     property Bytes: array of Byte read GetBytes;
     property CanRead: Boolean read GetCanRead; override;
@@ -127,6 +138,22 @@ end;
 method Stream.&Write(Buffer: array of Byte; Count: Int32): Int32;
 begin
   result := &Write(Buffer, 0, Count);
+end;
+
+method Stream.ReadByte: Int32;
+begin
+  var lArray := new Byte[1];
+  if &Read(lArray, 0, sizeOf(Byte)) = sizeOf(Byte) then
+    result := lArray[0]
+  else
+    result := -1;
+end;
+
+method Stream.WriteByte(aValue: Byte);
+begin
+  var lArray := new Byte[1];
+  lArray[0] := aValue;
+  &Write(lArray, 0, sizeOf(Byte));
 end;
 
 method Stream.CopyTo(Destination: Stream);
@@ -195,6 +222,9 @@ end;
 
 method WrappedPlatformStream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
+  if not CanWrite then
+    raise new Exception('Stream is read only');
+
   {$IF ECHOES}
   fPlatformStream.Write(Buffer, Offset, Count);
   result := Count;
@@ -218,7 +248,7 @@ begin
   {$IF COOPER}
   result := fInternalStream.toByteArray;
   {$ELSEIF ECHOES}
-  result := System.IO.MemoryStream(fPlatformStream).GetBuffer;
+  result := System.IO.MemoryStream(fPlatformStream).ToArray;
   {$ELSEIF ISLAND}
   result := RemObjects.Elements.System.MemoryStream(fPlatformStream).ToArray;
   {$ELSEIF TOFFEE}
@@ -239,7 +269,7 @@ end;
 
 method MemoryStream.GetCanWrite: Boolean;
 begin
-  result := true;
+  result := fCanWrite;
 end;
 
 {$IF COOPER OR TOFFEE}
@@ -308,6 +338,33 @@ begin
   {$ENDIF}
 end;
 
+constructor MemoryStream(aValue: PlatformBinary);
+begin
+  {$IF COOPER OR TOFFEE}
+  fInternalStream := aValue;
+  fPosition := 0;
+  {$ELSE IF ECHOES OR ISLAND}
+  fPlatformStream := aValue;
+  {$ENDIF}
+end;
+
+constructor MemoryStream(aValue: array of Byte);
+begin
+  constructor(aValue, true);
+end;
+
+constructor MemoryStream(aValue: array of Byte; aCanWrite: Boolean);
+begin
+  constructor;
+  &write(aValue, 0, aValue.Length);
+  fCanWrite := aCanWrite;
+end;
+
+operator MemoryStream.Implicit(aValue: PlatformBinary): MemoryStream;
+begin
+  result := new MemoryStream(aValue);
+end;
+
 {$IF COOPER OR TOFFEE}
 method MemoryStream.ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
@@ -321,6 +378,11 @@ begin
     SeekOrigin.End:
       result := GetLength + Offset;
   end;
+end;
+
+method MemoryStream.ToPlatformStream: PlatformBinary;
+begin
+  result := fInternalStream;
 end;
 
 method MemoryStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
@@ -339,6 +401,9 @@ end;
 
 method MemoryStream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
+  if not CanWrite then
+    raise new Exception('Stream is read only');
+
   {$IF COOPER}
   fInternalStream.write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
@@ -355,6 +420,11 @@ begin
 end;
 {$ENDIF}
 
+method MemoryStream.ToArray: array of Byte;
+begin
+  result := GetBytes;
+end;
+
 method MemoryStream.Close;
 begin
   // No OP
@@ -363,6 +433,29 @@ end;
 method MemoryStream.Flush;
 begin
   // No OP
+end;
+
+method MemoryStream.Clear;
+begin
+  {$IF COOPER}
+  fInternalStream.reset;
+  {$ELSEIF ECHOES OR ISLAND}
+  fPlatformStream.SetLength(0);
+  fPlatformStream.Position := 0;
+  {$ELSEIF TOFFEE}
+  fInternalStream.setLength(0);
+  {$ENDIF}
+end;
+
+method MemoryStream.WriteTo(Destination: Stream);
+begin
+  var lOldPos := Position;
+  try
+    CopyTo(Destination);
+
+  finally
+    Position := lOldPos;
+  end;
 end;
 
 method FileStream.GetCanRead: Boolean;
