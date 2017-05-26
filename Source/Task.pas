@@ -127,24 +127,37 @@ begin
   result := lTask;
 
   {$IF ECHOES}
+  var lOutputWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
+  var lErrorWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
   if assigned(aStdOutCallback) then begin
     (lTask as PlatformTask).StartInfo.RedirectStandardOutput := true;
     (lTask as PlatformTask).OutputDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
-      aStdOutCallback(e.Data);
+      if assigned(e.Data) then
+        aStdOutCallback(e.Data)
+      else
+        lOutputWaitHandle:&Set();
     end;
     //(lTask as PlatformTask).BeginOutputReadLine();
   end;
   if assigned(aStdErrCallback) then begin
     (lTask as PlatformTask).StartInfo.RedirectStandardError := true;
     (lTask as PlatformTask).ErrorDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
-      aStdErrCallback(e.Data);
+      if assigned(e.Data) then
+        aStdErrCallback(e.Data)
+      else
+        lErrorWaitHandle:&Set();
     end;
     //(lTask as PlatformTask).BeginErrorReadLine();
   end;
-  if assigned(aFinishedCallback) then
+  if assigned(aFinishedCallback) then begin
     (lTask as PlatformTask).Exited += method (sender: Object; e: System.EventArgs) begin
+      lOutputWaitHandle.WaitOne();
+      lOutputWaitHandle:Dispose();
+      lErrorWaitHandle.WaitOne();
+      lErrorWaitHandle:Dispose();
       aFinishedCallback(lTask.ExitCode);
     end;
+  end;
   lTask.Start();
 
   if assigned(aStdOutCallback) then

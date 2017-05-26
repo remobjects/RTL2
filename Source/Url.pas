@@ -76,8 +76,8 @@ type
 
     property CanonicalVersion: Url read GetCanonicalVersion;
     property IsFileUrl: Boolean read fScheme = "file";
-    property FileExists: Boolean read IsFileUrl and File.Exists(Path);
-    property FolderExists: Boolean read IsFileUrl and Folder.Exists(Path);
+    property FileExists: Boolean read IsFileUrl and File.Exists(FilePath);
+    property FolderExists: Boolean read IsFileUrl and Folder.Exists(FilePath);
     property IsAbsoluteWindowsFileURL: Boolean
       read IsFileUrl
         and (((Path:Length ≥ 3) and ((Path[2] = ':') or // absolute drive path, eg `C:`
@@ -162,6 +162,10 @@ type
     class operator Equal(Value1: Object; Value2: Url): Boolean;
     class operator NotEqual(Value1: Object; Value2: Url): Boolean;
 
+    {$IF ECHOES}
+    method &Equals(obj: Object): Boolean; override;
+    method GetHashCode: Integer; override;
+    {$ENDIF}
     {$IF TOFFEE}
     method isEqual(obj: id): Boolean; override;
     method copyWithZone(aZone: ^NSZone): instancetype;
@@ -938,6 +942,23 @@ begin
   result := Url(Value1):ToAbsoluteString() ≠ Value2.ToAbsoluteString();
 end;
 
+{$IF ECHOES}
+method Url.Equals(obj: Object): Boolean;
+begin
+  if obj = self then
+    exit true;
+  if obj is Url then
+    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
+  if obj is Uri then
+    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
+end;
+
+method Url.GetHashCode: Integer;
+begin
+  result := (CanonicalVersion.ToAbsoluteString as PlatformString).GetHashCode;
+end;
+{$ENDIF}
+
 {$IF TOFFEE}
 method Url.isEqual(obj: id): Boolean;
 begin
@@ -946,7 +967,7 @@ begin
   if obj is Url then
     exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
   if obj is NSURL then
-    exit CanonicalVersion.ToAbsoluteString() = (obj as NSURL).standardizedURL.absoluteString();
+    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
 end;
 
 method Url.copyWithZone(aZone: ^NSZone): instancetype;
@@ -956,7 +977,7 @@ end;
 
 method Url.hash: NSUInteger;
 begin
-  result := (ToAbsoluteString as PlatformString).hash;
+  result := (CanonicalVersion.ToAbsoluteString as PlatformString).hash;
 end;
 {$ENDIF}
 

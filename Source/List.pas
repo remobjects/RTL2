@@ -29,7 +29,6 @@ type
     method IndexOf(aItem: T): Integer;
     method LastIndexOf(aItem: T): Integer;
 
-    method ToMutableList: List<T>;
     {$IF NOT COOPER AND NOT ISLAND}
     method ToSortedList: ImmutableList<T>;
     {$ENDIF}
@@ -499,17 +498,6 @@ begin
          else
            NSComparisonResult.NSOrderedDescending;
   end);
-  {$ENDIF}
-end;
-
-method ImmutableList<T>.ToMutableList: List<T>;
-begin
-  {$IF COOPER OR ECHOES OR ISLAND}
-  {$ELSE IF TOFFEE}
-  if self is NSMutableArray then
-    result := self as List<T>
-  else
-    result := mapped.mutableCopy();
   {$ENDIF}
 end;
 
