@@ -3,10 +3,7 @@
 interface
 
 type
-  {$IF COOPER}
-  ImmutablePlatformBinary = java.io.ByteArrayOutputStream;
-  PlatformBinary = java.io.ByteArrayOutputStream;
-  {$ELSEIF ECHOES}
+  {$IF ECHOES}
   ImmutablePlatformBinary = System.IO.MemoryStream;
   PlatformBinary = System.IO.MemoryStream;
   {$ELSEIF ISLAND}
@@ -17,100 +14,144 @@ type
   PlatformBinary = Foundation.NSMutableData;
   {$ENDIF}
 
-  ImmutableBinary = public class
+  ImmutableBinary = public class {$IF ECHOES OR ISLAND OR TOFFEE}mapped to ImmutablePlatformBinary{$ENDIF}
+  {$IF COOPER}
   protected
-    fStream: Stream;
-    fEncoding: Encoding := Encoding.Default;
+    fData: java.io.ByteArrayOutputStream := new java.io.ByteArrayOutputStream();
+  {$ENDIF}
   public
-    constructor;
+    constructor; {$IF TOFFEE OR ECHOES}mapped to constructor();{$ELSE}empty;{$ENDIF}
     constructor(anArray: array of Byte);
     constructor(Bin: Binary);
-    constructor(Input: Stream);
 
     method &Read(Range: Range): array of Byte;
     method &Read(aStartIndex: Integer; aCount: Integer): array of Byte;
     method &Read(Count: Integer): array of Byte;
-    method ReadByte: Byte;
-    method PeekChar: Int32;
-    method &Read: Int32;
-    method ReadSByte: ShortInt;
 
     method Subdata(Range: Range): Binary;
     method Subdata(aStartIndex: Integer; aCount: Integer): Binary;
 
     method ToArray: not nullable array of Byte;
-    property Length: Integer read fStream.Length;
-
-    operator Implicit(aBinary: ImmutableBinary): ImmutablePlatformBinary;
-    operator Implicit(aData: ImmutablePlatformBinary): ImmutableBinary;
+    property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
   end;
 
-  Binary = public class(ImmutableBinary)
+  Binary = public class(ImmutableBinary) {$IF ECHOES OR ISLAND OR TOFFEE}mapped to PlatformBinary{$ENDIF}
   public
-    operator Implicit(aPlatformBinary: PlatformBinary): Binary;
-    operator Implicit(aBinary: Binary): PlatformBinary;  
+    constructor;
+    constructor(anArray: array of Byte);
+    constructor(Bin: Binary);
+
     method Assign(Bin: Binary);
     method Clear;
+
 
     method &Write(Buffer: array of Byte; Offset: Integer; Count: Integer);
     method &Write(Buffer: array of Byte; Count: Integer);
     method &Write(Buffer: array of Byte);
     method &Write(Bin: Binary);
-    method &Write(aValue: Byte);
-
-    method Flush;
 
     {$IF TOFFEE}
     operator Implicit(aData: NSData): Binary;
     {$ENDIF}
   end;
 
-  BinaryReader = public ImmutableBinary;
-  BinaryWriter = public Binary;
-
 implementation
 
 { Binary }
-
-constructor ImmutableBinary;
-begin
-  fStream := new MemoryStream();
-end;
 
 constructor ImmutableBinary(anArray: array of Byte);
 begin
   if anArray = nil then
     raise new ArgumentNullException("Array");
 
-  fStream := new MemoryStream();
-  fStream.Write(anArray, anArray.Length);
+  {$IF COOPER}
+  fData.Write(anArray, 0, anArray.Length);
+  {$ELSEIF ECHOES}
+  var ms := new ImmutablePlatformBinary();
+  ms.Write(anArray, 0, anArray.Length);
+  exit ms;
+  {$ELSEIF ISLAND}
+  var ms := new ImmutablePlatformBinary();
+  ms.Write(anArray, anArray.Length);
+  exit ms;
+  {$ELSEIF TOFFEE}
+  exit NSData.dataWithBytes(anArray) length(length(anArray));
+  {$ENDIF}
 end;
 
 constructor ImmutableBinary(Bin: Binary);
 begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
-
-  fStream := Bin.fStream;
+  {$IF COOPER}
+  if Bin <> nil then
+    fData.Write(Bin.ToArray, 0, Bin.Length);
+  {$ELSEIF ECHOES OR ISLAND}
+  var ms := new ImmutablePlatformBinary();
+  ImmutablePlatformBinary(Bin).WriteTo(ms);
+  exit ms;
+  {$ELSEIF TOFFEE}
+  exit NSData.dataWithData(Bin);
+  {$ENDIF}
 end;
 
-constructor ImmutableBinary(Input: Stream);
+constructor Binary;
 begin
-  fStream := Input;
+  {$IF COOPER}
+  {$ELSEIF ECHOES OR ISLAND}
+  result := new ImmutablePlatformBinary();
+  {$ELSEIF TOFFEE}
+  result :=  NSData.data;
+  {$ENDIF}
 end;
 
-operator Binary.Implicit(aPlatformBinary: PlatformBinary): Binary;
+constructor Binary(anArray: array of Byte);
 begin
-  result := new Binary(aPlatformBinary);
+  if anArray = nil then
+    raise new ArgumentNullException("Array");
+
+  {$IF COOPER}
+  inherited constructor(anArray);
+  {$ELSEIF ECHOES}
+  var ms := new PlatformBinary();
+  ms.Write(anArray, 0, anArray.Length);
+  exit ms;
+  {$ELSEIF ISLAND}
+  var ms := new PlatformBinary();
+  if length(anArray) > 0 then
+    ms.Write(anArray, 0, length(anArray));
+  exit ms;
+  {$ELSEIF TOFFEE}
+  exit NSMutableData.dataWithBytes(anArray) length(length(anArray));
+  {$ENDIF}
 end;
 
-operator Binary.Implicit(aBinary: Binary): PlatformBinary;
+constructor Binary(Bin: Binary);
 begin
-  result := (aBinary.fStream as MemoryStream).ToPlatformStream;
+  ArgumentNullException.RaiseIfNil(Bin, "Bin");
+  {$IF COOPER}
+  Assign(Bin);
+  {$ELSEIF ECHOES OR ISLAND}
+  var ms := new PlatformBinary();
+  PlatformBinary(Bin).WriteTo(ms);
+  exit ms;
+  {$ELSEIF TOFFEE}
+  exit NSMutableData.dataWithData(Bin);
+  {$ENDIF}
 end;
 
 method Binary.Assign(Bin: Binary);
 begin
-  fStream := Bin.fStream;
+  {$IF COOPER}
+  Clear;
+  if Bin <> nil then
+    fData.Write(Bin.ToArray, 0, Bin.Length);
+  {$ELSEIF ECHOES OR ISLAND}
+  Clear;
+  if assigned(Bin) then
+    PlatformBinary(Bin).WriteTo(mapped);
+  {$ELSEIF TOFFEE}
+  mapped.setData(Bin);
+  {$ENDIF}
 end;
 
 method ImmutableBinary.Read(Range: Range): array of Byte;
@@ -121,8 +162,14 @@ begin
   RangeHelper.Validate(Range, self.Length);
 
   result := new Byte[Range.Length];
-  fStream.Position := Range.Location;
-  fStream.Read(result, 0, Range.Length);
+  {$IF COOPER}
+  System.arraycopy(fData.toByteArray, Range.Location, result, 0, Range.Length);
+  {$ELSEIF ECHOES}
+  mapped.Position := Range.Location;
+  mapped.Read(result, 0, Range.Length);
+  {$ELSEIF TOFFEE}
+  mapped.getBytes(result) range(Range);
+  {$ENDIF}
 end;
 
 method ImmutableBinary.Read(aStartIndex: Integer; aCount: Integer): array of Byte;
@@ -137,68 +184,6 @@ begin
   result := &Read(new Range(0, Math.Min(Count, self.Length)));
 end;
 
-method ImmutableBinary.ReadByte: Byte;
-begin
-  result := fStream.ReadByte;
-end;
-
-method ImmutableBinary.PeekChar: Int32;
-begin
-  if not fStream.CanSeek then
-    exit -1;
-
-  var lOldPos := fStream.Position;
-  result := &Read;
-  fStream.Position := lOldPos;
-end;
-
-method ImmutableBinary.Read: Int32;
-begin
-  var lRead := new Byte[128];
-  var lOldPos: Int64;
-  var lConverted: String := '';
-
-  if fStream.CanSeek then
-    lOldPos := fStream.Position;
-
-  var lBytes: Int32;
-  var lTotal := 0;
-  while lTotal = 0 do begin
-    lBytes := if (fEncoding = Encoding.UTF16BE) or (fEncoding = Encoding.UTF16LE) then 2 else 1;
-    var lOneByte := fStream.ReadByte;
-    lRead[0] := lOneByte;
-    if lOneByte = -1 then
-      lBytes := 0;
-      if lBytes > 1 then begin
-        lOneByte := fStream.ReadByte;
-        lRead[1] := lOneByte;
-        if lOneByte = -1 then
-          lBytes := 1;
-      end;
-
-      if lBytes = 0 then
-        exit -1;
-
-      try
-        lConverted := fEncoding.GetString(lRead, 0, lBytes);
-      except
-       if fStream.CanSeek then
-         fStream.Position := lOldPos;
-       raise;
-      end;
-  end;
-  if lConverted.Length = 0 then
-    result := -1
-  else
-    result := lRead[0];
-end;
-
-method ImmutableBinary.ReadSByte: ShortInt;
-begin
-  var lByte := ReadByte;
-  result := ShortInt(lByte);
-end;
-
 method ImmutableBinary.Subdata(Range: Range): Binary;
 begin
   result := new Binary(&Read(Range));
@@ -207,14 +192,6 @@ end;
 method ImmutableBinary.Subdata(aStartIndex: Integer; aCount: Integer): Binary;
 begin
   result := new Binary(&Read(aStartIndex, aCount));
-end;
-
-method ImmutableBinary.ToArray: not nullable array of Byte;
-begin
-  if fStream is MemoryStream then
-    result := (fStream as MemoryStream).Bytes
-  else
-    result := new Byte[0];
 end;
 
 method Binary.&Write(Buffer: array of Byte; Offset: Integer; Count: Integer);
@@ -226,58 +203,68 @@ begin
     exit;
 
   RangeHelper.Validate(new Range(Offset, Count), Buffer.Length);
-  fStream.Seek(0, SeekOrigin.End);
-  fStream.Write(Buffer, Offset, Count);
+  {$IF COOPER}
+  fData.write(Buffer, Offset, Count);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Seek(0, PlatformSeekOrigin.End);
+  mapped.Write(Buffer, Offset, Count);
+  {$ELSEIF TOFFEE}
+  mapped.appendBytes(@Buffer[Offset]) length(Count);
+  {$ENDIF}
 end;
 
 method Binary.Write(Buffer: array of Byte; Count: Integer);
 begin
-  fStream.Write(Buffer, 0, Count);
+  &Write(Buffer, 0, Count);
 end;
 
 method Binary.&Write(Buffer: array of Byte);
 begin
-  fStream.Write(Buffer, RemObjects.Oxygene.System.length(Buffer));
+  &Write(Buffer, RemObjects.Oxygene.System.length(Buffer));
 end;
 
 method Binary.Write(Bin: Binary);
 begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
-
-  Bin.fStream.CopyTo(fStream);
+  {$IF COOPER OR ECHOES OR ISLAND}
+  &Write(Bin.ToArray, Bin.Length);
+  {$ELSEIF TOFFEE}
+  mapped.appendData(Bin);
+  {$ENDIF}
 end;
 
-method Binary.&Write(aValue: Byte);
+method ImmutableBinary.ToArray: not nullable array of Byte;
 begin
-  fStream.WriteByte(aValue);
-end;
-
-method Binary.Flush;
-begin
-  fStream.Flush;
+  {$IF COOPER}
+  result := fData.toByteArray as not nullable;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.ToArray as not nullable;
+  {$ELSEIF TOFFEE}
+  result := new Byte[mapped.length];
+  mapped.getBytes(result) length(mapped.length);
+  {$ENDIF}
 end;
 
 method Binary.Clear;
 begin
-  if fStream is MemoryStream then
-    (fStream as MemoryStream).Clear;
-  end;
+  {$IF COOPER}
+  fData.reset;
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.SetLength(0);
+  mapped.Position := 0;
+  {$ELSEIF TOFFEE}
+  mapped.setLength(0);
+  {$ENDIF}
+end;
 
 {$IF TOFFEE}
 operator Binary.Implicit(aData: NSData): Binary;
 begin
-  result := new Binary(aData);
+  if aData is NSMutableData then
+    result := aData as NSMutableData
+  else
+    result := aData:mutableCopy;
 end;
 {$ENDIF}
-
-operator ImmutableBinary.Implicit(aBinary: ImmutableBinary): ImmutablePlatformBinary;
-begin
-  result := (aBinary.fStream as MemoryStream).ToPlatformStream;
-end;
-
-operator ImmutableBinary.Implicit(aData: ImmutablePlatformBinary): ImmutableBinary;
-begin
-  result := new ImmutableBinary(aData);
-end;
 
 end.
