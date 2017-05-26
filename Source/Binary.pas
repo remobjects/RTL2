@@ -41,14 +41,14 @@ type
     method ToArray: not nullable array of Byte;
     property Length: Integer read fStream.Length;
 
-    {$IF TOFFEE}
-    operator Implicit(aBinary: ImmutableBinary): NSData;
-    {$ENDIF}
+    operator Implicit(aBinary: ImmutableBinary): ImmutablePlatformBinary;
+    operator Implicit(aData: ImmutablePlatformBinary): ImmutableBinary;
   end;
 
   Binary = public class(ImmutableBinary)
   public
     operator Implicit(aPlatformBinary: PlatformBinary): Binary;
+    operator Implicit(aBinary: Binary): PlatformBinary;  
     method Assign(Bin: Binary);
     method Clear;
 
@@ -101,6 +101,11 @@ end;
 operator Binary.Implicit(aPlatformBinary: PlatformBinary): Binary;
 begin
   result := new Binary(aPlatformBinary);
+end;
+
+operator Binary.Implicit(aBinary: Binary): PlatformBinary;
+begin
+  result := (aBinary.fStream as MemoryStream).ToPlatformStream;
 end;
 
 method Binary.Assign(Bin: Binary);
@@ -263,11 +268,16 @@ operator Binary.Implicit(aData: NSData): Binary;
 begin
   result := new Binary(aData);
 end;
+{$ENDIF}
 
-operator ImmutableBinary.Implicit(aBinary: ImmutableBinary): NSData;
+operator ImmutableBinary.Implicit(aBinary: ImmutableBinary): ImmutablePlatformBinary;
 begin
   result := (aBinary.fStream as MemoryStream).ToPlatformStream;
 end;
-{$ENDIF}
+
+operator ImmutableBinary.Implicit(aData: ImmutablePlatformBinary): ImmutableBinary;
+begin
+  result := new ImmutableBinary(aData);
+end;
 
 end.

@@ -71,7 +71,6 @@ type
     constructor(aValue: array of Byte; aCanWrite: Boolean);
     operator Implicit(aValue: PlatformBinary): MemoryStream;
     {$IF TOFFEE OR COOPER}
-    method ToPlatformStream: PlatformBinary;
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
@@ -83,6 +82,7 @@ type
     property Length: Int64 read GetLength; override;
     property Position: Int64 read GetPosition write SetPosition; override;
     {$ENDIF}
+    method ToPlatformStream: PlatformBinary;
     method ToArray: array of Byte;
     method Close; override;
     method Flush; override;
@@ -380,11 +380,6 @@ begin
   end;
 end;
 
-method MemoryStream.ToPlatformStream: PlatformBinary;
-begin
-  result := fInternalStream;
-end;
-
 method MemoryStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   if (fPosition + Count) >= self.Length then 
@@ -419,6 +414,15 @@ begin
   fPosition := result;
 end;
 {$ENDIF}
+
+method MemoryStream.ToPlatformStream: PlatformBinary;
+begin
+  {$IF TOFFEE OR COOPER}
+  result := fInternalStream;
+  {$ELSE}
+  result := fPlatformStream as PlatformBinary; 
+  {$ENDIF}
+end;
 
 method MemoryStream.ToArray: array of Byte;
 begin
