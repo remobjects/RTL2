@@ -80,7 +80,7 @@ type
     method ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
     method ToHexString(aData: array of Byte; aCount: Integer): not nullable String;
     method ToHexString(aData: array of Byte): not nullable String;
-    method ToHexString(aData: Binary): not nullable String;
+    method ToHexString(aData: ImmutableBinary): not nullable String;
 
     method ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
     method ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
@@ -350,7 +350,7 @@ begin
   result := ToHexString(aData, 0, length(aData));
 end;
 
-method Convert.ToHexString(aData: Binary): not nullable String;
+method Convert.ToHexString(aData: ImmutableBinary): not nullable String;
 begin
   result := ToHexString(aData.ToArray())
 end;
