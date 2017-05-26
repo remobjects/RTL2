@@ -76,6 +76,7 @@ type
     method SplitAtFirstOccurrenceOf(Separator: not nullable String): not nullable ImmutableList<String>;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
+    method &Remove(aStartIndex: Int32; aLength: Int32): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Insert(aIndex: Int32; aNewValue: String): not nullable String; inline;
     method PadStart(TotalWidth: Integer): String; inline;
     method PadStart(TotalWidth: Integer; PaddingChar: Char): String;
@@ -679,6 +680,17 @@ begin
   exit mapped.Remove(aStartIndex, aLength).Insert(aStartIndex, aNewValue) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue);
+  {$ENDIF}
+end;
+
+method String.Remove(aStartIndex: Int32; aLength: Int32): not nullable String;
+begin
+  {$IF COOPER}
+  exit mapped.substring(0, aStartIndex)+mapped.substring(aStartIndex+aLength) as not nullable;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Remove(aStartIndex, aLength) as not nullable;
+  {$ELSEIF TOFFEE}
+  exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString("");
   {$ENDIF}
 end;
 
