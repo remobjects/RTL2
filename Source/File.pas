@@ -33,17 +33,17 @@ type
 
     method ReadText(Encoding: Encoding := nil): String;
     method ReadBytes: array of Byte;
-    method ReadBinary: Binary;
+    method ReadBinary: ImmutableBinary;
 
     class method ReadText(aFileName: String; Encoding: Encoding := nil): String;
     class method ReadBytes(aFileName: String): array of Byte;
-    class method ReadBinary(aFileName: String): Binary;
+    class method ReadBinary(aFileName: String): ImmutableBinary;
     class method WriteBytes(aFileName: String; Content: array of Byte);
     class method WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
-    class method WriteBinary(aFileName: String; Content: Binary);
+    class method WriteBinary(aFileName: String; Content: ImmutableBinary);
     class method AppendText(aFileName: String; Content: String);
     class method AppendBytes(aFileName: String; Content: array of Byte);
-    class method AppendBinary(aFileName: String; Content: Binary);
+    class method AppendBinary(aFileName: String; Content: ImmutableBinary);
 
     {$IF NETSTANDARD}
     property FullPath: not nullable String read mapped.Path;
@@ -225,7 +225,7 @@ begin
   result := ReadBytes(self.FullPath);
 end;
 
-method File.ReadBinary: Binary;
+method File.ReadBinary: ImmutableBinary;
 begin
   result := ReadBinary(self.FullPath);
 end;
@@ -295,7 +295,7 @@ begin
   exit ReadBinary(aFileName).ToArray;
 end;
 
-class method File.ReadBinary(aFileName: String): Binary;
+class method File.ReadBinary(aFileName: String): ImmutableBinary;
 begin
   var Handle := new FileHandle(aFileName, FileOpenMode.ReadOnly);
   try
@@ -328,7 +328,7 @@ begin
   WriteBytes(aFileName, Content.ToByteArray(aEncoding));
 end;
 
-class method File.WriteBinary(aFileName: String; Content: Binary);
+class method File.WriteBinary(aFileName: String; Content: ImmutableBinary);
 begin
   {$IF TOFFEE}
   (Content as NSData).writeToURL(NSURL.fileURLWithPath(aFileName)) atomically(true);
@@ -359,7 +359,7 @@ begin
   end;
 end;
 
-class method File.AppendBinary(aFileName: String; Content: Binary);
+class method File.AppendBinary(aFileName: String; Content: ImmutableBinary);
 begin
   var Handle := new FileHandle(aFileName, FileOpenMode.ReadWrite);
   try

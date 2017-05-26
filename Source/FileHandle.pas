@@ -37,11 +37,11 @@ type
     method Flush;
     method &Read(Buffer: array of Byte; Offset: Integer; Count: Integer): Integer;
     method &Read(Buffer: array of Byte; Count: Integer): Integer;
-    method &Read(Count: Integer): Binary;
+    method &Read(Count: Integer): ImmutableBinary;
     method &Write(Buffer: array of Byte; Offset: Integer; Count: Integer);
     method &Write(Buffer: array of Byte; Count: Integer);
     method &Write(Buffer: array of Byte);
-    method &Write(Data: Binary);
+    method &Write(Data: ImmutableBinary);
     method Seek(Offset: Int64; Origin: SeekOrigin);
 
     property Length: Int64 read GetLength write SetLength;
@@ -186,12 +186,13 @@ begin
   exit &Read(Buffer, 0, Count);
 end;
 
-method FileHandle.&Read(Count: Integer): Binary;
+method FileHandle.&Read(Count: Integer): ImmutableBinary;
 begin
   var Buffer := new Byte[Count];
-  var Readed := &Read(Buffer, 0, Count);
-  result := new Binary;
-  result.Write(Buffer, Readed);
+  var lCount := &Read(Buffer, 0, Count);
+  var lResult := new Binary;
+  lResult.Write(Buffer, lCount);
+  result := lResult;
 end;
 
 method FileHandle.Write(Buffer: array of Byte; Offset: Integer; Count: Integer);
@@ -223,7 +224,7 @@ begin
   &Write(Buffer, 0, RemObjects.Oxygene.System.length(Buffer));
 end;
 
-method FileHandle.&Write(Data: Binary);
+method FileHandle.&Write(Data: ImmutableBinary);
 begin
   ArgumentNullException.RaiseIfNil(Data, "Data");
   &Write(Data.ToArray, 0, Data.Length);

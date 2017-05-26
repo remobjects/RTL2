@@ -17,12 +17,12 @@ type
   PlatformBinary = Foundation.NSMutableData;
   {$ENDIF}
 
-  ImmutableBinary = public class 
+  ImmutableBinary = public class
   protected
     fStream: Stream;
     fEncoding: Encoding := Encoding.Default;
   public
-    constructor; 
+    constructor;
     constructor(anArray: array of Byte);
     constructor(Bin: Binary);
     constructor(Input: Stream);
@@ -40,6 +40,10 @@ type
 
     method ToArray: not nullable array of Byte;
     property Length: Integer read fStream.Length;
+
+    {$IF TOFFEE}
+    operator Implicit(aBinary: ImmutableBinary): NSData;
+    {$ENDIF}
   end;
 
   Binary = public class(ImmutableBinary)
@@ -58,7 +62,6 @@ type
 
     {$IF TOFFEE}
     operator Implicit(aData: NSData): Binary;
-    operator Implicit(aBinary: Binary): NSData;
     {$ENDIF}
   end;
 
@@ -149,7 +152,7 @@ begin
   var lRead := new Byte[128];
   var lOldPos: Int64;
   var lConverted: String := '';
-  
+
   if fStream.CanSeek then
     lOldPos := fStream.Position;
 
@@ -177,7 +180,7 @@ begin
        if fStream.CanSeek then
          fStream.Position := lOldPos;
        raise;
-      end;      
+      end;
   end;
   if lConverted.Length = 0 then
     result := -1
@@ -205,7 +208,7 @@ method ImmutableBinary.ToArray: not nullable array of Byte;
 begin
   if fStream is MemoryStream then
     result := (fStream as MemoryStream).Bytes
-  else 
+  else
     result := new Byte[0];
 end;
 
@@ -261,7 +264,7 @@ begin
   result := new Binary(aData);
 end;
 
-operator Binary.Implicit(aBinary: Binary): NSData;
+operator ImmutableBinary.Implicit(aBinary: ImmutableBinary): NSData;
 begin
   result := (aBinary.fStream as MemoryStream).ToPlatformStream;
 end;
