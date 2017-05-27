@@ -22,7 +22,7 @@ type
   public
     constructor; {$IF TOFFEE OR ECHOES}mapped to constructor();{$ELSE}empty;{$ENDIF}
     constructor(anArray: array of Byte);
-    constructor(Bin: Binary);
+    constructor(Bin: ImmutableBinary);
 
     method &Read(Range: Range): array of Byte;
     method &Read(aStartIndex: Integer; aCount: Integer): array of Byte;
@@ -30,6 +30,10 @@ type
 
     method Subdata(Range: Range): Binary;
     method Subdata(aStartIndex: Integer; aCount: Integer): Binary;
+
+    method UniqueCopy: not nullable ImmutableBinary;
+    method UniqueMutableCopy: not nullable Binary;
+    method MutableVersion: not nullable Binary;
 
     method ToArray: not nullable array of Byte;
     property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
@@ -39,11 +43,10 @@ type
   public
     constructor;
     constructor(anArray: array of Byte);
-    constructor(Bin: Binary);
+    constructor(Bin: ImmutableBinary);
 
-    method Assign(Bin: Binary);
+    method Assign(Bin: ImmutableBinary);
     method Clear;
-
 
     method &Write(Buffer: array of Byte; Offset: Integer; Count: Integer);
     method &Write(Buffer: array of Byte; Count: Integer);
@@ -79,7 +82,7 @@ begin
   {$ENDIF}
 end;
 
-constructor ImmutableBinary(Bin: Binary);
+constructor ImmutableBinary(Bin: ImmutableBinary);
 begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
   {$IF COOPER}
@@ -125,7 +128,7 @@ begin
   {$ENDIF}
 end;
 
-constructor Binary(Bin: Binary);
+constructor Binary(Bin: ImmutableBinary);
 begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
   {$IF COOPER}
@@ -139,7 +142,7 @@ begin
   {$ENDIF}
 end;
 
-method Binary.Assign(Bin: Binary);
+method Binary.Assign(Bin: ImmutableBinary);
 begin
   {$IF COOPER}
   Clear;
@@ -230,6 +233,38 @@ begin
   &Write(Bin.ToArray, Bin.Length);
   {$ELSEIF TOFFEE}
   mapped.appendData(Bin);
+  {$ENDIF}
+end;
+
+method ImmutableBinary.UniqueCopy: not nullable ImmutableBinary;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := new ImmutableBinary(self);
+  {$ELSEIF TOFFEE}
+  result := mapped.copy;
+  {$ENDIF}
+end;
+
+method ImmutableBinary.UniqueMutableCopy: not nullable Binary;
+begin
+  {$IF COOPER OR ECHOES OR ISLAND}
+  result := new Binary(self);
+  {$ELSEIF TOFFEE}
+  result := mapped.mutableCopy;
+  {$ENDIF}
+end;
+
+method ImmutableBinary.MutableVersion: not nullable Binary;
+begin
+  {$IF COOPER}
+  result := new Binary(self);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := self;
+  {$ELSEIF TOFFEE}
+  if self is NSMutableData then
+    result := self as NSMutableData
+  else
+    result := mapped.mutableCopy;
   {$ENDIF}
 end;
 
