@@ -36,6 +36,9 @@ type
     method MutableVersion: not nullable Binary;
 
     method ToArray: not nullable array of Byte;
+    {$IF COOPER}
+    method ToPlatformMemoryStream: PlatformMemoryStream;
+    {$ENDIF}
     property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
   end;
 
@@ -279,6 +282,13 @@ begin
   mapped.getBytes(result) length(mapped.length);
   {$ENDIF}
 end;
+
+{$IF COOPER}
+method ImmutableBinary.ToPlatformMemoryStream: PlatformMemoryStream;
+begin
+  result := fData;
+end;
+{$ENDIF}
 
 method Binary.Clear;
 begin

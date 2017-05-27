@@ -341,8 +341,7 @@ end;
 constructor MemoryStream(aValue: ImmutableBinary);
 begin
   {$IF COOPER}
-  {$WARNING Not implemented properly for Cooper}
-  //fInternalStream := aValue;
+  fInternalStream := aValue.ToPlatformMemoryStream;
   {$ELSEIF ECHOES OR ISLAND}
   fPlatformStream := aValue;
   {$ELSEIF TOFFEE}
