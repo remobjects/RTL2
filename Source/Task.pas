@@ -88,7 +88,6 @@ end;
 
 class method Task.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
 begin
-  writeLn('Task.Run 1 ('+aCommand+')');
   {$IF ECHOES}
   using lDone := new System.Threading.AutoResetEvent(false) do begin
     var lStdOut := new StringBuilder;
