@@ -128,6 +128,36 @@ type
     property CanWrite: Boolean read GetCanWrite; override;
   end;
 
+  TextStream = public class
+  private
+    fStream: Stream;
+    fEncoding: Encoding := Encoding.UTF8;
+  public
+    constructor(aStream: Stream);
+    constructor(aStream: Stream; aEncoding: Encoding);
+
+    method ReadString(Count: Int32): String;
+    method WriteString(aString: String);
+  end;
+
+  BinaryStream = public class
+  private
+    fStream: Stream;
+    fEncoding: Encoding := Encoding.UTF8;
+  public
+    constructor(aStream: Stream);
+    constructor(aStream: Stream; aEncoding: Encoding);
+    
+    method ReadByte: Byte;
+    method PeekChar: Int32;
+    method &Read: Int32;
+    method &Read(Count: Integer): array of Byte;
+    method ReadSByte: ShortInt;
+    
+    method &Write(aValue: Byte);
+    method &Write(aValue: array of Byte; Offset: Int32; Count: Int32);
+  end;
+
 implementation
 
 method Stream.&Read(Buffer: array of Byte; Count: Int32): Int32;
@@ -626,6 +656,119 @@ begin
   {$ELSEIF TOFFEE}
   fInternalStream.synchronizeFile;
   {$ENDIF}
+end;
+
+constructor BinaryStream(aStream: Stream);
+begin
+  fStream := aStream;
+end;
+
+
+constructor BinaryStream(aStream: Stream; aEncoding: Encoding);
+begin
+  fEncoding := aEncoding;
+  constructor(aStream);
+end;
+
+method BinaryStream.ReadByte: Byte;
+begin
+  result := fStream.ReadByte;
+end;
+
+method BinaryStream.PeekChar: Int32;
+begin
+  if not fStream.CanSeek then
+    exit -1;
+
+  var lOldPos := fStream.Position;
+  result := &Read;
+  fStream.Position := lOldPos;
+end;
+
+method BinaryStream.Read: Int32;
+begin
+  var lRead := new Byte[128];
+  var lOldPos: Int64;
+  var lConverted: String := '';
+
+  if fStream.CanSeek then
+    lOldPos := fStream.Position;
+
+  var lBytes: Int32;
+  var lTotal := 0;
+  while lTotal = 0 do begin
+    lBytes := if (fEncoding = Encoding.UTF16BE) or (fEncoding = Encoding.UTF16LE) then 2 else 1;
+    var lOneByte := fStream.ReadByte;
+    lRead[0] := lOneByte;
+    if lOneByte = -1 then
+      lBytes := 0;
+      if lBytes > 1 then begin
+        lOneByte := fStream.ReadByte;
+        lRead[1] := lOneByte;
+        if lOneByte = -1 then
+          lBytes := 1;
+      end;
+
+      if lBytes = 0 then
+        exit -1;
+
+      try
+        lConverted := fEncoding.GetString(lRead, 0, lBytes);
+      except
+       if fStream.CanSeek then
+         fStream.Position := lOldPos;
+       raise;
+      end;
+  end;
+  if lConverted.Length = 0 then
+    result := -1
+  else
+    result := lRead[0];
+end;
+
+method BinaryStream.Read(Count: Integer): array of Byte;
+begin
+  var lTotal := Math.Min(Count, fStream.Length);
+  result := new Byte[lTotal];
+  fStream.Read(result, lTotal);
+end;
+
+
+method BinaryStream.ReadSByte: ShortInt;
+begin
+  var lByte := ReadByte;
+  result := ShortInt(lByte);
+end;
+
+method BinaryStream.Write(aValue: Byte);
+begin
+  fStream.WriteByte(aValue);
+end;
+
+method BinaryStream.Write(aValue: array of Byte; Offset: Int32; Count: Int32);
+begin
+    fStream.Write(aValue, Offset, Count);
+end;
+
+constructor TextStream(aStream: Stream);
+begin
+  fStream := aStream;
+end;
+
+constructor TextStream(aStream: Stream; aEncoding: Encoding);
+begin
+  fEncoding := aEncoding;
+  constructor(aStream);
+end;
+
+method TextStream.ReadString(Count: Int32): String;
+begin
+
+end;
+
+method TextStream.WriteString(aString: String);
+begin
+
 end;
 
 end.
