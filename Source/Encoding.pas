@@ -64,7 +64,7 @@ begin
               //"ASCII","USASCII","UTFASCII": TextConvert.StringToASCII(aValue);
             end;
   {$ELSEIF TOFFEE}
-  var lResult := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as Binary);
+  var lResult := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as ImmutableBinary);
   if not assigned(lResult) then
     raise new FormatException("Unable to convert data");
   if isUTF8 and aBOM then begin

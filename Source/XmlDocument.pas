@@ -23,14 +23,14 @@ type
     class method FromFile(aFileName: not nullable File): not nullable XmlDocument;
     class method FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
     class method FromString(aString: not nullable String): not nullable XmlDocument;
-    class method FromBinary(aBinary: not nullable Binary): not nullable XmlDocument;
+    class method FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
     class method WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
     class method WithRootElement(aName: not nullable String): not nullable XmlDocument;
 
     class method TryFromFile(aFileName: not nullable File): nullable XmlDocument;
     class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
     class method TryFromString(aString: not nullable String): nullable XmlDocument;
-    class method TryFromBinary(aBinary: not nullable Binary): nullable XmlDocument;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument;
 
     [ToString]
     method ToString(): String; override;
@@ -339,12 +339,12 @@ begin
   end;
 end;
 
-class method XmlDocument.FromBinary(aBinary: not nullable Binary): not nullable XmlDocument;
+class method XmlDocument.FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
 begin
   result := XmlDocument.FromString(new String(aBinary.ToArray));
 end;
 
-class method XmlDocument.TryFromBinary(aBinary: not nullable Binary): nullable XmlDocument;
+class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument;
 begin
   result := XmlDocument.TryFromString(new String(aBinary.ToArray));
 end;
@@ -856,7 +856,7 @@ end;
 method XmlElement.GetAttribute(aName: not nullable String): nullable XmlAttribute;
 begin
   result := Attributes.Where(a -> a.LocalName = aName).FirstOrDefault;
-  if result = nil then begin 
+  if result = nil then begin
     var lPrefixPos := aName.IndexOf(':');
     if (lPrefixPos > 0) then begin
       var lNamespaceString := aName.Substring(0, lPrefixPos);

@@ -29,24 +29,24 @@ type
   HttpRequestMode = public enum (Get, Post, Head, Put, Delete, Patch, Options, Trace);
 
   IHttpRequestContent = assembly interface
-    method GetContentAsBinary(): Binary;
+    method GetContentAsBinary(): ImmutableBinary;
     method GetContentAsArray(): array of Byte;
   end;
 
   HttpRequestContent = public class
   public
-    operator Implicit(aBinary: not nullable Binary): HttpRequestContent;
+    operator Implicit(aBinary: not nullable ImmutableBinary): HttpRequestContent;
     operator Implicit(aString: not nullable String): HttpRequestContent;
   end;
 
   HttpBinaryRequestContent = public class(HttpRequestContent, IHttpRequestContent)
   unit
-    property Binary: Binary unit read private write;
+    property Binary: ImmutableBinary unit read private write;
     property &Array: array of Byte unit read private write;
-    method GetContentAsBinary: Binary;
+    method GetContentAsBinary: ImmutableBinary;
     method GetContentAsArray(): array of Byte;
   public
-    constructor(aBinary: not nullable Binary);
+    constructor(aBinary: not nullable ImmutableBinary);
     constructor(aArray: not nullable array of Byte);
     constructor(aString: not nullable String; aEncoding: Encoding);
   end;
@@ -73,14 +73,14 @@ type
     property Exception: Exception public read unit write;
 
     method GetContentAsString(aEncoding: Encoding := nil; contentCallback: not nullable HttpContentResponseBlock<String>);
-    method GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<Binary>);
+    method GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
     {$IF XML}method GetContentAsXml(contentCallback: not nullable HttpContentResponseBlock<XmlDocument>);{$ENDIF}
     {$IF JSON}method GetContentAsJson(contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);{$ENDIF}
     method SaveContentAsFile(aTargetFile: File; contentCallback: not nullable HttpContentResponseBlock<File>);
 
     {$IF NOT ECHOES OR NOT NETSTANDARD}
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
-    method GetContentAsBinarySynchronous: not nullable Binary;
+    method GetContentAsBinarySynchronous: not nullable ImmutableBinary;
     {$IF XML}method GetContentAsXmlSynchronous: not nullable XmlDocument;{$ENDIF}
     {$IF XML}method TryGetContentAsXmlSynchronous: nullable XmlDocument;{$ENDIF}
     {$IF JSON}method GetContentAsJsonSynchronous: not nullable JsonDocument;{$ENDIF}
@@ -117,14 +117,14 @@ type
     {$ENDIF}
 
     method ExecuteRequestAsString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<String>);
-    method ExecuteRequestAsBinary(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<Binary>);
+    method ExecuteRequestAsBinary(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
     {$IF XML}method ExecuteRequestAsXml(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<XmlDocument>);{$ENDIF}
     {$IF JSON}method ExecuteRequestAsJson(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);{$ENDIF}
     method ExecuteRequestAndSaveAsFile(aRequest: not nullable HttpRequest; aTargetFile: not nullable File; contentCallback: not nullable HttpContentResponseBlock<File>);
 
     {$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
     method GetString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest): not nullable String;
-    method GetBinary(aRequest: not nullable HttpRequest): not nullable Binary;
+    method GetBinary(aRequest: not nullable HttpRequest): not nullable ImmutableBinary;
     {$IF XML}method GetXml(aRequest: not nullable HttpRequest): not nullable XmlDocument;{$ENDIF}
     {$IF XML}method TryGetXml(aRequest: not nullable HttpRequest): nullable XmlDocument;{$ENDIF}
     {$IF JSON}method GetJson(aRequest: not nullable HttpRequest): not nullable JsonDocument;{$ENDIF}
@@ -165,7 +165,7 @@ end;
 
 { HttpRequestContent }
 
-operator HttpRequestContent.Implicit(aBinary: not nullable Binary): HttpRequestContent;
+operator HttpRequestContent.Implicit(aBinary: not nullable ImmutableBinary): HttpRequestContent;
 begin
   result := new HttpBinaryRequestContent(aBinary);
 end;
@@ -177,7 +177,7 @@ end;
 
 { HttpBinaryRequestContent }
 
-constructor HttpBinaryRequestContent(aBinary: not nullable Binary);
+constructor HttpBinaryRequestContent(aBinary: not nullable ImmutableBinary);
 begin
   Binary := aBinary;
 end;
@@ -193,13 +193,13 @@ begin
   &Array := aString.ToByteArray(aEncoding);
 end;
 
-method HttpBinaryRequestContent.GetContentAsBinary(): Binary;
+method HttpBinaryRequestContent.GetContentAsBinary(): ImmutableBinary;
 begin
   if assigned(Binary) then begin
     result := Binary;
   end
   else if assigned(&Array) then begin
-    Binary := new Binary(&Array);
+    Binary := new ImmutableBinary(&Array);
     result := Binary;
   end;
 end;
@@ -282,7 +282,7 @@ begin
   {$ENDIF}
 end;
 
-method HttpResponse.GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<Binary>);
+method HttpResponse.GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
 begin
   // maybe delegsate to GetContentAsBinarySynchronous?
   {$IF COOPER}
@@ -295,16 +295,16 @@ begin
       allData.Write(data, len);
       len := stream.read(data);
     end;
-    contentCallback(new HttpResponseContent<Binary>(Content := allData));
+    contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
   {$ELSEIF ECHOES}
   async begin
     var allData := new System.IO.MemoryStream();
     Response.GetResponseStream().CopyTo(allData);
-    contentCallback(new HttpResponseContent<Binary>(Content := allData));
+    contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
   {$ELSEIF TOFFEE}
-  contentCallback(new HttpResponseContent<Binary>(Content := Data.mutableCopy));
+  contentCallback(new HttpResponseContent<ImmutableBinary>(Content := Data.mutableCopy));
   {$ENDIF}
 end;
 
@@ -419,7 +419,7 @@ begin
   {$ENDIF}
 end;
 
-method HttpResponse.GetContentAsBinarySynchronous: not nullable Binary;
+method HttpResponse.GetContentAsBinarySynchronous: not nullable ImmutableBinary;
 begin
   {$IF COOPER}
   var allData := new Binary;
@@ -732,7 +732,7 @@ begin
   end);
 end;
 
-method Http.ExecuteRequestAsBinary(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<Binary>);
+method Http.ExecuteRequestAsBinary(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
 begin
   Http.ExecuteRequest(aRequest, (response) -> begin
     if response.Success then begin
@@ -740,7 +740,7 @@ begin
         contentCallback(content)
       end);
     end else begin
-      contentCallback(new HttpResponseContent<Binary>(Exception := response.Exception));
+      contentCallback(new HttpResponseContent<ImmutableBinary>(Exception := response.Exception));
     end;
   end);
 end;
@@ -794,7 +794,7 @@ begin
   result := ExecuteRequestSynchronous(aRequest).GetContentAsStringSynchronous(aEncoding);
 end;
 
-method Http.GetBinary(aRequest: not nullable HttpRequest): not nullable Binary;
+method Http.GetBinary(aRequest: not nullable HttpRequest): not nullable ImmutableBinary;
 begin
   result := ExecuteRequestSynchronous(aRequest).GetContentAsBinarySynchronous;
 end;
@@ -853,7 +853,7 @@ begin
 end;
 {$ENDIF}
 
-class method Http.Download(anUrl: Url): HttpResponse<Binary>;
+class method Http.Download(anUrl: Url): HttpResponse<ImmutableBinary>;
 begin
   try
   {$IF COOPER}
@@ -861,12 +861,12 @@ begin
     var Response := InternalDownload(anUrl).Result;
 
     if Response.StatusCode <> System.Net.HttpStatusCode.OK then
-      exit new HttpResponse<Binary> withException(new SugarException("Unable to download data, Response: " + Response.StatusDescription));
+      exit new HttpResponse<ImmutableBinary> withException(new SugarException("Unable to download data, Response: " + Response.StatusDescription));
 
     var Stream := Response.GetResponseStream;
 
     if Stream = nil then
-      exit new HttpResponse<Binary> withException(new SugarException("Content is empty"));
+      exit new HttpResponse<ImmutableBinary> withException(new SugarException("Content is empty"));
 
     var Content := new Binary;
     var Buffer := new Byte[16 * 1024];
@@ -878,33 +878,33 @@ begin
     end;
 
     if Content.Length = 0 then
-      exit new HttpResponse<Binary> withException(new SugarException("Content is empty"));
+      exit new HttpResponse<ImmutableBinary> withException(new SugarException("Content is empty"));
 
-    exit new HttpResponse<Binary>(Content);
+    exit new HttpResponse<ImmutableBinary>(Content);
   {$ELSEIF NETFX_CORE}
     var Client := new System.Net.Http.HttpClient;
 
     var Content := Client.GetByteArrayAsync(anUrl).Result;
 
     if Content = nil then
-      exit new HttpResponse<Binary> withException(new SugarException("Content is empty"));
+      exit new HttpResponse<ImmutableBinary> withException(new SugarException("Content is empty"));
 
     if Content.Length = 0 then
-      exit new HttpResponse<Binary> withException(new SugarException("Content is empty"));
+      exit new HttpResponse<ImmutableBinary> withException(new SugarException("Content is empty"));
 
 
-    exit new HttpResponse<Binary>(new Binary(Content));
+    exit new HttpResponse<ImmutableBinary>(new ImmutableBinary(Content));
   {$ELSEIF ECHOES}
   using lClient: System.Net.WebClient := new System.Net.WebClient() do begin
     var Content := lClient.DownloadData(anUrl);
 
     if Content = nil then
-      exit new HttpResponse<Binary> withException(new SugarException("Content is empty"));
+      exit new HttpResponse<ImmutableBinary> withException(new SugarException("Content is empty"));
 
     if Content.Length = 0 then
-      exit new HttpResponse<Binary> withException(new SugarException("Content is empty"));
+      exit new HttpResponse<ImmutableBinary> withException(new SugarException("Content is empty"));
 
-    exit new HttpResponse<Binary>(new Binary(Content));
+    exit new HttpResponse<ImmutableBinary>(new ImmutableBinary(Content));
   end;
   {$ELSEIF TOFFEE}
   var lError: NSError := nil;
@@ -914,12 +914,12 @@ begin
   var lData := NSURLConnection.sendSynchronousRequest(lRequest) returningResponse(var lResponse) error(var lError);
 
   if lError <> nil then
-    exit new HttpResponse<Binary> withException(Exception(new SugarNSErrorException(lError)));
+    exit new HttpResponse<ImmutableBinary> withException(Exception(new SugarNSErrorException(lError)));
 
   if NSHTTPURLResponse(lResponse).statusCode <> 200 then
-    exit new HttpResponse<Binary> withException(Exception(new SugarIOException("Unable to complete request. Error code: {0}", NSHTTPURLResponse(lResponse).statusCode)));
+    exit new HttpResponse<ImmutableBinary> withException(Exception(new SugarIOException("Unable to complete request. Error code: {0}", NSHTTPURLResponse(lResponse).statusCode)));
 
-  exit new HttpResponse<Binary>(Binary(NSMutableData.dataWithData(lData)));
+  exit new HttpResponse<ImmutableBinary>(ImmutableBinary(NSMutableData.dataWithData(lData)));
   {$ENDIF}
   except
     on E: Exception do begin
@@ -930,7 +930,7 @@ begin
         Actual := AggregateException(E).InnerException;
       {$ENDIF}
 
-      exit new HttpResponse<Binary> withException(Actual);
+      exit new HttpResponse<ImmutableBinary> withException(Actual);
     end;
   end;
 end;

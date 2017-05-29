@@ -600,9 +600,7 @@ end;
 
 method ImmutableList<T>.UniqueCopy: not nullable ImmutableList<T>;
 begin
-  {$IF COOPER}
-  result := new ImmutableList<T>(self);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$IF COOPER OR ECHOES OR ISLAND}
   result := new ImmutableList<T>(self);
   {$ELSEIF TOFFEE}
   result := mapped.copy;
@@ -611,9 +609,7 @@ end;
 
 method ImmutableList<T>.UniqueMutableCopy: not nullable List<T>;
 begin
-  {$IF COOPER}
-  result := new List<T>(self);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$IF COOPER OR ECHOES OR ISLAND}
   result := new List<T>(self);
   {$ELSEIF TOFFEE}
   result := mapped.mutableCopy;

@@ -15,7 +15,7 @@ type
     method ReadByte: Int32; virtual;
     method WriteByte(aValue: Byte); virtual;
     method GetLength: Int64; virtual;
-    method SetPosition(Value: Int64); virtual; 
+    method SetPosition(Value: Int64); virtual;
     method GetPosition: Int64; virtual;
 
     method CopyTo(Destination: Stream); virtual;
@@ -32,12 +32,12 @@ type
   WrappedPlatformStream = public abstract class(Stream)
   protected
     fPlatformStream: PlatformStream;
-  public    
+  public
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
     method GetLength: Int64; override;
-    method SetLength(Value: Int64); 
+    method SetLength(Value: Int64);
     method SetPosition(Value: Int64); override;
     method GetPosition: Int64; override;
 
@@ -46,8 +46,8 @@ type
   end;
   {$ENDIF}
 
-  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};  
-  
+  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};
+
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
     fCanWrite: Boolean := true;
@@ -66,10 +66,10 @@ type
   public
     constructor;
     constructor(aCapacity: Integer);
-    constructor(aValue: PlatformBinary);
+    constructor(aValue: ImmutableBinary);
     constructor(aValue: array of Byte);
     constructor(aValue: array of Byte; aCanWrite: Boolean);
-    operator Implicit(aValue: PlatformBinary): MemoryStream;
+    operator Implicit(aValue: ImmutableBinary): MemoryStream;
     {$IF TOFFEE OR COOPER}
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
@@ -82,7 +82,7 @@ type
     property Length: Int64 read GetLength; override;
     property Position: Int64 read GetPosition write SetPosition; override;
     {$ENDIF}
-    method ToPlatformStream: PlatformBinary;
+    //method ToPlatformStream: PlatformStream;
     method ToArray: array of Byte;
     method Close; override;
     method Flush; override;
@@ -94,9 +94,9 @@ type
     property CanSeek: Boolean read GetCanSeek; override;
     property CanWrite: Boolean read GetCanWrite; override;
   end;
-  
+
   PlatformInternalFileStream = {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ENDIF};
-  
+
   FileStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   {$IF COOPER OR TOFFEE}
   private
@@ -130,7 +130,7 @@ type
 
 implementation
 
-method Stream.&Read(Buffer: array of Byte; Count: Int32): Int32; 
+method Stream.&Read(Buffer: array of Byte; Count: Int32): Int32;
 begin
   result := &Read(Buffer, 0, Count);
 end;
@@ -158,7 +158,7 @@ end;
 
 method Stream.CopyTo(Destination: Stream);
 const
-  bufSize = 4 * 1024; 
+  bufSize = 4 * 1024;
 begin
   if Destination = nil then raise new Exception('Destination is null');
   if not self.CanRead then raise new NotSupportedException;
@@ -191,7 +191,7 @@ begin
 end;
 
 {$IF ECHOES OR ISLAND}
-method WrappedPlatformStream.GetLength: Int64; 
+method WrappedPlatformStream.GetLength: Int64;
 begin
   result := fPlatformStream.Length;
 end;
@@ -201,12 +201,12 @@ begin
   fPlatformStream.SetLength(Value);
 end;
 
-method WrappedPlatformStream.SetPosition(Value: Int64); 
+method WrappedPlatformStream.SetPosition(Value: Int64);
 begin
   fPlatformStream.Position := Value;
 end;
 
-method WrappedPlatformStream.GetPosition: Int64; 
+method WrappedPlatformStream.GetPosition: Int64;
 begin
   result := fPlatformStream.Position;
 end;
@@ -338,13 +338,14 @@ begin
   {$ENDIF}
 end;
 
-constructor MemoryStream(aValue: PlatformBinary);
+constructor MemoryStream(aValue: ImmutableBinary);
 begin
-  {$IF COOPER OR TOFFEE}
-  fInternalStream := aValue;
-  fPosition := 0;
-  {$ELSE IF ECHOES OR ISLAND}
+  {$IF COOPER}
+  fInternalStream := aValue.ToPlatformMemoryStream;
+  {$ELSEIF ECHOES OR ISLAND}
   fPlatformStream := aValue;
+  {$ELSEIF TOFFEE}
+  fInternalStream := aValue.UniqueMutableCopy;
   {$ENDIF}
 end;
 
@@ -360,7 +361,7 @@ begin
   fCanWrite := aCanWrite;
 end;
 
-operator MemoryStream.Implicit(aValue: PlatformBinary): MemoryStream;
+operator MemoryStream.Implicit(aValue: ImmutableBinary): MemoryStream;
 begin
   result := new MemoryStream(aValue);
 end;
@@ -382,7 +383,7 @@ end;
 
 method MemoryStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
-  if (fPosition + Count) >= self.Length then 
+  if (fPosition + Count) >= self.Length then
     result := self.Length - fPosition
   else
     result := Count;
@@ -415,14 +416,14 @@ begin
 end;
 {$ENDIF}
 
-method MemoryStream.ToPlatformStream: PlatformBinary;
+/*method MemoryStream.ToPlatformStream: PlatformStream;
 begin
   {$IF TOFFEE OR COOPER}
   result := fInternalStream;
   {$ELSE}
-  result := fPlatformStream as PlatformBinary; 
+  result := fPlatformStream as PlatformBinary;
   {$ENDIF}
-end;
+end;*/
 
 method MemoryStream.ToArray: array of Byte;
 begin
