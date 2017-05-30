@@ -88,15 +88,26 @@ end;
 
 class method Task.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
 begin
+  {$IF ECHOES}
+  using lDone := new System.Threading.AutoResetEvent(false) do begin
+    var lStdOut := new StringBuilder;
+    var lStdErr := new StringBuilder;
+    var lResult: Integer;
+    Task.RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, method (aLine: String) begin
+      lStdOut.Append(Environment.LineBreak+aLine);
+    end, method (aLine: String) begin
+      lStdErr.Append(Environment.LineBreak+aLine);
+    end, method(aExitCode: Integer) begin
+      lResult := aExitCode;
+      lDone.Set();
+    end);
+    lDone.WaitOne();
+    aStdOut := lStdOut.ToString();
+    aStdErr := lStdErr.ToString();
+    result := lResult;
+  end;
+  {$ELSE IF TOFFEE}
   using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
-    {$IF ECHOES}
-    (lTask as PlatformTask).StartInfo.RedirectStandardOutput := true;
-    (lTask as PlatformTask).StartInfo.RedirectStandardError := true;
-    lTask.Start();
-    lTask.WaitFor();
-    aStdOut := (lTask as PlatformTask).StandardOutput.ReadToEnd;
-    aStdErr := (lTask as PlatformTask).StandardError.ReadToEnd;
-    {$ELSE IF TOFFEE}
     (lTask as NSTask).standardOutput := NSPipe.pipe();
     (lTask as NSTask).standardError := NSPipe.pipe();
     var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
@@ -109,8 +120,8 @@ begin
     d := stdErr.availableData();
     if (d ≠ nil) and (d.length() > 0) then
       aStdErr := new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
-    {$ENDIF}
   end;
+  {$ENDIF}
 end;
 
 class method Task.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer;
