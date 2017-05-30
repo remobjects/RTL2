@@ -144,6 +144,10 @@ type
   private
     fStream: Stream;
     fEncoding: Encoding := Encoding.UTF8;
+    {$IF TOFFEE OR ISLAND}
+    method ReadRaw(Buffer: ^void; Count: LongInt);
+    method WriteRaw(Buffer: ^void; Count: LongInt);
+    {$ENDIF}
   public
     constructor(aStream: Stream);
     constructor(aStream: Stream; aEncoding: Encoding);
@@ -153,9 +157,21 @@ type
     method &Read: Int32;
     method &Read(Count: Integer): array of Byte;
     method ReadSByte: ShortInt;
+    method ReadDouble: Double;
+    method ReadSingle: Single;
+    method ReadInt16: Int16;
+    method ReadInt32: Int32;
+    method ReadInt64: Int64;
     
     method &Write(aValue: Byte);
     method &Write(aValue: array of Byte; Offset: Int32; Count: Int32);
+    method WriteSByte(Value: ShortInt);
+    method WriteByte(Value: Byte);
+    method WriteDouble(Value: Double);
+    method WriteSingle(Value: Single);
+    method WriteInt16(Value: Int16);
+    method WriteInt32(Value: Int32);
+    method WriteInt64(Value: Int64);
   end;
 
 implementation
@@ -663,12 +679,35 @@ begin
   fStream := aStream;
 end;
 
-
 constructor BinaryStream(aStream: Stream; aEncoding: Encoding);
 begin
   fEncoding := aEncoding;
   constructor(aStream);
 end;
+
+{$IF TOFFEE OR ISLAND}
+method BinaryStream.ReadRaw(Buffer: ^void; Count: LongInt);
+begin
+  var lBuf := new Byte[Count];
+  fStream.&Read(lBuf, 0, Count);
+  {$IF ISLAND}
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ENDIF}memcpy(Buffer, @lBuf[0], Count);
+  {$ELSEIF TOFFEE}
+  memcpy(Buffer, @lBuf[0], Count);
+  {$ENDIF}
+end;
+
+method BinaryStream.WriteRaw(Buffer: ^void; Count: LongInt);
+begin
+  var lBuf := new Byte[Count];
+  {$IF ISLAND}
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ENDIF}memcpy(@lBuf[0], Buffer, Count);
+  {$ELSEIF TOFFEE}
+  memcpy(@lBuf[0], Buffer, Count);
+  {$ENDIF}
+  &Write(lBuf, 0, Count);
+end;
+{$ENDIF}
 
 method BinaryStream.ReadByte: Byte;
 begin
@@ -733,11 +772,70 @@ begin
   fStream.Read(result, lTotal);
 end;
 
-
 method BinaryStream.ReadSByte: ShortInt;
 begin
   var lByte := ReadByte;
   result := ShortInt(lByte);
+end;
+
+method BinaryStream.ReadDouble: Double;
+begin
+  {$IF COOPER}
+  var lTemp := java.nio.ByteBuffer.wrap(Read(sizeOf(result)));
+  result := lTemp.getDouble;
+  {$ELSEIF ECHOES}
+  result := BitConverter.ToDouble(&Read(sizeOf(result)), 0);
+  {$ELSEIF ISLAND OR TOFFEE}
+  ReadRaw(@result, sizeOf(result));
+  {$ENDIF}
+end;
+
+method BinaryStream.ReadSingle: Single;
+begin
+  {$IF COOPER}
+  var lTemp := java.nio.ByteBuffer.wrap(Read(sizeOf(result)));
+  result := lTemp.getFloat;
+  {$ELSEIF ECHOES}
+  result := BitConverter.ToSingle(&Read(sizeOf(result)), 0);
+  {$ELSEIF ISLAND OR TOFFEE}
+  ReadRaw(@result, sizeOf(result));
+  {$ENDIF}
+end;
+
+method BinaryStream.ReadInt16: Int16;
+begin
+  {$IF COOPER}
+  var lTemp := java.nio.ByteBuffer.wrap(Read(sizeOf(result)));
+  result := lTemp.getShort;
+  {$ELSEIF ECHOES}
+  result := BitConverter.ToInt16(&Read(sizeOf(result)), 0);
+  {$ELSEIF ISLAND OR TOFFEE}
+  ReadRaw(@result, sizeOf(result));
+  {$ENDIF}
+end;
+
+method BinaryStream.ReadInt32: Int32;
+begin
+  {$IF COOPER}
+  var lTemp := java.nio.ByteBuffer.wrap(Read(sizeOf(result)));
+  result := lTemp.getInt;
+  {$ELSEIF ECHOES}
+  result := BitConverter.ToInt32(Read(sizeOf(result)), 0);
+  {$ELSEIF ISLAND OR TOFFEE}
+  ReadRaw(@result, sizeOf(result));
+  {$ENDIF}
+end;
+
+method BinaryStream.ReadInt64: Int64;
+begin
+  {$IF COOPER}
+  var lTemp := java.nio.ByteBuffer.wrap(Read(sizeOf(result)));
+  result := lTemp.getLong;
+  {$ELSEIF ECHOES}
+  result := BitConverter.ToInt64(&Read(sizeOf(result)), 0);
+  {$ELSEIF ISLAND OR TOFFEE}
+  ReadRaw(@result, sizeOf(result));
+  {$ENDIF}
 end;
 
 method BinaryStream.Write(aValue: Byte);
@@ -748,6 +846,118 @@ end;
 method BinaryStream.Write(aValue: array of Byte; Offset: Int32; Count: Int32);
 begin
     fStream.Write(aValue, Offset, Count);
+end;
+
+method BinaryStream.WriteSByte(Value: ShortInt);
+begin
+  {$IF COOPER}
+  var lSize := sizeOf(Value);
+  var lTmp := java.nio.ByteBuffer.allocate(lSize);
+  lTmp.putInt(Value);
+  var lArray := lTmp.array;
+  &Write(lArray, 0, lSize);
+  {$ELSEIF ECHOES}
+  var lBuf := BitConverter.GetBytes(Value);
+  &Write(lBuf, 0, lBuf.Length);
+  {$ELSEIF ISLAND OR TOFFEE}
+  &WriteRaw(@Value, sizeOf(Value));
+  {$ENDIF}
+end;
+
+method BinaryStream.WriteByte(Value: Byte);
+begin
+  {$IF COOPER}
+  var lSize := sizeOf(Value);
+  var lTmp := java.nio.ByteBuffer.allocate(lSize);
+  lTmp.putInt(Value);
+  var lArray := lTmp.array;
+  &Write(lArray, 0, lSize);
+  {$ELSEIF ECHOES}
+  var lBuf := BitConverter.GetBytes(Value);
+  &Write(lBuf, 0, lBuf.Length);
+  {$ELSEIF ISLAND OR TOFFEE}
+  &WriteRaw(@Value, sizeOf(Value));
+  {$ENDIF}
+end;
+
+method BinaryStream.WriteDouble(Value: Double);
+begin
+  {$IF COOPER}
+  var lSize := sizeOf(Value);
+  var lTmp := java.nio.ByteBuffer.allocate(lSize);
+  lTmp.putDouble(Value);
+  var lArray := lTmp.array;
+  &Write(lArray, 0, lSize);
+  {$ELSEIF ECHOES}
+  var lBuf := BitConverter.GetBytes(Value);
+  &Write(lBuf, 0, lBuf.Length);
+  {$ELSEIF ISLAND OR TOFFEE}
+  &WriteRaw(@Value, sizeOf(Value));
+  {$ENDIF}
+end;
+
+method BinaryStream.WriteSingle(Value: Single);
+begin
+  {$IF COOPER}
+  var lSize := sizeOf(Value);
+  var lTmp := java.nio.ByteBuffer.allocate(lSize);
+  lTmp.putFloat(Value);
+  var lArray := lTmp.array;
+  &Write(lArray, 0, lSize);
+  {$ELSEIF ECHOES}
+  var lBuf := BitConverter.GetBytes(Value);
+  &Write(lBuf, 0, lBuf.Length);
+  {$ELSEIF ISLAND OR TOFFEE}
+  &WriteRaw(@Value, sizeOf(Value));
+  {$ENDIF}
+end;
+
+method BinaryStream.WriteInt16(Value: Int16);
+begin
+  {$IF COOPER}
+  var lSize := sizeOf(Value);
+  var lTmp := java.nio.ByteBuffer.allocate(lSize);
+  lTmp.putShort(Value);
+  var lArray := lTmp.array;
+  &Write(lArray, 0, lSize);
+  {$ELSEIF ECHOES}
+  var lBuf := BitConverter.GetBytes(Value);
+  &Write(lBuf, 0, lBuf.Length);
+  {$ELSEIF ISLAND OR TOFFEE}
+  &WriteRaw(@Value, sizeOf(Value));
+  {$ENDIF}
+end;
+
+method BinaryStream.WriteInt32(Value: Int32);
+begin
+  {$IF COOPER}
+  var lSize := sizeOf(Value);
+  var lTmp := java.nio.ByteBuffer.allocate(lSize);
+  lTmp.putInt(Value);
+  var lArray := lTmp.array;
+  &Write(lArray, 0, lSize);
+  {$ELSEIF ECHOES}
+  var lBuf := BitConverter.GetBytes(Value);
+  &Write(lBuf, 0, lBuf.Length);
+  {$ELSEIF ISLAND OR TOFFEE}
+  &WriteRaw(@Value, sizeOf(Value));
+  {$ENDIF}
+end;
+
+method BinaryStream.WriteInt64(Value: Int64);
+begin
+  {$IF COOPER}
+  var lSize := sizeOf(Value);
+  var lTmp := java.nio.ByteBuffer.allocate(lSize);
+  lTmp.putLong(Value);
+  var lArray := lTmp.array;
+  &Write(lArray, 0, lSize);
+  {$ELSEIF ECHOES}
+  var lBuf := BitConverter.GetBytes(Value);
+  &Write(lBuf, 0, lBuf.Length);
+  {$ELSEIF ISLAND OR TOFFEE}
+  &WriteRaw(@Value, sizeOf(Value));
+  {$ENDIF}
 end;
 
 constructor TextStream(aStream: Stream);
@@ -763,12 +973,16 @@ end;
 
 method TextStream.ReadString(Count: Int32): String;
 begin
-
+  var lTotal := if Count > fStream.Length - fStream.Position then fStream.Length - fStream.Position else Count;
+  var lBytes := new Byte[lTotal];
+  fStream.Read(lBytes, lTotal);
+  result := fEncoding.GetString(lBytes);
 end;
 
 method TextStream.WriteString(aString: String);
 begin
-
+  var lBytes := fEncoding.GetBytes(aString);
+  fStream.Write(lBytes, 0, length(lBytes));
 end;
 
 end.
