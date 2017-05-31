@@ -8,6 +8,14 @@ type
   UrlTests = public class(Test)
   public
 
+    method TestUrlWithString();
+    begin
+      var s := "http://foo:8986/bar/baz-1340456-786%2dabc/d";
+      var u := Url.UrlWithString(s);
+      writeLn(u.ToAbsoluteString);
+      Assert.AreEqual(s, u.ToAbsoluteString);
+    end;
+
     method TestUnixFileUrls();
     begin
       var PATH: String := "/Users/mh/Desktop/test.txt";
@@ -46,7 +54,8 @@ type
       var lUrl := Url.UrlWithWindowsPath("C:\Program Files\Test\Test.txt");
       Assert.IsTrue(lUrl.IsFileUrl);
       Assert.IsTrue(lUrl.IsAbsoluteWindowsFileURL);
-      Assert.AreEqual(lUrl.Path, "/C:/Program Files/Test/Test.txt");
+      Assert.AreEqual(lUrl.Path, "/C:/Program%20Files/Test/Test.txt");
+      Assert.AreEqual(lUrl.UnixPath, "/C:/Program Files/Test/Test.txt");
       Assert.AreEqual(lUrl.WindowsPath, "C:\Program Files\Test\Test.txt");
       Assert.AreEqual(lUrl.ToAbsoluteString, "file:///C:/Program%20Files/Test/Test.txt");
 
@@ -76,7 +85,7 @@ type
       Assert.IsFalse(lUrl.IsAbsoluteWindowsDriveLetterFileURL);
       Assert.IsTrue(lUrl.IsAbsoluteWindowsFileURL);
       Assert.AreEqual(lUrl.Host,        "SHARE");
-      Assert.AreEqual(lUrl.Path,        "/Program Files/Test/Test.txt");
+      Assert.AreEqual(lUrl.Path,        "/Program%20Files/Test/Test.txt");
       Assert.AreEqual(lUrl.UnixPath,    "/Program Files/Test/Test.txt");
       Assert.AreEqual(lUrl.WindowsPath,  "\\SHARE\Program Files\Test\Test.txt");
       Assert.AreEqual(lUrl.ToAbsoluteString, "file://SHARE/Program%20Files/Test/Test.txt");
@@ -224,6 +233,7 @@ type
       //Assert.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "C:\Users\mh\Desktop\Test");
       //Assert.AreEqual(Url.UrlWithUnixPath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "/Users/mh/Desktop/Test");
     end;
+
 
     method Dummy2();
     begin
