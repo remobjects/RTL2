@@ -61,6 +61,8 @@ type
     {$ELSEIF ECHOES}
     var Response: HttpWebResponse;
     constructor(aResponse: HttpWebResponse);
+    {$ELSEIF ISLAND AND WINDOWS}
+    //constructor(aSession: rtl.HINTERNET);
     {$ELSEIF TOFFEE}
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
@@ -107,6 +109,9 @@ type
     method StringForRequestType(aMode: HttpRequestMode): String;
     {$IF NOT ECHOES OR NOT NETSTANDARD}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
+    {$ENDIF}
+    {$IF ISLAND AND WINDOWS}
+    property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
     {$ENDIF}
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
@@ -564,6 +569,24 @@ begin
     on E: Exception do
       ResponseCallback(new HttpResponse withException(E));
   end;
+  {$ELSEIF ISLAND AND WINDOWS}
+  var lConnect := rtl.WinHttpConnect(Session, RemObjects.Elements.System.String(aRequest.Url.Host).FirstChar, aRequest.Url.Port, 0);
+  // TODO check errors  
+  var lFlags := if aRequest.Url.Scheme.EqualsIgnoringCase('https') then rtl.WINHTTP_FLAG_SECURE else 0;
+  var lMethod := RemObjects.Elements.System.String(StringForRequestType(aRequest.Mode));
+  var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString);
+  var lRequest := rtl.WinHttpOpenRequest(lConnect, LMethod.FirstChar, lPath.FirstChar, nil, nil, nil, lFlags);
+  // TODO check error
+  var lHeader: RemObjects.Elements.System.String;  
+  for each k in aRequest.Headers.Keys do begin
+    lHeader := k + ':' + aRequest.Headers[k];
+    rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, high(Cardinal), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA);            
+    // TODO check error
+  end;
+
+  if assigned(aRequest.Content) then begin
+
+  end;    
   {$ELSEIF TOFFEE}
   try
     var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
