@@ -92,8 +92,8 @@ type
     method Sort(Comparison: Comparison<T>);
     method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF} reintroduce;
 
-    method SubList(aStartIndex: Int32): List<T>; reintroduce; inline;
-    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; reintroduce; inline;
+    method SubList(aStartIndex: Int32): List<T>; {$IF NOT COOPER}reintroduce;{$ENDIF} inline;
+    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; {$IF NOT COOPER}reintroduce;{$ENDIF} inline;
 
     property Item[i: Integer]: T read GetItem write SetItem; default;
   end;
