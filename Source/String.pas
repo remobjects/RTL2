@@ -762,7 +762,9 @@ begin
   {$ELSEIF ISLAND}
   result := mapped.PadEnd(TotalWidth, PaddingChar);
   {$ELSEIF TOFFEE}
-  result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0);
+  result := mapped;
+  if result.Length < TotalWidth then
+    result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0);
   {$ENDIF}
 end;
 
