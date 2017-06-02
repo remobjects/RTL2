@@ -18,9 +18,8 @@ type
     var fIsCanonical: Boolean;
     var fCachedAbsoluteString: String;
     var fCachedLastPathComponent: String;
-    {$IF NOT KNOWN_UNIX}
     var fCachedFilePath: String;
-    {$ENDIF}
+    var fCachedUnixFilePath: String;
 
     method Parse(aUrlString: not nullable String): Boolean;
     method GetHostNameAndPort: nullable String;
@@ -92,9 +91,9 @@ type
     method IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
 
     // these are all Url-decoded:
-    property FilePath: String read {$IF KNOWN_UNIX}fPath{$ELSE}GetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
+    property FilePath: String read {$IF KNOWN_UNIX}GetUnixPath{$ELSE}GetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
     property WindowsPath: String read GetWindowsPath;                                         // converts "/" to "\", always
-    property UnixPath: String read {$IF KNOWN_UNIX}fPath{$ELSE}GetUnixPath{$ENDIF};           // always keeps "/"
+    property UnixPath: String read GetUnixPath;           // always keeps "/"
 
     property PathExtension: String read GetPathExtension;     // will include the "."
     property LastPathComponent: String read GetLastPathComponent;
@@ -368,15 +367,15 @@ end;
 method Url.GetFilePath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then begin
-    {$IF NOT KNOWN_UNIX}
     if not assigned(fCachedFilePath) then begin
+      {$IF NOT KNOWN_UNIX}
       if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
         fCachedFilePath := GetWindowsPath()
       else
+      {$ENDIF}
         fCachedFilePath := RemovePercentEncodingsFromPath(fPath);
     end;
     result := fCachedFilePath;
-    {$ENDIF}
   end;
 end;
 
@@ -393,8 +392,11 @@ end;
 
 method Url.GetUnixPath: nullable String;
 begin
-  if IsFileUrl then
-    result := RemovePercentEncodingsFromPath(fPath);
+  if IsFileUrl and assigned(fPath) then begin
+    if not assigned(fCachedUnixFilePath) then
+      fCachedUnixFilePath := RemovePercentEncodingsFromPath(fPath);
+    result := fCachedUnixFilePath;
+  end;
 end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
