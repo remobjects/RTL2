@@ -28,8 +28,8 @@ public class Notification {
 
 #if TOFFEE
 fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
-	/*weak*/ var receiver: Object
-	weak var object: Object?
+	/*weak*/ var receiver: Object?
+	/*weak*/ var object: Object?
 	var token: id;
 	init (_ receiver: Object, _ object: Object?, _ token: id) {
 		self.receiver = receiver
