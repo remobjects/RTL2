@@ -105,6 +105,11 @@ type
 
     property Length: Int32 read mapped.Length;
     property Chars[aIndex: Int32]: Char read get_Chars; default; inline;
+
+    {$IF COOPER}
+    operator Implicit(aCharSequence: CharSequence): String;
+    operator Implicit(aString: String): CharSequence;
+    {$ENDIF}
   end;
 
 {$GLOBALS ON}
@@ -1080,5 +1085,16 @@ begin
   {$ENDIF}
 end;
 
+{$IF COOPER}
+operator String.Implicit(aCharSequence: CharSequence): String;
+begin
+  result := aCharSequence.toString()
+end;
+
+operator String.Implicit(aString: String): CharSequence;
+begin
+  result := (aString as PlatformString) as CharSequence;
+end;
+{$ENDIF}
 
 end.

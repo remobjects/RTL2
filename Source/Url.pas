@@ -185,7 +185,7 @@ constructor Url(aScheme: not nullable String; aHost: String; aPath: String);
 begin
   fScheme := aScheme;
   fHost := aHost;
-  fPath := aPath;
+  fPath := Url.AddPercentEncodingsToPath(aPath);
 end;
 
 class method Url.UrlWithString(aUrlString: nullable String): Url;
@@ -310,14 +310,14 @@ begin
   if length(fHost) = 0 then fHost := nil;
   lProtocolPosition := aUrlString.IndexOf(#63);
   if lProtocolPosition ≥ 0 then begin
-    fPath := RemovePercentEncodingsFromPath(aUrlString.Substring(0, lProtocolPosition), true);
+    fPath := aUrlString.Substring(0, lProtocolPosition);
     fQueryString := aUrlString.Substring(lProtocolPosition + 1);
   end
   else begin
     if aUrlString.Length = 0 then begin
       aUrlString := '/';
     end;
-    fPath := RemovePercentEncodingsFromPath(aUrlString, true);
+    fPath := aUrlString;
     fQueryString := nil;
   end;
   result := true;
@@ -330,7 +330,7 @@ end;
 
 method Url.ToAbsoluteString: String;
 begin
-  if not assigned(fCachedAbsoluteString) then begin
+ if not assigned(fCachedAbsoluteString) then begin
     var lResult := new StringBuilder();
     lResult.Append(fScheme);
     lResult.Append("://");
@@ -354,7 +354,7 @@ end;
 method Url.GetPathAndQueryString: nullable String;
 begin
   if length(fPath) > 0 then
-    result := AddPercentEncodingsToPath(fPath);
+    result := fPath;
   if length(fQueryString) > 0 then
     result := result+'?'+fQueryString;
   if length(fFragment) > 0 then
@@ -373,7 +373,7 @@ begin
       if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
         fCachedFilePath := GetWindowsPath()
       else
-        fCachedFilePath := fPath;
+        fCachedFilePath := RemovePercentEncodingsFromPath(fPath);
     end;
     result := fCachedFilePath;
     {$ENDIF}
@@ -383,7 +383,7 @@ end;
 method Url.GetWindowsPath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then begin
-    result := fPath.Replace('/', '\');
+    result := RemovePercentEncodingsFromPath(fPath).Replace('/', '\');
     if length(fHost) > 0 then
       result := "\\"+fHost+result
     else if IsAbsoluteWindowsFileURL then
@@ -394,7 +394,7 @@ end;
 method Url.GetUnixPath: nullable String;
 begin
   if IsFileUrl then
-    result := fPath;
+    result := RemovePercentEncodingsFromPath(fPath);
 end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
