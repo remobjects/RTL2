@@ -737,7 +737,6 @@ begin
 
   end;
   {$ELSEIF ISLAND AND WINDOWS}
-  var lRes: Boolean;
   var lFlags := if aRequest.Url.Scheme.EqualsIgnoringCase('https') then rtl.WINHTTP_FLAG_SECURE else 0;
   var lPort := 80;
   if aRequest.Url.Port <> nil then 
@@ -746,16 +745,20 @@ begin
     if lFlags <> 0 then
       lPort := 443;
   var lConnect := rtl.WinHttpConnect(Session, RemObjects.Elements.System.String(aRequest.Url.Host).FirstChar, lPort, 0);
-  // TODO check errors  
+  if lConnect = nil then
+    raise new RTLException('Unable to connect to ' + aRequest.Url.Host);
+
   var lMethod := RemObjects.Elements.System.String(StringForRequestType(aRequest.Mode));
   var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString);
   var lRequest := rtl.WinHttpOpenRequest(lConnect, LMethod.FirstChar, lPath.FirstChar, nil, nil, nil, lFlags);
-  // TODO check error
+  if lRequest = nil then
+    raise new RTLException('Can not open request to ' + aRequest.Url.Host);
+
   var lHeader: RemObjects.Elements.System.String;  
   for each k in aRequest.Headers.Keys do begin
     lHeader := k + ':' + aRequest.Headers[k];
-    rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, high(Cardinal), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA);            
-    // TODO check error
+    if not rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, high(Cardinal), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA) then
+      raise new RTLException('Error adding headers to request');
   end;
 
   var lTotalLength := 0;
@@ -770,20 +773,21 @@ begin
     rtl.WinHttpSetOption(LRequest, rtl.WINHTTP_OPTION_DISABLE_FEATURE, @lValue, sizeOf(lValue));
   end;
 
-  rtl.WinHttpSendRequest(lRequest, nil, 0, nil, 0, lTotalLength, 0);
-    // TODO check error
+  if not rtl.WinHttpSendRequest(lRequest, nil, 0, nil, 0, lTotalLength, 0) then
+    raise new RTLException('Can not send request to ' + aRequest.Url.Host);
+    
   if lTotalLength > 0 then begin
     var lPassed := 0;
     var lBytes: rtl.DWORD := 0;
     while lPassed < lTotalLength do begin
-      rtl.WinHttpWriteData(lRequest, @lData[lPassed], lTotalLength, @lBytes);
-      // TODO check error
-        inc(lPassed, lBytes);
+      if not rtl.WinHttpWriteData(lRequest, @lData[lPassed], lTotalLength, @lBytes) then
+        raise new RTLException('Error sending data to ' + aRequest.Url.Host);
+      inc(lPassed, lBytes);
     end;
   end;
 
   if not rtl.WinHttpReceiveResponse(lRequest, nil) then
-    ; // TODO raise error
+    raise new RTLException('Can not receive data from ' + aRequest.Url.Host);
 
   var lStatusCode: rtl.DWORD := 0;
   var lSize: rtl.DWORD := sizeOf(lStatusCode);
@@ -794,14 +798,14 @@ begin
   var lStream := new MemoryStream();
   var lBuffered: rtl.DWORD := 0;
   if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
-    ; // TODO Check error
+    raise new RTLException('Can not get data from ' + aRequest.Url.Host);
   while lSize <> 0 do begin
     var lBuffer := new Byte[lSize];
     if not rtl.WinHttpReadData(lRequest, @lBuffer[0], lSize, @lBuffered) then
-      ; // TODO check Error
+      raise new RTLException('Can not get data from ' + aRequest.Url.Host);
     lStream.Write(lBuffer, lBuffered);
     if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
-      ; // TODO Check error    
+      raise new RTLException('Can not get data from ' + aRequest.Url.Host);
   end;
 
   try
