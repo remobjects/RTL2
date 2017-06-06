@@ -526,7 +526,7 @@ end;
 method Url.GetLastPathComponent: nullable String;
 begin
   if not assigned(fCachedLastPathComponent) then begin
-    var lPath := fPath;
+    var lPath := RemovePercentEncodingsFromPath(fPath);;
     if lPath.EndsWith("/") then
       lPath := lPath.Substring(0, length(lPath)-1);
     if length(lPath) > 0 then begin
@@ -567,7 +567,7 @@ begin
   if length(fPath) > 0 then begin
     var p := fPath.LastIndexOf("/");
     if (p > 0) then // yes, 0, not -1
-      result := fPath.Substring(0, p+1); // include the "/"
+      result := RemovePercentEncodingsFromPath(fPath.Substring(0, p+1)); // include the "/"
   end;
 end;
 
