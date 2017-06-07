@@ -457,9 +457,9 @@ begin
       baseUrl := baseUrl+"/";
 
     if local.StartsWith(baseUrl) then
-      exit local.Substring(length(baseUrl));
+      exit RemovePercentEncodingsFromPath(local.Substring(length(baseUrl)));
     if aThreshold <= 0 then
-      exit local;
+      exit RemovePercentEncodingsFromPath(local);
 
     var baseComponents := baseUrl.Split("/");
     var localComponents := local.Split("/");
@@ -474,7 +474,7 @@ begin
     localComponents := localComponents.SubList(i);
 
     if baseComponents.count-1 >= aThreshold then
-      exit local;
+      exit RemovePercentEncodingsFromPath(local);
 
     baseUrl := baseComponents.JoinedString("/");
     local := localComponents.JoinedString("/");
@@ -483,7 +483,7 @@ begin
     for j: Integer := baseComponents.count-1 downto 1 do
       relative := "../"+relative;
 
-    result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
+    result := RemovePercentEncodingsFromPath(RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local));
   end;
 end;
 
@@ -686,7 +686,7 @@ begin
   for each c in aComponents do begin
     if not lNewPath.EndsWith('/') then
       lNewPath := lNewPath+'/';
-    lNewPath := lNewPath+c;
+    lNewPath := lNewPath+AddPercentEncodingsToPath(c);
   end;
   if aIsDirectory and not lNewPath.EndsWith('/') then
     lNewPath := lNewPath+'/';
@@ -952,7 +952,7 @@ begin
   if obj is Url then
     exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
   if obj is Uri then
-    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
+    exit CanonicalVersion.ToAbsoluteString() = ((obj as Uri) as Url).CanonicalVersion.ToAbsoluteString();
 end;
 
 method Url.GetHashCode: Integer;
@@ -969,7 +969,7 @@ begin
   if obj is Url then
     exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
   if obj is NSURL then
-    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
+    exit CanonicalVersion.ToAbsoluteString() = ((obj as NSURL) as Url).CanonicalVersion.ToAbsoluteString();
 end;
 
 method Url.copyWithZone(aZone: ^NSZone): instancetype;
