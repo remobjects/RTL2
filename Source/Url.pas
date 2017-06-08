@@ -177,7 +177,7 @@ implementation
 constructor Url(aUrlString: not nullable String);
 begin
   if not Parse(aUrlString) then
-    raise new FormatException("Invalid URL format '{0}'", aUrlString)
+    raise new UrlException("Invalid URL format '{0}'", aUrlString)
 end;
 
 constructor Url(aScheme: not nullable String; aHost: String; aPath: String);
@@ -903,8 +903,11 @@ end;
 
 operator Url.Implicit(aUrl: Url): Foundation.NSURL;
 begin
-  if assigned(aUrl) then
+  if assigned(aUrl) then begin
     result := Foundation.NSURL.URLWithString(aUrl.ToAbsoluteString);
+    if not assigned(result) then
+      raise new UrlException(String.Format("Cound not convert URL '{0}' to NSURL", aUrl.ToAbsoluteString));
+  end;
 end;
 {$ENDIF}
 
