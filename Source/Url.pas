@@ -46,6 +46,7 @@ type
   public
 
     class method UrlWithString(aUrlString: nullable String): Url;
+    class method TryUrlWithString(aUrlString: nullable String): Url;
     class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
@@ -189,11 +190,17 @@ end;
 
 class method Url.UrlWithString(aUrlString: nullable String): Url;
 begin
+  if length(aUrlString) > 0 then
+    result := new Url(aUrlString);
+end;
+
+class method Url.TryUrlWithString(aUrlString: nullable String): Url;
+begin
   try
     if length(aUrlString) > 0 then
       result := new Url(aUrlString);
   except
-    on FormatException do;
+    on UrlException do;
   end;
 end;
 
