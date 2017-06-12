@@ -96,9 +96,10 @@ begin
   source.close;
   dest.close;
   {$ELSEIF ECHOES}
-  if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then
+  if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
     if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
-      raise new RTLException("Failed to copy file")
+      raise new RTLException("Failed to copy file");
+  end
   else
     System.IO.File.Copy(mapped, lNewFile, true);
   {$ELSEIF ISLAND}
