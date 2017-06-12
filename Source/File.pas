@@ -100,7 +100,7 @@ begin
     if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
       raise new RTLException("Failed to copy file")
   else
-    System.IO.File.Copy(mapped, lNewFile);
+    System.IO.File.Copy(mapped, lNewFile, true);
   {$ELSEIF ISLAND}
   IslandFile.Copy(lNewFile);
   {$ELSEIF TOFFEE}
