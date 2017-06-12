@@ -37,12 +37,12 @@ type
     method GetFiles(aRecursive: Boolean): not nullable ImmutableList<File>;
     method GetSubfolders: not nullable List<Folder>;
 
-    class method Create(FolderName: Folder; FailIfExists: Boolean := false): Folder;
-    class method Delete(FolderName: Folder);
+    class method Create(aFolderName: Folder; FailIfExists: Boolean := false): Folder;
+    class method Delete(aFolderName: Folder);
     class method Exists(aFolderName: nullable Folder): Boolean;
-    class method GetFiles(FolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
-    class method GetFilesAndFolders(FolderName: Folder): not nullable ImmutableList<String>;
-    class method GetSubfolders(FolderName: Folder): not nullable List<Folder>;
+    class method GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
+    class method GetFilesAndFolders(aFolderName: Folder): not nullable ImmutableList<String>;
+    class method GetSubfolders(aFolderName: Folder): not nullable List<Folder>;
 
     class property Separator: Char read GetSeparator;
 
@@ -92,19 +92,22 @@ begin
   result := (length(aFolderName) > 0) and aFolderName.Exists;
 end;
 
-class method Folder.GetFiles(FolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
+class method Folder.GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
 begin
-  result := if aRecursive then FolderName.GetFiles(true) else FolderName.GetFiles(); // latter is optimized
+  result := if aRecursive then aFolderName.GetFiles(true) else aFolderName.GetFiles(); // latter is optimized
 end;
 
-class method Folder.GetFilesAndFolders(FolderName: Folder): not nullable ImmutableList<String>;
+class method Folder.GetFilesAndFolders(aFolderName: Folder): not nullable ImmutableList<String>;
 begin
-  result := FolderName.GetFiles().Concat(FolderName.GetSubfolders).ToList<String>();
+  var lList := new List<String> as not nullable;
+  lList.Add(aFolderName.GetFiles);
+  lList.Add(aFolderName.GetSubfolders.ToList<String>);
+  result := lList;
 end;
 
-class method Folder.GetSubfolders(FolderName: Folder): not nullable List<Folder>;
+class method Folder.GetSubfolders(aFolderName: Folder): not nullable List<Folder>;
 begin
-  result := FolderName.GetSubfolders();
+  result := aFolderName.GetSubfolders();
 end;
 
 method Folder.CreateSubfolder(SubfolderName: String; FailIfExists: Boolean := false): Folder;
@@ -113,15 +116,15 @@ begin
   result.Create(FailIfExists);
 end;
 
-class method Folder.Create(FolderName: Folder; FailIfExists: Boolean := false): Folder;
+class method Folder.Create(aFolderName: Folder; FailIfExists: Boolean := false): Folder;
 begin
-  result := Folder(FolderName);
+  result := Folder(aFolderName);
   result.Create(FailIfExists);
 end;
 
-class method Folder.Delete(FolderName: Folder);
+class method Folder.Delete(aFolderName: Folder);
 begin
-  FolderName.Delete();
+  aFolderName.Delete();
 end;
 
 method Folder.DoGetFiles(aFolder: Folder; aList: List<File>);

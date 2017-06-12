@@ -116,6 +116,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\ParameterInfo.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)List (Extensions).pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sequence (Extensions).pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
