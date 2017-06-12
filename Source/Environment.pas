@@ -60,6 +60,17 @@ type
     property CurrentDirectory: String read GetCurrentDirectory;
   end;
 
+  macOS nested in Environment = public class
+  public
+    class property IsHighSierraOrAbove: Boolean read GetIsHighSierraOrAbove;
+  private
+    class method GetIsHighSierraOrAbove: Boolean;
+    begin
+      var v := Environment.OSVersion.Split(".");
+      result := (v.Count > 0) and (Convert.TryToInt32(v[0]) ≥ 17);
+    end;
+  end;
+
 implementation
 
 method Environment.GetEnvironmentVariable(Name: String): String;

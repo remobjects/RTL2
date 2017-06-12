@@ -16,8 +16,8 @@ type
   public
     constructor(aPath: not nullable String);
 
-    method CopyTo(NewPathAndName: not nullable File): not nullable File;
-    method CopyTo(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
+    method CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := false): not nullable File;
+    method CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := false): not nullable File;
     method Delete;
     method Exists: Boolean; {$IF NOT COOPER}inline;{$ENDIF}
     method Move(NewPathAndName: not nullable File): not nullable File;
@@ -25,7 +25,7 @@ type
     method Open(Mode: FileOpenMode): not nullable FileHandle;
     method Rename(NewName: not nullable String): not nullable File;
 
-    class method CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
+    class method CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File; aCloneIfPossible: Boolean := false): not nullable File;
     class method Move(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
     class method Rename(aFileName: not nullable File; NewName: not nullable String): not nullable File;
     class method Exists(aFileName: nullable File): Boolean; inline;
@@ -70,12 +70,12 @@ begin
   {$ENDIF}
 end;
 
-method File.CopyTo(NewPathAndName: not nullable File): not nullable File;
+method File.CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := false): not nullable File;
 begin
-  result := self.CopyTo(new Folder(Path.GetParentDirectory(NewPathAndName.FullPath)), Path.GetFileName(NewPathAndName.Name));
+  result := self.CopyTo(new Folder(Path.GetParentDirectory(NewPathAndName.FullPath)), Path.GetFileName(NewPathAndName.Name), aCloneIfPossible);
 end;
 
-method File.CopyTo(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
+method File.CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := false): not nullable File;
 begin
   ArgumentNullException.RaiseIfNil(Destination, "Destination");
   ArgumentNullException.RaiseIfNil(NewName, "NewName");
@@ -96,7 +96,11 @@ begin
   source.close;
   dest.close;
   {$ELSEIF ECHOES}
-  System.IO.File.Copy(mapped, lNewFile);
+  if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then
+    if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
+      raise new RTLException("Failed to copy file")
+  else
+    System.IO.File.Copy(mapped, lNewFile);
   {$ELSEIF ISLAND}
   IslandFile.Copy(lNewFile);
   {$ELSEIF TOFFEE}
@@ -108,9 +112,9 @@ begin
   {$ENDIF}
 end;
 
-class method File.CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
+class method File.CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File; aCloneIfPossible: Boolean := false): not nullable File;
 begin
-  result := aFileName.CopyTo(NewPathAndName);
+  result := aFileName.CopyTo(NewPathAndName, aCloneIfPossible);
 end;
 
 method File.Delete;
