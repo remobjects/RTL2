@@ -138,6 +138,7 @@ type
 
     method ReadString(Count: Int32): String;
     method WriteString(aString: String);
+    property BaseStream: Stream read fStream;
   end;
 
   BinaryStream = public class
@@ -172,6 +173,8 @@ type
     method WriteInt16(Value: Int16);
     method WriteInt32(Value: Int32);
     method WriteInt64(Value: Int64);
+
+    property BaseStream: Stream read fStream;
   end;
 
 implementation
@@ -850,34 +853,12 @@ end;
 
 method BinaryStream.WriteSByte(Value: ShortInt);
 begin
-  {$IF COOPER}
-  var lSize := sizeOf(Value);
-  var lTmp := java.nio.ByteBuffer.allocate(lSize);
-  lTmp.putInt(Value);
-  var lArray := lTmp.array;
-  &Write(lArray, 0, lSize);
-  {$ELSEIF ECHOES}
-  var lBuf := BitConverter.GetBytes(Value);
-  &Write(lBuf, 0, lBuf.Length);
-  {$ELSEIF ISLAND OR TOFFEE}
-  &WriteRaw(@Value, sizeOf(Value));
-  {$ENDIF}
+  fStream.WriteByte(Value);
 end;
 
 method BinaryStream.WriteByte(Value: Byte);
 begin
-  {$IF COOPER}
-  var lSize := sizeOf(Value);
-  var lTmp := java.nio.ByteBuffer.allocate(lSize);
-  lTmp.putInt(Value);
-  var lArray := lTmp.array;
-  &Write(lArray, 0, lSize);
-  {$ELSEIF ECHOES}
-  var lBuf := BitConverter.GetBytes(Value);
-  &Write(lBuf, 0, lBuf.Length);
-  {$ELSEIF ISLAND OR TOFFEE}
-  &WriteRaw(@Value, sizeOf(Value));
-  {$ENDIF}
+  fStream.WriteByte(Value);
 end;
 
 method BinaryStream.WriteDouble(Value: Double);

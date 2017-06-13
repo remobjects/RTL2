@@ -154,10 +154,12 @@ type
       var s2 := Url.AddPercentEncodingsToPath(s1);
       var s3 := Url.RemovePercentEncodingsFromPath(s2);
 
+      {$IF NOT COOPER}
       s1 := "Pro🙉gram";
       s2 := Url.AddPercentEncodingsToPath(s1);
       s3 := Url.RemovePercentEncodingsFromPath(s2);
       Assert.AreEqual(s1,s3);
+      {$ENDIF}
     end;
 
     method TestCanonical();
