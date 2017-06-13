@@ -27,10 +27,14 @@ type
     class method WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
     class method WithRootElement(aName: not nullable String): not nullable XmlDocument;
 
+    class method TryFromFile(aFileName: not nullable File): nullable XmlDocument; inline;
+    class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument; inline;
+    class method TryFromString(aString: not nullable String): nullable XmlDocument; inline;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument; inline;
     class method TryFromFile(aFileName: not nullable File; out aError: XmlErrorInfo): nullable XmlDocument;
     class method TryFromUrl(aUrl: not nullable Url; out aError: XmlErrorInfo): nullable XmlDocument;
-    class method TryFromString(aString: not nullable String; out aError: XmlErrorInfo): not nullable XmlDocument;
-    class method TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument;
+    class method TryFromString(aString: not nullable String; out aError: XmlErrorInfo): nullable XmlDocument;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument; inline;
 
     [ToString]
     method ToString(): String; override;
@@ -85,7 +89,7 @@ type
     property EndColumn: Integer;
     [ToString]
     method ToString(): String; override;
-    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String; virtual;
   end;
 
   XmlElement = public class(XmlNode)
@@ -168,7 +172,7 @@ type
     method RemoveNamespace(aPrefix: not nullable String);
     [ToString]
     method ToString(): String; override;
-    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String; override;
   end;
 
   XmlAttribute = public class(XmlNode)
@@ -287,6 +291,12 @@ begin
   result.fXmlParser := lXmlParser;}
 end;
 
+class method XmlDocument.TryFromFile(aFileName: not nullable File): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromFile(aFileName, out lIgnoreError);
+end;
+
 class method XmlDocument.TryFromFile(aFileName: not nullable File; out aError: XmlErrorInfo): nullable XmlDocument;
 begin
   if aFileName.Exists then begin
@@ -316,6 +326,12 @@ begin
     raise new XmlException(String.Format("Cannot load XML from URL '{0}'.", aUrl.ToAbsoluteString()));
 end;
 
+class method XmlDocument.TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromUrl(aUrl, out lIgnoreError);
+end;
+
 class method XmlDocument.TryFromUrl(aUrl: not nullable Url; out aError: XmlErrorInfo): nullable XmlDocument;
 begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
@@ -333,30 +349,37 @@ end;
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
   var lError: XmlErrorInfo;
-  result := TryFromString(aString, out lError);
+  var lResult := TryFromString(aString, out lError);
   if lError <> nil then raise new XmlException(lError.Message, lError.Row, lError.Column);
+  result := lResult as not nullable;
   {var lXmlParser := new XmlParser(aString);
   var aError := new XmlErrorInfo;
   result := lXmlParser.Parse(out aError);
   result.fXmlParser := lXmlParser;}
 end;
 
-class method XmlDocument.TryFromString(aString: not nullable String; out aError: XmlErrorInfo): not nullable XmlDocument;
+class method XmlDocument.TryFromString(aString: not nullable String): nullable XmlDocument;
 begin
-  //try
-    var lXmlParser := new XmlParser(aString);
-    result := lXmlParser.Parse(out aError);
-    result.fXmlParser := lXmlParser;
-    //result := FromString(aString);
-  {except
-    on XmlException do
-      exit nil;
-  end;}
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromString(aString, out lIgnoreError);
+end;
+
+class method XmlDocument.TryFromString(aString: not nullable String; out aError: XmlErrorInfo): nullable XmlDocument;
+begin
+  var lXmlParser := new XmlParser(aString);
+  result := lXmlParser.Parse(out aError);
+  result.fXmlParser := lXmlParser;
 end;
 
 class method XmlDocument.FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
 begin
   result := XmlDocument.FromString(new String(aBinary.ToArray));
+end;
+
+class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := XmlDocument.TryFromString(new String(aBinary.ToArray), out lIgnoreError);
 end;
 
 class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument;
