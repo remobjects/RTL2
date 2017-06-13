@@ -379,8 +379,10 @@ begin
       if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
         fCachedFilePath := GetWindowsPath()
       else
-      {$ENDIF}
         fCachedFilePath := RemovePercentEncodingsFromPath(fPath);
+      {$ELSE}
+      fCachedFilePath := RemovePercentEncodingsFromPath(fPath);
+      {$ENDIF}
     end;
     result := fCachedFilePath;
   end;

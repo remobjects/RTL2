@@ -242,7 +242,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   for i: Int32 := 0 to length(aValue)-1 do
     if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
-      raise new FormatException("Unable to convert string '{0}' to Int32.", aValue);;
+      raise new FormatException("Unable to convert string '{0}' to Int32.", aValue);
   exit Int32.Parse(aValue);
   {$ELSEIF TOFFEE}
   exit ParseInt32(aValue);
@@ -447,7 +447,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   for i: Int32 := 0 to length(aValue)-1 do
     if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
-      raise new FormatException("Unable to convert string '{0}' to Int64.", aValue);;
+      raise new FormatException("Unable to convert string '{0}' to Int64.", aValue);
   exit Int64.Parse(aValue);
   {$ELSEIF TOFFEE}
   exit ParseInt64(aValue);
