@@ -8,6 +8,7 @@ type
     const FoundationLib = "/System/Library/Frameworks/Foundation.framework/Versions/Current/Foundation";
 
     const COPYFILE_CLONE = 1 shl 24;
+    const COPYFILE_CLONE_FORCE = 1 shl 25;
 
     [System.Runtime.InteropServices.DllImport(FoundationLib)]
     class method copyfile(aFrom: String; aTo: String; aState: IntPtr; aFlags: UInt32): Integer; external;
