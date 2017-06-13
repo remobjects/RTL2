@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT ISLAND}
+{$IF NOT (ISLAND AND LINUX)}
 
 interface
 
@@ -61,6 +61,10 @@ type
     {$ELSEIF ECHOES}
     var Response: HttpWebResponse;
     constructor(aResponse: HttpWebResponse);
+    {$ELSEIF ISLAND AND WINDOWS}
+    var Request: rtl.HINTERNET;
+    var Data: MemoryStream; readonly;
+    constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
     {$ELSEIF TOFFEE}
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
@@ -107,6 +111,9 @@ type
     method StringForRequestType(aMode: HttpRequestMode): String;
     {$IF NOT ECHOES OR NOT NETSTANDARD}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
+    {$ENDIF}
+    {$IF ISLAND AND WINDOWS}
+    property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
     {$ENDIF}
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
@@ -249,6 +256,31 @@ begin
     Headers[k.ToString] := aResponse.Headers[k];
   {$ENDIF}
 end;
+{$ELSEIF ISLAND AND WINDOWS}
+constructor HttpResponse(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
+begin
+  Request := aRequest;
+  Code := aCode;
+  Data := aData;
+  Headers := new Dictionary<String, String>();
+  var lSize: rtl.DWORD := 0;
+  rtl.WinHttpQueryHeaders(Request, rtl.WINHTTP_QUERY_RAW_HEADERS_CRLF, nil {rtl.WINHTTP_HEADER_NAME_BY_INDEX}, nil, @lSize, nil {rtl.WINHTTP_NO_HEADER_INDEX});
+  if lSize > 0 then begin
+    var lChars := new Char[lSize / sizeOf(Char)];
+    if rtl. WinHttpQueryHeaders(Request, rtl.WINHTTP_QUERY_RAW_HEADERS_CRLF, nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lChars[0], @lSize, nil {WINHTTP_NO_HEADER_INDEX}) then begin
+      var lHeaders := new String(lChars);
+      var lArray := lHeaders.Split(Environment.LineBreak);
+      for each k: String in lArray do begin
+        var lPos := k.IndexOf(':');
+        if lPos > 0 then begin
+          var lKey := k.Substring(0, lPos - 1).Trim;
+          var lValue := k.Substring(lPos + 1).Trim;
+          Headers.Add(lKey, lValue);
+        end;
+      end;
+    end;
+  end;
+end;
 {$ELSEIF TOFFEE}
 constructor HttpResponse(aData: NSData; aResponse: NSHTTPURLResponse);
 begin
@@ -273,6 +305,11 @@ begin
     var responseString := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd();
     contentCallback(new HttpResponseContent<String>(Content := responseString))
   end;
+  {$ELSEIF ISLAND AND WINDOWS}
+  Task.Run(() -> begin
+    var lResponseString := aEncoding.GetString(Data.ToArray);
+    contentCallback(new HttpResponseContent<String>(Content := lResponseString));
+  end);
   {$ELSEIF TOFFEE}
   var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
   if assigned(s) then
@@ -303,6 +340,11 @@ begin
     Response.GetResponseStream().CopyTo(allData);
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
+  {$ELSEIF ISLAND AND WINDOWS}
+  Task.Run(() -> begin
+    var allData := new Binary(Data.ToArray);
+    contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
+  end);
   {$ELSEIF TOFFEE}
   contentCallback(new HttpResponseContent<ImmutableBinary>(Content := Data.mutableCopy));
   {$ENDIF}
@@ -391,6 +433,18 @@ begin
     end;
   end;
   {$ENDIF}
+  {$ELSEIF ISLAND AND WINDOWS}
+  Task.Run(() -> begin
+    try
+      var lStream := new FileStream(aTargetFile, FileOpenMode.Create or FileOpenMode.ReadWrite);
+      Data.CopyTo(lStream);
+      Data.Flush;
+      contentCallback(new HttpResponseContent<File>(Content := aTargetFile))
+    except
+      on E: Exception do
+        contentCallback(new HttpResponseContent<File>(Exception := E));
+    end;
+  end);
   {$ELSEIF TOFFEE}
   async begin
     var error: NSError;
@@ -410,6 +464,8 @@ begin
   result := new String(GetContentAsBinarySynchronous().ToArray, aEncoding);
   {$ELSEIF ECHOES}
   result := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd() as not nullable;
+  {$ELSEIF ISLAND AND WINDOWS}
+  result := aEncoding.GetString(Data.ToArray) as not nullable;
   {$ELSEIF TOFFEE}
   var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
   if assigned(s) then
@@ -435,6 +491,8 @@ begin
   var allData := new System.IO.MemoryStream();
   Response.GetResponseStream().CopyTo(allData);
   result := allData as not nullable;
+  {$ELSEIF ISLAND AND WINDOWS}
+  result := new Binary(Data.ToArray);
   {$ELSEIF TOFFEE}
   result := Data.mutableCopy as not nullable;
   {$ENDIF}
@@ -566,6 +624,16 @@ begin
     on E: Exception do
       ResponseCallback(new HttpResponse withException(E));
   end;
+  {$ELSEIF ISLAND AND WINDOWS}
+  Task.Run(() -> begin
+    try
+      var lResponse := ExecuteRequestSynchronous(aRequest, true);
+      ResponseCallback(lResponse);
+    except
+      on E: Exception do
+        ResponseCallback(new HttpResponse withException(E));
+    end;
+  end);
   {$ELSEIF TOFFEE}
   try
     var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
@@ -669,6 +737,90 @@ begin
       end;
     end;
 
+  end;
+  {$ELSEIF ISLAND AND WINDOWS}
+  var lFlags := if aRequest.Url.Scheme.EqualsIgnoringCase('https') then rtl.WINHTTP_FLAG_SECURE else 0;
+  var lPort := 80;
+  if aRequest.Url.Port <> nil then 
+    lPort := aRequest.Url.Port
+  else
+    if lFlags <> 0 then
+      lPort := 443;
+  var lConnect := rtl.WinHttpConnect(Session, RemObjects.Elements.System.String(aRequest.Url.Host).FirstChar, lPort, 0);
+  if lConnect = nil then
+    raise new RTLException('Unable to connect to ' + aRequest.Url.Host);
+
+  var lMethod := RemObjects.Elements.System.String(StringForRequestType(aRequest.Mode));
+  var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString);
+  var lRequest := rtl.WinHttpOpenRequest(lConnect, LMethod.FirstChar, lPath.FirstChar, nil, nil, nil, lFlags);
+  if lRequest = nil then
+    raise new RTLException('Can not open request to ' + aRequest.Url.Host);
+
+  var lHeader: RemObjects.Elements.System.String;  
+  for each k in aRequest.Headers.Keys do begin
+    lHeader := k + ':' + aRequest.Headers[k];
+    if not rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, high(Cardinal), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA) then
+      raise new RTLException('Error adding headers to request');
+  end;
+
+  var lTotalLength := 0;
+  var lData: array of Byte;
+  if assigned(aRequest.Content) then begin
+    lData := (aRequest.Content as IHttpRequestContent).GetContentAsArray;
+    lTotalLength := lData.Length;
+  end;
+
+  if not aRequest.FollowRedirects then begin
+    var lValue: rtl.DWORD := rtl.WINHTTP_DISABLE_REDIRECTS;
+    rtl.WinHttpSetOption(LRequest, rtl.WINHTTP_OPTION_DISABLE_FEATURE, @lValue, sizeOf(lValue));
+  end;
+
+  if not rtl.WinHttpSendRequest(lRequest, nil, 0, nil, 0, lTotalLength, 0) then
+    raise new RTLException('Can not send request to ' + aRequest.Url.Host);
+    
+  if lTotalLength > 0 then begin
+    var lPassed := 0;
+    var lBytes: rtl.DWORD := 0;
+    while lPassed < lTotalLength do begin
+      if not rtl.WinHttpWriteData(lRequest, @lData[lPassed], lTotalLength, @lBytes) then
+        raise new RTLException('Error sending data to ' + aRequest.Url.Host);
+      inc(lPassed, lBytes);
+    end;
+  end;
+
+  if not rtl.WinHttpReceiveResponse(lRequest, nil) then
+    raise new RTLException('Can not receive data from ' + aRequest.Url.Host);
+
+  var lStatusCode: rtl.DWORD := 0;
+  var lSize: rtl.DWORD := sizeOf(lStatusCode);
+
+  rtl.WinHttpQueryHeaders(lRequest, rtl.WINHTTP_QUERY_STATUS_CODE or rtl.WINHTTP_QUERY_FLAG_NUMBER, 
+    nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lStatusCode, @lSize, nil {rtl.WINHTTP_NO_HEADER_INDEX});
+  
+  var lStream := new MemoryStream();
+  var lBuffered: rtl.DWORD := 0;
+  if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
+    raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+  while lSize <> 0 do begin
+    var lBuffer := new Byte[lSize];
+    if not rtl.WinHttpReadData(lRequest, @lBuffer[0], lSize, @lBuffered) then
+      raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+    lStream.Write(lBuffer, lBuffered);
+    if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
+      raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+  end;
+
+  try
+    result := new HttpResponse(lRequest, lStatusCode, lStream);
+    if lStatusCode >= 300 then begin
+      if not aThrowOnError then exit nil;
+      raise new RTLException(String.Format("Unable to complete request. Error code: {0}", lStatusCode), result)
+    end;
+  except
+    on E: Exception do begin
+      if not aThrowOnError then exit nil;
+      raise new RTLException(E.Message);
+    end;
   end;
   {$ELSEIF TOFFEE}
   var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
