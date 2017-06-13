@@ -94,7 +94,11 @@ begin
   {$ELSEIF TOFFEE}
   var lBytes: uuid_t;
   memcpy(lBytes, aValue, sizeOf(uuid_t));
+  {$IF __DARWIN_ALIAS_STARTING_MAC___MAC_10_13}
+  result := new NSUUID withUUIDBytes(lBytes);
+  {$ELSE}
   result := new NSUUID withUUIDBytes(var lBytes);
+  {$ENDIF}
   {$ENDIF}
 end;
 
@@ -195,7 +199,11 @@ begin
   {$ELSEIF TOFFEE}
   var lBytes: uuid_t;
   memset(lBytes, 0, sizeOf(uuid_t));
+  {$IF __DARWIN_ALIAS_STARTING_MAC___MAC_10_13}
+  exit new NSUUID withUUIDBytes(lBytes);
+  {$ELSE}
   exit new NSUUID withUUIDBytes(var lBytes);
+  {$ENDIF}
   {$ENDIF}
 end;
 
@@ -225,7 +233,11 @@ begin
   {$ELSEIF TOFFEE}
   result := new Byte[sizeOf(uuid_t)];
   var lBytes: uuid_t;
+  {$IF __DARWIN_ALIAS_STARTING_MAC___MAC_10_13}
+  mapped.getUUIDBytes(lBytes);
+  {$ELSE}
   mapped.getUUIDBytes(var lBytes);
+  {$ENDIF}
   memcpy(result, lBytes, sizeOf(uuid_t));
   {$ENDIF}
 end;
