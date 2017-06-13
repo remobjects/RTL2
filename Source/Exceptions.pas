@@ -73,6 +73,7 @@ type
       {$ELSEIF ECHOES}
       result := (StackTrace.Replace(#13, #10) as String).Split(#10);
       {$ELSEIF ISLAND}
+      result := new ImmutableList<String>(); {$WARNING Not implemented/supported for Island yet}
       {$ELSEIF TOFFEE}
       result := callstackSymbols;
       {$ENDIF}
@@ -83,7 +84,8 @@ type
   NotImplementedException = public class(RTLException);
   NotSupportedException = public class(RTLException);
   ArgumentException = public class(RTLException);
-  UrlParserException = public class(RTLException);
+  UrlException = public class (RTLException);
+  UrlParserException = public class(UrlException);
   ConversionException = public class(RTLException);
 
   ArgumentNullException = public class(ArgumentException)

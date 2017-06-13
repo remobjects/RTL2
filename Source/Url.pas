@@ -18,9 +18,8 @@ type
     var fIsCanonical: Boolean;
     var fCachedAbsoluteString: String;
     var fCachedLastPathComponent: String;
-    {$IF NOT KNOWN_UNIX}
     var fCachedFilePath: String;
-    {$ENDIF}
+    var fCachedUnixFilePath: String;
 
     method Parse(aUrlString: not nullable String): Boolean;
     method GetHostNameAndPort: nullable String;
@@ -47,6 +46,7 @@ type
   public
 
     class method UrlWithString(aUrlString: nullable String): Url;
+    class method TryUrlWithString(aUrlString: nullable String): Url;
     class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
@@ -92,9 +92,9 @@ type
     method IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
 
     // these are all Url-decoded:
-    property FilePath: String read {$IF KNOWN_UNIX}fPath{$ELSE}GetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
+    property FilePath: String read {$IF KNOWN_UNIX}GetUnixPath{$ELSE}GetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
     property WindowsPath: String read GetWindowsPath;                                         // converts "/" to "\", always
-    property UnixPath: String read {$IF KNOWN_UNIX}fPath{$ELSE}GetUnixPath{$ENDIF};           // always keeps "/"
+    property UnixPath: String read GetUnixPath;           // always keeps "/"
 
     property PathExtension: String read GetPathExtension;     // will include the "."
     property LastPathComponent: String read GetLastPathComponent;
@@ -178,7 +178,7 @@ implementation
 constructor Url(aUrlString: not nullable String);
 begin
   if not Parse(aUrlString) then
-    raise new FormatException("Invalid URL format '{0}'", aUrlString)
+    raise new UrlException("Invalid URL format '{0}'", aUrlString)
 end;
 
 constructor Url(aScheme: not nullable String; aHost: String; aPath: String);
@@ -190,11 +190,17 @@ end;
 
 class method Url.UrlWithString(aUrlString: nullable String): Url;
 begin
+  if length(aUrlString) > 0 then
+    result := new Url(aUrlString);
+end;
+
+class method Url.TryUrlWithString(aUrlString: nullable String): Url;
+begin
   try
     if length(aUrlString) > 0 then
       result := new Url(aUrlString);
   except
-    on FormatException do;
+    on UrlException do;
   end;
 end;
 
@@ -368,15 +374,15 @@ end;
 method Url.GetFilePath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then begin
-    {$IF NOT KNOWN_UNIX}
     if not assigned(fCachedFilePath) then begin
+      {$IF NOT KNOWN_UNIX}
       if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
         fCachedFilePath := GetWindowsPath()
       else
+      {$ENDIF}
         fCachedFilePath := RemovePercentEncodingsFromPath(fPath);
     end;
     result := fCachedFilePath;
-    {$ENDIF}
   end;
 end;
 
@@ -393,8 +399,11 @@ end;
 
 method Url.GetUnixPath: nullable String;
 begin
-  if IsFileUrl then
-    result := RemovePercentEncodingsFromPath(fPath);
+  if IsFileUrl and assigned(fPath) then begin
+    if not assigned(fCachedUnixFilePath) then
+      fCachedUnixFilePath := RemovePercentEncodingsFromPath(fPath);
+    result := fCachedUnixFilePath;
+  end;
 end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
@@ -455,9 +464,9 @@ begin
       baseUrl := baseUrl+"/";
 
     if local.StartsWith(baseUrl) then
-      exit local.Substring(length(baseUrl));
+      exit RemovePercentEncodingsFromPath(local.Substring(length(baseUrl)));
     if aThreshold <= 0 then
-      exit local;
+      exit RemovePercentEncodingsFromPath(local);
 
     var baseComponents := baseUrl.Split("/");
     var localComponents := local.Split("/");
@@ -472,7 +481,7 @@ begin
     localComponents := localComponents.SubList(i);
 
     if baseComponents.count-1 >= aThreshold then
-      exit local;
+      exit RemovePercentEncodingsFromPath(local);
 
     baseUrl := baseComponents.JoinedString("/");
     local := localComponents.JoinedString("/");
@@ -481,7 +490,7 @@ begin
     for j: Integer := baseComponents.count-1 downto 1 do
       relative := "../"+relative;
 
-    result := RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local);
+    result := RemovePercentEncodingsFromPath(RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local));
   end;
 end;
 
@@ -524,7 +533,7 @@ end;
 method Url.GetLastPathComponent: nullable String;
 begin
   if not assigned(fCachedLastPathComponent) then begin
-    var lPath := fPath;
+    var lPath := RemovePercentEncodingsFromPath(fPath);;
     if lPath.EndsWith("/") then
       lPath := lPath.Substring(0, length(lPath)-1);
     if length(lPath) > 0 then begin
@@ -565,7 +574,7 @@ begin
   if length(fPath) > 0 then begin
     var p := fPath.LastIndexOf("/");
     if (p > 0) then // yes, 0, not -1
-      result := fPath.Substring(0, p+1); // include the "/"
+      result := RemovePercentEncodingsFromPath(fPath.Substring(0, p+1)); // include the "/"
   end;
 end;
 
@@ -684,7 +693,7 @@ begin
   for each c in aComponents do begin
     if not lNewPath.EndsWith('/') then
       lNewPath := lNewPath+'/';
-    lNewPath := lNewPath+c;
+    lNewPath := lNewPath+AddPercentEncodingsToPath(c);
   end;
   if aIsDirectory and not lNewPath.EndsWith('/') then
     lNewPath := lNewPath+'/';
@@ -901,8 +910,11 @@ end;
 
 operator Url.Implicit(aUrl: Url): Foundation.NSURL;
 begin
-  if assigned(aUrl) then
+  if assigned(aUrl) then begin
     result := Foundation.NSURL.URLWithString(aUrl.ToAbsoluteString);
+    if not assigned(result) then
+      raise new UrlException(String.Format("Cound not convert URL '{0}' to NSURL", aUrl.ToAbsoluteString));
+  end;
 end;
 {$ENDIF}
 
@@ -950,7 +962,7 @@ begin
   if obj is Url then
     exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
   if obj is Uri then
-    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
+    exit CanonicalVersion.ToAbsoluteString() = ((obj as Uri) as Url).CanonicalVersion.ToAbsoluteString();
 end;
 
 method Url.GetHashCode: Integer;
@@ -967,7 +979,7 @@ begin
   if obj is Url then
     exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
   if obj is NSURL then
-    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
+    exit CanonicalVersion.ToAbsoluteString() = ((obj as NSURL) as Url).CanonicalVersion.ToAbsoluteString();
 end;
 
 method Url.copyWithZone(aZone: ^NSZone): instancetype;

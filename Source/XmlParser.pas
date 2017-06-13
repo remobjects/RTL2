@@ -390,10 +390,24 @@ begin
     for each lAttribute in result.Attributes do begin
       if lAttribute.LocalName.IndexOf(':') >0 then begin
         var lPrefix := lAttribute.LocalName.Substring(0, lAttribute.LocalName.IndexOf(':'));
-        lNamespace := coalesce(result.Namespace[lPrefix] , GetNamespaceForPrefix(lPrefix, aParent));
-        if lNamespace = nil then raise new XmlException("Unknown prefix '"+lPrefix+":'", lAttribute.StartLine, lAttribute.StartColumn);
+        var lLocalName := lAttribute.LocalName.Substring(lAttribute.LocalName.IndexOf(':')+1, lAttribute.LocalName.Length-lAttribute.LocalName.IndexOf(':')-1);
+        if lPrefix = "xml" then begin
+          lNamespace := new XmlNamespace(lPrefix, Url.UrlWithString("http://www.w3.org/XML/1998/namespace"));
+          case lLocalName of
+            "lang":;
+            "space":;
+            "id":;
+            "base":;
+            else 
+              raise new XmlException("Unknown attribute name for 'xml:' prefix '"+lLocalName+":'", lAttribute.StartLine, lAttribute.StartColumn+4);
+          end;
+        end
+        else begin
+          lNamespace := coalesce(result.Namespace[lPrefix] , GetNamespaceForPrefix(lPrefix, aParent));
+          if lNamespace = nil then raise new XmlException("Unknown prefix '"+lPrefix+":'", lAttribute.StartLine, lAttribute.StartColumn);
+        end;
         lAttribute.Namespace := lNamespace;
-        lAttribute.LocalName := lAttribute.LocalName.Substring(lAttribute.LocalName.IndexOf(':')+1, lAttribute.LocalName.Length-lAttribute.LocalName.IndexOf(':')-1);
+        lAttribute.LocalName := lLocalName;//lAttribute.LocalName.Substring(lAttribute.LocalName.IndexOf(':')+1, lAttribute.LocalName.Length-lAttribute.LocalName.IndexOf(':')-1);
       end;
     end;
     if (Tokenizer.Token = XmlTokenKind.TagClose) then begin

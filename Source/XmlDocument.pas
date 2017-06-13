@@ -1169,7 +1169,9 @@ begin
   if not(aFormatInsideTags) and (innerWSleft <> nil) then result := result + innerWSleft;
   result := result + "=";
   if not(aFormatInsideTags) and (innerWSright <> nil) then result := result + innerWSright;
-  result := result +QuoteChar+ Url.ToString+QuoteChar;
+  result := result+QuoteChar;
+  if assigned(Url) then result := result + Url.ToString;
+  result := result+QuoteChar;
 end;
 
 {XmlComment}

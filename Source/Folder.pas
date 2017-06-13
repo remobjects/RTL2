@@ -33,15 +33,16 @@ type
     method CopyContentsTo(aNewFolder: Folder; aRecursive: Boolean := true);
 
     method GetFile(FileName: String): File;
-    method GetFiles: not nullable List<File>;
-    method GetFiles(aRecursive: Boolean): not nullable List<File>;
+    method GetFiles: not nullable ImmutableList<File>;
+    method GetFiles(aRecursive: Boolean): not nullable ImmutableList<File>;
     method GetSubfolders: not nullable List<Folder>;
 
-    class method Create(FolderName: Folder; FailIfExists: Boolean := false): Folder;
-    class method Delete(FolderName: Folder);
+    class method Create(aFolderName: Folder; FailIfExists: Boolean := false): Folder;
+    class method Delete(aFolderName: Folder);
     class method Exists(aFolderName: nullable Folder): Boolean;
-    class method GetFiles(FolderName: Folder; aRecursive: Boolean := false): not nullable List<File>;
-    class method GetSubfolders(FolderName: Folder): not nullable List<Folder>;
+    class method GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
+    class method GetFilesAndFolders(aFolderName: Folder): not nullable ImmutableList<String>;
+    class method GetSubfolders(aFolderName: Folder): not nullable List<Folder>;
 
     class property Separator: Char read GetSeparator;
 
@@ -91,14 +92,22 @@ begin
   result := (length(aFolderName) > 0) and aFolderName.Exists;
 end;
 
-class method Folder.GetFiles(FolderName: Folder; aRecursive: Boolean := false): not nullable List<File>;
+class method Folder.GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
 begin
-  result := if aRecursive then FolderName.GetFiles(true) else FolderName.GetFiles(); // latter is optimized
+  result := if aRecursive then aFolderName.GetFiles(true) else aFolderName.GetFiles(); // latter is optimized
 end;
 
-class method Folder.GetSubfolders(FolderName: Folder): not nullable List<Folder>;
+class method Folder.GetFilesAndFolders(aFolderName: Folder): not nullable ImmutableList<String>;
 begin
-  result := FolderName.GetSubfolders();
+  var lList := new List<String> as not nullable;
+  lList.Add(aFolderName.GetFiles);
+  lList.Add(aFolderName.GetSubfolders.ToList<String>);
+  result := lList;
+end;
+
+class method Folder.GetSubfolders(aFolderName: Folder): not nullable List<Folder>;
+begin
+  result := aFolderName.GetSubfolders();
 end;
 
 method Folder.CreateSubfolder(SubfolderName: String; FailIfExists: Boolean := false): Folder;
@@ -107,15 +116,15 @@ begin
   result.Create(FailIfExists);
 end;
 
-class method Folder.Create(FolderName: Folder; FailIfExists: Boolean := false): Folder;
+class method Folder.Create(aFolderName: Folder; FailIfExists: Boolean := false): Folder;
 begin
-  result := Folder(FolderName);
+  result := Folder(aFolderName);
   result.Create(FailIfExists);
 end;
 
-class method Folder.Delete(FolderName: Folder);
+class method Folder.Delete(aFolderName: Folder);
 begin
-  FolderName.Delete();
+  aFolderName.Delete();
 end;
 
 method Folder.DoGetFiles(aFolder: Folder; aList: List<File>);
@@ -125,11 +134,12 @@ begin
     DoGetFiles(f, aList);
 end;
 
-method Folder.GetFiles(aRecursive: Boolean): not nullable List<File>;
+method Folder.GetFiles(aRecursive: Boolean): not nullable ImmutableList<File>;
 begin
   if not aRecursive then exit GetFiles();
-  result := new List<File>();
-  DoGetFiles(self, result)
+  var lResult := new List<File>() as not nullable;
+  DoGetFiles(self, lResult);
+  result := lResult;
 end;
 
 method Folder.CopyContentsTo(aNewFolder: Folder; aRecursive: Boolean := true);
@@ -206,10 +216,10 @@ begin
   exit FolderHelper.GetFile(mapped, FileName);
 end;
 
-method Folder.GetFiles: not nullable List<File>;
+method Folder.GetFiles: not nullable ImmutableList<File>;
 begin
   var files := mapped.GetFilesAsync.Await;
-  result := new List<File>();
+  result := new ImmutableList<File>ImmutableList<File>ImmutableList<File>();
   for i: Integer := 0 to files.Count-1 do
     result.Add(File(files.Item[i]));
 end;
@@ -387,25 +397,26 @@ begin
   {$ENDIF}
 end;
 
-method Folder.GetFiles: not nullable List<File>;
+method Folder.GetFiles: not nullable ImmutableList<File>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles((f,n)->new java.io.File(f, n).isFile).Select(f->f.path).ToList() as not nullable;
   {$ELSEIF ECHOES}
-  result := new List<File>(System.IO.Directory.GetFiles(mapped));
+  result := new ImmutableList<File>(System.IO.Directory.GetFiles(mapped));
   {$ELSEIF ISLAND}
   result := IslandFolder.GetFiles().Select(f -> f.FullName).ToList() as not nullable;
   {$ELSEIF TOFFEE}
-  result := new List<File>;
+  var lResult := new List<File> as not nullable;
   var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
   if Items = nil then
-    exit;
+    exit lResult;
 
   for i: Integer := 0 to Items.count - 1 do begin
     var item := Combine(mapped, Items.objectAtIndex(i));
     if not FolderHelper.IsDirectory(item) then
-      result.Add(File(item));
+      lResult.Add(File(item));
   end;
+  result := lResult;
   {$ENDIF}
 end;
 

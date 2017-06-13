@@ -383,7 +383,6 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.CompareToIgnoreCase(Value: String): Integer;
 begin
   {$IF COOPER}
@@ -391,8 +390,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.Compare(mapped, Value, StringComparison.OrdinalIgnoreCase);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+  exit mapped.CompareToIgnoreCase(Value);
   {$ELSEIF TOFFEE}
   exit mapped.caseInsensitiveCompare(Value);
   {$ENDIF}
@@ -762,7 +760,9 @@ begin
   {$ELSEIF ISLAND}
   result := mapped.PadEnd(TotalWidth, PaddingChar);
   {$ELSEIF TOFFEE}
-  result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0);
+  result := mapped;
+  if result.Length < TotalWidth then
+    result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0);
   {$ENDIF}
 end;
 
