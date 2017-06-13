@@ -383,7 +383,6 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.CompareToIgnoreCase(Value: String): Integer;
 begin
   {$IF COOPER}
@@ -391,8 +390,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.Compare(mapped, Value, StringComparison.OrdinalIgnoreCase);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+  exit mapped.CompareToIgnoreCase(Value);
   {$ELSEIF TOFFEE}
   exit mapped.caseInsensitiveCompare(Value);
   {$ENDIF}
