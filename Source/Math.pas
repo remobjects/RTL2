@@ -134,12 +134,12 @@ type
     const MaxChar: Char = chr($FFFF);
     const MinChar: Char = chr(0);
 
-    property MaxDouble: Double read {$IF COOPER}Double.MAX_VALUE{$ELSEIF ECHOES}Double.MaxValue{$ELSEIF TOFFEE OR ISLAND}1.7976931348623157E+308{$ENDIF};
-    property MinDouble: Double read {$IF COOPER}-Double.MAX_VALUE{$ELSEIF ECHOES}Double.MinValue{$ELSEIF TOFFEE OR ISLAND}-1.7976931348623157E+308{$ENDIF};
+    property MaxDouble: Double read {$IF COOPER}Double.MAX_VALUE{$ELSEIF ECHOES}Double.MaxValue{$ELSEIF TOFFEE OR ISLAND}1.7976931348623157E+308{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+    property MinDouble: Double read {$IF COOPER}-Double.MAX_VALUE{$ELSEIF ECHOES}Double.MinValue{$ELSEIF TOFFEE OR ISLAND}-1.7976931348623157E+308{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
-    property PositiveInfinity: Double read {$IF COOPER}Double.POSITIVE_INFINITY{$ELSEIF ECHOES OR ISLAND}Double.PositiveInfinity{$ELSEIF TOFFEE}rtl.INFINITY{$ENDIF};
-    property NegativeInfinity: Double read {$IF COOPER}Double.NEGATIVE_INFINITY{$ELSEIF ECHOES OR ISLAND}Double.NegativeInfinity{$ELSEIF TOFFEE}-INFINITY{$ENDIF};
-    property NaN: Double read {$IF COOPER}Double.NaN{$ELSEIF ECHOES OR ISLAND}Double.NaN{$ELSEIF TOFFEE}rtl.nan{$ENDIF};
+    property PositiveInfinity: Double read {$IF COOPER}Double.POSITIVE_INFINITY{$ELSEIF ECHOES OR ISLAND}Double.PositiveInfinity{$ELSEIF TOFFEE}rtl.INFINITY{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+    property NegativeInfinity: Double read {$IF COOPER}Double.NEGATIVE_INFINITY{$ELSEIF ECHOES OR ISLAND}Double.NegativeInfinity{$ELSEIF TOFFEE}-INFINITY{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+    property NaN: Double read {$IF COOPER}Double.NaN{$ELSEIF ECHOES OR ISLAND}Double.NaN{$ELSEIF TOFFEE}rtl.nan{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
     property TrueString: not nullable String read "True";
     property FalseString: not nullable String read "False";
