@@ -96,7 +96,9 @@ begin
     exit mapped.CopyAsync(Destination, NewName, NameCollisionOption.FailIfExists).Await;
     {$ELSE}
     if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
-      if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE and Foundation.COPYFILE_CLONE_FORCE) ≠ 0 then
+      if lNewFile.Exists then
+        Delete(lNewFile);
+      if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE or Foundation.COPYFILE_ALL) ≠ 0 then
         raise new RTLException("Failed to copy file");
     end
     else
