@@ -12,9 +12,11 @@ type
     class method GetSeparator: Char;
     {$IF COOPER}
     property JavaFile: java.io.File read new java.io.File(mapped);
-    {$ELSEIF ISLAND}
+    {$ENDIF}
+    {$IF ISLAND}
     property IslandFolder: RemObjects.Elements.System.Folder read new RemObjects.Elements.System.Folder(mapped);
-    {$ELSEIF TOFFEE}
+    {$ENDIF}
+    {$IF TOFFEE}
     method Combine(BasePath: String; SubPath: String): String;
     {$ENDIF}
 
@@ -62,14 +64,21 @@ type
 
 implementation
 
-{$IF COOPER OR TOFFEE}
+{$IF COOPER}
 type
   FolderHelper = static class
   public
-    {$IF COOPER}method DeleteFolder(Value: java.io.File);{$ENDIF}
-    {$IF TOFFEE}method IsDirectory(Value: String): Boolean;{$ENDIF}
+    method DeleteFolder(Value: java.io.File);
   end;
-{$ELSEIF NETSTANDARD}
+{$ENDIF}  
+{$IF TOFFEE}
+type
+  FolderHelper = static class
+  public
+    method IsDirectory(Value: String): Boolean;
+  end;
+{$ENDIF}  
+{$IF NETSTANDARD}
 type
   FolderHelper = static class
   public
@@ -153,6 +162,11 @@ begin
 end;
 
 {$IF NETSTANDARD}
+extension method Windows.Foundation.IAsyncOperation<TResult>.&Await<TResult>: TResult;
+begin
+  exit self.AsTask.Result;
+end;
+
 class method FolderHelper.GetFile(Folder: Windows.Storage.StorageFolder; FileName: String): Windows.Storage.StorageFile;
 begin
   ArgumentNullException.RaiseIfNil(Folder, "Folder");
@@ -174,77 +188,15 @@ begin
     exit nil;
   end;
 end;
+{$ENDIF}
+
+
 
 class method Folder.GetSeparator: Char;
 begin
+  {$IF NETSTANDARD}
   exit '\';
-end;
-
-class method Folder.UserHomeFolder: Folder;
-begin
-  exit Windows.Storage.ApplicationData.Current.LocalFolder;
-end;
-
-method Folder.CreateFile(FileName: String; FailIfExists: Boolean := false): File;
-begin
-  exit mapped.CreateFileAsync(FileName, iif(FailIfExists, Windows.Storage.CreationCollisionOption.FailIfExists, Windows.Storage.CreationCollisionOption.OpenIfExists)).Await;
-end;
-
-method Folder.Exists(): Boolean;
-begin
-  // WP8 API - best API
-  try
-    var item := Windows.Storage.ApplicationData.Current.LocalFolder.GetItemAsync(mapped.Name).Await();
-    exit assigned(item);
-  except
-    exit false;
-  end;
-end;
-
-method Folder.Create(FailIfExists: Boolean := false);
-begin
-  mapped.CreateFolderAsync(self.FullPath, iif(FailIfExists, Windows.Storage.CreationCollisionOption.FailIfExists, Windows.Storage.CreationCollisionOption.OpenIfExists)).Await();
-end;
-
-method Folder.Delete;
-begin
-  mapped.DeleteAsync.AsTask.Wait;
-end;
-
-method Folder.GetFile(FileName: String): File;
-begin
-  exit FolderHelper.GetFile(mapped, FileName);
-end;
-
-method Folder.GetFiles: not nullable ImmutableList<File>;
-begin
-  var files := mapped.GetFilesAsync.Await;
-  result := new ImmutableList<File>();
-  for i: Integer := 0 to files.Count-1 do
-    result.Add(File(files.Item[i]));
-end;
-
-method Folder.GetSubfolders: not nullable List<Folder>;
-begin
-  var folders := mapped.GetFoldersAsync.Await;
-  result := new List<Folder>();
-  for i: Integer := 0 to folders.Count-1 do
-    result.Add(Folder(folders.Item[i]));
-end;
-
-method Folder.Rename(NewName: String): Folder;
-begin
-  mapped.RenameAsync(NewName, Windows.Storage.NameCollisionOption.FailIfExists).AsTask().Wait();
-end;
-
-extension method Windows.Foundation.IAsyncOperation<TResult>.&Await<TResult>: TResult;
-begin
-  exit self.AsTask.Result;
-end;
-{$ELSE}
-class method Folder.GetSeparator: Char;
-begin
-  {$IF COOPER}
+  {$ELSEIF COOPER}
   exit java.io.File.separatorChar;
   {$ELSEIF ECHOES}
   exit System.IO.Path.DirectorySeparatorChar;
@@ -257,7 +209,9 @@ end;
 
 method Folder.CreateFile(FileName: String; FailIfExists: Boolean := false): File;
 begin
-  {$IF COOPER}
+  {$IF NETSTANDARD}
+  exit mapped.CreateFileAsync(FileName, iif(FailIfExists, Windows.Storage.CreationCollisionOption.FailIfExists, Windows.Storage.CreationCollisionOption.OpenIfExists)).Await;
+  {$ELSEIF COOPER}
   var lNewFile := new java.io.File(mapped, FileName);
   if lNewFile.exists then begin
     if FailIfExists then
@@ -301,7 +255,14 @@ end;
 
 method Folder.Exists: Boolean;
 begin
-  {$IF COOPER}
+  {$IFDEF NETSTANDARD}
+  try
+    var item := Windows.Storage.ApplicationData.Current.LocalFolder.GetItemAsync(mapped.Name).Await();
+    exit assigned(item);
+  except
+    exit false;
+  end;
+  {$ELSEIF COOPER}
   result := JavaFile.exists;
   {$ELSEIF ECHOES}
   result := System.IO.Directory.Exists(mapped);
@@ -315,7 +276,9 @@ end;
 
 method Folder.Create(FailIfExists: Boolean := false);
 begin
-  {$IF COOPER}
+  {$IF NETSTANDARD}
+  mapped.CreateFolderAsync(self.FullPath, iif(FailIfExists, Windows.Storage.CreationCollisionOption.FailIfExists, Windows.Storage.CreationCollisionOption.OpenIfExists)).Await();
+  {$ELSEIF COOPER}
   var lFile := JavaFile;
   if lFile.exists then begin
     if FailIfExists then
@@ -360,6 +323,8 @@ begin
     raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, mapped);
 
   FolderHelper.DeleteFolder(lFile);
+  {$ELSEIF NETSTANDARD}
+  mapped.DeleteAsync.AsTask.Wait;
   {$ELSEIF ECHOES}
   System.IO.Directory.Delete(mapped, true);
   {$ELSEIF ISLAND}
@@ -379,6 +344,8 @@ begin
     exit nil;
 
   exit ExistingFile.path;
+  {$ELSEIF NETSTANDARD}
+  exit FolderHelper.GetFile(mapped, FileName);
   {$ELSEIF ECHOES}
   var ExistingFileName := System.IO.Path.Combine(mapped, FileName);
   if System.IO.File.Exists(ExistingFileName) then
@@ -401,6 +368,11 @@ method Folder.GetFiles: not nullable ImmutableList<File>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles((f,n)->new java.io.File(f, n).isFile).Select(f->f.path).ToList() as not nullable;
+  {$ELSEIF NETSTANDARD}
+  var files := mapped.GetFilesAsync.Await;
+  result := new ImmutableList<File>();
+  for i: Integer := 0 to files.Count-1 do
+    result.Add(File(files.Item[i]));
   {$ELSEIF ECHOES}
   result := new ImmutableList<File>(System.IO.Directory.GetFiles(mapped));
   {$ELSEIF ISLAND}
@@ -424,6 +396,11 @@ method Folder.GetSubfolders: not nullable List<Folder>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles( (f,n) -> new java.io.File(f, n).isDirectory).Select(f -> f.Path).ToList() as not nullable;
+  {$ELSEIF NETSTANDARD}
+  var folders := mapped.GetFoldersAsync.Await;
+  result := new List<Folder>();
+  for i: Integer := 0 to folders.Count-1 do
+    result.Add(Folder(folders.Item[i]));
   {$ELSEIF ECHOES}
   result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
   {$ELSEIF ISLAND}
@@ -454,6 +431,8 @@ begin
     raise new IOException(RTLErrorMessages.IO_RENAME_ERROR, mapped, NewName);
 
   result := NewName;
+  {$ELSEIF NETSTANDARD}
+  mapped.RenameAsync(NewName, Windows.Storage.NameCollisionOption.FailIfExists).AsTask().Wait();
   {$ELSEIF ECHOES}
   var TopLevel := System.IO.Path.GetDirectoryName(mapped);
   var FolderName := System.IO.Path.Combine(TopLevel, NewName);
@@ -479,7 +458,7 @@ begin
   result := NewFolderName;
   {$ENDIF}
 end;
-{$ENDIF}
+
 
 {$IF COOPER}
 class method FolderHelper.DeleteFolder(Value: java.io.File);

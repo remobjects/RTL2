@@ -3,7 +3,8 @@
 
 interface
 
-type
+{$IF ECHOES OR (TOFFEE AND MACOS)}
+type 
   {$IF JAVA}
   PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
@@ -14,7 +15,6 @@ type
   PlatformTask = Foundation.NSTask;
   {$ENDIF}
 
-{$IF ECHOES OR (TOFFEE AND MACOS)}
   Task = public class mapped to PlatformTask
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;

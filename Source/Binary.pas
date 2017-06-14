@@ -21,7 +21,7 @@ type
   {$ENDIF}
   public
     {$IF TOFFEE OR ECHOES}constructor; mapped to constructor();{$ENDIF}
-    {$IF TOFFEE OR ECHOES}constructor; empty;{$ENDIF}
+    {$IF NOT(TOFFEE OR ECHOES)}constructor; empty;{$ENDIF}
     constructor(anArray: array of Byte);
     constructor(Bin: ImmutableBinary);
 

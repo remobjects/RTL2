@@ -34,7 +34,11 @@ type
     method ToSortedList: ImmutableList<T>;
     {$ENDIF}
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
-    method ToArray: not nullable array of T; {$IF COOPER}inline;{$ENDIF}
+    {$IFDEF COOPER}
+    method ToArray: not nullable array of T; inline;
+    {$ELSE}
+    method ToArray: not nullable array of T; 
+    {$ENDIF}
     method ToList<U>: not nullable ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
 
     method UniqueCopy: not nullable ImmutableList<T>;
@@ -96,8 +100,8 @@ type
     method Sort(Comparison: Comparison<T>);
     method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF} reintroduce;
 
-    method SubList(aStartIndex: Int32): List<T>; {$IF NOT COOPER}reintroduce;{$ENDIF} inline;
-    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; {$IF NOT COOPER}reintroduce;{$ENDIF} inline;
+    method SubList(aStartIndex: Int32): List<T>; reintroduce; inline;
+    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; reintroduce; inline;
 
     property Item[i: Integer]: T read GetItem write SetItem; default;
   end;
@@ -532,17 +536,21 @@ begin
   result := self.OrderBy(n -> n).ToList();
 end;
 {$ENDIF}
-
+{$IFDEF COOPER}
 method ImmutableList<T>.ToArray: not nullable array of T;
 begin
-  {$IF COOPER}
   exit mapped.toArray(new T[mapped.size()]) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
+end;
+{$ELSE}
+method ImmutableList<T>.ToArray: not nullable array of T;
+begin
+  {$IF ECHOES OR ISLAND}
   exit mapped.ToArray as not nullable;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArray<T>(self);
   {$ENDIF}
 end;
+{$ENDIF}
 
 method ImmutableList<T>.ToList<U>: not nullable ImmutableList<U>;
 begin

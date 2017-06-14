@@ -316,9 +316,13 @@ class method XmlDocument.FromUrl(aUrl: not nullable Url): not nullable XmlDocume
 begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
-  else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then
+  else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
+    {$IFDEF ISLAND}
+    raise new NotImplementedException;
+    {$ELSE}
     result := Http.GetXml(new HttpRequest(aUrl))
-  else
+    {$ENDIF}
+  end else
     raise new XmlException(String.Format("Cannot load XML from URL '{0}'.", aUrl.ToAbsoluteString()));
 end;
 
@@ -333,7 +337,11 @@ begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := TryFromFile(aUrl.FilePath, out aError)
   else if aUrl.Scheme in ["http", "https"] then try
+    {$IFDEF ISLAND}
+    raise new NotImplementedException;
+    {$ELSE}
     result := Http.GetXml(new HttpRequest(aUrl));
+    {$ENDIF}
   except
     on E: XmlException do;
     on E: HttpException do;

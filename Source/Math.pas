@@ -234,6 +234,7 @@ begin
 end;
 {$ENDIF}
 
+{$IFDEF COOPER}
 class method Math.Round(a: Double): Int64;
 begin
   if Consts.IsNaN(a) or Consts.IsInfinity(a) then
@@ -241,8 +242,40 @@ begin
 
   exit Int64(Floor(a + 0.499999999999999999));
 end;
+{$ENDIF}
+{$IFDEF TOFFEE}
+class method Math.Round(a: Double): Int64;
+begin
+  if Consts.IsNaN(a) or Consts.IsInfinity(a) then
+    raise new ArgumentException("Value can not be rounded to Int64");
 
-{$IF COOPER or TOFFEE}
+  exit Int64(Floor(a + 0.499999999999999999));
+end;
+{$ENDIF}
+
+{$IFDEF ECHOES or ISLAND}
+class method Math.Round(a: Double): Int64;
+begin
+  if Consts.IsNaN(a) or Consts.IsInfinity(a) then
+    raise new ArgumentException("Value can not be rounded to Int64");
+
+  exit Int64(Floor(a + 0.499999999999999999));
+end;
+{$ENDIF}
+
+{$IF COOPER}
+class method Math.Sign(d: Double): Integer;
+begin
+  if Consts.IsNaN(d) then
+    raise new ArgumentException("Value can not be NaN");
+
+  if d > 0 then exit 1;
+  if d < 0 then exit -1;
+  exit 0;
+end;
+{$ENDIF}
+
+{$IF TOFFEE}
 class method Math.Sign(d: Double): Integer;
 begin
   if Consts.IsNaN(d) then

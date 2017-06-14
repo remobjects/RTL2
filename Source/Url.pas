@@ -31,12 +31,12 @@ type
     method GetUnixPath: nullable String;
     method GetCanonicalVersion(): Url;
 
-    method GetPathExtension: String;
-    method GetLastPathComponent: String;
+    method GetPathExtension: nullable String;
+    method GetLastPathComponent: nullable String;
     method GetFilePathWithoutLastComponent: String;
     method GetWindowsPathWithoutLastComponent: String;
     method GetUnixPathWithoutLastComponent: String;
-    method GetUrlWithoutLastComponent: Url;
+    method GetUrlWithoutLastComponent: nullable Url;
 
     method DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String; //inline; 76882: Echoes: E0 Internal error: GOUNKEX137 with `inline`
 
@@ -109,7 +109,7 @@ type
 
     method UrlWithChangedLastPathComponent(aNewLastPathComponent: not nullable String): nullable Url;
 
-    method GetParentUrl(): Url;
+    method GetParentUrl(): nullable Url;
 
     method SubUrl(params aComponents: array of String): not nullable Url;
     method SubUrl(params aComponents: array of String) isDirectory(aIsDirectory: Boolean): not nullable Url;

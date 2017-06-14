@@ -9,8 +9,20 @@ type
 
     [ToString]
     method ToString: String; override;
-    method {$IF TOFFEE}isEqual(Obj: id){$ELSE}&Equals(Obj: Object){$ENDIF}: Boolean; override;
-    method {$IF TOFFEE}hash: Foundation.NSUInteger{$ELSEIF COOPER}hashCode: Integer{$ELSEIF ECHOES OR ISLAND}GetHashCode: Integer{$ENDIF}; override;
+        {$IF TOFFEE}
+    method isEqual(obj: id): Boolean;
+    {$ELSE}
+    method &Equals(Obj: Object): Boolean; override;
+    {$ENDIF}
+    {$IF COOPER}
+    method hashCode: Integer; override;
+    {$ENDIF}
+    {$IF ECHOES OR ISLAND}
+    method GetHashCode: Integer; override;
+    {$ENDIF}
+    {$IF TOFFEE}
+    method hash: Foundation.NSUInteger; override;
+    {$ENDIF}
 
     property Value: not nullable T;
     operator Implicit(aValue: JsonValue<T>): not nullable T;
@@ -75,7 +87,8 @@ begin
   result := Value.ToString;
 end;
 
-method JsonValue<T>.{$IF TOFFEE}isEqual(Obj: id){$ELSE}&Equals(Obj: Object){$ENDIF}: Boolean;
+{$IF TOFFEE}
+method JsonValue<T>.isEqual(Obj: id): Boolean;
 begin
   if (Obj = nil) or (not (Obj is JsonValue<T>)) then
     exit false;
@@ -83,10 +96,33 @@ begin
   exit self.Value.Equals(JsonValue<T>(Obj).Value);
 end;
 
-method JsonValue<T>.{$IF TOFFEE}hash: Foundation.NSUInteger{$ELSEIF COOPER}hashCode: Integer{$ELSEIF ECHOES OR ISLAND}GetHashCode: Integer{$ENDIF};
+{$ELSE}
+method JsonValue<T>.&Equals(Obj: Object): Boolean;
+begin
+  if (Obj = nil) or (not (Obj is JsonValue<T>)) then
+    exit false;
+
+  exit self.Value.Equals(JsonValue<T>(Obj).Value);
+end;
+{$ENDIF}
+{$IF TOFFEE}
+method JsonValue<T>.hash: Foundation.NSUInteger;
 begin
   exit if self.Value = nil then -1 else self.Value.GetHashCode;
 end;
+{$ENDIF}
+{$IF COOPER}
+method JsonValue<T>.hashCode: Integer;
+begin
+  exit if self.Value = nil then -1 else self.Value.GetHashCode;
+end;
+{$ENDIF}
+{$IF ECHOES OR ISLAND}
+method JsonValue<T>.GetHashCode: Integer;
+begin
+  exit if self.Value = nil then -1 else self.Value.GetHashCode;
+end;
+{$ENDIF}
 
 operator JsonValue<T>.Implicit(aValue: JsonValue<T>): not nullable T;
 begin

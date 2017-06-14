@@ -6,7 +6,7 @@ type
   Range = public record {$IF TOFFEE}mapped to Foundation.NSRange{$ENDIF}
   public
     constructor(aLocation, aLength: Integer);
-    {$IF TOFFEE}
+    {$IFNDEF TOFFEE}
     property Location: Integer;
     property Length: Integer;
     {$ELSE}
