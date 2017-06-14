@@ -47,7 +47,7 @@ type
     method AddYears(Value: Integer): DateTime;
 
     method CompareTo(Value: DateTime): Integer;
-    method ToString(aTimeZone: TimeZone): String;
+    method ToString(aTimeZone: TimeZone := nil): String;
     method ToString(Format: String; aTimeZone: TimeZone := nil): String;
     method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
 
