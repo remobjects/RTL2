@@ -3,7 +3,11 @@
 interface
 
 type
-  ImmutableDictionary<T, U> = public class mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary where T is class, U is class;{$ENDIF}
+  ImmutableDictionary<T, U> = public class mapped to 
+  {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary{$ENDIF}
+  {$IFDEF TOFFEE}
+  where T is class, U is class;
+  {$ENDIF}
   private
     method GetKeys: ImmutableList<T>;
     method GetValues: sequence of U;
@@ -31,7 +35,10 @@ type
     {$ENDIF}
   end;
 
-  Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary where T is class, U is class;{$ENDIF}
+  Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary{$ENDIF}
+  {$IFDEF TOFFEE}
+  where T is class, U is class;
+  {$ENDIF}
   private
     method SetItem(Key: T; Value: U); inline;
     method GetItem(aKey: T): U; inline; // 76792: Descendant mapped type can't see `protected` members from ancestor, for property getter

@@ -1,20 +1,20 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 interface
 
 type
   {$IF JAVA}
-  PlatformTask = //
+  PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
   PlatformTask = System.Diagnostics.Process;
   {$ELSEIF ISLAND}
-  PlatformTask = //
+  PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF TOFFEE}
   PlatformTask = Foundation.NSTask;
   {$ENDIF}
 
+{$IF ECHOES OR (TOFFEE AND MACOS)}
   Task = public class mapped to PlatformTask
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
@@ -37,8 +37,9 @@ type
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer;
     class method RunAsync(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Task;
   end;
-
+{$ENDIF}
 implementation
+{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 method Task.WaitFor;
 begin

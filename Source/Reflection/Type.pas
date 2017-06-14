@@ -20,10 +20,9 @@ type
   PlatformType = RemObjects.Elements.System.Type;
   {$ENDIF}
 
+  &Type = public class 
   {$IF ECHOES OR COOPER OR ISLAND}
-  &Type = public class mapped to PlatformType
-  {$ELSEIF TOFFEE}
-  &Type = public class
+  mapped to PlatformType
   {$ENDIF}
   private
     {$IF TOFFEE}

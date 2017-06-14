@@ -20,7 +20,8 @@ type
     fData: java.io.ByteArrayOutputStream := new java.io.ByteArrayOutputStream();
   {$ENDIF}
   public
-    constructor; {$IF TOFFEE OR ECHOES}mapped to constructor();{$ELSE}empty;{$ENDIF}
+    {$IF TOFFEE OR ECHOES}constructor; mapped to constructor();{$ENDIF}
+    {$IF TOFFEE OR ECHOES}constructor; empty;{$ENDIF}
     constructor(anArray: array of Byte);
     constructor(Bin: ImmutableBinary);
 

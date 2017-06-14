@@ -19,7 +19,8 @@ type
     method CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
     method CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := true): not nullable File;
     method Delete;
-    method Exists: Boolean; {$IF NOT COOPER}inline;{$ENDIF}
+    {$IF NOT COOPER}method Exists: Boolean; inline;{$ENDIF}
+    {$IF COOPER}method Exists: Boolean; {$ENDIF}
     method Move(NewPathAndName: not nullable File): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
     method Open(Mode: FileOpenMode): not nullable FileHandle;
@@ -140,12 +141,11 @@ begin
   aFileName.Delete()
 end;
 
+{$IF NOT COOPER}
 method File.Exists: Boolean;
 begin
   if length(mapped) = 0 then exit false;
-  {$IF COOPER}
-  result := JavaFile.exists;
-  {$ELSEIF NETSTANDARD}
+  {$IF NETSTANDARD}
   try
     result := assigned(GetFile(aFileName));
   except
@@ -160,6 +160,15 @@ begin
   result := NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) and not isDirectory;
   {$ENDIF}
 end;
+{$ENDIF}
+
+{$IF COOPER}
+method File.Exists: Boolean;
+begin
+  if length(mapped) = 0 then exit false;
+  result := JavaFile.exists;
+end;
+{$ENDIF}
 
 class method File.Exists(aFileName: nullable File): Boolean;
 begin

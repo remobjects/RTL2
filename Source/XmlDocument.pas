@@ -316,12 +316,8 @@ class method XmlDocument.FromUrl(aUrl: not nullable Url): not nullable XmlDocume
 begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
-  {$IF NOT ISLAND}
-  //77333: Toffee: "in" operator is broken for mapped strings
-  //else if aUrl.Scheme in ["http", "https"] then
   else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then
     result := Http.GetXml(new HttpRequest(aUrl))
-  {$ENDIF}
   else
     raise new XmlException(String.Format("Cannot load XML from URL '{0}'.", aUrl.ToAbsoluteString()));
 end;
@@ -336,14 +332,12 @@ class method XmlDocument.TryFromUrl(aUrl: not nullable Url; out aError: XmlError
 begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := TryFromFile(aUrl.FilePath, out aError)
-  {$IF NOT ISLAND}
   else if aUrl.Scheme in ["http", "https"] then try
     result := Http.GetXml(new HttpRequest(aUrl));
   except
     on E: XmlException do;
     on E: HttpException do;
   end;
-  {$ENDIF}
 end;
 
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;

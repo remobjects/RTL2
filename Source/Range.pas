@@ -6,9 +6,13 @@ type
   Range = public record {$IF TOFFEE}mapped to Foundation.NSRange{$ENDIF}
   public
     constructor(aLocation, aLength: Integer);
-
-    property Location: Integer {$IF TOFFEE}read mapped.location write mapped.location{$ENDIF};
-    property Length: Integer {$IF TOFFEE} read mapped.length write mapped.length{$ENDIF};
+    {$IF TOFFEE}
+    property Location: Integer;
+    property Length: Integer;
+    {$ELSE}
+    property Location: Integer read mapped.location write mapped.location;
+    property Length: Integer read mapped.length write mapped.length;
+    {$ENDIF}
   end;
 
   RangeHelper = public static class

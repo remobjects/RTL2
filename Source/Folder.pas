@@ -219,7 +219,7 @@ end;
 method Folder.GetFiles: not nullable ImmutableList<File>;
 begin
   var files := mapped.GetFilesAsync.Await;
-  result := new ImmutableList<File>ImmutableList<File>ImmutableList<File>();
+  result := new ImmutableList<File>();
   for i: Integer := 0 to files.Count-1 do
     result.Add(File(files.Item[i]));
 end;

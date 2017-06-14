@@ -1,8 +1,8 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT (ISLAND AND LINUX)}
 
 interface
+{$IF NOT (ISLAND AND LINUX)}
 
 {$DEFINE XML}{$DEFINE JSON}
 
@@ -139,14 +139,17 @@ type
     //todo: method GetAndSaveAsFile(...);
     {$ENDIF}
   end;
-
+{$ENDIF}
 implementation
 
-{$IF ECHOES}
-uses System.Net;
-{$ENDIF}
+uses 
+  {$IF ECHOES}
+  System.Net,
+  {$ENDIF}
+  RemObjects.Elements;
 
 { HttpRequest }
+{$IF NOT (ISLAND AND LINUX)}
 
 constructor HttpRequest(aUrl: not nullable Url);
 begin
@@ -595,12 +598,16 @@ begin
       // I don't want to mess with BeginGetRequestStream/EndGetRequestStream methods here
       // HttpWebRequest.GetRequestStreamAsync() is not available in WP 8.0
       var getRequestStreamTask := System.Threading.Tasks.Task<System.IO.Stream>.Factory.FromAsync(@webRequest.BeginGetRequestStream, @webRequest.EndGetRequestStream, nil);
-      using stream := await getRequestStreamTask do begin
-    {$ELSEIF NETFX_CORE}
-      using stream := await webRequest.GetRequestStreamAsync() do begin
-    {$ELSE}
-      using stream := webRequest.GetRequestStream() do begin
     {$ENDIF}
+      using stream := 
+        {$IF NETSTANDARD}
+        await getRequestStreamTask
+        {$ELSEIF NETFX_CORE}
+        await webRequest.GetRequestStreamAsync() 
+        {$ELSE}
+        webRequest.GetRequestStream() 
+        {$ENDIF}
+    do begin
         var data := (aRequest.Content as IHttpRequestContent).GetContentAsArray();
         stream.Write(data, 0, data.Length);
         stream.Flush();
