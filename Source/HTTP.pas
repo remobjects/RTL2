@@ -1,6 +1,6 @@
-﻿{$IF NOT (ISLAND AND LINUX)}
+﻿namespace RemObjects.Elements.RTL;
 
-namespace RemObjects.Elements.RTL;
+{$IF NOT (ISLAND AND LINUX)}
 
 interface
 
@@ -1096,6 +1096,6 @@ begin
 end;
 *)
 
-end.
-
 {$ENDIF}
+
+end.
