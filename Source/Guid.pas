@@ -119,9 +119,6 @@ end;
 
 {$IF NOT TOFFEE}
 method Guid.&Equals(aValue: Object): Boolean;
-{$ELSE}
-method Guid.isEqual(aValue: Object): Boolean;
-{$ENDIF}
 begin
   if not assigned(aValue) or (aValue is not Guid) then
     exit false;
@@ -129,10 +126,16 @@ begin
   result := mapped.Equals(aValue);
   {$ELSEIF ECHOES OR ISLAND}
   result := fGuid.Equals((aValue as Guid).fGuid);
-  {$ELSEIF TOFFEE}
-  result := mapped.isEqual(aValue);
   {$ENDIF}
 end;
+{$ELSE}
+method Guid.isEqual(aValue: Object): Boolean;
+begin
+  if not assigned(aValue) or (aValue is not Guid) then
+    exit false;
+  result := mapped.isEqual(aValue);
+end;
+{$ENDIF}
 
 operator Guid.Equal(a, b: Guid): Boolean;
 begin
@@ -158,7 +161,7 @@ begin
 end;
 
 {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
-class method Guid.TryParse(aValue: String): Guid;
+class method Guid.TryParse(aValue: String): nullable Guid;
 begin
   if length(aValue) not in [36, 38] then
     exit nil;
@@ -277,12 +280,15 @@ end;
 
 {$IF COOPER OR ECHOES OR ISLAND}
 method Guid.ToString: PlatformString;
-{$ELSEIF TOFFEE}
-method Guid.description: NSString;
-{$ENDIF}
 begin
   result := self.ToString(GuidFormat.Default);
 end;
+{$ELSEIF TOFFEE}
+method Guid.description: PlatformString;
+begin
+  result := self.ToString(GuidFormat.Default);
+end;
+{$ENDIF}
 
 {$IF ECHOES OR ISLAND}
 class method Guid.Exchange(Value: array of Byte; Index1: Integer; Index2: Integer);

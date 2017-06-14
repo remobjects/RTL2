@@ -64,7 +64,8 @@ type
     property IsArray: Boolean read mapped.IsArray;
     property IsEnum: Boolean read mapped.IsEnum;
     property IsValueType: Boolean read mapped.IsValueType;
-    {$ELSEIF ISLAND}
+    {$ENDIF}
+    {$IF ISLAND}
     property Interfaces: ImmutableList<&Type> read mapped.Interfaces.ToList();
     property Methods: ImmutableList<&Method> read mapped.Methods.ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
@@ -75,7 +76,8 @@ type
     property IsArray: Boolean read mapped.Flags = IslandTypeFlags.Array;
     property IsEnum: Boolean read mapped.Flags = IslandTypeFlags.Enum;
     property IsValueType: Boolean read mapped.IsValueType;
-    {$ELSEIF COOPER}
+    {$ENDIF}
+    {$IF COOPER}
     property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
     property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
@@ -86,7 +88,8 @@ type
     property IsArray: Boolean read mapped.isArray();
     property IsEnum: Boolean read mapped.isEnum();
     property IsValueType: Boolean read mapped.isPrimitive();
-    {$ELSEIF TOFFEE}
+    {$ENDIF}
+    {$IF TOFFEE}
     method initWithID: instancetype;
     method initWithClass(aClass: &Class): instancetype;
     method initWithProtocol(aProtocol: id): instancetype;

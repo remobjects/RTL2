@@ -2,9 +2,11 @@
 
 interface
 
-{$IF COOPER}
-uses com.remobjects.elements.linq;
-{$ENDIF}
+uses 
+  {$IF COOPER}
+  com.remobjects.elements.linq,
+  {$ENDIF}
+  RemObjects.Elements;
 
 type
   Folder = public class mapped to {$IF NETSTANDARD}Windows.Storage.StorageFolder{$ELSE}PlatformString{$ENDIF}

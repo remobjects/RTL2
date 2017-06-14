@@ -77,10 +77,12 @@ type
   {$IFDEF COOPER}
     method Add<T, U>(aSelf: java.util.HashMap<T,U>; aKey: T; aVal: U);
     method GetSequence<T, U>(aSelf: java.util.HashMap<T,U>) : sequence of KeyValuePair<T,U>; iterator;
-    {$ELSEIF TOFFEE}
+    {$ENDIF}
+    {$IF TOFFEE}
     method Add<T, U>(aSelf: NSMutableDictionary; aKey: T; aVal: U);
     method GetSequence<T, U>(aSelf: NSDictionary) : sequence of KeyValuePair<T,U>; iterator;
-    {$ELSEIF ISLAND}
+    {$ENDIF}
+    {$IF ISLAND}
     method GetSequence<T, U>(aSelf: RemObjects.Elements.System.Dictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
     {$ENDIF}
     method Foreach<T, U>(aSelf: ImmutableDictionary<T, U>; aAction: Action<KeyValuePair<T, U>>);

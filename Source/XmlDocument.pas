@@ -102,7 +102,7 @@ type
     fNamespaces: List<XmlNamespace> := new List<XmlNamespace>;
     fDefaultNamespace: XmlNamespace;
 
-    method GetNamespace: XmlNamespace;
+    method GetNamespace: nullable XmlNamespace;
     method SetNamespace(aNamespace: XmlNamespace);
     method GetLocalName: not nullable String;
     method SetLocalName(aValue: not nullable String);
