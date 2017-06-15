@@ -26,7 +26,7 @@ type
     method GetPathAndQueryString: nullable String;
     method CopyWithPath(aPath: not nullable String): not nullable Url;
 
-    method GetFilePath: nullable String;
+    method IntGetFilePath: nullable String;
     method GetWindowsPath: nullable String;
     method GetUnixPath: nullable String;
     method GetCanonicalVersion(): Url;
@@ -92,7 +92,7 @@ type
     method IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
 
     // these are all Url-decoded:
-    property FilePath: String read {$IF KNOWN_UNIX}GetUnixPath{$ELSE}GetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
+    property FilePath: String read {$IF KNOWN_UNIX}GetUnixPath{$ELSE}IntGetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
     property WindowsPath: String read GetWindowsPath;                                         // converts "/" to "\", always
     property UnixPath: String read GetUnixPath;           // always keeps "/"
 
@@ -371,7 +371,7 @@ end;
 // Working with Paths
 //
 
-method Url.GetFilePath: nullable String;
+method Url.IntGetFilePath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then begin
     if not assigned(fCachedFilePath) then begin

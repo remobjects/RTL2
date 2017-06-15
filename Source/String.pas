@@ -120,7 +120,7 @@ var
          #$2028, //Line Separator
          #$2029, //Paragraph Separator
          #$0009, #$000A, #$000B, #$000C, #$000D,#$0085, #$00A0,  // other special symbols
-         #$FFEF];
+         #$FFEF]; public;
 
 implementation
 

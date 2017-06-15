@@ -10,7 +10,7 @@ public __mapped class Notification => NSNotification {
 		return __mapped.object
 	}
 
-	init(object: Object?, data: ImmutableDictionary<String,Object>?) {
+	public init(object: Object?, data: ImmutableDictionary<String,Object>?) {
 		return NSNotification(name: "Notification", object: object, userInfo: data)
 	}
 }
@@ -19,7 +19,7 @@ public class Notification {
 	public private(set) var object: Object?
 	public private(set) var data: ImmutableDictionary<String,Object>?
 
-	init(object: Object?, data: ImmutableDictionary<String,Object>?) {
+	public init(object: Object?, data: ImmutableDictionary<String,Object>?) {
 		self.object = object
 		self.data = data
 	}
