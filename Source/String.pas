@@ -504,7 +504,7 @@ begin
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
-  result := if r.location = NSNotFound then -1 else r.location;
+  result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;
 
@@ -536,7 +536,7 @@ begin
   {$ELSEIF TOFFEE}
   var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
   var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
-  result := if r.location = NSNotFound then -1 else r.location;
+  result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;
 
