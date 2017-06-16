@@ -114,13 +114,13 @@ type
   public
     Message: String;
     Suggestion: String;
-    Row: Integer; 
+    Row: Integer;
     Column: Integer;
     method FillErrorInfo(aMsg: String; aSuggestion: String; aRow: Integer; aColumn: Integer);
     begin
       Message := aMsg;
       Suggestion := aSuggestion;
-      Row := aRow; 
+      Row := aRow;
       Column := aColumn;
     end;
   end;
@@ -365,7 +365,7 @@ begin
       else if lLocalName = "xmlns" then lLocalName:="";
     result := new XmlNamespace withParent(aParent);
     (result as XmlNamespace).Prefix := lLocalName;
-    (result as XmlNamespace).Url := Url.UrlWithString(lValue);
+    (result as XmlNamespace).Uri := Uri.UriWithString(lValue);
     result.StartLine := lStartRow;
     result.StartColumn := lStartCol;
     result.EndLine := lEndRow;
@@ -457,7 +457,7 @@ begin
             "space":;
             "id":;
             "base":;
-            else begin 
+            else begin
               //raise new XmlException("Unknown attribute name for 'xml:' prefix '"+lLocalName+":'", lAttribute.StartLine, lAttribute.StartColumn+4);
               aError := new XmlErrorInfo;
               aError.FillErrorInfo("Unknown attribute name for 'xml:' prefix '"+lLocalName+":'", "space", lAttribute.StartLine, lAttribute.StartColumn+4);

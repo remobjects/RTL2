@@ -113,7 +113,7 @@ type
     method GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
     method GetNodes: ImmutableList<XmlNode>;
     method GetElements: not nullable sequence of XmlElement;
-    method GetNamespace(aUrl: Url): nullable XmlNamespace;
+    method GetNamespace(aUri: Uri): nullable XmlNamespace;
     method GetNamespace(aPrefix: String): nullable XmlNamespace;
     method GetNamespaces: not nullable sequence of XmlNamespace;
     method GetDefaultNamespace: XmlNamespace;
@@ -140,7 +140,7 @@ type
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
     property Elements: not nullable sequence of XmlElement read GetElements;
     property Nodes: ImmutableList<XmlNode> read GetNodes;
-    property &Namespace[aUrl: Url]: nullable XmlNamespace read GetNamespace;
+    property &Namespace[aUri: Uri]: nullable XmlNamespace read GetNamespace;
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
 
     method GetValue (aWithNested: Boolean): nullable String;
@@ -167,7 +167,7 @@ type
     method AddNode(aNode: not nullable XmlNode);
     //method MoveElement(aExistingElement: not nullable XmlElement) toIndex(aIndex: Integer);
     method AddNamespace(aNamespace: not nullable XmlNamespace);
-    method AddNamespace(aPrefix: nullable String; aUrl: not nullable Url): XmlNamespace;
+    method AddNamespace(aPrefix: nullable String; aUri: not nullable Uri): XmlNamespace;
     method RemoveNamespace(aNamespace: not nullable XmlNamespace);
     method RemoveNamespace(aPrefix: not nullable String);
     [ToString]
@@ -225,9 +225,9 @@ type
     QuoteChar: Char := '"';
     constructor withParent(aParent: XmlNode := nil);
   public
-    constructor(aPrefix: String; aUrl: not nullable Url);
+    constructor(aPrefix: String; aUri: not nullable Uri);
     property Prefix: String read GetPrefix write SetPrefix;
-    property Url: Url;
+    property Uri: Uri;
     [ToString]
     method ToString(): String; override;
     method ToString(aFormatInsideTags: Boolean): String;
@@ -632,7 +632,7 @@ begin
     if (lBracePos = 0) then begin
       var lClosingBracePos := aLocalName.IndexOf('}');
       if lClosingBracePos > lBracePos then begin
-        aNamespace := &Namespace[Url.UrlWithString(aLocalName.Substring(1, lClosingBracePos-1))];
+        aNamespace := &Namespace[Uri.UriWithString(aLocalName.Substring(1, lClosingBracePos-1))];
         if assigned(aNamespace) then
           result := FirstElementWithName(aLocalName.Substring(lClosingBracePos+1, aLocalName.Length-lClosingBracePos-1), aNamespace);
       end;
@@ -929,9 +929,9 @@ begin
   result := fNamespaces as not nullable;
 end;
 
-method XmlElement.GetNamespace(aUrl: Url): nullable XmlNamespace;
+method XmlElement.GetNamespace(aUri: Uri): nullable XmlNamespace;
 begin
-  result := DefinedNamespaces.Where(a -> a.Url = aUrl).FirstOrDefault;
+  result := DefinedNamespaces.Where(a -> a.Uri = aUri).FirstOrDefault;
 end;
 
 method XmlElement.GetNamespace(aPrefix: String): nullable XmlNamespace;
@@ -949,9 +949,9 @@ begin
     else  raise new Exception("Duplicate namespace xmlns:"+aNamespace.Prefix);
 end;
 
-method XmlElement.AddNamespace(aPrefix: nullable String; aUrl: not nullable Url): XmlNamespace;
+method XmlElement.AddNamespace(aPrefix: nullable String; aUri: not nullable Uri): XmlNamespace;
 begin
-  result := new XmlNamespace(aPrefix, aUrl);
+  result := new XmlNamespace(aPrefix, aUri);
   AddNamespace(result);
 end;
 
@@ -1169,11 +1169,11 @@ begin
   fNodeType := XmlNodeType.Namespace;
 end;
 
-constructor XmlNamespace(aPrefix: String; aUrl: not nullable Url);
+constructor XmlNamespace(aPrefix: String; aUri: not nullable Uri);
 begin
   inherited constructor;
   Prefix := aPrefix;
-  Url := aUrl;
+  Uri := aUri;
   fNodeType := XmlNodeType.Namespace;
 end;
 
@@ -1212,7 +1212,7 @@ begin
   result := result + "=";
   if not(aFormatInsideTags) and (innerWSright <> nil) then result := result + innerWSright;
   result := result+QuoteChar;
-  if assigned(Url) then result := result + Url.ToString;
+  if assigned(Uri) then result := result + Uri.ToString;
   result := result+QuoteChar;
 end;
 

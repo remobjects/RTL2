@@ -10,7 +10,7 @@ interface
 {$ENDIF}
 
 type
-  Url = public class// {$IF COOPER}mapped to java.net.URL{$ELSEIF ECHOES}mapped to System.Uri{$ELSEIF TOFFEE}mapped to Foundation.NSURL{$ENDIF}
+  Url = public class(Uri)
   private
     var fScheme, fHost, fPath, fQueryString, fFragment, fUser: String;
     var fPort: nullable Int32;
@@ -45,7 +45,7 @@ type
     constructor(aUrlString: not nullable String);
   public
 
-    class method UrlWithString(aUrlString: nullable String): Url;
+    class method UrlWithString(aUrlString: not nullable String): Url;
     class method TryUrlWithString(aUrlString: nullable String): Url;
     class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
@@ -188,7 +188,7 @@ begin
   fPath := Url.AddPercentEncodingsToPath(aPath);
 end;
 
-class method Url.UrlWithString(aUrlString: nullable String): Url;
+class method Url.UrlWithString(aUrlString: not nullable String): Url;
 begin
   if length(aUrlString) > 0 then
     result := new Url(aUrlString);
