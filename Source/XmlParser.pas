@@ -365,7 +365,12 @@ begin
       else if lLocalName = "xmlns" then lLocalName:="";
     result := new XmlNamespace withParent(aParent);
     (result as XmlNamespace).Prefix := lLocalName;
-    (result as XmlNamespace).Uri := Uri.UriWithString(lValue);
+    var lUri := Uri.TryUriWithString(lValue);
+    if lUri = nil then begin
+      aError.FillErrorInfo("Wrong Url","",lEndRow, lEndCol);
+      exit;
+    end;
+    (result as XmlNamespace).Uri := lUri;//.TryUriWithString(lValue);
     result.StartLine := lStartRow;
     result.StartColumn := lStartCol;
     result.EndLine := lEndRow;
