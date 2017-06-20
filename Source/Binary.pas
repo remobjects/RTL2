@@ -124,8 +124,8 @@ begin
   exit ms;
   {$ELSEIF ISLAND}
   var ms := new PlatformBinary();
-  if length(anArray) > 0 then
-    ms.Write(anArray, 0, length(anArray));
+  if RemObjects.Oxygene.System.length(anArray) > 0 then
+    ms.Write(anArray, 0, RemObjects.Oxygene.System.length(anArray));
   exit ms;
   {$ELSEIF TOFFEE}
   exit NSMutableData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
