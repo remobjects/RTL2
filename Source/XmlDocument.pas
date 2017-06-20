@@ -632,7 +632,7 @@ begin
     if (lBracePos = 0) then begin
       var lClosingBracePos := aLocalName.IndexOf('}');
       if lClosingBracePos > lBracePos then begin
-        aNamespace := &Namespace[Uri.UriWithString(aLocalName.Substring(1, lClosingBracePos-1))];
+        aNamespace := &Namespace[Uri.TryUriWithString(aLocalName.Substring(1, lClosingBracePos-1))];
         if assigned(aNamespace) then
           result := FirstElementWithName(aLocalName.Substring(lClosingBracePos+1, aLocalName.Length-lClosingBracePos-1), aNamespace);
       end;
