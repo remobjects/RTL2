@@ -158,7 +158,7 @@ begin
   {$ELSEIF ISLAND}
   result := PlatformString.FromCharArray(Value);
   {$ELSEIF TOFFEE}
-  result := new PlatformString withCharacters(Value) length(length(Value));
+  result := new PlatformString withCharacters(Value) length(RemObjects.Oxygene.System.length(Value));
   {$ENDIF}
 end;
 

@@ -82,7 +82,7 @@ begin
   ms.Write(anArray, anArray.Length);
   exit ms;
   {$ELSEIF TOFFEE}
-  exit NSData.dataWithBytes(anArray) length(length(anArray));
+  exit NSData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
   {$ENDIF}
 end;
 
@@ -128,7 +128,7 @@ begin
     ms.Write(anArray, 0, length(anArray));
   exit ms;
   {$ELSEIF TOFFEE}
-  exit NSMutableData.dataWithBytes(anArray) length(length(anArray));
+  exit NSMutableData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
   {$ENDIF}
 end;
 
