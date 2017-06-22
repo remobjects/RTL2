@@ -171,6 +171,7 @@ begin
     Tokenizer.Next;
     if not Expected(out aError, XmlTokenKind.ElementName) then exit;
     var lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out aError));
+    if assigned(aError) then exit;
     if lXmlAttr.LocalName = "version" then begin
       //check version
       if (lXmlAttr.Value.IndexOf("1.") <> 0) or (lXmlAttr.Value.Length <> 3) or
@@ -190,6 +191,7 @@ begin
           //raise new XmlException("Unknown declaration attribute", Tokenizer.Row, Tokenizer.Column);
         end;
         lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out aError));
+        if assigned(aError) then exit;
       end;
     end;
     if lXmlAttr.LocalName = "encoding" then begin
@@ -210,7 +212,8 @@ begin
           exit;
           //raise new XmlException("Unknown declaration attribute", Tokenizer.Row, Tokenizer.Column);
         end;
-        lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out aError));
+        lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out aError)); 
+        if assigned(aError) then exit;
       end;
     end;
     if lXmlAttr.LocalName = "standalone" then begin
@@ -259,13 +262,17 @@ begin
         if lFormat then result.AddNode(new XmlText(Value := fLineBreak));
       end;//add node
       XmlTokenKind.ProcessingInstruction : begin
-        result.AddNode(ReadProcessingInstruction(nil, out aError));
+        var lPI := ReadProcessingInstruction(nil, out aError);
+        if assigned(aError) then exit;
+        result.AddNode(lPI);
         Tokenizer.Next;//add node
         if lFormat then result.AddNode(new XmlText(Value := fLineBreak));
       end;
       XmlTokenKind.DocumentType: begin
         WasDocType := true;
-        result.AddNode(ReadDocumentType(out aError));
+        var lDT := ReadDocumentType(out aError);
+        if assigned(aError) then exit;
+        result.AddNode(lDT);
         Tokenizer.Next;
         if lFormat then result.AddNode(new XmlText(Value := fLineBreak));
       end;
@@ -279,6 +286,7 @@ begin
   end;
 
   result.Root := ReadElement(nil,lIndent, out aError);
+  if assigned(aError) then exit;
   while Tokenizer.Token <> XmlTokenKind.EOF do begin
     if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd) then exit;
     Tokenizer.Next;
@@ -286,7 +294,11 @@ begin
     if not Expected(out aError, XmlTokenKind.EOF, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction) then exit;
     case Tokenizer.Token of
       XmlTokenKind.Comment: result.AddNode(new XmlComment(Value := Tokenizer.Value));
-      XmlTokenKind.ProcessingInstruction: result.AddNode(ReadProcessingInstruction(nil, out aError));
+      XmlTokenKind.ProcessingInstruction: begin 
+        var lPI := ReadProcessingInstruction(nil, out aError);
+        if assigned(aError) then exit;
+        result.AddNode(lPI);
+      end;
     end;
     Tokenizer.Next;
   end;
@@ -300,15 +312,18 @@ begin
   aError := new XmlErrorInfo;
   case Tokenizer.Token of
     XmlTokenKind.SyntaxError: begin //raise new XmlException (Tokenizer.Value, Tokenizer.Row, Tokenizer.Column);
+      aError := new XmlErrorInfo;
       aError.FillErrorInfo(Tokenizer.Value, Values[0].toString, Tokenizer.Row, Tokenizer.Column);
       exit false;
     end;
     XmlTokenKind.EOF: begin
+      aError := new XmlErrorInfo;
       aError.FillErrorInfo("Unexpected end of file", Values[0].ToString, Tokenizer.Row, Tokenizer.Column);
       //raise new XmlException ("Unexpected end of file", Tokenizer.Row, Tokenizer.Column);
       exit false;
     end;
     else begin
+      aError := new XmlErrorInfo;
       aError.FillErrorInfo('Unexpected token. '+ Values[0].ToString + ' is expected but '+Tokenizer.Token.ToString+" found", "", Tokenizer.Row, Tokenizer.Column);
       //raise new XmlException('Unexpected token. '+ Values[0].ToString + ' is expected but '+Tokenizer.Token.ToString+" found", Tokenizer.Row, Tokenizer.Column);
       exit false;
@@ -366,7 +381,8 @@ begin
     result := new XmlNamespace withParent(aParent);
     (result as XmlNamespace).Prefix := lLocalName;
     var lUri := Uri.TryUriWithString(lValue);
-    if lUri = nil then begin
+    if (lUri = nil) and (lLocalName <> "") then begin
+      aError := new XmlErrorInfo();
       aError.FillErrorInfo("Wrong Url","",lEndRow, lEndCol);
       exit;
     end;
@@ -424,6 +440,7 @@ begin
   end;
   while (Tokenizer.Token = XmlTokenKind.ElementName) do begin
     var lXmlNode := ReadAttribute(result, WS, aIndent, out aError);
+    if assigned(aError) then exit;
     WS := "";
     if lXmlNode.NodeType = XmlNodeType.Namespace then result.AddNamespace(XmlNamespace(lXmlNode))
     else result.AddAttribute(XmlAttribute(lXmlNode));
@@ -431,6 +448,8 @@ begin
   end;
   var lFormat := false;
   if (Tokenizer.Token = XmlTokenKind.TagClose) or (Tokenizer.Token = XmlTokenKind.EmptyElementEnd) then begin
+    result.OpenTagEndLine := Tokenizer.Row;
+    result.OpenTagEndColumn := Tokenizer.Column;
     //check prefix for LocalName
     var lNamespace: XmlNamespace := nil;
     if result.LocalName.IndexOf(':') > 0 then begin
@@ -498,7 +517,9 @@ begin
         if not Expected(out aError, XmlTokenKind.SymbolData, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.CData, XmlTokenKind.ProcessingInstruction, XmlTokenKind.TagOpen, XmlTokenKind.TagElementEnd) then exit;
         if Tokenizer.Token = XmlTokenKind.TagOpen then begin
           if lFormat then begin result.AddNode(new XmlText(result, Value:=fLineBreak));result.AddNode(new XmlText(result, Value:=aIndent)); end;
-          result.AddElement(ReadElement(result, aIndent, out aError));
+          var lEl := ReadElement(result, aIndent, out aError);
+          if lEl <> nil then result.AddElement(lEl);
+          if assigned(aError) then exit;
           WSValue := "";
         end
         else begin
@@ -541,7 +562,9 @@ begin
               WSValue := "";
             end;
             XmlTokenKind.ProcessingInstruction: begin
-              result.AddNode(ReadProcessingInstruction(result, out aError));
+              var lPI := ReadProcessingInstruction(result, out aError);
+              if lPI <> nil then result.AddNode(lPI);
+              if assigned(aError) then exit;
               WSValue := "";
             end;
           end;
@@ -683,8 +706,8 @@ begin
     end
     else begin//raise new XmlException("SYSTEM, PUBLIC or square brackets expected", Tokenizer.Row, Tokenizer.Column);
       aError := new XmlErrorInfo;
-          aError.FillErrorInfo("SYSTEM, PUBLIC or square brackets expected", "SYSTEM", Tokenizer.Row, Tokenizer.Column);
-          exit;
+      aError.FillErrorInfo("SYSTEM, PUBLIC or square brackets expected", "SYSTEM", Tokenizer.Row, Tokenizer.Column);
+      exit;
     end;
     if not Expected(out aError, XmlTokenKind.Whitespace, XmlTokenKind.TagClose) then exit;
     if Tokenizer.Token = XmlTokenKind.Whitespace then Tokenizer.Next;

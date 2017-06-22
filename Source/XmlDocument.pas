@@ -52,6 +52,7 @@ type
     property Encoding : String;
     property Standalone : String;
     method AddNode(aNode: not nullable XmlNode);
+    method NearestOpenTag(aRow: Integer; aColumn: Integer): XmlElement;
   end;
 
   XmlNodeType = public enum(
@@ -87,6 +88,7 @@ type
     property StartColumn: Integer;
     property EndLine: Integer;
     property EndColumn: Integer;
+
     [ToString]
     method ToString(): String; override;
     method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String; virtual;
@@ -134,6 +136,8 @@ type
     property Value: nullable String read GetValue(true) write SetValue;
     property IsEmpty: Boolean read fIsEmpty;
     property EndTagName: String;
+    property OpenTagEndLine: Integer;
+    property OpenTagEndColumn: Integer;
 
     property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
@@ -502,6 +506,24 @@ begin
   end;
   result := aNodes as not nullable;}
   result := fNodes;
+end;
+
+method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer): XmlElement;
+begin
+  if (Root.StartLine <= aRow) and (Root.StartColumn <= aColumn) then result := Root;
+  var lElement: XmlElement;
+  while not (result.Elements.Count = 0) and (lElement <> result) do begin
+    lElement := result;
+    for each el in lElement.Elements do begin
+      if (el.StartLine > aRow) or ((el.StartLine = aRow) and (el.StartColumn > aColumn)) then
+        break
+      else 
+        result := el
+    end;
+    if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn < aColumn))) then 
+      exit result.Parent as XmlElement;
+  end;     
+  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then result := nil;
 end;
 
 constructor XmlNode withParent(aParent: XmlNode);
