@@ -10,6 +10,7 @@ type
     fXmlParser: XmlParser;
     fFormatOptions: XmlFormattingOptions;
     fLineBreak: String;
+    HasError: Boolean;
   private
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
@@ -52,7 +53,7 @@ type
     property Encoding : String;
     property Standalone : String;
     method AddNode(aNode: not nullable XmlNode);
-    method NearestOpenTag(aRow: Integer; aColumn: Integer): XmlElement;
+    method NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
   end;
 
   XmlNodeType = public enum(
@@ -138,6 +139,8 @@ type
     property EndTagName: String;
     property OpenTagEndLine: Integer;
     property OpenTagEndColumn: Integer;
+    property CloseTagStartLine: Integer;
+    property CloseTagStartColumn: Integer;
 
     property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
@@ -266,6 +269,19 @@ type
     property Declaration: String;
   end;
 
+  XmlError = public class(XmlNode)
+  public
+    property Attribute: Boolean;
+  end;
+
+  XmlPosition = public enum(
+    None,
+    StartTag,
+    SingleTag,
+    BetweenTags,
+    EndTag
+  );
+ 
 implementation
 
 { XmlDocument }
@@ -311,7 +327,7 @@ begin
     end;}
     var XmlStr:String := aFileName.ReadText();
     var lXmlParser := new XmlParser(XmlStr);
-    result := lXmlParser.Parse(out aError);
+    result := lXmlParser.Parse(out aError); 
     result.fXmlParser := lXmlParser;
   end;
 end;
@@ -508,22 +524,40 @@ begin
   result := fNodes;
 end;
 
-method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer): XmlElement;
+method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
 begin
-  if (Root.StartLine <= aRow) and (Root.StartColumn <= aColumn) then result := Root;
+  if ((aRow < Root.StartLine) or ((aRow = Root.StartLine) and (aColumn <= Root.StartColumn))) or
+  ((Root.EndLine <> 0) and ((aRow > Root.EndLine) or ((aRow = Root.EndLine) and (aColumn >= Root.EndColumn)))) then exit nil;
+  result := Root;
+//if (Root.StartLine <= aRow) and (Root.StartColumn <= aColumn) then result := Root;
   var lElement: XmlElement;
   while not (result.Elements.Count = 0) and (lElement <> result) do begin
     lElement := result;
     for each el in lElement.Elements do begin
-      if (el.StartLine > aRow) or ((el.StartLine = aRow) and (el.StartColumn > aColumn)) then
+      if (el.StartLine > aRow) or ((el.StartLine = aRow) and (el.StartColumn >= aColumn)) then
         break
       else 
         result := el
     end;
-    if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn < aColumn))) then 
-      exit result.Parent as XmlElement;
-  end;     
-  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then result := nil;
+    if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn <= aColumn))) or
+      ((result.IsEmpty) and (result.OpenTagEndLine <> 0) and ((result.OpenTagEndLine < aRow) or ((result.OpenTagEndLine = aRow) and (result.OpenTagEndColumn <= aColumn)))) then begin
+      //then begin
+      result := result.Parent as XmlElement;
+      break;
+    end;
+  end;
+      
+  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin 
+    if result.IsEmpty then aCursorPosition := XmlPosition.SingleTag
+    else aCursorPosition := XmlPosition.StartTag;
+    //result := nil;
+    exit;
+  end;
+  if (aRow > result.CloseTagStartLine) or (aRow = result.CloseTagStartLine) and (aColumn > result.CloseTagStartColumn) then begin
+      aCursorPosition := XmlPosition.EndTag;
+      exit;
+  end;
+  aCursorPosition := XmlPosition.BetweenTags;
 end;
 
 constructor XmlNode withParent(aParent: XmlNode);
@@ -570,11 +604,13 @@ begin
       result := "<!DOCTYPE ";
       if XmlDocumentType(self).Name <> nil then result := result + XmlDocumentType(self).Name;
       if XmlDocumentType(self).PublicId <> nil then begin
-        result := result + " PUBLIC "+ XmlDocumentType(self).PublicId + " "+XmlDocumentType(self).SystemId;
+        if XmlDocumentType(self).PublicId = '[ERROR]' then result :=  result + '[ERROR]'
+        else result := result + " PUBLIC "+ XmlDocumentType(self).PublicId + " "+XmlDocumentType(self).SystemId;
 
       end
       else if XmlDocumentType(self).SystemId <> nil then
-        result := result + " SYSTEM "+XmlDocumentType(self).SystemId;
+        if XmlDocumentType(self).SystemId = '[ERROR]' then result := result + '[ERROR]'
+        else result := result + " SYSTEM "+XmlDocumentType(self).SystemId;
       if XmlDocumentType(self).Declaration <> nil then
         result := result + " ["+XmlDocumentType(self).Declaration+"]";
       result := result + ">";
