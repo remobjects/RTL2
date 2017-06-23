@@ -35,6 +35,7 @@ type
     method GetLastPathComponent: nullable String;
     method GetFilePathWithoutLastComponent: String;
     method GetWindowsPathWithoutLastComponent: String;
+    method GetPathWithoutLastComponent: String;
     method GetUnixPathWithoutLastComponent: String;
     method GetUrlWithoutLastComponent: nullable Url;
 
@@ -197,8 +198,11 @@ end;
 class method Url.TryUrlWithString(aUrlString: nullable String): Url;
 begin
   try
-    if length(aUrlString) > 0 then
-      result := new Url(aUrlString);
+    if length(aUrlString) > 0 then begin
+      result := new Url();
+      if not result.Parse(aUrlString) then
+        result := nil;
+    end;
   except
     on UrlException do;
   end;
@@ -571,6 +575,15 @@ begin
     result := result.SubString(1);
 end;
 
+method Url.GetPathWithoutLastComponent: String;
+begin
+  if length(fPath) > 0 then begin
+    var p := fPath.LastIndexOf("/");
+    if (p > 0) then // yes, 0, not -1
+      result := fPath.Substring(0, p+1); // include the "/"
+  end;
+end;
+
 method Url.GetUnixPathWithoutLastComponent: String;
 begin
   if length(fPath) > 0 then begin
@@ -582,7 +595,7 @@ end;
 
 method Url.GetUrlWithoutLastComponent: nullable Url;
 begin
-  var lPath := GetUnixPathWithoutLastComponent();
+  var lPath := GetPathWithoutLastComponent();
   if length(lPath) > 0 then
     result := CopyWithPath(lPath);
 end;
@@ -599,7 +612,7 @@ begin
         aNewExtension := "."+aNewExtension; // force a "." into the neww extension
       lName := lName+aNewExtension;
     end;
-    result := CopyWithPath(GetUnixPathWithoutLastComponent+lName);
+    result := CopyWithPath((GetPathWithoutLastComponent+AddPercentEncodingsToPath(lName)));
   end;
 end;
 
