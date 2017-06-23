@@ -212,7 +212,7 @@ begin
           exit;
           //raise new XmlException("Unknown declaration attribute", Tokenizer.Row, Tokenizer.Column);
         end;
-        lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out aError)); 
+        lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out aError));
         if assigned(aError) then exit;
       end;
     end;
@@ -294,7 +294,7 @@ begin
     if not Expected(out aError, XmlTokenKind.EOF, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction) then exit;
     case Tokenizer.Token of
       XmlTokenKind.Comment: result.AddNode(new XmlComment(Value := Tokenizer.Value));
-      XmlTokenKind.ProcessingInstruction: begin 
+      XmlTokenKind.ProcessingInstruction: begin
         var lPI := ReadProcessingInstruction(nil, out aError);
         if assigned(aError) then exit;
         result.AddNode(lPI);
@@ -383,7 +383,7 @@ begin
     var lUri := Uri.TryUriWithString(lValue);
     if (lUri = nil) and (lLocalName <> "") then begin
       aError := new XmlErrorInfo();
-      aError.FillErrorInfo("Wrong Url","",lEndRow, lEndCol);
+      aError.FillErrorInfo(String.Format("Invalid URI '{0}'", lValue), "" ,lEndRow, lEndCol);
       exit;
     end;
     (result as XmlNamespace).Uri := lUri;//.TryUriWithString(lValue);

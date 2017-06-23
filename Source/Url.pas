@@ -198,8 +198,11 @@ end;
 class method Url.TryUrlWithString(aUrlString: nullable String): Url;
 begin
   try
-    if length(aUrlString) > 0 then
-      result := new Url(aUrlString);
+    if length(aUrlString) > 0 then begin
+      result := new Url();
+      if not result.Parse(aUrlString) then
+        result := nil;
+    end;
   except
     on UrlException do;
   end;
