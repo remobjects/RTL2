@@ -16,9 +16,9 @@ type
       Assert.IsTrue(xml.Root.DefinedNamespaces.Count = 3);
       //Assert.IsTrue(xml.Root.DefaultNamespace.Name = "");
       //Assert.IsTrue(xml.Root.DefaultNamespace.Url.ToAbsoluteString() = "http://default");
-      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[0].Uri.ToString, Url.UrlWithString("http://default").ToAbsoluteString());
-      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[1].Uri.ToString, Url.UrlWithString("http://a").ToAbsoluteString());
-      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[2].Uri.ToString, Url.UrlWithString("http://bc").ToAbsoluteString());
+      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[0].Uri.ToString, Uri.UriWithString("http://default").ToString());
+      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[1].Uri.ToString, Uri.UriWithString("http://a").ToString());
+      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[2].Uri.ToString, Uri.UriWithString("http://bc").ToString());
 
       Assert.IsNotNil(xml.Root.FirstElementWithName("one"));
       Assert.IsNotNil(xml.Root.FirstElementWithName("two"));
