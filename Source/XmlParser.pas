@@ -517,7 +517,7 @@ begin
         var lSuggestion: String := "";
         var lElement := result;
         while (lSuggestion = "") and (lElement <> nil) do begin
-          if lElement.DefaultNamespace.Prefix <> "" then begin
+          if assigned(lElement.DefaultNamespace) and (lElement.DefaultNamespace.Prefix <> "") then begin
             lSuggestion := lElement.DefaultNamespace.Prefix;
             break;
           end;
@@ -570,7 +570,7 @@ begin
             var lSuggestion: String := "";
             var lElement := result;
             while (lSuggestion = "") and (lElement <> nil) do begin
-              if lElement.DefaultNamespace.Prefix <> "" then begin
+              if assigned(lElement.DefaultNamespace) and (lElement.DefaultNamespace.Prefix <> "") then begin
                 lSuggestion := lElement.DefaultNamespace.Prefix;
                 break;
               end;
