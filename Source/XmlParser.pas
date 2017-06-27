@@ -695,6 +695,8 @@ begin
         if not Expected(out aError, XmlTokenKind.TagClose) then exit;
         result.EndLine := Tokenizer.Row;
         result.EndColumn := Tokenizer.Column+1;
+        result.CloseTagEndLine := result.EndLine;
+        result.CloseTagEndColumn := result.EndColumn;
         if result.Parent = nil then exit(result);
         Tokenizer.Next;
       end;
@@ -702,6 +704,8 @@ begin
     else  if Tokenizer.Token = XmlTokenKind.EmptyElementEnd then begin
       result.EndLine := Tokenizer.Row;
       result.EndColumn := Tokenizer.Column+2;
+      result.OpenTagEndLine := result.EndLine;
+      result.OpenTagEndColumn := result.EndColumn;
       if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then
         if (FormatOptions.EmptyTagSyle = XmlTagStyle.PreferOpenAndCloseTag) then
           result.AddNode(new XmlText(result,Value := ""))

@@ -109,6 +109,7 @@ type
     method SetNamespace(aNamespace: XmlNamespace);
     method GetLocalName: not nullable String;
     method SetLocalName(aValue: not nullable String);
+    method GetFullName: not nullable String;
     //method GetValue: nullable String;
     method SetValue(aValue: nullable String);
     method GetAttributes: not nullable sequence of XmlAttribute;
@@ -141,6 +142,8 @@ type
     property OpenTagEndColumn: Integer;
     property CloseTagStartLine: Integer;
     property CloseTagStartColumn: Integer;
+    property CloseTagEndLine: Integer;
+    property CloseTagEndColumn: Integer;
 
     property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
@@ -149,6 +152,7 @@ type
     property Nodes: ImmutableList<XmlNode> read GetNodes;
     property &Namespace[aUri: Uri]: nullable XmlNamespace read GetNamespace;
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
+    property FullName: not nullable String read GetFullName;
 
     method GetValue (aWithNested: Boolean): nullable String;
     method ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
@@ -891,6 +895,13 @@ method XmlElement.GetLocalName: not nullable String;
 begin
   //result := fLocalName as not nullable;
   result := fLocalName.Trim as not nullable;
+end;
+
+method XmlElement.GetFullName: not nullable String;
+begin
+  result := "";
+  if assigned(&Namespace) and assigned(&Namespace.Prefix) then result := &Namespace.Prefix+':';
+  result := result + LocalName;
 end;
 
 method XmlElement.SetLocalName(aValue: not nullable String);
