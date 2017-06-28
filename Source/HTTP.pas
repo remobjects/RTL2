@@ -115,6 +115,9 @@ type
     {$IF ISLAND AND WINDOWS}
     property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
     {$ENDIF}
+    {$IF ISLAND AND LINUX}
+    class var fCurlHelper: CurlHelper;
+    {$ENDIF}
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
@@ -630,7 +633,7 @@ begin
     on E: Exception do
       ResponseCallback(new HttpResponse withException(E));
   end;
-  {$ELSEIF ISLAND AND WINDOWS}
+  {$ELSEIF ISLAND}
   Task.Run(() -> begin
     try
       var lResponse := ExecuteRequestSynchronous(aRequest, true);
@@ -828,6 +831,8 @@ begin
       raise new RTLException(E.Message);
     end;
   end;
+  {$ELSEIF ISLAND AND LINUX}
+
   {$ELSEIF TOFFEE}
   var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
 
