@@ -3,10 +3,11 @@
 interface
 
 type
-  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray;{$ENDIF};
-  PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray;{$ENDIF};
+  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
+  PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
 
-  ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray where T is class;{$ENDIF}
+  ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF}
+  {$IFDEF TOFFEE} where T is class;{$ENDIF}
   private
     method GetItem(&Index: Integer): T;
 
@@ -33,7 +34,11 @@ type
     method ToSortedList: ImmutableList<T>;
     {$ENDIF}
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
-    method ToArray: not nullable array of T; {$IF COOPER}inline;{$ENDIF}
+    {$IFDEF COOPER}
+    method ToArray: not nullable array of T; inline;
+    {$ELSE}
+    method ToArray: not nullable array of T; 
+    {$ENDIF}
     method ToList<U>: not nullable ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
 
     method UniqueCopy: not nullable ImmutableList<T>;
@@ -54,7 +59,10 @@ type
     property Item[i: Integer]: T read GetItem; default;
   end;
 
-  List<T> = public class (ImmutableList<T>, sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray where T is class;{$ENDIF}
+  List<T> = public class (ImmutableList<T>, sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF}
+  {$IFDEF TOFFEE}
+   where T is class;
+  {$ENDIF}
   private
     method GetItem(&Index: Integer): T;
     method SetItem(&Index: Integer; Value: T);
@@ -92,8 +100,8 @@ type
     method Sort(Comparison: Comparison<T>);
     method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF} reintroduce;
 
-    method SubList(aStartIndex: Int32): List<T>; {$IF NOT COOPER}reintroduce;{$ENDIF} inline;
-    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; {$IF NOT COOPER}reintroduce;{$ENDIF} inline;
+    method SubList(aStartIndex: Int32): List<T>; reintroduce; inline;
+    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; reintroduce; inline;
 
     property Item[i: Integer]: T read GetItem write SetItem; default;
   end;
@@ -528,17 +536,21 @@ begin
   result := self.OrderBy(n -> n).ToList();
 end;
 {$ENDIF}
-
+{$IFDEF COOPER}
 method ImmutableList<T>.ToArray: not nullable array of T;
 begin
-  {$IF COOPER}
   exit mapped.toArray(new T[mapped.size()]) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
+end;
+{$ELSE}
+method ImmutableList<T>.ToArray: not nullable array of T;
+begin
+  {$IF ECHOES OR ISLAND}
   exit mapped.ToArray as not nullable;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArray<T>(self);
   {$ENDIF}
 end;
+{$ENDIF}
 
 method ImmutableList<T>.ToList<U>: not nullable ImmutableList<U>;
 begin

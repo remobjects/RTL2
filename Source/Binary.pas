@@ -20,7 +20,8 @@ type
     fData: java.io.ByteArrayOutputStream := new java.io.ByteArrayOutputStream();
   {$ENDIF}
   public
-    constructor; {$IF TOFFEE OR ECHOES}mapped to constructor();{$ELSE}empty;{$ENDIF}
+    {$IF TOFFEE OR ECHOES}constructor; mapped to constructor();{$ENDIF}
+    {$IF NOT(TOFFEE OR ECHOES)}constructor; empty;{$ENDIF}
     constructor(anArray: array of Byte);
     constructor(Bin: ImmutableBinary);
 
@@ -81,7 +82,7 @@ begin
   ms.Write(anArray, anArray.Length);
   exit ms;
   {$ELSEIF TOFFEE}
-  exit NSData.dataWithBytes(anArray) length(length(anArray));
+  exit NSData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
   {$ENDIF}
 end;
 
@@ -123,11 +124,11 @@ begin
   exit ms;
   {$ELSEIF ISLAND}
   var ms := new PlatformBinary();
-  if length(anArray) > 0 then
-    ms.Write(anArray, 0, length(anArray));
+  if RemObjects.Oxygene.System.length(anArray) > 0 then
+    ms.Write(anArray, 0, RemObjects.Oxygene.System.length(anArray));
   exit ms;
   {$ELSEIF TOFFEE}
-  exit NSMutableData.dataWithBytes(anArray) length(length(anArray));
+  exit NSMutableData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
   {$ENDIF}
 end;
 

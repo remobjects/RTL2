@@ -276,19 +276,19 @@ begin
     raise new JsonNodeTypeException("JSON Node is not a string.")
 end;
 
-class method JsonNode.Create(aValue: Dictionary<String,JsonNode>): nullable JsonObject;
+class method JsonNode.Create(aValue: nullable Dictionary<String,JsonNode>): nullable JsonObject;
 begin
   if assigned(aValue) then
     result := new JsonObject(aValue);
 end;
 
-class method JsonNode.Create(aValue: List<JsonNode>): nullable JsonArray;
+class method JsonNode.Create(aValue: nullable List<JsonNode>): nullable JsonArray;
 begin
   if assigned(aValue) then
     result := new JsonArray(aValue);
 end;
 
-class method JsonNode.Create(aValue: array of JsonNode): nullable JsonArray;
+class method JsonNode.Create(aValue: nullable array of JsonNode): nullable JsonArray;
 begin
   if assigned(aValue) then
     result := new JsonArray(aValue.ToList());

@@ -2,14 +2,14 @@
 
 interface
 
+uses
 {$IF COOPER}
-uses
   java.nio,
-  java.util;
+  java.util,
 {$ELSEIF TOFFEE}
-uses
-  Foundation;
+  Foundation,
 {$ENDIF}
+  RemObjects.Elements.RTL;
 
 type
   PlatformDateTime = {$IF COOPER}java.util.Calendar{$ELSEIF ECHOES}System.DateTime{$ELSEIF ISLAND}RemObjects.Elements.System.DateTime{$ELSEIF TOFFEE}NSDate{$ENDIF};
@@ -47,7 +47,7 @@ type
     method AddYears(Value: Integer): DateTime;
 
     method CompareTo(Value: DateTime): Integer;
-    method ToString(aTimeZone: TimeZone): String;
+    method ToString(aTimeZone: TimeZone := nil): String;
     method ToString(Format: String; aTimeZone: TimeZone := nil): String;
     method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
 

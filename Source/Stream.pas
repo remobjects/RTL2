@@ -28,7 +28,7 @@ type
   end;
 
   {$IF ECHOES OR ISLAND}
-  PlatformStream = {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ENDIF};
+  PlatformStream = {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
   WrappedPlatformStream = public abstract class(Stream)
   protected
     fPlatformStream: PlatformStream;
@@ -46,15 +46,13 @@ type
   end;
   {$ENDIF}
 
-  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ENDIF};
+  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
     fCanWrite: Boolean := true;
     {$IF COOPER OR TOFFEE}
     fPosition: Int64;
-    {$ENDIF}
-    {$IF TOFFEE OR COOPER}
     fInternalStream: PlatformMemoryStream;
     method ConvertSeekOffset(Offset: Int64; Origin: SeekOrigin): Int64;
     {$ENDIF}
@@ -70,7 +68,7 @@ type
     constructor(aValue: array of Byte);
     constructor(aValue: array of Byte; aCanWrite: Boolean);
     operator Implicit(aValue: ImmutableBinary): MemoryStream;
-    {$IF TOFFEE OR COOPER}
+    {$IF COOPER OR TOFFEE}
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
@@ -95,7 +93,7 @@ type
     property CanWrite: Boolean read GetCanWrite; override;
   end;
 
-  PlatformInternalFileStream = {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ENDIF};
+  PlatformInternalFileStream = {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
   FileStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   {$IF COOPER OR TOFFEE}
@@ -694,7 +692,7 @@ begin
   var lBuf := new Byte[Count];
   fStream.&Read(lBuf, 0, Count);
   {$IF ISLAND}
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ENDIF}memcpy(Buffer, @lBuf[0], Count);
+  {$IFDEF WINDOWS}ExternalCalls.memcpy(Buffer, @lBuf[0], Count){$ELSEIF POSIX}rtl.memcpy(Buffer, @lBuf[0], Count){$ENDIF};
   {$ELSEIF TOFFEE}
   memcpy(Buffer, @lBuf[0], Count);
   {$ENDIF}
@@ -704,7 +702,7 @@ method BinaryStream.WriteRaw(Buffer: ^void; Count: LongInt);
 begin
   var lBuf := new Byte[Count];
   {$IF ISLAND}
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ENDIF}memcpy(@lBuf[0], Buffer, Count);
+  {$IFDEF WINDOWS}ExternalCalls.memcpy(@lBuf[0], Buffer, Count){$ELSEIF POSIX}rtl.memcpy(@lBuf[0], Buffer, Count){$ENDIF};
   {$ELSEIF TOFFEE}
   memcpy(@lBuf[0], Buffer, Count);
   {$ENDIF}

@@ -10,7 +10,7 @@ interface
 {$ENDIF}
 
 type
-  Url = public class// {$IF COOPER}mapped to java.net.URL{$ELSEIF ECHOES}mapped to System.Uri{$ELSEIF TOFFEE}mapped to Foundation.NSURL{$ENDIF}
+  Url = public class(Uri)
   private
     var fScheme, fHost, fPath, fQueryString, fFragment, fUser: String;
     var fPort: nullable Int32;
@@ -26,17 +26,18 @@ type
     method GetPathAndQueryString: nullable String;
     method CopyWithPath(aPath: not nullable String): not nullable Url;
 
-    method GetFilePath: nullable String;
+    method IntGetFilePath: nullable String;
     method GetWindowsPath: nullable String;
     method GetUnixPath: nullable String;
     method GetCanonicalVersion(): Url;
 
-    method GetPathExtension: String;
-    method GetLastPathComponent: String;
+    method GetPathExtension: nullable String;
+    method GetLastPathComponent: nullable String;
     method GetFilePathWithoutLastComponent: String;
     method GetWindowsPathWithoutLastComponent: String;
+    method GetPathWithoutLastComponent: String;
     method GetUnixPathWithoutLastComponent: String;
-    method GetUrlWithoutLastComponent: Url;
+    method GetUrlWithoutLastComponent: nullable Url;
 
     method DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String; //inline; 76882: Echoes: E0 Internal error: GOUNKEX137 with `inline`
 
@@ -45,7 +46,7 @@ type
     constructor(aUrlString: not nullable String);
   public
 
-    class method UrlWithString(aUrlString: nullable String): Url;
+    class method UrlWithString(aUrlString: not nullable String): Url;
     class method TryUrlWithString(aUrlString: nullable String): Url;
     class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
@@ -92,7 +93,7 @@ type
     method IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
 
     // these are all Url-decoded:
-    property FilePath: String read {$IF KNOWN_UNIX}GetUnixPath{$ELSE}GetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
+    property FilePath: String read {$IF KNOWN_UNIX}GetUnixPath{$ELSE}IntGetFilePath{$ENDIF};               // converts "/" to "\" on Windows, only
     property WindowsPath: String read GetWindowsPath;                                         // converts "/" to "\", always
     property UnixPath: String read GetUnixPath;           // always keeps "/"
 
@@ -109,7 +110,7 @@ type
 
     method UrlWithChangedLastPathComponent(aNewLastPathComponent: not nullable String): nullable Url;
 
-    method GetParentUrl(): Url;
+    method GetParentUrl(): nullable Url;
 
     method SubUrl(params aComponents: array of String): not nullable Url;
     method SubUrl(params aComponents: array of String) isDirectory(aIsDirectory: Boolean): not nullable Url;
@@ -188,7 +189,7 @@ begin
   fPath := Url.AddPercentEncodingsToPath(aPath);
 end;
 
-class method Url.UrlWithString(aUrlString: nullable String): Url;
+class method Url.UrlWithString(aUrlString: not nullable String): Url;
 begin
   if length(aUrlString) > 0 then
     result := new Url(aUrlString);
@@ -197,8 +198,11 @@ end;
 class method Url.TryUrlWithString(aUrlString: nullable String): Url;
 begin
   try
-    if length(aUrlString) > 0 then
-      result := new Url(aUrlString);
+    if length(aUrlString) > 0 then begin
+      result := new Url();
+      if not result.Parse(aUrlString) then
+        result := nil;
+    end;
   except
     on UrlException do;
   end;
@@ -371,7 +375,7 @@ end;
 // Working with Paths
 //
 
-method Url.GetFilePath: nullable String;
+method Url.IntGetFilePath: nullable String;
 begin
   if IsFileUrl and assigned(fPath) then begin
     if not assigned(fCachedFilePath) then begin
@@ -379,8 +383,10 @@ begin
       if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
         fCachedFilePath := GetWindowsPath()
       else
-      {$ENDIF}
         fCachedFilePath := RemovePercentEncodingsFromPath(fPath);
+      {$ELSE}
+      fCachedFilePath := RemovePercentEncodingsFromPath(fPath);
+      {$ENDIF}
     end;
     result := fCachedFilePath;
   end;
@@ -569,6 +575,15 @@ begin
     result := result.SubString(1);
 end;
 
+method Url.GetPathWithoutLastComponent: String;
+begin
+  if length(fPath) > 0 then begin
+    var p := fPath.LastIndexOf("/");
+    if (p > 0) then // yes, 0, not -1
+      result := fPath.Substring(0, p+1); // include the "/"
+  end;
+end;
+
 method Url.GetUnixPathWithoutLastComponent: String;
 begin
   if length(fPath) > 0 then begin
@@ -580,7 +595,7 @@ end;
 
 method Url.GetUrlWithoutLastComponent: nullable Url;
 begin
-  var lPath := GetUnixPathWithoutLastComponent();
+  var lPath := GetPathWithoutLastComponent();
   if length(lPath) > 0 then
     result := CopyWithPath(lPath);
 end;
@@ -597,7 +612,7 @@ begin
         aNewExtension := "."+aNewExtension; // force a "." into the neww extension
       lName := lName+aNewExtension;
     end;
-    result := CopyWithPath(GetUnixPathWithoutLastComponent+lName);
+    result := CopyWithPath((GetPathWithoutLastComponent+AddPercentEncodingsToPath(lName)));
   end;
 end;
 

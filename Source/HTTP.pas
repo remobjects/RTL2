@@ -82,7 +82,7 @@ type
     {$IF JSON}method GetContentAsJson(contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);{$ENDIF}
     method SaveContentAsFile(aTargetFile: File; contentCallback: not nullable HttpContentResponseBlock<File>);
 
-    {$IF NOT ECHOES OR NOT NETSTANDARD}
+    {$IF NOT NETSTANDARD}
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
     method GetContentAsBinarySynchronous: not nullable ImmutableBinary;
     {$IF XML}method GetContentAsXmlSynchronous: not nullable XmlDocument;{$ENDIF}
@@ -109,7 +109,7 @@ type
     property Session := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration); lazy;
     {$ENDIF}
     method StringForRequestType(aMode: HttpRequestMode): String;
-    {$IF NOT ECHOES OR NOT NETSTANDARD}
+    {$IF NOT NETSTANDARD}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
     {$ENDIF}
     {$IF ISLAND AND WINDOWS}
@@ -118,7 +118,7 @@ type
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
-    {$IF NOT ECHOES OR NOT NETSTANDARD}
+    {$IF NOT NETSTANDARD}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
     method TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
     {$ENDIF}
@@ -142,9 +142,11 @@ type
 
 implementation
 
-{$IF ECHOES}
-uses System.Net;
-{$ENDIF}
+uses
+  {$IF ECHOES}
+  System.Net,
+  {$ENDIF}
+  RemObjects.Elements;
 
 { HttpRequest }
 
@@ -456,7 +458,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
+{$IF NOT NETSTANDARD}
 method HttpResponse.GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
 begin
   if aEncoding = nil then aEncoding := Encoding.Default;
@@ -595,12 +597,16 @@ begin
       // I don't want to mess with BeginGetRequestStream/EndGetRequestStream methods here
       // HttpWebRequest.GetRequestStreamAsync() is not available in WP 8.0
       var getRequestStreamTask := System.Threading.Tasks.Task<System.IO.Stream>.Factory.FromAsync(@webRequest.BeginGetRequestStream, @webRequest.EndGetRequestStream, nil);
-      using stream := await getRequestStreamTask do begin
-    {$ELSEIF NETFX_CORE}
-      using stream := await webRequest.GetRequestStreamAsync() do begin
-    {$ELSE}
-      using stream := webRequest.GetRequestStream() do begin
     {$ENDIF}
+      using stream :=
+        {$IF NETSTANDARD}
+        await getRequestStreamTask
+        {$ELSEIF NETFX_CORE}
+        await webRequest.GetRequestStreamAsync()
+        {$ELSE}
+        webRequest.GetRequestStream()
+        {$ENDIF}
+    do begin
         var data := (aRequest.Content as IHttpRequestContent).GetContentAsArray();
         stream.Write(data, 0, data.Length);
         stream.Flush();
@@ -671,7 +677,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
+{$IF NOT NETSTANDARD}
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 begin
   result := ExecuteRequestSynchronous(aRequest, true) as not nullable;
@@ -741,7 +747,7 @@ begin
   {$ELSEIF ISLAND AND WINDOWS}
   var lFlags := if aRequest.Url.Scheme.EqualsIgnoringCase('https') then rtl.WINHTTP_FLAG_SECURE else 0;
   var lPort := 80;
-  if aRequest.Url.Port <> nil then 
+  if aRequest.Url.Port <> nil then
     lPort := aRequest.Url.Port
   else
     if lFlags <> 0 then
@@ -756,7 +762,7 @@ begin
   if lRequest = nil then
     raise new RTLException('Can not open request to ' + aRequest.Url.Host);
 
-  var lHeader: RemObjects.Elements.System.String;  
+  var lHeader: RemObjects.Elements.System.String;
   for each k in aRequest.Headers.Keys do begin
     lHeader := k + ':' + aRequest.Headers[k];
     if not rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, high(Cardinal), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA) then
@@ -777,7 +783,7 @@ begin
 
   if not rtl.WinHttpSendRequest(lRequest, nil, 0, nil, 0, lTotalLength, 0) then
     raise new RTLException('Can not send request to ' + aRequest.Url.Host);
-    
+
   if lTotalLength > 0 then begin
     var lPassed := 0;
     var lBytes: rtl.DWORD := 0;
@@ -794,9 +800,9 @@ begin
   var lStatusCode: rtl.DWORD := 0;
   var lSize: rtl.DWORD := sizeOf(lStatusCode);
 
-  rtl.WinHttpQueryHeaders(lRequest, rtl.WINHTTP_QUERY_STATUS_CODE or rtl.WINHTTP_QUERY_FLAG_NUMBER, 
+  rtl.WinHttpQueryHeaders(lRequest, rtl.WINHTTP_QUERY_STATUS_CODE or rtl.WINHTTP_QUERY_FLAG_NUMBER,
     nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lStatusCode, @lSize, nil {rtl.WINHTTP_NO_HEADER_INDEX});
-  
+
   var lStream := new MemoryStream();
   var lBuffered: rtl.DWORD := 0;
   if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then

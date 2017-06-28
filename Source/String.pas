@@ -120,7 +120,7 @@ var
          #$2028, //Line Separator
          #$2029, //Paragraph Separator
          #$0009, #$000A, #$000B, #$000C, #$000D,#$0085, #$00A0,  // other special symbols
-         #$FFEF];
+         #$FFEF]; public;
 
 implementation
 
@@ -158,7 +158,7 @@ begin
   {$ELSEIF ISLAND}
   result := PlatformString.FromCharArray(Value);
   {$ELSEIF TOFFEE}
-  result := new PlatformString withCharacters(Value) length(length(Value));
+  result := new PlatformString withCharacters(Value) length(RemObjects.Oxygene.System.length(Value));
   {$ENDIF}
 end;
 
@@ -504,7 +504,7 @@ begin
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
-  result := if r.location = NSNotFound then -1 else r.location;
+  result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;
 
@@ -536,7 +536,7 @@ begin
   {$ELSEIF TOFFEE}
   var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
   var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
-  result := if r.location = NSNotFound then -1 else r.location;
+  result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;
 

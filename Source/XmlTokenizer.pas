@@ -40,9 +40,12 @@ type
 
 implementation
 
+uses 
 {$IF ECHOES}
-uses System.Globalization;
+  System.Globalization,
 {$ENDIF}
+  RemObjects.Elements
+  ;
 
 constructor XmlTokenizer(aXml: String);
 begin

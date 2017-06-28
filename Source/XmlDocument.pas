@@ -10,6 +10,7 @@ type
     fXmlParser: XmlParser;
     fFormatOptions: XmlFormattingOptions;
     fLineBreak: String;
+    HasError: Boolean;
   private
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
@@ -27,10 +28,14 @@ type
     class method WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
     class method WithRootElement(aName: not nullable String): not nullable XmlDocument;
 
+    class method TryFromFile(aFileName: not nullable File): nullable XmlDocument; inline;
+    class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument; inline;
+    class method TryFromString(aString: not nullable String): nullable XmlDocument; inline;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument; inline;
     class method TryFromFile(aFileName: not nullable File; out aError: XmlErrorInfo): nullable XmlDocument;
     class method TryFromUrl(aUrl: not nullable Url; out aError: XmlErrorInfo): nullable XmlDocument;
-    class method TryFromString(aString: not nullable String; out aError: XmlErrorInfo): not nullable XmlDocument;
-    class method TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument;
+    class method TryFromString(aString: not nullable String; out aError: XmlErrorInfo): nullable XmlDocument;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument; inline;
 
     [ToString]
     method ToString(): String; override;
@@ -48,6 +53,7 @@ type
     property Encoding : String;
     property Standalone : String;
     method AddNode(aNode: not nullable XmlNode);
+    method NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
   end;
 
   XmlNodeType = public enum(
@@ -83,9 +89,10 @@ type
     property StartColumn: Integer;
     property EndLine: Integer;
     property EndColumn: Integer;
+
     [ToString]
     method ToString(): String; override;
-    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String; virtual;
   end;
 
   XmlElement = public class(XmlNode)
@@ -98,10 +105,11 @@ type
     fNamespaces: List<XmlNamespace> := new List<XmlNamespace>;
     fDefaultNamespace: XmlNamespace;
 
-    method GetNamespace: XmlNamespace;
+    method GetNamespace: nullable XmlNamespace;
     method SetNamespace(aNamespace: XmlNamespace);
     method GetLocalName: not nullable String;
     method SetLocalName(aValue: not nullable String);
+    method GetFullName: not nullable String;
     //method GetValue: nullable String;
     method SetValue(aValue: nullable String);
     method GetAttributes: not nullable sequence of XmlAttribute;
@@ -109,7 +117,7 @@ type
     method GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
     method GetNodes: ImmutableList<XmlNode>;
     method GetElements: not nullable sequence of XmlElement;
-    method GetNamespace(aUrl: Url): nullable XmlNamespace;
+    method GetNamespace(aUri: Uri): nullable XmlNamespace;
     method GetNamespace(aPrefix: String): nullable XmlNamespace;
     method GetNamespaces: not nullable sequence of XmlNamespace;
     method GetDefaultNamespace: XmlNamespace;
@@ -130,14 +138,21 @@ type
     property Value: nullable String read GetValue(true) write SetValue;
     property IsEmpty: Boolean read fIsEmpty;
     property EndTagName: String;
+    property OpenTagEndLine: Integer;
+    property OpenTagEndColumn: Integer;
+    property CloseTagStartLine: Integer;
+    property CloseTagStartColumn: Integer;
+    property CloseTagEndLine: Integer;
+    property CloseTagEndColumn: Integer;
 
     property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
     property Elements: not nullable sequence of XmlElement read GetElements;
     property Nodes: ImmutableList<XmlNode> read GetNodes;
-    property &Namespace[aUrl: Url]: nullable XmlNamespace read GetNamespace;
+    property &Namespace[aUri: Uri]: nullable XmlNamespace read GetNamespace;
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
+    property FullName: not nullable String read GetFullName;
 
     method GetValue (aWithNested: Boolean): nullable String;
     method ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
@@ -163,12 +178,12 @@ type
     method AddNode(aNode: not nullable XmlNode);
     //method MoveElement(aExistingElement: not nullable XmlElement) toIndex(aIndex: Integer);
     method AddNamespace(aNamespace: not nullable XmlNamespace);
-    method AddNamespace(aPrefix: nullable String; aUrl: not nullable Url): XmlNamespace;
+    method AddNamespace(aPrefix: nullable String; aUri: not nullable Uri): XmlNamespace;
     method RemoveNamespace(aNamespace: not nullable XmlNamespace);
     method RemoveNamespace(aPrefix: not nullable String);
     [ToString]
     method ToString(): String; override;
-    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String; override;
   end;
 
   XmlAttribute = public class(XmlNode)
@@ -221,9 +236,9 @@ type
     QuoteChar: Char := '"';
     constructor withParent(aParent: XmlNode := nil);
   public
-    constructor(aPrefix: String; aUrl: not nullable Url);
+    constructor(aPrefix: String; aUri: not nullable Uri);
     property Prefix: String read GetPrefix write SetPrefix;
-    property Url: Url;
+    property Uri: Uri;
     [ToString]
     method ToString(): String; override;
     method ToString(aFormatInsideTags: Boolean): String;
@@ -258,6 +273,19 @@ type
     property Declaration: String;
   end;
 
+  XmlError = public class(XmlNode)
+  public
+    property Attribute: Boolean;
+  end;
+
+  XmlPosition = public enum(
+    None,
+    StartTag,
+    SingleTag,
+    BetweenTags,
+    EndTag
+  );
+ 
 implementation
 
 { XmlDocument }
@@ -287,6 +315,12 @@ begin
   result.fXmlParser := lXmlParser;}
 end;
 
+class method XmlDocument.TryFromFile(aFileName: not nullable File): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromFile(aFileName, out lIgnoreError);
+end;
+
 class method XmlDocument.TryFromFile(aFileName: not nullable File; out aError: XmlErrorInfo): nullable XmlDocument;
 begin
   if aFileName.Exists then begin
@@ -297,7 +331,7 @@ begin
     end;}
     var XmlStr:String := aFileName.ReadText();
     var lXmlParser := new XmlParser(XmlStr);
-    result := lXmlParser.Parse(out aError);
+    result := lXmlParser.Parse(out aError); 
     result.fXmlParser := lXmlParser;
   end;
 end;
@@ -306,57 +340,72 @@ class method XmlDocument.FromUrl(aUrl: not nullable Url): not nullable XmlDocume
 begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
-  {$IF NOT ISLAND}
-  //77333: Toffee: "in" operator is broken for mapped strings
-  //else if aUrl.Scheme in ["http", "https"] then
-  else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then
+  else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
+    {$IFDEF ISLAND}
+    raise new NotImplementedException;
+    {$ELSE}
     result := Http.GetXml(new HttpRequest(aUrl))
-  {$ENDIF}
-  else
+    {$ENDIF}
+  end else
     raise new XmlException(String.Format("Cannot load XML from URL '{0}'.", aUrl.ToAbsoluteString()));
+end;
+
+class method XmlDocument.TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromUrl(aUrl, out lIgnoreError);
 end;
 
 class method XmlDocument.TryFromUrl(aUrl: not nullable Url; out aError: XmlErrorInfo): nullable XmlDocument;
 begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := TryFromFile(aUrl.FilePath, out aError)
-  {$IF NOT ISLAND}
   else if aUrl.Scheme in ["http", "https"] then try
+    {$IFDEF ISLAND}
+    raise new NotImplementedException;
+    {$ELSE}
     result := Http.GetXml(new HttpRequest(aUrl));
+    {$ENDIF}
   except
     on E: XmlException do;
     on E: HttpException do;
   end;
-  {$ENDIF}
 end;
 
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
   var lError: XmlErrorInfo;
-  result := TryFromString(aString, out lError);
+  var lResult := TryFromString(aString, out lError);
   if lError <> nil then raise new XmlException(lError.Message, lError.Row, lError.Column);
+  result := lResult as not nullable;
   {var lXmlParser := new XmlParser(aString);
   var aError := new XmlErrorInfo;
   result := lXmlParser.Parse(out aError);
   result.fXmlParser := lXmlParser;}
 end;
 
-class method XmlDocument.TryFromString(aString: not nullable String; out aError: XmlErrorInfo): not nullable XmlDocument;
+class method XmlDocument.TryFromString(aString: not nullable String): nullable XmlDocument;
 begin
-  //try
-    var lXmlParser := new XmlParser(aString);
-    result := lXmlParser.Parse(out aError);
-    result.fXmlParser := lXmlParser;
-    //result := FromString(aString);
-  {except
-    on XmlException do
-      exit nil;
-  end;}
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromString(aString, out lIgnoreError);
+end;
+
+class method XmlDocument.TryFromString(aString: not nullable String; out aError: XmlErrorInfo): nullable XmlDocument;
+begin
+  var lXmlParser := new XmlParser(aString);
+  result := lXmlParser.Parse(out aError);
+  result.fXmlParser := lXmlParser;
 end;
 
 class method XmlDocument.FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
 begin
   result := XmlDocument.FromString(new String(aBinary.ToArray));
+end;
+
+class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := XmlDocument.TryFromString(new String(aBinary.ToArray), out lIgnoreError);
 end;
 
 class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument;
@@ -479,6 +528,42 @@ begin
   result := fNodes;
 end;
 
+method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
+begin
+  if ((aRow < Root.StartLine) or ((aRow = Root.StartLine) and (aColumn <= Root.StartColumn))) or
+  ((Root.EndLine <> 0) and ((aRow > Root.EndLine) or ((aRow = Root.EndLine) and (aColumn >= Root.EndColumn)))) then exit nil;
+  result := Root;
+//if (Root.StartLine <= aRow) and (Root.StartColumn <= aColumn) then result := Root;
+  var lElement: XmlElement;
+  while not (result.Elements.Count = 0) and (lElement <> result) do begin
+    lElement := result;
+    for each el in lElement.Elements do begin
+      if (el.StartLine > aRow) or ((el.StartLine = aRow) and (el.StartColumn >= aColumn)) then
+        break
+      else 
+        result := el
+    end;
+    if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn <= aColumn))) or
+      ((result.IsEmpty) and (result.OpenTagEndLine <> 0) and ((result.OpenTagEndLine < aRow) or ((result.OpenTagEndLine = aRow) and (result.OpenTagEndColumn <= aColumn)))) then begin
+      //then begin
+      result := result.Parent as XmlElement;
+      break;
+    end;
+  end;
+      
+  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin 
+    if result.IsEmpty then aCursorPosition := XmlPosition.SingleTag
+    else aCursorPosition := XmlPosition.StartTag;
+    //result := nil;
+    exit;
+  end;
+  if (aRow > result.CloseTagStartLine) or (aRow = result.CloseTagStartLine) and (aColumn > result.CloseTagStartColumn) then begin
+      aCursorPosition := XmlPosition.EndTag;
+      exit;
+  end;
+  aCursorPosition := XmlPosition.BetweenTags;
+end;
+
 constructor XmlNode withParent(aParent: XmlNode);
 begin
   fParent := aParent;
@@ -523,11 +608,13 @@ begin
       result := "<!DOCTYPE ";
       if XmlDocumentType(self).Name <> nil then result := result + XmlDocumentType(self).Name;
       if XmlDocumentType(self).PublicId <> nil then begin
-        result := result + " PUBLIC "+ XmlDocumentType(self).PublicId + " "+XmlDocumentType(self).SystemId;
+        if XmlDocumentType(self).PublicId = '[ERROR]' then result :=  result + '[ERROR]'
+        else result := result + " PUBLIC "+ XmlDocumentType(self).PublicId + " "+XmlDocumentType(self).SystemId;
 
       end
       else if XmlDocumentType(self).SystemId <> nil then
-        result := result + " SYSTEM "+XmlDocumentType(self).SystemId;
+        if XmlDocumentType(self).SystemId = '[ERROR]' then result := result + '[ERROR]'
+        else result := result + " SYSTEM "+XmlDocumentType(self).SystemId;
       if XmlDocumentType(self).Declaration <> nil then
         result := result + " ["+XmlDocumentType(self).Declaration+"]";
       result := result + ">";
@@ -607,7 +694,7 @@ begin
     if (lBracePos = 0) then begin
       var lClosingBracePos := aLocalName.IndexOf('}');
       if lClosingBracePos > lBracePos then begin
-        aNamespace := &Namespace[Url.UrlWithString(aLocalName.Substring(1, lClosingBracePos-1))];
+        aNamespace := &Namespace[Uri.TryUriWithString(aLocalName.Substring(1, lClosingBracePos-1))];
         if assigned(aNamespace) then
           result := FirstElementWithName(aLocalName.Substring(lClosingBracePos+1, aLocalName.Length-lClosingBracePos-1), aNamespace);
       end;
@@ -810,6 +897,13 @@ begin
   result := fLocalName.Trim as not nullable;
 end;
 
+method XmlElement.GetFullName: not nullable String;
+begin
+  result := "";
+  if assigned(&Namespace) and assigned(&Namespace.Prefix) then result := &Namespace.Prefix+':';
+  result := result + LocalName;
+end;
+
 method XmlElement.SetLocalName(aValue: not nullable String);
 begin
   fLocalName := aValue;
@@ -904,9 +998,9 @@ begin
   result := fNamespaces as not nullable;
 end;
 
-method XmlElement.GetNamespace(aUrl: Url): nullable XmlNamespace;
+method XmlElement.GetNamespace(aUri: Uri): nullable XmlNamespace;
 begin
-  result := DefinedNamespaces.Where(a -> a.Url = aUrl).FirstOrDefault;
+  result := DefinedNamespaces.Where(a -> a.Uri = aUri).FirstOrDefault;
 end;
 
 method XmlElement.GetNamespace(aPrefix: String): nullable XmlNamespace;
@@ -924,9 +1018,9 @@ begin
     else  raise new Exception("Duplicate namespace xmlns:"+aNamespace.Prefix);
 end;
 
-method XmlElement.AddNamespace(aPrefix: nullable String; aUrl: not nullable Url): XmlNamespace;
+method XmlElement.AddNamespace(aPrefix: nullable String; aUri: not nullable Uri): XmlNamespace;
 begin
-  result := new XmlNamespace(aPrefix, aUrl);
+  result := new XmlNamespace(aPrefix, aUri);
   AddNamespace(result);
 end;
 
@@ -1144,11 +1238,11 @@ begin
   fNodeType := XmlNodeType.Namespace;
 end;
 
-constructor XmlNamespace(aPrefix: String; aUrl: not nullable Url);
+constructor XmlNamespace(aPrefix: String; aUri: not nullable Uri);
 begin
   inherited constructor;
   Prefix := aPrefix;
-  Url := aUrl;
+  Uri := aUri;
   fNodeType := XmlNodeType.Namespace;
 end;
 
@@ -1187,7 +1281,7 @@ begin
   result := result + "=";
   if not(aFormatInsideTags) and (innerWSright <> nil) then result := result + innerWSright;
   result := result+QuoteChar;
-  if assigned(Url) then result := result + Url.ToString;
+  if assigned(Uri) then result := result + Uri.ToString;
   result := result+QuoteChar;
 end;
 

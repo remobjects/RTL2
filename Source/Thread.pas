@@ -25,9 +25,13 @@ type
     constructor (aEntrypoint: not nullable block);
     method Start; mapped to Start;
 
-    {$IF NOT ISLAND}
-    method &Join; {$IF COOPER OR ECHOES OR ISLAND} mapped to &Join;{$ENDIF}
-    method &Join(Timeout: Integer);  {$IF COOPER OR ECHOES OR ISLAND}mapped to &Join(Timeout);{$ENDIF}
+    {$IF COOPER OR ECHOES} 
+    method &Join; mapped to &Join;
+    method &Join(Timeout: Integer);  mapped to &Join(Timeout);
+    {$ENDIF}
+    {$IF TOFFEE}
+    method &Join; 
+    method &Join(Timeout: Integer);  
     {$ENDIF}
 
     {$HIDE W28}

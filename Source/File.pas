@@ -16,16 +16,17 @@ type
   public
     constructor(aPath: not nullable String);
 
-    method CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := false): not nullable File;
-    method CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := false): not nullable File;
+    method CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
+    method CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := true): not nullable File;
     method Delete;
-    method Exists: Boolean; {$IF NOT COOPER}inline;{$ENDIF}
+    {$IF NOT COOPER}method Exists: Boolean; inline;{$ENDIF}
+    {$IF COOPER}method Exists: Boolean; {$ENDIF}
     method Move(NewPathAndName: not nullable File): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
     method Open(Mode: FileOpenMode): not nullable FileHandle;
     method Rename(NewName: not nullable String): not nullable File;
 
-    class method CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File; aCloneIfPossible: Boolean := false): not nullable File;
+    class method CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
     class method Move(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
     class method Rename(aFileName: not nullable File; NewName: not nullable String): not nullable File;
     class method Exists(aFileName: nullable File): Boolean; inline;
@@ -70,22 +71,17 @@ begin
   {$ENDIF}
 end;
 
-method File.CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := false): not nullable File;
+method File.CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
 begin
   result := self.CopyTo(new Folder(Path.GetParentDirectory(NewPathAndName.FullPath)), Path.GetFileName(NewPathAndName.Name), aCloneIfPossible);
 end;
 
-method File.CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := false): not nullable File;
+method File.CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := true): not nullable File;
 begin
   ArgumentNullException.RaiseIfNil(Destination, "Destination");
   ArgumentNullException.RaiseIfNil(NewName, "NewName");
 
-  {$IF NETSTANDARD}
-  result := mapped.CopyAsync(Destination, NewName, NameCollisionOption.FailIfExists).Await;
-  {$ELSE}
   var lNewFile := File(Path.Combine(Destination, NewName));
-  if lNewFile.Exists then
-    raise new IOException(RTLErrorMessages.FILE_EXISTS, NewName);
 
   {$IF COOPER}
   new java.io.File(lNewFile).createNewFile;
@@ -96,12 +92,18 @@ begin
   source.close;
   dest.close;
   {$ELSEIF ECHOES}
-  if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
-    if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
-      raise new RTLException("Failed to copy file");
-  end
-  else
-    System.IO.File.Copy(mapped, lNewFile, true);
+    {$IF NETSTANDARD}
+    exit mapped.CopyAsync(Destination, NewName, NameCollisionOption.FailIfExists).Await;
+    {$ELSE}
+    if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
+      if lNewFile.Exists then
+        Delete(lNewFile);
+      if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
+        raise new RTLException("Failed to copy file");
+    end
+    else
+      System.IO.File.Copy(mapped, lNewFile, true);
+    {$ENDIF}
   {$ELSEIF ISLAND}
   IslandFile.Copy(lNewFile);
   {$ELSEIF TOFFEE}
@@ -110,10 +112,9 @@ begin
     raise new NSErrorException(lError);
   {$ENDIF}
   result := lNewFile as not nullable;
-  {$ENDIF}
 end;
 
-class method File.CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File; aCloneIfPossible: Boolean := false): not nullable File;
+  class method File.CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
 begin
   result := aFileName.CopyTo(NewPathAndName, aCloneIfPossible);
 end;
@@ -142,12 +143,11 @@ begin
   aFileName.Delete()
 end;
 
+{$IF NOT COOPER}
 method File.Exists: Boolean;
 begin
   if length(mapped) = 0 then exit false;
-  {$IF COOPER}
-  result := JavaFile.exists;
-  {$ELSEIF NETSTANDARD}
+  {$IF NETSTANDARD}
   try
     result := assigned(GetFile(aFileName));
   except
@@ -162,6 +162,15 @@ begin
   result := NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) and not isDirectory;
   {$ENDIF}
 end;
+{$ENDIF}
+
+{$IF COOPER}
+method File.Exists: Boolean;
+begin
+  if length(mapped) = 0 then exit false;
+  result := JavaFile.exists;
+end;
+{$ENDIF}
 
 class method File.Exists(aFileName: nullable File): Boolean;
 begin

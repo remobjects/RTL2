@@ -134,12 +134,12 @@ type
     const MaxChar: Char = chr($FFFF);
     const MinChar: Char = chr(0);
 
-    property MaxDouble: Double read {$IF COOPER}Double.MAX_VALUE{$ELSEIF ECHOES}Double.MaxValue{$ELSEIF TOFFEE OR ISLAND}1.7976931348623157E+308{$ENDIF};
-    property MinDouble: Double read {$IF COOPER}-Double.MAX_VALUE{$ELSEIF ECHOES}Double.MinValue{$ELSEIF TOFFEE OR ISLAND}-1.7976931348623157E+308{$ENDIF};
+    property MaxDouble: Double read {$IF COOPER}Double.MAX_VALUE{$ELSEIF ECHOES}Double.MaxValue{$ELSEIF TOFFEE OR ISLAND}1.7976931348623157E+308{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+    property MinDouble: Double read {$IF COOPER}-Double.MAX_VALUE{$ELSEIF ECHOES}Double.MinValue{$ELSEIF TOFFEE OR ISLAND}-1.7976931348623157E+308{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
-    property PositiveInfinity: Double read {$IF COOPER}Double.POSITIVE_INFINITY{$ELSEIF ECHOES OR ISLAND}Double.PositiveInfinity{$ELSEIF TOFFEE}rtl.INFINITY{$ENDIF};
-    property NegativeInfinity: Double read {$IF COOPER}Double.NEGATIVE_INFINITY{$ELSEIF ECHOES OR ISLAND}Double.NegativeInfinity{$ELSEIF TOFFEE}-INFINITY{$ENDIF};
-    property NaN: Double read {$IF COOPER}Double.NaN{$ELSEIF ECHOES OR ISLAND}Double.NaN{$ELSEIF TOFFEE}rtl.nan{$ENDIF};
+    property PositiveInfinity: Double read {$IF COOPER}Double.POSITIVE_INFINITY{$ELSEIF ECHOES OR ISLAND}Double.PositiveInfinity{$ELSEIF TOFFEE}rtl.INFINITY{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+    property NegativeInfinity: Double read {$IF COOPER}Double.NEGATIVE_INFINITY{$ELSEIF ECHOES OR ISLAND}Double.NegativeInfinity{$ELSEIF TOFFEE}-INFINITY{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+    property NaN: Double read {$IF COOPER}Double.NaN{$ELSEIF ECHOES OR ISLAND}Double.NaN{$ELSEIF TOFFEE}rtl.nan{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
     property TrueString: not nullable String read "True";
     property FalseString: not nullable String read "False";
@@ -234,6 +234,7 @@ begin
 end;
 {$ENDIF}
 
+{$IFDEF COOPER}
 class method Math.Round(a: Double): Int64;
 begin
   if Consts.IsNaN(a) or Consts.IsInfinity(a) then
@@ -241,8 +242,40 @@ begin
 
   exit Int64(Floor(a + 0.499999999999999999));
 end;
+{$ENDIF}
+{$IFDEF TOFFEE}
+class method Math.Round(a: Double): Int64;
+begin
+  if Consts.IsNaN(a) or Consts.IsInfinity(a) then
+    raise new ArgumentException("Value can not be rounded to Int64");
 
-{$IF COOPER or TOFFEE}
+  exit Int64(Floor(a + 0.499999999999999999));
+end;
+{$ENDIF}
+
+{$IFDEF ECHOES or ISLAND}
+class method Math.Round(a: Double): Int64;
+begin
+  if Consts.IsNaN(a) or Consts.IsInfinity(a) then
+    raise new ArgumentException("Value can not be rounded to Int64");
+
+  exit Int64(Floor(a + 0.499999999999999999));
+end;
+{$ENDIF}
+
+{$IF COOPER}
+class method Math.Sign(d: Double): Integer;
+begin
+  if Consts.IsNaN(d) then
+    raise new ArgumentException("Value can not be NaN");
+
+  if d > 0 then exit 1;
+  if d < 0 then exit -1;
+  exit 0;
+end;
+{$ENDIF}
+
+{$IF TOFFEE}
 class method Math.Sign(d: Double): Integer;
 begin
   if Consts.IsNaN(d) then

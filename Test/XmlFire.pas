@@ -44,7 +44,8 @@ type
       lXmlFormatOptions.NewLineSymbol := XmlNewLineSymbol.LF;
       lXmlFormatOptions.SpaceBeforeSlashInEmptyTags := true;
       var lxmlParser := new XmlParser(sXML, lXmlFormatOptions);
-      var xml := lxmlParser.Parse();
+      var lError: XmlErrorInfo;
+      var xml := lxmlParser.Parse(out lError);
       //var xml := XmlDocument.FromString(sXML);
       //Assert.AreEqual(xml.ToString, sXML);
 
