@@ -65,6 +65,9 @@ type
     var Request: rtl.HINTERNET;
     var Data: MemoryStream; readonly;
     constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
+    {$ELSEIF ISLAND AND LINUX}
+    var Request: PCURL;
+    //constructor(aRequest: PCURL);
     {$ELSEIF TOFFEE}
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
@@ -832,7 +835,34 @@ begin
     end;
   end;
   {$ELSEIF ISLAND AND LINUX}
+  var lRequest := CurlHelper.EasyInit();
+  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEFUNCTION, ^void(@CurlHelper.GetData));
+  //CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEDATA, ^void(Self));
+  CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_TCP_KEEPALIVE, 1);
+  CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOPROGRESS, 1);
+  var lUrl := RemObjects.Elements.System.String(aRequest.Url.ToString).ToAnsiChars(true);
+  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_URL, @lUrl[0]);
 
+  var lHeader: RemObjects.Elements.System.String;
+  var lHeaderBytes: array of AnsiChar;
+  var lHeaderList: ^curl_slist := nil;
+  for each k in aRequest.Headers.Keys do begin
+    lHeader := k + ':' + aRequest.Headers[k];
+    lHeaderBytes := lHeader.ToAnsiChars(true);
+  end;
+  lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
+
+  case aRequest.Mode of
+    HttpRequestMode.Get, HttpRequestMode.Put, HttpRequestMode.Delete, HttpRequestMode.Patch,
+    HttpRequestMode.Options, HttpRequestMode.Trace:
+      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_HTTPGET, 1);
+
+    HttpRequestMode.Head: ;
+
+    HttpRequestMode.Post: ;
+  end;
+
+  var lResult := CurlHelper.EasyPerform(lRequest);
   {$ELSEIF TOFFEE}
   var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
 
