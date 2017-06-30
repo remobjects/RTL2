@@ -80,6 +80,7 @@ type
     PreserveExactStringsForUnchnagedValues: Boolean := false;
     WriteNewLineAtEnd: Boolean := false;
     WriteBOM: Boolean := false;
+    PreserveLinebreaksForAttributes := false;
 
     method UniqueCopy: XmlFormattingOptions;
     begin
@@ -399,6 +400,17 @@ begin
   lStartRow := Tokenizer.Row;
   lStartCol := Tokenizer.Column;
   lLocalName := Tokenizer.Value;
+  if (FormatOptions.PreserveLinebreaksForAttributes) then
+    if(lWSleft.Contains(fLineBreak)) then begin
+      if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then begin
+        lWSleft := fLineBreak;
+        for i:Integer := 0 to aParent.StartColumn-1 do  
+          lWSleft := lWSleft + " ";
+        lWSleft := lWSleft +FormatOptions.Indentation
+      end
+      else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
+        lWSleft := fLineBreak+aIndent;  
+    end;
   if (FormatOptions.NewLineForAttributes) then begin
     if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then
       lWSleft := fLineBreak+aParent.StartColumn+FormatOptions.Indentation
@@ -427,14 +439,23 @@ begin
   Tokenizer.Next;
   if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.Whitespace, XmlTokenKind.EmptyElementEnd, XmlTokenKind.DeclarationEnd) then exit;
   if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then lWSright := Tokenizer.Value;
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then lWSright := Tokenizer.Value
+    else if (FormatOptions.PreserveLinebreaksForAttributes) and (Tokenizer.Value.Contains(fLineBreak)) then
+      if (aIndent = nil) then begin
+        lWSright := fLineBreak;
+         for i:Integer := 0 to aParent.StartColumn -1 do
+           lWSright := lWSright + " ";   
+         lWSright := lWSright+ FormatOptions.Indentation;
+      end
+      else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
+        lWSright := fLineBreak+aIndent;
     Tokenizer.Next;
   end;
   /***********/
   if ((lLocalName.StartsWith("xmlns:")) or (lLocalName = "xmlns")) then begin
-      if lLocalName.StartsWith("xmlns:") then
-        lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
-      else if lLocalName = "xmlns" then lLocalName:="";
+    if lLocalName.StartsWith("xmlns:") then
+      lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
+    else if lLocalName = "xmlns" then lLocalName:="";
     result := new XmlNamespace withParent(aParent);
     (result as XmlNamespace).Prefix := lLocalName;
     var lUri := Uri.TryUriWithString(lValue);
@@ -491,7 +512,16 @@ begin
     if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd) then exit
   end
   else begin
-    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then WS := Tokenizer.Value;
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) or ((FormatOptions.PreserveLinebreaksForAttributes) and Tokenizer.Value.Contains(fLineBreak)) then WS := Tokenizer.Value;
+    {else if ((FormatOptions.PreserveLinebreaksForAttributes) and Tokenizer.Value.Contains(fLineBreak)) then 
+      if aIndent = nil then begin
+        WS := fLineBreak;
+        for i:Integer := 0 to result.StartColumn-1 do  
+          WS := WS + " ";
+        WS := WS +FormatOptions.Indentation
+      end
+      else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
+        WS := fLineBreak+aIndent;}
     Tokenizer.Next;
     if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName) then exit;
   end;
