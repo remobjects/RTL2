@@ -105,6 +105,8 @@ type
     fNamespaces: List<XmlNamespace> := new List<XmlNamespace>;
     fDefaultNamespace: XmlNamespace;
 
+    fAttributesAndNamespaces: List<XmlNode> := new List<XmlNode>;
+
     method GetNamespace: nullable XmlNamespace;
     method SetNamespace(aNamespace: XmlNamespace);
     method GetLocalName: not nullable String;
@@ -608,13 +610,13 @@ begin
       result := "<!DOCTYPE ";
       if XmlDocumentType(self).Name <> nil then result := result + XmlDocumentType(self).Name;
       if XmlDocumentType(self).PublicId <> nil then begin
-        if XmlDocumentType(self).PublicId = '[ERROR]' then result :=  result + '[ERROR]'
-        else result := result + " PUBLIC "+ XmlDocumentType(self).PublicId + " "+XmlDocumentType(self).SystemId;
+        {if XmlDocumentType(self).PublicId = '[ERROR]' then result :=  result + '[ERROR]'
+        else} result := result + " PUBLIC "+ XmlDocumentType(self).PublicId + " "+XmlDocumentType(self).SystemId;
 
       end
       else if XmlDocumentType(self).SystemId <> nil then
-        if XmlDocumentType(self).SystemId = '[ERROR]' then result := result + '[ERROR]'
-        else result := result + " SYSTEM "+XmlDocumentType(self).SystemId;
+        {if XmlDocumentType(self).SystemId = '[ERROR]' then result := result + '[ERROR]'
+        else} result := result + " SYSTEM "+XmlDocumentType(self).SystemId;
       if XmlDocumentType(self).Declaration <> nil then
         result := result + " ["+XmlDocumentType(self).Declaration+"]";
       result := result + ">";
@@ -713,7 +715,8 @@ end;
 
 method XmlElement.AddAttribute(aAttribute: not nullable XmlAttribute);
 begin
-  fAttributes.Add(aAttribute);
+  //fAttributes.Add(aAttribute);
+  fAttributesAndNamespaces.Add(aAttribute);
 end;
 
 method XmlElement.SetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String);
@@ -721,23 +724,26 @@ begin
   if assigned(Attributes) then begin
     var lAttribute := GetAttributes.Where(a -> a.LocalName = aName).FirstOrDefault();
     if assigned(lAttribute) then lAttribute.Value := aValue
-    else fAttributes.Add(new XmlAttribute(aName, aNamespace, aValue));
+    else fAttributesAndNamespaces.Add(new XmlAttribute(aName, aNamespace, aValue));
   end
   else begin
-    fAttributes.Add( new XmlAttribute(aName, aNamespace, aValue));
+    fAttributesAndNamespaces.Add( new XmlAttribute(aName, aNamespace, aValue));
   end;
 end;
 
 method XmlElement.RemoveAttribute(aAttribute: not nullable XmlAttribute);
 begin
-  fAttributes.Remove(aAttribute);
+  //fAttributes.Remove(aAttribute);
+  fAttributesAndNamespaces.Remove(aAttribute);
 end;
 
 method XmlElement.RemoveAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlAttribute;
 begin
   var lAttribute := Attributes.Where(a -> (a.LocalName = aName) and (a.Namespace = aNamespace)).FirstOrDefault;
-  if assigned(lAttribute) then
-    fAttributes.Remove(lAttribute);
+    if assigned(lAttribute) then begin
+      //fAttributes.Remove(lAttribute);
+      fAttributesAndNamespaces.Remove(lAttribute);
+    end;
 end;
 
 method XmlElement.AddElement(aElement: not nullable XmlElement);
@@ -961,7 +967,8 @@ end;
 
 method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
 begin
-  result := fAttributes as not nullable;
+  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Cast<XmlAttribute> as not nullable;
+  //result := fAttributes as not nullable;
 end;
 
 method XmlElement.GetAttribute(aName: not nullable String): nullable XmlAttribute;
@@ -995,7 +1002,8 @@ end;
 
 method XmlElement.GetNamespaces: not nullable sequence of XmlNamespace;
 begin
-  result := fNamespaces as not nullable;
+ // result := fNamespaces as not nullable;
+  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Namespace).Cast<XmlNamespace> as not nullable;
 end;
 
 method XmlElement.GetNamespace(aUri: Uri): nullable XmlNamespace;
@@ -1011,7 +1019,8 @@ end;
 method XmlElement.AddNamespace(aNamespace: not nullable XmlNamespace);
 begin
   if GetNamespace(aNamespace.Prefix) = nil then begin
-    fNamespaces.Add(aNamespace);
+    //fNamespaces.Add(aNamespace);
+    fAttributesAndNamespaces.Add(aNamespace);
     if (aNamespace.Prefix = nil) or (aNamespace.Prefix = "") then fDefaultNamespace := aNamespace;
   end
   else if aNamespace.Prefix=nil then raise new Exception("Duplicate namespace xmlns")
@@ -1026,13 +1035,15 @@ end;
 
 method XmlElement.RemoveNamespace(aNamespace: not nullable XmlNamespace);
 begin
-  fNamespaces.Remove(aNamespace);
+  //fNamespaces.Remove(aNamespace);
+  fAttributesAndNamespaces.Remove(aNamespace);
 end;
 
 method XmlElement.RemoveNamespace(aPrefix: not nullable String);
 begin
   var lNamespace := DefinedNamespaces.Where(a -> a.Prefix = aPrefix).FirstOrDefault;
-  fNamespaces.Remove(lNamespace);
+  //fNamespaces.Remove(lNamespace);
+  fAttributesAndNamespaces.Remove(lNamespace);
 end;
 
 method xmlElement.ToString(): String;
@@ -1048,7 +1059,29 @@ begin
     result := result+&Namespace.Prefix+":";
   result := result + fLocalName;
 
-  for each defNS in DefinedNamespaces do begin
+  for each attr in fAttributesAndNamespaces do begin
+    var lWSLeft: String := nil;
+    var lWSRight: String := nil;
+  
+    if attr.NodeType = XmlNodeType.Attribute then begin
+        lWSLeft := XmlAttribute(attr).WSLeft;
+        lWSRight := XmlAttribute(attr).WSRight;
+    end else if attr.NodeType = XmlNodeType.Namespace then begin
+        lWSLeft := XmlNamespace(attr).WSLeft;
+        lWSRight := XmlNamespace(attr).WSRight;
+    end;
+    str := "";
+    if not(aFormatInsideTags) and (lWSleft <> nil) then str := lWSleft;
+    if attr.NodeType = XmlNodeType.Attribute then
+        str := str + XmlAttribute(attr).ToString(aFormatInsideTags, aPreserveExactStringsForUnchnagedValues)
+    else
+      str := str +XmlNamespace(attr).ToString(aFormatInsideTags);
+    if not (aFormatInsideTags) and (lWSright <> nil) then str := str + lWSright;
+    if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
+      result := result+" ";
+    result := result+str;
+  end;
+  {for each defNS in DefinedNamespaces do begin
     str := "";
     if not(aFormatInsideTags) and (defNS.WSleft <> nil) then str := defNS.WSleft;
     str := str +defNS.ToString(aFormatInsideTags);
@@ -1066,7 +1099,7 @@ begin
       result := result+" ";
     result := result+str;
 
-  end;
+  end;}
   if IsEmpty then begin
     if (Document <> nil) then begin
       if (aFormatInsideTags) then begin
@@ -1210,6 +1243,7 @@ end;
 method XmlAttribute.ToString(aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean): String;
 begin
   result := "";
+  
   if (Document <> nil) and aFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
     var indent :="";
     var lNode: XmlNode;
