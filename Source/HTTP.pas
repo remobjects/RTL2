@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT ISLAND AND ANDROID}
+{$IF NOT (ISLAND AND ANDROID)}
 
 interface
 
