@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT (ISLAND AND LINUX)}
+{$IF NOT ISLAND AND ANDROID}
 
 interface
 
@@ -66,8 +66,8 @@ type
     var Data: MemoryStream; readonly;
     constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
     {$ELSEIF ISLAND AND LINUX}
-    var Request: PCURL;
-    //constructor(aRequest: PCURL);
+    var Data: MemoryStream; readonly;
+    constructor(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
     {$ELSEIF TOFFEE}
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
@@ -117,9 +117,6 @@ type
     {$ENDIF}
     {$IF ISLAND AND WINDOWS}
     property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
-    {$ENDIF}
-    {$IF ISLAND AND LINUX}
-    class var fCurlHelper: CurlHelper;
     {$ENDIF}
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
@@ -289,6 +286,13 @@ begin
     end;
   end;
 end;
+{$ELSEIF ISLAND AND LINUX}
+constructor HttpResponse(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
+begin
+  Data := aData;
+  Code := aCode;
+  Headers := aHeaders;
+end;
 {$ELSEIF TOFFEE}
 constructor HttpResponse(aData: NSData; aResponse: NSHTTPURLResponse);
 begin
@@ -313,7 +317,7 @@ begin
     var responseString := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd();
     contentCallback(new HttpResponseContent<String>(Content := responseString))
   end;
-  {$ELSEIF ISLAND AND WINDOWS}
+  {$ELSEIF ISLAND}
   Task.Run(() -> begin
     var lResponseString := aEncoding.GetString(Data.ToArray);
     contentCallback(new HttpResponseContent<String>(Content := lResponseString));
@@ -348,7 +352,7 @@ begin
     Response.GetResponseStream().CopyTo(allData);
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
-  {$ELSEIF ISLAND AND WINDOWS}
+  {$ELSEIF ISLAND}
   Task.Run(() -> begin
     var allData := new Binary(Data.ToArray);
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
@@ -441,7 +445,7 @@ begin
     end;
   end;
   {$ENDIF}
-  {$ELSEIF ISLAND AND WINDOWS}
+  {$ELSEIF ISLAND}
   Task.Run(() -> begin
     try
       var lStream := new FileStream(aTargetFile, FileOpenMode.Create or FileOpenMode.ReadWrite);
@@ -472,7 +476,7 @@ begin
   result := new String(GetContentAsBinarySynchronous().ToArray, aEncoding);
   {$ELSEIF ECHOES}
   result := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd() as not nullable;
-  {$ELSEIF ISLAND AND WINDOWS}
+  {$ELSEIF ISLAND}
   result := aEncoding.GetString(Data.ToArray) as not nullable;
   {$ELSEIF TOFFEE}
   var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
@@ -499,7 +503,7 @@ begin
   var allData := new System.IO.MemoryStream();
   Response.GetResponseStream().CopyTo(allData);
   result := allData as not nullable;
-  {$ELSEIF ISLAND AND WINDOWS}
+  {$ELSEIF ISLAND}
   result := new Binary(Data.ToArray);
   {$ELSEIF TOFFEE}
   result := Data.mutableCopy as not nullable;
@@ -836,8 +840,12 @@ begin
   end;
   {$ELSEIF ISLAND AND LINUX}
   var lRequest := CurlHelper.EasyInit();
-  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEFUNCTION, ^void(@CurlHelper.GetData));
-  //CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEDATA, ^void(Self));
+  var lStream := new MemoryStream();
+  var lHeaders := new Dictionary<String, String>;
+  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEFUNCTION, ^void(@CurlHelper.ReceiveData));
+  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEDATA, ^void(@lStream));
+  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERFUNCTION, ^void(@CurlHelper.ReceiveHeaders));
+  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERDATA, ^void(@lHeaders));
   CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_TCP_KEEPALIVE, 1);
   CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOPROGRESS, 1);
   var lUrl := RemObjects.Elements.System.String(aRequest.Url.ToString).ToAnsiChars(true);
@@ -857,12 +865,41 @@ begin
     HttpRequestMode.Options, HttpRequestMode.Trace:
       CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_HTTPGET, 1);
 
-    HttpRequestMode.Head: ;
+    HttpRequestMode.Head: begin
+      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOBODY, 1);
+      var lMethod := Encoding.UTF8.GetBytes(StringForRequestType(aRequest.Mode));
+      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_CUSTOMREQUEST, @lMethod[0]);
+    end;
 
-    HttpRequestMode.Post: ;
+    HttpRequestMode.Post: begin
+      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POST, 1);
+      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READFUNCTION, ^void(@CurlHelper.SendData));
+      //CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READDATA, ??);
+    end;
   end;
 
   var lResult := CurlHelper.EasyPerform(lRequest);
+  if lResult = CURLCode.CURLE_OK then begin
+    var lStatusCode: NativeInt;
+    CurlHelper.EasyGetInfo1(lRequest, CURLINFO.CURLINFO_RESPONSE_CODE, @lStatusCode);
+    try
+      result := new HttpResponse(lStatusCode, lStream, lHeaders);
+      if lStatusCode >= 300 then begin
+        if not aThrowOnError then exit nil;
+        raise new RTLException(String.Format("Unable to complete request. HTTP Error code: {0}", lStatusCode), result)
+      end;
+
+    except
+      on E: Exception do begin
+        if not aThrowOnError then exit nil;
+        raise new RTLException(E.Message);
+      end;
+    end;
+  end
+  else begin
+    if not aThrowOnError then exit nil;
+    raise new RTLException(String.Format("Unable to complete request. LibCurl Error code: {0}", lResult), result);
+  end;
   {$ELSEIF TOFFEE}
   var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
 

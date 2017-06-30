@@ -176,7 +176,9 @@ type
     class var EasyCleanUp: CurlEasyCleanUp;
     class var SListAppend: CurlSListAppendFunc;
     class var SListFreeAll: CurlSListFreeAllFunc;
-    class method GetData(buffer: ^void; size:  rtl.size_t; nitems: rtl.size_t; instream: ^void): rtl.size_t;
+    class method ReceiveData(Buffer: ^void; aSize: rtl.size_t; Nmemb: rtl.size_t; UserData: ^void): rtl.size_t;
+    class method ReceiveHeaders(Buffer: ^void; aSize: rtl.size_t; Nitems: rtl.size_t; UserData: ^void): rtl.size_t;
+    class method SendData(Buffer: ^void; aSize: rtl.size_t; Nmemb: rtl.size_t; UserData: ^void): rtl.size_t;
   end;
 
 implementation
@@ -210,8 +212,42 @@ begin
   rtl.dlclose(fLib);
 end;
 
-class method CurlHelper.GetData(buffer: ^void; size:  rtl.size_t; nitems: rtl.size_t; instream: ^void): rtl.size_t;
+class method CurlHelper.ReceiveData(Buffer: ^void; aSize: rtl.size_t; Nmemb: rtl.size_t; UserData: ^void): rtl.size_t;
 begin
+  if UserData <> nil then begin
+    var lStream := InternalCalls.Cast<MemoryStream>(UserData);
+    var lTotal := aSize * Nmemb;
+    var lBytes := new Byte[lTotal];
+    rtl.memcpy(@lBytes[0], Buffer, lTotal);
+    lStream.Write(lBytes, lTotal);
+    result := lTotal;
+  end
+  else
+    result := 0;
+end;
+
+class method CurlHelper.ReceiveHeaders(Buffer: ^void; aSize: rtl.size_t; Nitems: rtl.size_t; UserData: ^void):  rtl.size_t;
+begin
+  if UserData <> nil then begin
+    var lHeaders := InternalCalls.Cast<Dictionary<String, String>>(UserData);
+    var lTotal := aSize * Nitems;
+    var lBytes := new Byte[lTotal];
+    rtl.memcpy(@lBytes[0], Buffer, lTotal);
+    var lString := Encoding.UTF8.GetString(lBytes);
+    var lPos := lString.IndexOf(':');
+    if lPos > 0 then begin
+      var lKey := lString.Substring(0, lPos).Trim;
+      var lValue := lString.Substring(lPos + 1).Trim;
+      lHeaders.Add(lKey, lValue);
+    end;
+    result := lTotal;
+  end
+  else
+    result := 0;
+end;
+class method CurlHelper.SendData(Buffer: ^void; aSize: rtl.size_t; Nmemb: rtl.size_t; UserData: ^void): rtl.size_t;
+begin
+  result := 0;
 end;
 {$ENDIF}
 
