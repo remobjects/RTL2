@@ -98,11 +98,11 @@ type
   XmlElement = public class(XmlNode)
   private
     fLocalName : String;
-    fAttributes: List<XmlAttribute> := new List<XmlAttribute>;
+    //fAttributes: List<XmlAttribute> := new List<XmlAttribute>;
     fElements: List<XmlElement> := new List<XmlElement>;
     fNodes: List<XmlNode> := new List<XmlNode>;
     fNamespace : XmlNamespace;
-    fNamespaces: List<XmlNamespace> := new List<XmlNamespace>;
+    //fNamespaces: List<XmlNamespace> := new List<XmlNamespace>;
     fDefaultNamespace: XmlNamespace;
 
     fAttributesAndNamespaces: List<XmlNode> := new List<XmlNode>;
@@ -1060,15 +1060,15 @@ begin
   result := result + fLocalName;
 
   for each attr in fAttributesAndNamespaces do begin
-    var lWSLeft: String := nil;
-    var lWSRight: String := nil;
+    var lWSleft: String := nil;
+    var lWSright: String := nil;
   
     if attr.NodeType = XmlNodeType.Attribute then begin
-        lWSLeft := XmlAttribute(attr).WSLeft;
-        lWSRight := XmlAttribute(attr).WSRight;
+      lWSleft := XmlAttribute(attr).WSleft;
+      lWSright := XmlAttribute(attr).WSright;
     end else if attr.NodeType = XmlNodeType.Namespace then begin
-        lWSLeft := XmlNamespace(attr).WSLeft;
-        lWSRight := XmlNamespace(attr).WSRight;
+      lWSleft := XmlNamespace(attr).WSleft;
+      lWSright := XmlNamespace(attr).WSright;
     end;
     str := "";
     if not(aFormatInsideTags) and (lWSleft <> nil) then str := lWSleft;
