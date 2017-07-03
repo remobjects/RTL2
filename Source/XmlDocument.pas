@@ -906,7 +906,7 @@ end;
 method XmlElement.GetFullName: not nullable String;
 begin
   result := "";
-  if assigned(&Namespace) and assigned(&Namespace.Prefix) then result := &Namespace.Prefix+':';
+  if assigned(&Namespace) and assigned(&Namespace.Prefix) and (&Namespace.Prefix<>"") then result := &Namespace.Prefix+':';
   result := result + LocalName;
 end;
 
