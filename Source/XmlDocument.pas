@@ -287,7 +287,7 @@ type
     BetweenTags,
     EndTag
   );
- 
+
 implementation
 
 { XmlDocument }
@@ -333,7 +333,7 @@ begin
     end;}
     var XmlStr:String := aFileName.ReadText();
     var lXmlParser := new XmlParser(XmlStr);
-    result := lXmlParser.Parse(out aError); 
+    result := lXmlParser.Parse(out aError);
     result.fXmlParser := lXmlParser;
   end;
 end;
@@ -542,7 +542,7 @@ begin
     for each el in lElement.Elements do begin
       if (el.StartLine > aRow) or ((el.StartLine = aRow) and (el.StartColumn >= aColumn)) then
         break
-      else 
+      else
         result := el
     end;
     if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn <= aColumn))) or
@@ -552,8 +552,8 @@ begin
       break;
     end;
   end;
-      
-  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin 
+
+  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin
     if result.IsEmpty then aCursorPosition := XmlPosition.SingleTag
     else aCursorPosition := XmlPosition.StartTag;
     //result := nil;
@@ -906,7 +906,7 @@ end;
 method XmlElement.GetFullName: not nullable String;
 begin
   result := "";
-  if assigned(&Namespace) and assigned(&Namespace.Prefix) and (&Namespace.Prefix<>"") then result := &Namespace.Prefix+':';
+  if length(&Namespace:Prefix) > 0 then result := &Namespace.Prefix+':';
   result := result + LocalName;
 end;
 
@@ -967,7 +967,7 @@ end;
 
 method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
 begin
-  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Cast<XmlAttribute> as not nullable;
+  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Select(x -> x as XmlAttribute) as not nullable;
   //result := fAttributes as not nullable;
 end;
 
@@ -1003,7 +1003,7 @@ end;
 method XmlElement.GetNamespaces: not nullable sequence of XmlNamespace;
 begin
  // result := fNamespaces as not nullable;
-  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Namespace).Cast<XmlNamespace> as not nullable;
+  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Namespace).Select(x -> x as XmlNamespace) as not nullable;
 end;
 
 method XmlElement.GetNamespace(aUri: Uri): nullable XmlNamespace;
@@ -1062,7 +1062,7 @@ begin
   for each attr in fAttributesAndNamespaces do begin
     var lWSleft: String := nil;
     var lWSright: String := nil;
-  
+
     if attr.NodeType = XmlNodeType.Attribute then begin
       lWSleft := XmlAttribute(attr).WSleft;
       lWSright := XmlAttribute(attr).WSright;
@@ -1243,7 +1243,7 @@ end;
 method XmlAttribute.ToString(aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean): String;
 begin
   result := "";
-  
+
   if (Document <> nil) and aFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
     var indent :="";
     var lNode: XmlNode;
