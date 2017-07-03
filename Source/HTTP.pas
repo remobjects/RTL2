@@ -842,6 +842,7 @@ begin
   var lRequest := CurlHelper.EasyInit();
   var lStream := new MemoryStream();
   var lHeaders := new Dictionary<String, String>;
+  var lUploadHelper: CurlUploadHelper;
   CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEFUNCTION, ^void(@CurlHelper.ReceiveData));
   CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEDATA, ^void(@lStream));
   CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERFUNCTION, ^void(@CurlHelper.ReceiveHeaders));
@@ -851,6 +852,9 @@ begin
   var lUrl := RemObjects.Elements.System.String(aRequest.Url.ToString).ToAnsiChars(true);
   CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_URL, @lUrl[0]);
 
+  if aRequest.FollowRedirects then
+    CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_FOLLOWLOCATION, 1);
+
   var lHeader: RemObjects.Elements.System.String;
   var lHeaderBytes: array of AnsiChar;
   var lHeaderList: ^curl_slist := nil;
@@ -859,6 +863,13 @@ begin
     lHeaderBytes := lHeader.ToAnsiChars(true);
   end;
   lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
+
+  var lTotalLength := 0;
+  var lData: array of Byte;
+  if assigned(aRequest.Content) then begin
+    lData := (aRequest.Content as IHttpRequestContent).GetContentAsArray;
+    lTotalLength := lData.Length;
+  end;
 
   case aRequest.Mode of
     HttpRequestMode.Get, HttpRequestMode.Put, HttpRequestMode.Delete, HttpRequestMode.Patch,
@@ -874,7 +885,9 @@ begin
     HttpRequestMode.Post: begin
       CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POST, 1);
       CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READFUNCTION, ^void(@CurlHelper.SendData));
-      //CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READDATA, ??);
+      lUploadHelper := new CurlUploadHelper(lData);
+      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READDATA, ^void(@lUploadHelper));
+      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POSTFIELDSIZE, lTotalLength);
     end;
   end;
 

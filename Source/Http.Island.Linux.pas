@@ -181,6 +181,13 @@ type
     class method SendData(Buffer: ^void; aSize: rtl.size_t; Nmemb: rtl.size_t; UserData: ^void): rtl.size_t;
   end;
 
+  CurlUploadHelper = class assembly
+  public
+     Data: array of Byte;
+     TotalData: Integer;
+     constructor(aData: array of Byte);
+  end;
+
 implementation
 
 class method CurlHelper.GetSymbol(SymbolName: String): ^Void;
@@ -248,7 +255,21 @@ end;
 class method CurlHelper.SendData(Buffer: ^void; aSize: rtl.size_t; Nmemb: rtl.size_t; UserData: ^void): rtl.size_t;
 begin
   result := 0;
+  if UserData <> nil then begin
+    var lHelper := InternalCalls.Cast<CurlUploadHelper>(UserData);
+    if lHelper.TotalData < length(lHelper.Data) then begin
+      result := aSize * Nmemb;
+      rtl.memcpy(Buffer, @lHelper.Data[lHelper.TotalData], result);
+      inc(lHelper.TotalData, result);
+    end;
+  end;
 end;
+
+constructor CurlUploadHelper(aData: array of Byte);
+begin
+  Data := aData;
+end;
+
 {$ENDIF}
 
 end.
