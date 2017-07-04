@@ -10,7 +10,6 @@ type
     fXmlParser: XmlParser;
     fFormatOptions: XmlFormattingOptions;
     fLineBreak: String;
-    HasError: Boolean;
   private
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
@@ -32,10 +31,10 @@ type
     class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument; inline;
     class method TryFromString(aString: not nullable String): nullable XmlDocument; inline;
     class method TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument; inline;
-    class method TryFromFile(aFileName: not nullable File; out aError: XmlErrorInfo): nullable XmlDocument;
-    class method TryFromUrl(aUrl: not nullable Url; out aError: XmlErrorInfo): nullable XmlDocument;
-    class method TryFromString(aString: not nullable String; out aError: XmlErrorInfo): nullable XmlDocument;
-    class method TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument; inline;
+    class method TryFromFile(aFileName: not nullable File; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+    class method TryFromUrl(aUrl: not nullable Url; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+    class method TryFromString(aString: not nullable String; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary; aAllowBrokenDocument: Boolean): nullable XmlDocument; inline;
 
     [ToString]
     method ToString(): String; override;
@@ -52,6 +51,7 @@ type
     property Version : String;
     property Encoding : String;
     property Standalone : String;
+    property ErrorInfo: XmlErrorInfo;
     method AddNode(aNode: not nullable XmlNode);
     method NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
   end;
@@ -307,34 +307,26 @@ class method XmlDocument.FromFile(aFileName: not nullable File): not nullable Xm
 begin
   if not aFileName.Exists then
     raise new FileNotFoundException(aFileName);
-  var lError: XmlErrorInfo;
-  result := TryFromFile(aFileName, out lError) as not nullable;
-  if lError <> nil then raise new XmlException(lError.Message, lError.Row, lError.Column);
-  {var XmlStr:String := aFileName.ReadText();
-  var lXmlParser := new XmlParser(XmlStr);
-  var aError := new XmlErrorInfo;
-  result := lXmlParser.Parse(out aError);
-  result.fXmlParser := lXmlParser;}
+  result := TryFromFile(aFileName) as not nullable;
+  try
+    if (result:ErrorInfo <> nil) then raise new XmlException(result.ErrorInfo.Message, result.ErrorInfo.Row, result.ErrorInfo.Column);
+  except
+  end;
 end;
 
 class method XmlDocument.TryFromFile(aFileName: not nullable File): nullable XmlDocument;
 begin
-  var lIgnoreError: XmlErrorInfo;
-  result := TryFromFile(aFileName, out lIgnoreError);
+  result := TryFromFile(aFileName, false);
 end;
 
-class method XmlDocument.TryFromFile(aFileName: not nullable File; out aError: XmlErrorInfo): nullable XmlDocument;
+class method XmlDocument.TryFromFile(aFileName: not nullable File; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
   if aFileName.Exists then begin
-  {  try
-      result := FromFile(aFileName);
-    except
-      on E: XmlException do;
-    end;}
     var XmlStr:String := aFileName.ReadText();
     var lXmlParser := new XmlParser(XmlStr);
-    result := lXmlParser.Parse(out aError); 
+    result := lXmlParser.Parse();
     result.fXmlParser := lXmlParser;
+    if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
   end;
 end;
 
@@ -354,14 +346,13 @@ end;
 
 class method XmlDocument.TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
 begin
-  var lIgnoreError: XmlErrorInfo;
-  result := TryFromUrl(aUrl, out lIgnoreError);
+  result := TryFromUrl(aUrl, false);
 end;
 
-class method XmlDocument.TryFromUrl(aUrl: not nullable Url; out aError: XmlErrorInfo): nullable XmlDocument;
+class method XmlDocument.TryFromUrl(aUrl: not nullable Url; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
   if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
-    result := TryFromFile(aUrl.FilePath, out aError)
+    result := TryFromFile(aUrl.FilePath, aAllowBrokenDocument)
   else if aUrl.Scheme in ["http", "https"] then try
     {$IFDEF ISLAND}
     raise new NotImplementedException;
@@ -376,27 +367,22 @@ end;
 
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
-  var lError: XmlErrorInfo;
-  var lResult := TryFromString(aString, out lError);
-  if lError <> nil then raise new XmlException(lError.Message, lError.Row, lError.Column);
+  var lResult := TryFromString(aString);
+  if (lResult:ErrorInfo <> nil) then raise new XmlException(lResult.ErrorInfo.Message, lResult.ErrorInfo.Row, lResult.ErrorInfo.Column);
   result := lResult as not nullable;
-  {var lXmlParser := new XmlParser(aString);
-  var aError := new XmlErrorInfo;
-  result := lXmlParser.Parse(out aError);
-  result.fXmlParser := lXmlParser;}
 end;
 
 class method XmlDocument.TryFromString(aString: not nullable String): nullable XmlDocument;
 begin
-  var lIgnoreError: XmlErrorInfo;
-  result := TryFromString(aString, out lIgnoreError);
+  result := TryFromString(aString, false);
 end;
 
-class method XmlDocument.TryFromString(aString: not nullable String; out aError: XmlErrorInfo): nullable XmlDocument;
+class method XmlDocument.TryFromString(aString: not nullable String; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
   var lXmlParser := new XmlParser(aString);
-  result := lXmlParser.Parse(out aError);
+  result := lXmlParser.Parse();
   result.fXmlParser := lXmlParser;
+  if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
 end;
 
 class method XmlDocument.FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
@@ -406,13 +392,12 @@ end;
 
 class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument;
 begin
-  var lIgnoreError: XmlErrorInfo;
-  result := XmlDocument.TryFromString(new String(aBinary.ToArray), out lIgnoreError);
+  result := XmlDocument.TryFromString(new String(aBinary.ToArray), false);
 end;
 
-class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument;
+class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
-  result := XmlDocument.TryFromString(new String(aBinary.ToArray), out aError);
+  result := XmlDocument.TryFromString(new String(aBinary.ToArray), aAllowBrokenDocument);
 end;
 
 class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
@@ -533,7 +518,8 @@ end;
 method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
 begin
   if ((aRow < Root.StartLine) or ((aRow = Root.StartLine) and (aColumn <= Root.StartColumn))) or
-  ((Root.EndLine <> 0) and ((aRow > Root.EndLine) or ((aRow = Root.EndLine) and (aColumn >= Root.EndColumn)))) then exit nil;
+  ((Root.EndLine <> 0) and ((aRow > Root.EndLine) or ((aRow = Root.EndLine) and (aColumn >= Root.EndColumn)))) or
+   (assigned(ErrorInfo) and ((aRow > ErrorInfo.Row) or ((aRow = ErrorInfo.Row) and (aColumn >= ErrorInfo.Column)))) then exit nil;
   result := Root;
 //if (Root.StartLine <= aRow) and (Root.StartColumn <= aColumn) then result := Root;
   var lElement: XmlElement;
@@ -547,16 +533,15 @@ begin
     end;
     if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn <= aColumn))) or
       ((result.IsEmpty) and (result.OpenTagEndLine <> 0) and ((result.OpenTagEndLine < aRow) or ((result.OpenTagEndLine = aRow) and (result.OpenTagEndColumn <= aColumn)))) then begin
-      //then begin
       result := result.Parent as XmlElement;
       break;
     end;
   end;
+  
       
   if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin 
     if result.IsEmpty then aCursorPosition := XmlPosition.SingleTag
     else aCursorPosition := XmlPosition.StartTag;
-    //result := nil;
     exit;
   end;
   if (aRow > result.CloseTagStartLine) or (aRow = result.CloseTagStartLine) and (aColumn > result.CloseTagStartColumn) then begin
