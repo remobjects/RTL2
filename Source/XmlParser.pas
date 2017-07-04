@@ -460,10 +460,10 @@ begin
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSright := Tokenizer.Value;
       Tokenizer.Next;
     end;
-    if not Expected(out aError, XmlTokenKind.AttributeValue, XMLTokenKind.EOF) then exit;
+    if not Expected(out aError, XmlTokenKind.AttributeValue, XmlTokenKind.EOF) then exit;
     lValue := Tokenizer.Value;
     lQuoteChar := lValue[0];
-    lValue := lValue.Trim([lQuotechar]);
+    lValue := lValue.Trim([lQuoteChar]);
     
     /*lValue  := lValue.Substring(1, length(lValue)-2) {$WARNING HACK FOR NOW}*/
     if Tokenizer.token = XmlTokenKind.EOF then begin
@@ -611,7 +611,7 @@ begin
             lSuggestion := lNmspc.Prefix;
             break;
           end;
-          lElement := lElement.Parent as XmlElement;
+          lElement := lElement.Parent;
       end;
 
       aError := new XmlErrorInfo;
@@ -664,7 +664,7 @@ begin
                 lSuggestion := lNmspc.Prefix;
                 break;
               end;
-            lElement := lElement.Parent as XmlElement;
+            lElement := lElement.Parent;
           end;
           aError.FillErrorInfo("Unknown prefix '"+lPrefix+":'", lSuggestion, lAttribute.StartLine, lAttribute.StartColumn);
           lAttribute.LocalName := '[ERROR]:'+ lLocalName;

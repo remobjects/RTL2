@@ -71,19 +71,19 @@ type
   XmlNode = public class
   unit
     fDocument: weak nullable XmlDocument;
-    fParent: weak nullable XmlNode;
+    fParent: weak nullable XmlElement;
     fNodeType: XmlNodeType;
     Indent: String;
 
     method SetDocument(aDoc: XmlDocument);
     method GetNodeType : XmlNodeType;
-    constructor withParent(aParent: XmlNode := nil);
+    constructor withParent(aParent: XmlElement := nil);
   protected
     method CharIsWhitespace(C: String): Boolean;
     method ConvertEntity(S: String; C: nullable Char): String;
   public
     constructor; empty;
-    property Parent: nullable XmlNode read fParent;
+    property Parent: nullable XmlElement read fParent;
     property Document: nullable XmlDocument read coalesce(Parent:Document, fDocument) write SetDocument;
     property NodeType: XmlNodeType read GetNodeType;
     property StartLine: Integer;
@@ -127,8 +127,8 @@ type
 
   assembly
     fIsEmpty: Boolean := true;
-    constructor withParent(aParent: XmlNode := nil);
-    constructor withParent(aParent: XmlNode) Indent(aIndent: String := "");
+    constructor withParent(aParent: XmlElement := nil);
+    constructor withParent(aParent: XmlElement) Indent(aIndent: String := "");
 
   public
     constructor withName(aLocalName: not nullable String);
@@ -206,7 +206,7 @@ type
     method SetLocalName(aValue: not nullable String);
     method SetValue(aValue: not nullable String);
   public
-    constructor withParent(aParent: XmlNode := nil);
+    constructor withParent(aParent: XmlElement := nil);
     constructor (aLocalName: not nullable String; aNamespace: nullable XmlNamespace; aValue: not nullable String);
     property &Namespace: XmlNamespace read GetNamespace write SetNamespace;
     property LocalName: not nullable String read GetLocalName write SetLocalName;
@@ -218,13 +218,13 @@ type
 
   XmlComment = public class(XmlNode)
   public
-    constructor (aParent: XmlNode := nil);
+    constructor (aParent: XmlElement := nil);
     property Value: String;
   end;
 
   XmlCData = public class(XmlNode)
   public
-    constructor (aParent: XmlNode := nil);
+    constructor (aParent: XmlElement := nil);
     property Value: String;
   end;
 
@@ -237,7 +237,7 @@ type
     WSleft, WSright: String;
     innerWSleft, innerWSright: String;
     QuoteChar: Char := '"';
-    constructor withParent(aParent: XmlNode := nil);
+    constructor withParent(aParent: XmlElement := nil);
   public
     constructor(aPrefix: String; aUri: not nullable Uri);
     property Prefix: String read GetPrefix write SetPrefix;
@@ -250,7 +250,7 @@ type
 
   XmlProcessingInstruction = public class(XmlNode)
   public
-    constructor (aParent: XmlNode := nil);
+    constructor (aParent: XmlElement := nil);
     property Target: String;
     property Data: String;
   end;
@@ -263,13 +263,13 @@ type
   assembly
     originalRawValue: String;
   public
-    constructor (aParent: XmlNode := nil);
+    constructor (aParent: XmlElement := nil);
     property Value: String read GetValue write SetValue;
   end;
 
   XmlDocumentType = public class(XmlNode)
   public
-    constructor (aParent: XmlNode := nil);
+    constructor (aParent: XmlElement := nil);
     property Name: String;
     property SystemId: String;
     property PublicId: String;
@@ -546,7 +546,7 @@ begin
     end;
     if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn <= aColumn))) or
       ((result.IsEmpty) and (result.OpenTagEndLine <> 0) and ((result.OpenTagEndLine < aRow) or ((result.OpenTagEndLine = aRow) and (result.OpenTagEndColumn <= aColumn)))) then begin
-      result := result.Parent as XmlElement;
+      result := result.Parent;
       break;
     end;
   end;
@@ -575,10 +575,10 @@ begin
   else begin
     result.CurrentTag := lElement;
   end;
-  result.ParentTag := lElement.Parent as XmlElement;
+  result.ParentTag := lElement.Parent;
   if (lElement <> nil) and (lPosition in [XmlCurrentPositionEnum.StartTag, XmlCurrentPositionEnum.SingleTag]) then begin
     if length(lElement.Namespace:Prefix) > 0 then
-      if acolumn = lElement.Startcolumn + length(lElement.Namespace.Prefix)+2 then begin
+      if aColumn = lElement.StartColumn + length(lElement.Namespace.Prefix)+2 then begin
         result.CurrentNamespace := lElement.Namespace;
       end;
     if lElement.Attributes.Count > 0 then begin
@@ -594,7 +594,7 @@ begin
 
 end;
 
-constructor XmlNode withParent(aParent: XmlNode);
+constructor XmlNode withParent(aParent: XmlElement);
 begin
   fParent := aParent;
 end;
@@ -668,13 +668,13 @@ end;
 
 { XmlElement }
 
-constructor XmlElement withParent(aParent: XmlNode);
+constructor XmlElement withParent(aParent: XmlElement);
 begin
   inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Element;
 end;
 
-constructor XmlElement withParent(aParent: XmlNode) Indent(aIndent: String);
+constructor XmlElement withParent(aParent: XmlElement) Indent(aIndent: String);
 begin
   inherited constructor withParent(aParent);
   Indent := aIndent;
@@ -1213,7 +1213,7 @@ end;
 
 { XmlAttribute }
 
-constructor XmlAttribute withParent(aParent: XmlNode);
+constructor XmlAttribute withParent(aParent: XmlElement);
 begin
   inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Attribute;
@@ -1294,7 +1294,7 @@ begin
 end;
 
 { XmlNamespace}
-constructor XmlNamespace withParent(aParent: XmlNode);
+constructor XmlNamespace withParent(aParent: XmlElement);
 begin
   inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Namespace;
@@ -1348,14 +1348,14 @@ begin
 end;
 
 {XmlComment}
-constructor XmlComment(aParent: XmlNode);
+constructor XmlComment(aParent: XmlElement);
 begin
   inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Comment;
 end;
 
 {XmlCData}
-constructor XmlCData(aParent: XmlNode);
+constructor XmlCData(aParent: XmlElement);
 begin
   inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.CData;
@@ -1363,7 +1363,7 @@ end;
 
 {XmlText}
 
-constructor XmlText(aParent: XmlNode);
+constructor XmlText(aParent: XmlElement);
 begin
   inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.Text;
@@ -1382,13 +1382,13 @@ end;
 
 {XmlProcessingInstructions}
 
-constructor XmlProcessingInstruction(aParent: XmlNode);
+constructor XmlProcessingInstruction(aParent: XmlElement);
 begin
   inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.ProcessingInstruction;
 end;
 
-constructor XmlDocumentType(aParent: XmlNode);
+constructor XmlDocumentType(aParent: XmlElement);
 begin
   inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.DocumentType;
