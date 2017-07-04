@@ -891,7 +891,7 @@ end;
 method XmlElement.GetFullName: not nullable String;
 begin
   result := "";
-  if assigned(&Namespace) and assigned(&Namespace.Prefix) and (&Namespace.Prefix<>"") then result := &Namespace.Prefix+':';
+  if length(&Namespace:Prefix) > 0 then result := &Namespace.Prefix+':';
   result := result + LocalName;
 end;
 
@@ -952,7 +952,7 @@ end;
 
 method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
 begin
-  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Cast<XmlAttribute> as not nullable;
+  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Select(x -> x as XmlAttribute) as not nullable;
   //result := fAttributes as not nullable;
 end;
 
@@ -988,7 +988,7 @@ end;
 method XmlElement.GetNamespaces: not nullable sequence of XmlNamespace;
 begin
  // result := fNamespaces as not nullable;
-  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Namespace).Cast<XmlNamespace> as not nullable;
+  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Namespace).Select(x -> x as XmlNamespace) as not nullable;
 end;
 
 method XmlElement.GetNamespace(aUri: Uri): nullable XmlNamespace;
