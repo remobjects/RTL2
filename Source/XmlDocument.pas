@@ -53,7 +53,8 @@ type
     property Standalone : String;
     property ErrorInfo: XmlErrorInfo;
     method AddNode(aNode: not nullable XmlNode);
-    method NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
+    method NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlCurrentPositionEnum): XmlElement;
+    method GetCurrentCursorPosition(aRow: Integer; aColumn: Integer): XmlDocCurrentPosition;
   end;
 
   XmlNodeType = public enum(
@@ -97,7 +98,7 @@ type
 
   XmlElement = public class(XmlNode)
   private
-    fLocalName : String;
+    fLocalName : String := "";
     //fAttributes: List<XmlAttribute> := new List<XmlAttribute>;
     fElements: List<XmlElement> := new List<XmlElement>;
     fNodes: List<XmlNode> := new List<XmlNode>;
@@ -280,12 +281,24 @@ type
     property Attribute: Boolean;
   end;
 
-  XmlPosition = public enum(
+  XmlDocCurrentPosition = public class
+  public
+    property CurrentPosition: XmlCurrentPositionEnum;
+    property ParentTag: XmlElement;
+    property CurrentTag: XmlElement;
+    property CurrentTagIndex: Integer; //0-based number of current tag in the parent tag
+    property CurrentAttribute: XmlAttribute; //could be empty
+    property CurrentNamespace: XmlNamespace; //could be nil if no namespace
+  end;
+
+  XmlCurrentPositionEnum = public enum(
     None,
     StartTag,
     SingleTag,
+    InsideTag,
     BetweenTags,
-    EndTag
+    EndTag,
+    AttributeValue
   );
  
 implementation
@@ -515,11 +528,11 @@ begin
   result := fNodes;
 end;
 
-method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
+method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlCurrentPositionEnum): XmlElement;
 begin
   if ((aRow < Root.StartLine) or ((aRow = Root.StartLine) and (aColumn <= Root.StartColumn))) or
   ((Root.EndLine <> 0) and ((aRow > Root.EndLine) or ((aRow = Root.EndLine) and (aColumn >= Root.EndColumn)))) or
-   (assigned(ErrorInfo) and ((aRow > ErrorInfo.Row) or ((aRow = ErrorInfo.Row) and (aColumn >= ErrorInfo.Column)))) then exit nil;
+   (assigned(ErrorInfo) and ((aRow > ErrorInfo.Row) or ((aRow = ErrorInfo.Row) and (aColumn > ErrorInfo.Column)))) then exit nil;
   result := Root;
 //if (Root.StartLine <= aRow) and (Root.StartColumn <= aColumn) then result := Root;
   var lElement: XmlElement;
@@ -537,18 +550,48 @@ begin
       break;
     end;
   end;
-  
       
   if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin 
-    if result.IsEmpty then aCursorPosition := XmlPosition.SingleTag
-    else aCursorPosition := XmlPosition.StartTag;
+    if result.IsEmpty then aCursorPosition := XmlCurrentPositionEnum.SingleTag
+    else aCursorPosition := XmlCurrentPositionEnum.StartTag;
     exit;
   end;
   if (aRow > result.CloseTagStartLine) or (aRow = result.CloseTagStartLine) and (aColumn > result.CloseTagStartColumn) then begin
-      aCursorPosition := XmlPosition.EndTag;
+      aCursorPosition := XmlCurrentPositionEnum.EndTag;
       exit;
   end;
-  aCursorPosition := XmlPosition.BetweenTags;
+  aCursorPosition := XmlCurrentPositionEnum.BetweenTags;
+end;
+
+method XmlDocument.GetCurrentCursorPosition(aRow: Integer; aColumn: Integer): XmlDocCurrentPosition;
+begin
+  var lPosition: XmlCurrentPositionEnum;
+  var lElement := NearestOpenTag(aRow, aColumn, out lPosition);
+  if lElement = nil then exit nil;
+  result := new XmlDocCurrentPosition;
+  if lElement.LocalName = "" then  begin
+    result.CurrentTag := nil;
+  end
+  else begin
+    result.CurrentTag := lElement;
+  end;
+  result.ParentTag := lElement.Parent as XmlElement;
+  if (lElement <> nil) and (lPosition in [XmlCurrentPositionEnum.StartTag, XmlCurrentPositionEnum.SingleTag]) then begin
+    if length(lElement.Namespace:Prefix) > 0 then
+      if acolumn = lElement.Startcolumn + length(lElement.Namespace.Prefix)+2 then begin
+        result.CurrentNamespace := lElement.Namespace;
+      end;
+    if lElement.Attributes.Count > 0 then begin
+      for each lAttr in lElement.attributes do begin
+        //var lQuotePos := lAttr
+        if (aRow >= lAttr.StartLine) and (aColumn >=lAttr.StartColumn) and ((lAttr.EndLine = 0) or ((aRow <= lAttr.EndLine) and (aColumn <= lAttr.EndColumn))) then
+         // if () then ;
+      end;
+    end;
+      ;
+  end;
+
+
 end;
 
 constructor XmlNode withParent(aParent: XmlNode);

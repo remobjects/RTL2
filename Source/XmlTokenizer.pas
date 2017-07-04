@@ -234,15 +234,18 @@ begin
     if ch = ':' then begin
       inc(colonSymbol);
       if (fData.Length < (lPosition+1)) then begin
-        fPos := lPosition+1;
+        //fPos := lPosition+1;
         Token := XmlTokenKind.SyntaxError;
-        Value := "Name expected";
+        Value := new String(fData, fPos, lPosition+1 - fPos);
+        fPos := lPosition+1;
+        //Value := "Name expected";
         exit;
       end
       else if (CharIsNameStart(fData[lPosition+1]) = false) then begin
-        fPos := lPosition+1;
         Token := XmlTokenKind.SyntaxError;
-        Value := "Name could't begin from "+fData[lPosition+1]+" symbol";
+        //Value := "Name could't begin from "+fData[lPosition+1]+" symbol";
+        Value := new String(fData, fPos, lPosition+1 - fPos);
+        fPos := lPosition+1;
         exit;
       end;
     end;
@@ -270,7 +273,9 @@ begin
   inc(fPos);
   loop begin
     if (fPos >= fData.length) then begin
+      Value := new String(fData, lStart, fPos-lStart);
       Token := XmlTokenKind.EOF; exit;
+      //break;
     end;
     var ch := fData[fPos];
     if ch = lQuoteChar then break;
