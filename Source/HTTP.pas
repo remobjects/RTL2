@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT (ISLAND AND ANDROID)}
-
 interface
 
 {$DEFINE XML}{$DEFINE JSON}
@@ -841,12 +839,12 @@ begin
   {$ELSEIF ISLAND AND LINUX}
   var lRequest := CurlHelper.EasyInit();
   var lStream := new MemoryStream();
-  var lHeaders := new Dictionary<String, String>;
+  var lHeaders := new Dictionary<String, String>();
   var lUploadHelper: CurlUploadHelper;
   CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEFUNCTION, ^void(@CurlHelper.ReceiveData));
-  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEDATA, ^void(@lStream));
+  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEDATA, ^void(InternalCalls.Cast(lStream)));
   CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERFUNCTION, ^void(@CurlHelper.ReceiveHeaders));
-  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERDATA, ^void(@lHeaders));
+  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERDATA, ^Void(InternalCalls.Cast(lHeaders)));
   CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_TCP_KEEPALIVE, 1);
   CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOPROGRESS, 1);
   var lUrl := RemObjects.Elements.System.String(aRequest.Url.ToString).ToAnsiChars(true);
@@ -861,8 +859,8 @@ begin
   for each k in aRequest.Headers.Keys do begin
     lHeader := k + ':' + aRequest.Headers[k];
     lHeaderBytes := lHeader.ToAnsiChars(true);
+    lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
   end;
-  lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
 
   var lTotalLength := 0;
   var lData: array of Byte;
@@ -886,7 +884,7 @@ begin
       CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POST, 1);
       CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READFUNCTION, ^void(@CurlHelper.SendData));
       lUploadHelper := new CurlUploadHelper(lData);
-      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READDATA, ^void(@lUploadHelper));
+      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READDATA, ^void(InternalCalls.Cast(lUploadHelper)));
       CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POSTFIELDSIZE, lTotalLength);
     end;
   end;
@@ -1180,7 +1178,5 @@ begin
   end;
 end;
 *)
-
-{$ENDIF}
 
 end.

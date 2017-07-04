@@ -192,12 +192,12 @@ implementation
 
 class method CurlHelper.GetSymbol(SymbolName: String): ^Void;
 begin
-  result := rtl.dlsym(fLib, RemObjects.Elements.System.String(SymbolName).ToAnsiChars);
+  result := rtl.dlsym(fLib, @RemObjects.Elements.System.String(SymbolName).ToAnsiChars(true)[0]);
 end;
 
 class constructor CurlHelper;
 begin
-  fLib := rtl.dlopen(LibCurl.ToAnsiChars, rtl.RTLD_LAZY);
+  fLib := rtl.dlopen(@LibCurl.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
 
   GlobalInit := CurlGlobalInitFunc(GetSymbol('curl_global_init'));
   GlobalCleanup := CurlGlobalCleanupFunc(GetSymbol('curl_global_cleanup'));
@@ -233,7 +233,7 @@ begin
     result := 0;
 end;
 
-class method CurlHelper.ReceiveHeaders(Buffer: ^void; aSize: rtl.size_t; Nitems: rtl.size_t; UserData: ^void):  rtl.size_t;
+class method CurlHelper.ReceiveHeaders(Buffer: ^void; aSize: rtl.size_t; Nitems: rtl.size_t; UserData: ^void): rtl.size_t;
 begin
   if UserData <> nil then begin
     var lHeaders := InternalCalls.Cast<Dictionary<String, String>>(UserData);
