@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿namespace RemObjects.Elements.RTL;
 
 interface
@@ -517,6 +518,542 @@ end;
 
 method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
 begin
+=======
+﻿namespace RemObjects.Elements.RTL;
+
+interface
+
+type
+  XmlDocument = public class
+    constructor;
+    constructor (aRoot : not nullable XmlElement);
+  assembly
+    fXmlParser: XmlParser;
+    fFormatOptions: XmlFormattingOptions;
+    fLineBreak: String;
+    HasError: Boolean;
+  private
+    fNodes: List<XmlNode> := new List<XmlNode>;
+    fRoot: /*not nullable*/ XmlElement;
+    fDefaultVersion := "1.0";
+
+    method GetNodes: ImmutableList<XmlNode>;
+    method GetRoot: not nullable XmlElement;
+    method SetRoot(aRoot: not nullable XmlElement);
+
+  public
+    class method FromFile(aFileName: not nullable File): not nullable XmlDocument;
+    class method FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
+    class method FromString(aString: not nullable String): not nullable XmlDocument;
+    class method FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
+    class method WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
+    class method WithRootElement(aName: not nullable String): not nullable XmlDocument;
+
+    class method TryFromFile(aFileName: not nullable File): nullable XmlDocument; inline;
+    class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument; inline;
+    class method TryFromString(aString: not nullable String): nullable XmlDocument; inline;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument; inline;
+    class method TryFromFile(aFileName: not nullable File; out aError: XmlErrorInfo): nullable XmlDocument;
+    class method TryFromUrl(aUrl: not nullable Url; out aError: XmlErrorInfo): nullable XmlDocument;
+    class method TryFromString(aString: not nullable String; out aError: XmlErrorInfo): nullable XmlDocument;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument; inline;
+
+    [ToString]
+    method ToString(): String; override;
+    method ToString(aFormatOptions: XmlFormattingOptions): String;
+    method ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
+
+    method SaveToFile(aFileName: not nullable File);
+    method SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
+
+
+    property Nodes: ImmutableList<XmlNode> read GetNodes;
+    property Root: not nullable XmlElement read GetRoot write SetRoot;
+
+    property Version : String;
+    property Encoding : String;
+    property Standalone : String;
+    method AddNode(aNode: not nullable XmlNode);
+    method NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
+  end;
+
+  XmlNodeType = public enum(
+    Element,
+    Attribute,
+    Comment,
+    CData,
+    &Namespace,
+    Text,
+    ProcessingInstruction,
+    DocumentType
+    );
+
+  XmlNode = public class
+  unit
+    fDocument: weak nullable XmlDocument;
+    fParent: weak nullable XmlNode;
+    fNodeType: XmlNodeType;
+    Indent: String;
+
+    method SetDocument(aDoc: XmlDocument);
+    method GetNodeType : XmlNodeType;
+    constructor withParent(aParent: XmlNode := nil);
+  protected
+    method CharIsWhitespace(C: String): Boolean;
+    method ConvertEntity(S: String; C: nullable Char): String;
+  public
+    constructor; empty;
+    property Parent: nullable XmlNode read fParent;
+    property Document: nullable XmlDocument read coalesce(Parent:Document, fDocument) write SetDocument;
+    property NodeType: XmlNodeType read GetNodeType;
+    property StartLine: Integer;
+    property StartColumn: Integer;
+    property EndLine: Integer;
+    property EndColumn: Integer;
+
+    [ToString]
+    method ToString(): String; override;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String; virtual;
+  end;
+
+  XmlElement = public class(XmlNode)
+  private
+    fLocalName : String;
+    //fAttributes: List<XmlAttribute> := new List<XmlAttribute>;
+    fElements: List<XmlElement> := new List<XmlElement>;
+    fNodes: List<XmlNode> := new List<XmlNode>;
+    fNamespace : XmlNamespace;
+    //fNamespaces: List<XmlNamespace> := new List<XmlNamespace>;
+    fDefaultNamespace: XmlNamespace;
+
+    fAttributesAndNamespaces: List<XmlNode> := new List<XmlNode>;
+
+    method GetNamespace: nullable XmlNamespace;
+    method SetNamespace(aNamespace: XmlNamespace);
+    method GetLocalName: not nullable String;
+    method SetLocalName(aValue: not nullable String);
+    method GetFullName: not nullable String;
+    //method GetValue: nullable String;
+    method SetValue(aValue: nullable String);
+    method GetAttributes: not nullable sequence of XmlAttribute;
+    method GetAttribute(aName: not nullable String): nullable XmlAttribute;
+    method GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
+    method GetNodes: ImmutableList<XmlNode>;
+    method GetElements: not nullable sequence of XmlElement;
+    method GetNamespace(aUri: Uri): nullable XmlNamespace;
+    method GetNamespace(aPrefix: String): nullable XmlNamespace;
+    method GetNamespaces: not nullable sequence of XmlNamespace;
+    method GetDefaultNamespace: XmlNamespace;
+
+  assembly
+    fIsEmpty: Boolean := true;
+    constructor withParent(aParent: XmlNode := nil);
+    constructor withParent(aParent: XmlNode) Indent(aIndent: String := "");
+
+  public
+    constructor withName(aLocalName: not nullable String);
+    constructor withName(aLocalName: not nullable String) Value(aValue: not nullable String);
+
+    property &Namespace: XmlNamespace read GetNamespace write SetNamespace;
+    property DefinedNamespaces: not nullable sequence of XmlNamespace read GetNamespaces;
+    property DefaultNamespace: XmlNamespace read  GetDefaultNamespace;
+    property LocalName: not nullable String read GetLocalName write SetLocalName;
+    property Value: nullable String read GetValue(true) write SetValue;
+    property IsEmpty: Boolean read fIsEmpty;
+    property EndTagName: String;
+    property OpenTagEndLine: Integer;
+    property OpenTagEndColumn: Integer;
+    property CloseTagStartLine: Integer;
+    property CloseTagStartColumn: Integer;
+    property CloseTagEndLine: Integer;
+    property CloseTagEndColumn: Integer;
+
+    property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
+    property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
+    property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
+    property Elements: not nullable sequence of XmlElement read GetElements;
+    property Nodes: ImmutableList<XmlNode> read GetNodes;
+    property &Namespace[aUri: Uri]: nullable XmlNamespace read GetNamespace;
+    property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
+    property FullName: not nullable String read GetFullName;
+
+    method GetValue (aWithNested: Boolean): nullable String;
+    method ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
+    method ElementsWithNamespace(aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
+    method FirstElementWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlElement;
+
+    method AddAttribute(aAttribute: not nullable XmlAttribute);
+    method SetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String);
+    method RemoveAttribute(aAttribute: not nullable XmlAttribute);
+    method RemoveAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlAttribute;
+
+    method AddElement(aElement: not nullable XmlElement);
+    method AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
+    method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
+    method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
+    method AddElements(aElements: not nullable sequence of XmlElement);
+    method RemoveElement(aElement: not nullable XmlElement);
+    method RemoveElementsWithName(aName: not nullable String; aNamespace: nullable XmlNamespace := nil);
+    method RemoveAllElements;
+
+    method ReplaceElement(aExistingElement: not nullable XmlElement) withElement(aNewElement: not nullable XmlElement);
+
+    method AddNode(aNode: not nullable XmlNode);
+    //method MoveElement(aExistingElement: not nullable XmlElement) toIndex(aIndex: Integer);
+    method AddNamespace(aNamespace: not nullable XmlNamespace);
+    method AddNamespace(aPrefix: nullable String; aUri: not nullable Uri): XmlNamespace;
+    method RemoveNamespace(aNamespace: not nullable XmlNamespace);
+    method RemoveNamespace(aPrefix: not nullable String);
+    [ToString]
+    method ToString(): String; override;
+    method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String; override;
+  end;
+
+  XmlAttribute = public class(XmlNode)
+  assembly
+    WSleft, WSright: String;
+    innerWSleft, innerWSright: String;
+    QuoteChar: Char := '"';
+    originalRawValue: String;
+  private
+    fLocalName: String;
+    fValue: String;
+    fNamespace:XmlNamespace;
+    method GetNamespace: XmlNamespace;
+    method SetNamespace(aNamespace: not nullable XmlNamespace);
+    method GetLocalName: not nullable String;
+    method GetValue: not nullable String;
+    method SetLocalName(aValue: not nullable String);
+    method SetValue(aValue: not nullable String);
+  public
+    constructor withParent(aParent: XmlNode := nil);
+    constructor (aLocalName: not nullable String; aNamespace: nullable XmlNamespace; aValue: not nullable String);
+    property &Namespace: XmlNamespace read GetNamespace write SetNamespace;
+    property LocalName: not nullable String read GetLocalName write SetLocalName;
+    property Value: not nullable String read GetValue write SetValue;
+    [ToString]
+    method ToString(): String; override;
+    method ToString(aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean := false): String;
+  end;
+
+  XmlComment = public class(XmlNode)
+  public
+    constructor (aParent: XmlNode := nil);
+    property Value: String;
+  end;
+
+  XmlCData = public class(XmlNode)
+  public
+    constructor (aParent: XmlNode := nil);
+    property Value: String;
+  end;
+
+  XmlNamespace = public class(XmlNode)
+  private
+    method GetPrefix: String;
+    method SetPrefix(aPrefix: String);
+    fPrefix: String;
+  assembly
+    WSleft, WSright: String;
+    innerWSleft, innerWSright: String;
+    QuoteChar: Char := '"';
+    constructor withParent(aParent: XmlNode := nil);
+  public
+    constructor(aPrefix: String; aUri: not nullable Uri);
+    property Prefix: String read GetPrefix write SetPrefix;
+    property Uri: Uri;
+    [ToString]
+    method ToString(): String; override;
+    method ToString(aFormatInsideTags: Boolean): String;
+
+  end;
+
+  XmlProcessingInstruction = public class(XmlNode)
+  public
+    constructor (aParent: XmlNode := nil);
+    property Target: String;
+    property Data: String;
+  end;
+
+  XmlText = public class(XmlNode)
+  private
+    fValue: String;
+    method GetValue: String;
+    method SetValue(aValue: String);
+  assembly
+    originalRawValue: String;
+  public
+    constructor (aParent: XmlNode := nil);
+    property Value: String read GetValue write SetValue;
+  end;
+
+  XmlDocumentType = public class(XmlNode)
+  public
+    constructor (aParent: XmlNode := nil);
+    property Name: String;
+    property SystemId: String;
+    property PublicId: String;
+    property Declaration: String;
+  end;
+
+  XmlError = public class(XmlNode)
+  public
+    property Attribute: Boolean;
+  end;
+
+  XmlPosition = public enum(
+    None,
+    StartTag,
+    SingleTag,
+    BetweenTags,
+    EndTag
+  );
+
+implementation
+
+{ XmlDocument }
+
+constructor XmlDocument();
+begin
+end;
+
+constructor XmlDocument(aRoot: not nullable XmlElement);
+begin
+  fRoot := aRoot;
+  fRoot.Document := self;
+  AddNode(fRoot);
+end;
+
+class method XmlDocument.FromFile(aFileName: not nullable File): not nullable XmlDocument;
+begin
+  if not aFileName.Exists then
+    raise new FileNotFoundException(aFileName);
+  var lError: XmlErrorInfo;
+  result := TryFromFile(aFileName, out lError) as not nullable;
+  if lError <> nil then raise new XmlException(lError.Message, lError.Row, lError.Column);
+  {var XmlStr:String := aFileName.ReadText();
+  var lXmlParser := new XmlParser(XmlStr);
+  var aError := new XmlErrorInfo;
+  result := lXmlParser.Parse(out aError);
+  result.fXmlParser := lXmlParser;}
+end;
+
+class method XmlDocument.TryFromFile(aFileName: not nullable File): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromFile(aFileName, out lIgnoreError);
+end;
+
+class method XmlDocument.TryFromFile(aFileName: not nullable File; out aError: XmlErrorInfo): nullable XmlDocument;
+begin
+  if aFileName.Exists then begin
+  {  try
+      result := FromFile(aFileName);
+    except
+      on E: XmlException do;
+    end;}
+    var XmlStr:String := aFileName.ReadText();
+    var lXmlParser := new XmlParser(XmlStr);
+    result := lXmlParser.Parse(out aError);
+    result.fXmlParser := lXmlParser;
+  end;
+end;
+
+class method XmlDocument.FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
+begin
+  if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
+    result := FromFile(aUrl.FilePath)
+  else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
+    {$IFDEF ISLAND}
+    raise new NotImplementedException;
+    {$ELSE}
+    result := Http.GetXml(new HttpRequest(aUrl))
+    {$ENDIF}
+  end else
+    raise new XmlException(String.Format("Cannot load XML from URL '{0}'.", aUrl.ToAbsoluteString()));
+end;
+
+class method XmlDocument.TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromUrl(aUrl, out lIgnoreError);
+end;
+
+class method XmlDocument.TryFromUrl(aUrl: not nullable Url; out aError: XmlErrorInfo): nullable XmlDocument;
+begin
+  if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
+    result := TryFromFile(aUrl.FilePath, out aError)
+  else if aUrl.Scheme in ["http", "https"] then try
+    {$IFDEF ISLAND}
+    raise new NotImplementedException;
+    {$ELSE}
+    result := Http.GetXml(new HttpRequest(aUrl));
+    {$ENDIF}
+  except
+    on E: XmlException do;
+    on E: HttpException do;
+  end;
+end;
+
+class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
+begin
+  var lError: XmlErrorInfo;
+  var lResult := TryFromString(aString, out lError);
+  if lError <> nil then raise new XmlException(lError.Message, lError.Row, lError.Column);
+  result := lResult as not nullable;
+  {var lXmlParser := new XmlParser(aString);
+  var aError := new XmlErrorInfo;
+  result := lXmlParser.Parse(out aError);
+  result.fXmlParser := lXmlParser;}
+end;
+
+class method XmlDocument.TryFromString(aString: not nullable String): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := TryFromString(aString, out lIgnoreError);
+end;
+
+class method XmlDocument.TryFromString(aString: not nullable String; out aError: XmlErrorInfo): nullable XmlDocument;
+begin
+  var lXmlParser := new XmlParser(aString);
+  result := lXmlParser.Parse(out aError);
+  result.fXmlParser := lXmlParser;
+end;
+
+class method XmlDocument.FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
+begin
+  result := XmlDocument.FromString(new String(aBinary.ToArray));
+end;
+
+class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument;
+begin
+  var lIgnoreError: XmlErrorInfo;
+  result := XmlDocument.TryFromString(new String(aBinary.ToArray), out lIgnoreError);
+end;
+
+class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; out aError: XmlErrorInfo): nullable XmlDocument;
+begin
+  result := XmlDocument.TryFromString(new String(aBinary.ToArray), out aError);
+end;
+
+class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
+begin
+  result := new XmlDocument(aElement);
+end;
+
+class method XmlDocument.WithRootElement(aName: not nullable String): not nullable XmlDocument;
+begin
+  result := new XmlDocument(new XmlElement withName(aName));
+end;
+
+method XmlDocument.ToString(): String;
+begin
+  result := ToString(false, new XmlFormattingOptions());
+end;
+
+method XmlDocument.ToString(aFormatOptions: XmlFormattingOptions): String;
+begin
+  result := ToString(true, aFormatOptions);
+end;
+
+method XmlDocument.ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
+begin
+  fFormatOptions := aFormatOptions;
+  fLineBreak := aFormatOptions.NewLineString;
+  if (fLineBreak = nil) and (fXmlParser <> nil) then fLineBreak := fXmlParser.fLineBreak;
+  var lPreserveExactStringsForUnchnagedValues := aFormatOptions.PreserveExactStringsForUnchnagedValues;
+  result:="";
+  var lFormatInsideTags := false;
+  if Version <> nil then result := '<?xml version="'+Version+'"';
+  if (Encoding <> nil) then begin
+    if result = "" then result := '<?xml version="'+fDefaultVersion+'"';
+    result := result + ' encoding="'+Encoding+'"';
+  end;
+  if Standalone <> nil then begin
+    if result = "" then result := '<?xml version="'+fDefaultVersion+'"';
+    result := result + ' standalone="'+Standalone+'"';
+  end;
+  if result <> "" then result := result + "?>";
+  if not(aSaveFormatted) or
+    (aSaveFormatted and
+      (fXmlParser <> nil) and
+      (
+        (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or
+        (
+          (fXmlParser.FormatOptions.WhitespaceStyle = aFormatOptions.WhitespaceStyle) and
+          (fXmlParser.FormatOptions.NewLineForElements = aFormatOptions.NewLineForElements) and
+          (fXmlParser.FormatOptions.Indentation = aFormatOptions.Indentation) and
+          (fXmlParser.FormatOptions.NewLineSymbol = aFormatOptions.NewLineSymbol)
+        )
+      )
+     ) then begin
+    if aSaveFormatted and (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then begin
+      aSaveFormatted := false;
+      lFormatInsideTags := true;
+    end;
+    for each aNode in fNodes do
+      result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags, lPreserveExactStringsForUnchnagedValues);
+  end
+  else begin
+    if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then lFormatInsideTags := true;
+    if (Version <> nil) or (Encoding <> nil) or (Standalone <> nil) and aFormatOptions.NewLineForElements then result := result + fLineBreak;
+      for each aNode in fNodes do
+        if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
+          result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags, lPreserveExactStringsForUnchnagedValues)+fLineBreak;
+      if not aFormatOptions.WriteNewLineAtEnd then
+        result := result.TrimEnd();
+  end;
+end;
+
+method XmlDocument.SaveToFile(aFileName: not nullable File);
+begin
+  var lEncoding: String;
+  if Encoding = nil then lEncoding := "utf-8"
+  else lEncoding := Encoding;
+  File.WriteText(aFileName.FullPath, self.ToString(false, new XmlFormattingOptions), RemObjects.Elements.RTL.Encoding.GetEncoding(lEncoding));
+end;
+
+method XmlDocument.SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
+begin
+  var lStringValue := self.ToString(true, aFormatOptions);
+  var lEncoding := coalesce(if assigned(Encoding) then RemObjects.Elements.RTL.Encoding.GetEncoding(Encoding), RemObjects.Elements.RTL.Encoding.UTF8);
+  var lBytes := lEncoding.GetBytes(lStringValue) includeBOM(aFormatOptions.WriteBOM);
+  File.WriteBytes(aFileName.FullPath, lBytes);
+end;
+
+
+method XmlDocument.AddNode(aNode: not nullable XmlNode);
+begin
+  aNode.Document := self;
+  fNodes.Add(aNode);
+end;
+
+method XmlDocument.GetRoot: not nullable XmlElement;
+begin
+  result := fRoot as not nullable;
+end;
+
+method XmlDocument.SetRoot(aRoot: not nullable XmlElement);
+begin
+  if fRoot <> nil then fNodes.Remove(fRoot);
+  fRoot := aRoot;
+  AddNode(aRoot);
+end;
+
+method XmlDocument.GetNodes: ImmutableList<XmlNode>;
+begin
+  {var aNodes: List<XmlNode> := new List<XmlNode>;
+  for each aNode in fNodes do begin
+    if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
+      aNodes.Add(aNode);
+  end;
+  result := aNodes as not nullable;}
+  result := fNodes;
+end;
+
+method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPosition): XmlElement;
+begin
+>>>>>>> 9620616830e72d2b4e57ff043072c5799e156211
   if ((aRow < Root.StartLine) or ((aRow = Root.StartLine) and (aColumn <= Root.StartColumn))) or
   ((Root.EndLine <> 0) and ((aRow > Root.EndLine) or ((aRow = Root.EndLine) and (aColumn >= Root.EndColumn)))) or
    (assigned(ErrorInfo) and ((aRow > ErrorInfo.Row) or ((aRow = ErrorInfo.Row) and (aColumn >= ErrorInfo.Column)))) then exit nil;
@@ -528,7 +1065,7 @@ begin
     for each el in lElement.Elements do begin
       if (el.StartLine > aRow) or ((el.StartLine = aRow) and (el.StartColumn >= aColumn)) then
         break
-      else 
+      else
         result := el
     end;
     if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn <= aColumn))) or
@@ -537,9 +1074,14 @@ begin
       break;
     end;
   end;
+<<<<<<< HEAD
   
       
   if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin 
+=======
+
+  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin
+>>>>>>> 9620616830e72d2b4e57ff043072c5799e156211
     if result.IsEmpty then aCursorPosition := XmlPosition.SingleTag
     else aCursorPosition := XmlPosition.StartTag;
     exit;
@@ -891,7 +1433,7 @@ end;
 method XmlElement.GetFullName: not nullable String;
 begin
   result := "";
-  if assigned(&Namespace) and assigned(&Namespace.Prefix) and (&Namespace.Prefix<>"") then result := &Namespace.Prefix+':';
+  if length(&Namespace:Prefix) > 0 then result := &Namespace.Prefix+':';
   result := result + LocalName;
 end;
 
@@ -952,7 +1494,7 @@ end;
 
 method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
 begin
-  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Cast<XmlAttribute> as not nullable;
+  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Select(x -> x as XmlAttribute) as not nullable;
   //result := fAttributes as not nullable;
 end;
 
@@ -988,7 +1530,7 @@ end;
 method XmlElement.GetNamespaces: not nullable sequence of XmlNamespace;
 begin
  // result := fNamespaces as not nullable;
-  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Namespace).Cast<XmlNamespace> as not nullable;
+  result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Namespace).Select(x -> x as XmlNamespace) as not nullable;
 end;
 
 method XmlElement.GetNamespace(aUri: Uri): nullable XmlNamespace;
@@ -1047,7 +1589,7 @@ begin
   for each attr in fAttributesAndNamespaces do begin
     var lWSleft: String := nil;
     var lWSright: String := nil;
-  
+
     if attr.NodeType = XmlNodeType.Attribute then begin
       lWSleft := XmlAttribute(attr).WSleft;
       lWSright := XmlAttribute(attr).WSright;
@@ -1228,7 +1770,7 @@ end;
 method XmlAttribute.ToString(aFormatInsideTags: Boolean; aPreserveExactStringsForUnchnagedValues: Boolean): String;
 begin
   result := "";
-  
+
   if (Document <> nil) and aFormatInsideTags and Document.fFormatOptions.NewLineForAttributes then begin
     var indent :="";
     var lNode: XmlNode;
