@@ -107,6 +107,7 @@ type
     fDefaultNamespace: XmlNamespace;
 
     fAttributesAndNamespaces: List<XmlNode> := new List<XmlNode>;
+    fChildIndex: Integer;
 
     method GetNamespace: nullable XmlNamespace;
     method SetNamespace(aNamespace: XmlNamespace);
@@ -156,6 +157,7 @@ type
     property &Namespace[aUri: Uri]: nullable XmlNamespace read GetNamespace;
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
     property FullName: not nullable String read GetFullName;
+    property ChildIndex: Integer read fChildIndex;
 
     method GetValue (aWithNested: Boolean): nullable String;
     method ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
@@ -569,6 +571,7 @@ begin
   var lElement := NearestOpenTag(aRow, aColumn, out lPosition);
   if lElement = nil then exit nil;
   result := new XmlDocCurrentPosition;
+  result.CurrentTagIndex := lElement.ChildIndex;
   if lElement.LocalName = "" then  begin
     result.CurrentTag := nil;
   end
@@ -585,7 +588,9 @@ begin
       for each lAttr in lElement.attributes do begin
         //var lQuotePos := lAttr
         if (aRow >= lAttr.StartLine) and (aColumn >=lAttr.StartColumn) and ((lAttr.EndLine = 0) or ((aRow <= lAttr.EndLine) and (aColumn <= lAttr.EndColumn))) then
-         // if () then ;
+          if length(lAttr.Namespace:Prefix) > 0 then 
+            if aColumn = lAttr.StartColumn + length(lAttr.Namespace.Prefix)+1 then
+              result.CurrentNamespace := lAttr.Namespace;
       end;
     end;
       ;
@@ -777,6 +782,8 @@ end;
 method XmlElement.AddElement(aElement: not nullable XmlElement);
 begin
   aElement.fParent := self;
+  aElement.Document := Document;
+  aElement.fChildIndex := Elements.Count;
   if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then begin
     if fNodes.Count > 0 then begin
       var LastNodePos := fNodes.Count-1;
@@ -805,9 +812,14 @@ end;
 
 method XmlElement.AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
 begin
+  aElement.fChildIndex := aIndex;
   if (fNodes.Count = 0)  and (aIndex = 0) then AddElement(aElement)
   else begin
+    aElement.fParent := self;
+    aElement.Document := Document;
     fElements.Insert(aIndex, aElement);
+    for i: Integer := aIndex+1 to fElements.Count -1 do
+      fElements[i].FChildIndex := fElements[i].fChildIndex +1;
     var lFormat := false;
     if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then
       lFormat := true;
@@ -850,6 +862,8 @@ end;
 
 method XmlElement.RemoveElement(aElement: not nullable XmlElement);
 begin
+  for i: Integer := aElement.ChildIndex+1 to fElements.count -1 do
+    fElements[i].fChildIndex := fElements[i].fChildIndex-1; 
   fElements.Remove(aElement);
   if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then begin
     var i := 0;
@@ -888,6 +902,9 @@ end;
 method XmlElement.ReplaceElement(aExistingElement: not nullable XmlElement) withElement(aNewElement: not nullable XmlElement);
 begin
   var i := 0;
+  aNewElement.fChildIndex := aExistingElement.ChildIndex;
+  aNewElement.fParent := self;
+  aNewElement.Document := Document;
   for each elem in Elements do
     if elem.Equals(aExistingElement) then begin
       fElements.ReplaceAt(i, aNewElement);
