@@ -159,9 +159,29 @@ end;
 
 method Environment.GetMachineName: String;
 begin
-  {$HINT Implement for other platforms}
-  {$IF ECHOES}
+  {$IF COOPER}
+  try
+    result := java.net.InetAddress.getLocalHost().getHostName();
+  except
+    result := getUserName();
+  end;
+  {$ELSEIF ECHOES}
   result := System.Environment.MachineName;
+  {$ELSEIF ISLAND AND WINDOWS}
+  var lSize: rtl.DWORD := rtl.MAX_COMPUTERNAME_LENGTH + 1;
+  var lName := new Char[lSize];
+  if rtl.GetComputerName(@lName[0], @lSize) then begin
+    result := new String(lName, 0, lSize);
+  end
+  else
+    result := GetUserName();
+  {$ELSEIF ISLAND AND LINUX}
+  var lSize := 255;
+  var lName := new AnsiChar[lSize];
+  if rtl.gethostname(@lName[0], lSize - 1) = 0 then
+    result := RemObjects.Elements.System.String.FromPAnsiChars(@lName[0])
+  else
+    result := GetUserName();
   {$ELSEIF TOFFEE}
     {$IF OSX}
     result := NSHost.currentHost.localizedName;
@@ -172,8 +192,6 @@ begin
     {$ELSE}
     result := WatchKit.WKInterfaceDevice.currentDevice.name;
     {$ENDIF}
-  {$ELSE}
-  result := GetUserName();
   {$ENDIF}
 end;
 
