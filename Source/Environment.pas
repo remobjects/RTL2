@@ -175,7 +175,7 @@ begin
   end
   else
     result := GetUserName();
-  {$ELSEIF ISLAND AND LINUX}
+  {$ELSEIF ISLAND AND (ANDROID OR LINUX)}
   var lSize := 255;
   var lName := new AnsiChar[lSize];
   if rtl.gethostname(@lName[0], lSize - 1) = 0 then

@@ -517,22 +517,18 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER}
-  for i: Integer := StartIndex to mapped.length - 1 do begin
+  {$IF COOPER OR ISLAND}
+  for i: Integer := StartIndex to Length - 1 do begin
      for each c: Char in AnyOf do begin
-       if mapped.charAt(i) = c then
+       if Chars[i] = c then
          exit i;
      end;
   end;
   result := -1;
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES}
   result := mapped.IndexOfAny(AnyOf, StartIndex);
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
   var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
@@ -565,14 +561,12 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.LastIndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES}// OR ISLAND}
+  {$IF COOPER OR ECHOES}
   result := mapped.LastIndexOf(Value, StartIndex);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+  result := mapped.LastIndexOf(String(Value), StartIndex);
   {$ELSEIF TOFFEE}
   result := LastIndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
   {$ENDIF}
@@ -885,17 +879,13 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.Trim(const TrimChars: array of Char): not nullable String;
 begin
   {$IF COOPER}
   var lStr := TrimStart(TrimChars);
   result := lStr.TrimEnd(TrimChars);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   result := mapped.Trim(TrimChars) as not nullable;
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("`String.Trim(array of char)` is not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   var lCharset := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
   result := mapped.stringByTrimmingCharactersInSet(lCharset);
