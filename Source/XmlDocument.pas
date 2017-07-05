@@ -53,7 +53,7 @@ type
     property Standalone : String;
     property ErrorInfo: XmlErrorInfo;
     method AddNode(aNode: not nullable XmlNode);
-    method NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlCurrentPositionEnum): XmlElement;
+    method NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPositionKind): XmlElement;
     method GetCurrentCursorPosition(aRow: Integer; aColumn: Integer): XmlDocCurrentPosition;
   end;
 
@@ -285,15 +285,16 @@ type
 
   XmlDocCurrentPosition = public class
   public
-    property CurrentPosition: XmlCurrentPositionEnum;
+    property CurrentPosition: XmlPositionKind;
     property ParentTag: XmlElement;
     property CurrentTag: XmlElement;
     property CurrentTagIndex: Integer; //0-based number of current tag in the parent tag
     property CurrentAttribute: XmlAttribute; //could be empty
     property CurrentNamespace: XmlNamespace; //could be nil if no namespace
+    property CurrentIdentifier: String;
   end;
 
-  XmlCurrentPositionEnum = public enum(
+  XmlPositionKind = public enum(
     None,
     StartTag,
     SingleTag,
@@ -530,7 +531,7 @@ begin
   result := fNodes;
 end;
 
-method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlCurrentPositionEnum): XmlElement;
+method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPositionKind): XmlElement;
 begin
   if ((aRow < Root.StartLine) or ((aRow = Root.StartLine) and (aColumn <= Root.StartColumn))) or
   ((Root.EndLine <> 0) and ((aRow > Root.EndLine) or ((aRow = Root.EndLine) and (aColumn >= Root.EndColumn)))) or
@@ -554,20 +555,20 @@ begin
   end;
       
   if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin 
-    if result.IsEmpty then aCursorPosition := XmlCurrentPositionEnum.SingleTag
-    else aCursorPosition := XmlCurrentPositionEnum.StartTag;
+    if result.IsEmpty then aCursorPosition := XmlPositionKind.SingleTag
+    else aCursorPosition := XmlPositionKind.StartTag;
     exit;
   end;
   if (aRow > result.CloseTagStartLine) or (aRow = result.CloseTagStartLine) and (aColumn > result.CloseTagStartColumn) then begin
-      aCursorPosition := XmlCurrentPositionEnum.EndTag;
+      aCursorPosition := XmlPositionKind.EndTag;
       exit;
   end;
-  aCursorPosition := XmlCurrentPositionEnum.BetweenTags;
+  aCursorPosition := XmlPositionKind.BetweenTags;
 end;
 
 method XmlDocument.GetCurrentCursorPosition(aRow: Integer; aColumn: Integer): XmlDocCurrentPosition;
 begin
-  var lPosition: XmlCurrentPositionEnum;
+  var lPosition: XmlPositionKind;
   var lElement := NearestOpenTag(aRow, aColumn, out lPosition);
   if lElement = nil then exit nil;
   result := new XmlDocCurrentPosition;
@@ -579,11 +580,30 @@ begin
     result.CurrentTag := lElement;
   end;
   result.ParentTag := lElement.Parent;
-  if (lElement <> nil) and (lPosition in [XmlCurrentPositionEnum.StartTag, XmlCurrentPositionEnum.SingleTag]) then begin
+  result.CurrentPosition := lPosition;
+  if (lElement <> nil) and (lPosition in [XmlPositionKind.StartTag, XmlPositionKind.SingleTag]) then begin
+    var lPrefixLength: Integer := 0;
     if length(lElement.Namespace:Prefix) > 0 then
-      if aColumn = lElement.StartColumn + length(lElement.Namespace.Prefix)+2 then begin
+      lPrefixLength := length(lElement.Namespace.Prefix)+1;
+      if (aColumn = lElement.StartColumn + lPrefixLength+1) then begin
         result.CurrentNamespace := lElement.Namespace;
+        exit;
       end;
+    if lElement.LocalName.Contains('.') and (aColumn < lelement.StartColumn+length(lElement.FullName)) then begin
+      var lName := lElement.FullName;
+      var lPos := lName.IndexOf('.');
+      var lPosNext := lPos;
+      while (lPosNext > 0) do begin
+        if (aColumn > lElement.StartColumn+lPosNext+1) then begin
+          lPos := lPosNext;
+          lPosNext := lName.IndexOf('.', lPos+1)
+        end
+        else break;
+      end;
+      if lPos <> lPosNext then
+        result.CurrentIdentifier := lName.Substring(lPrefixLength, lPos - lPrefixLength);
+      exit;
+    end;
     if lElement.Attributes.Count > 0 then begin
       for each lAttr in lElement.attributes do begin
         //var lQuotePos := lAttr
