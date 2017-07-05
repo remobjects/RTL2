@@ -95,6 +95,7 @@ type
       result.PreserveExactStringsForUnchnagedValues := PreserveExactStringsForUnchnagedValues;
       result.WriteNewLineAtEnd := WriteNewLineAtEnd;
       result.WriteBOM := WriteBOM;
+      result.PreserveLinebreaksForAttributes := PreserveLinebreaksForAttributes;
     end;
 
   assembly
@@ -162,7 +163,7 @@ begin
       result.AddNode(new XmlText(Value := Tokenizer.Value));
     Tokenizer.Next;
   end;
-  if not Expected(out lError, XmlTokenKind.DeclarationStart, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType, XmlTokenKind.TagOpen) then begin 
+  if not Expected(out lError, XmlTokenKind.DeclarationStart, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType, XmlTokenKind.TagOpen) then begin
     result.Root := new XmlElement withName('[ERROR]');
     result.ErrorInfo := lError;
     exit;
@@ -179,16 +180,16 @@ begin
     end;
     if FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace then WS := Tokenizer.Value;
     Tokenizer.Next;
-    if not Expected(out lError, XmlTokenKind.ElementName) then begin 
+    if not Expected(out lError, XmlTokenKind.ElementName) then begin
       result.Root := new XmlElement withName('[ERROR]');
       result.ErrorInfo := lError;
-      exit; 
+      exit;
     end;
     var lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out lError));
-    if assigned(lError) then begin 
+    if assigned(lError) then begin
       result.Root := new XmlElement withName('[ERROR]');
       result.ErrorInfo := lError;
-      exit; 
+      exit;
     end;
     if lXmlAttr.LocalName = "version" then begin
       //check version
@@ -219,7 +220,7 @@ begin
           //raise new XmlException("Unknown declaration attribute", Tokenizer.Row, Tokenizer.Column);
         end;
         lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out lError));
-        if assigned(lError) then begin 
+        if assigned(lError) then begin
           result.Root := new XmlElement withName('[ERROR]');
           result.ErrorInfo := lError;
           exit;
@@ -254,7 +255,7 @@ begin
           exit;
           //raise new XmlException("Unknown declaration attribute", Tokenizer.Row, Tokenizer.Column);
         end;
-        lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out lError)); 
+        lXmlAttr := XmlAttribute(ReadAttribute(nil, WS, out lError));
         if assigned(lError) then begin
           result.Root := new XmlElement withName('[ERROR]');
           result.ErrorInfo := lError;
@@ -283,7 +284,7 @@ begin
     Tokenizer.Next;
 
   end;
-  if not Expected(out lError, XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType) then begin 
+  if not Expected(out lError, XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType) then begin
     result.Root := new XmlElement withName('[ERROR]');
     result.ErrorInfo := lError;
     exit;
@@ -303,7 +304,7 @@ begin
       end
     end
     else
-      if not Expected(out lError, XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType) then begin 
+      if not Expected(out lError, XmlTokenKind.TagOpen, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType) then begin
         result.Root := new XmlElement withName('[ERROR]');
         result.ErrorInfo := lError;
         exit;
@@ -351,7 +352,7 @@ begin
       end;
     end;
   end;
-  if not Expected(out lError, XmlTokenKind.TagOpen) then begin 
+  if not Expected(out lError, XmlTokenKind.TagOpen) then begin
     result.Root := new XmlElement withName('[ERROR]');
     result.ErrorInfo := lError;
     exit;
@@ -365,9 +366,9 @@ begin
   if lElement = nil then result.Root := new XmlElement withName('[ERROR]')
   else result.Root := lElement;
   //result.Root := ReadElement(nil,lIndent, out aError);
-  if assigned(lError) then begin   
+  if assigned(lError) then begin
     result.ErrorInfo := lError;
-    exit; 
+    exit;
   end;
   while Tokenizer.Token <> XmlTokenKind.EOF do begin
     if not Expected(out lError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd) then exit;
@@ -376,7 +377,7 @@ begin
     if not Expected(out lError, XmlTokenKind.EOF, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction) then exit;
     case Tokenizer.Token of
       XmlTokenKind.Comment: result.AddNode(new XmlComment(Value := Tokenizer.Value));
-      XmlTokenKind.ProcessingInstruction: begin 
+      XmlTokenKind.ProcessingInstruction: begin
         var lPI := ReadProcessingInstruction(nil, out lError);
         if assigned(lError) then exit;
         result.AddNode(lPI);
@@ -435,12 +436,12 @@ begin
       if(lWSleft.Contains(fLineBreak)) then begin
         if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then begin
           lWSleft := fLineBreak;
-          for i:Integer := 0 to aParent.StartColumn-1 do  
+          for i:Integer := 0 to aParent.StartColumn-1 do
             lWSleft := lWSleft + " ";
           lWSleft := lWSleft +FormatOptions.Indentation
         end
         else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-          lWSleft := fLineBreak+aIndent;  
+          lWSleft := fLineBreak+aIndent;
       end;
     if (FormatOptions.NewLineForAttributes) then begin
       if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then
@@ -464,7 +465,7 @@ begin
     lValue := Tokenizer.Value;
     lQuoteChar := lValue[0];
     lValue := lValue.Trim([lQuoteChar]);
-    
+
     /*lValue  := lValue.Substring(1, length(lValue)-2) {$WARNING HACK FOR NOW}*/
     if Tokenizer.token = XmlTokenKind.EOF then begin
       aError := new XmlErrorInfo;
@@ -481,7 +482,7 @@ begin
           if (aIndent = nil) then begin
             lWSright := fLineBreak;
             for i:Integer := 0 to aParent.StartColumn -1 do
-              lWSright := lWSright + " ";   
+              lWSright := lWSright + " ";
             lWSright := lWSright+ FormatOptions.Indentation;
           end
           else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
@@ -547,7 +548,7 @@ begin
   if (Tokenizer.Token = XmlTokenKind.SyntaxError) then begin
     aError := new XmlErrorInfo;
     if (Tokenizer.Value.Contains(" ")) then begin
-      aError.FillErrorInfo(Tokenizer.Value, "ElementName", Tokenizer.Row, Tokenizer.Column);  
+      aError.FillErrorInfo(Tokenizer.Value, "ElementName", Tokenizer.Row, Tokenizer.Column);
       exit;
     end
     else
@@ -578,7 +579,7 @@ begin
     {if (Tokenizer.Token = XmlTokenKind.SyntaxError) then begin
       aError := new XmlErrorInfo;
       if (Tokenizer.Value.Contains(" ")) then begin
-        aError.FillErrorInfo(Tokenizer.Value, "AttributeName", Tokenizer.Row, Tokenizer.Column);  
+        aError.FillErrorInfo(Tokenizer.Value, "AttributeName", Tokenizer.Row, Tokenizer.Column);
         exit;
       end
       else begin
