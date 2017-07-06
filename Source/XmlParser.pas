@@ -95,6 +95,7 @@ type
       result.PreserveExactStringsForUnchnagedValues := PreserveExactStringsForUnchnagedValues;
       result.WriteNewLineAtEnd := WriteNewLineAtEnd;
       result.WriteBOM := WriteBOM;
+      result.PreserveLinebreaksForAttributes := PreserveLinebreaksForAttributes;
     end;
 
   assembly
