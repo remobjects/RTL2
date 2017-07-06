@@ -460,15 +460,15 @@ begin
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSright := Tokenizer.Value;
       Tokenizer.Next;
     end;
-    if not Expected(out aError, XmlTokenKind.AttributeValue, XmlTokenKind.EOF) then exit;
+    if not Expected(out aError, XmlTokenKind.AttributeValue, XmlTokenKind.EOF, XmlTokenKind.SyntaxError) then exit;
     lValue := Tokenizer.Value;
     lQuoteChar := lValue[0];
     lValue := lValue.Trim([lQuoteChar]);
     
     /*lValue  := lValue.Substring(1, length(lValue)-2) {$WARNING HACK FOR NOW}*/
-    if Tokenizer.token = XmlTokenKind.EOF then begin
+    if Tokenizer.token in [XmlTokenKind.EOF, XmlTokenKind.SyntaxError] then begin
       aError := new XmlErrorInfo;
-      aError.FillErrorInfo("AttributeValue expected but EOF found", "AttributeValue", Tokenizer.Row, Tokenizer.Column);
+      aError.FillErrorInfo(Tokenizer.ErrorMessage, "AttributeValue", Tokenizer.Row, Tokenizer.Column);
     end else begin
       lEndRow := Tokenizer.Row;
       lEndCol := Tokenizer.Column+1;
@@ -750,8 +750,41 @@ begin
         result.CloseTagStartLine := Tokenizer.Row;
         result.CloseTagStartColumn := Tokenizer.Column;
         Tokenizer.Next;
-        if not Expected(out aError, XmlTokenKind.ElementName) then exit;
-        if (Tokenizer.Value.IndexOf(':') > 0) and ((result.Namespace = nil) or (result.Namespace.Prefix = nil) or
+        if not Expected(out aError, XmlTokenKind.ElementName, XmlTokenKind.SyntaxError) then exit;
+        if Tokenizer.Token = XmlTokenKind.SyntaxError then begin
+          aError := new XmlErrorInfo;
+          if Tokenizer.Value.Contains(" ") then begin
+            aError.FillErrorInfo(Tokenizer.Value, "ElementName", Tokenizer.Row, Tokenizer.Column);
+            exit;
+          end
+          else begin
+            aError.FillErrorInfo("Element name expected", "ElementName", Tokenizer.Row, Tokenizer.Column);
+            result.EndTagName := Tokenizer.Value;
+            var lPos := Tokenizer.Value.IndexOf(':');
+            if lPos > 0 then begin
+              var lPrefix := Tokenizer.Value.Substring(0, lPos);
+              lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
+              if not assigned(lNamespace) then 
+                aError.FillErrorInfo("Unknown prefix "+lPrefix, "", Tokenizer.Row, Tokenizer.Column-lPrefix.Length-1);
+            end;
+          end;
+        end;
+        if lFormat and (aIndent <> nil) and (result.Elements.Count >0) then begin
+          result.AddNode(new XmlText(result, Value := fLineBreak));
+          result.AddNode(new XmlText(result, Value := aIndent.Substring(0,aIndent.LastIndexOf(FormatOptions.Indentation))));
+        end;
+        if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
+          result.AddNode(new XmlText(result,Value := ""));
+        
+        if Tokenizer.Token = XmlTokenKind.ElementName then begin
+          if (result.FullName <> Tokenizer.Value) then begin
+            aError := new XmlErrorInfo;
+            aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column + Tokenizer.Value.length );
+            result.EndTagName := Tokenizer.Value;
+            //exit;
+          end;
+        
+        /*if (Tokenizer.Value.IndexOf(':') > 0) and ((result.Namespace = nil) or (result.Namespace.Prefix = nil) or
           (Tokenizer.Value <> result.Namespace.Prefix+':'+result.LocalName)) then begin
           //raise new XmlException(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), Tokenizer.Row, Tokenizer.Column );
           aError := new XmlErrorInfo;
@@ -763,27 +796,28 @@ begin
           aError := new XmlErrorInfo;
           aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column );
           exit;
-        end;
+        end;*/
 
-        if lFormat and (aIndent <> nil) and (result.Elements.Count >0) then begin
-          result.AddNode(new XmlText(result, Value := fLineBreak));
-          result.AddNode(new XmlText(result, Value := aIndent.Substring(0,aIndent.LastIndexOf(FormatOptions.Indentation))));
-        end;
-        if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
-          result.AddNode(new XmlText(result,Value := ""));
-        Tokenizer.Next;
-        if (Tokenizer.Token = XmlTokenKind.Whitespace) then begin
-          if FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace then
-            result.EndTagName := result.LocalName+Tokenizer.Value;
+       /* if lFormat and (aIndent <> nil) and (result.Elements.Count >0) then begin
+            result.AddNode(new XmlText(result, Value := fLineBreak));
+            result.AddNode(new XmlText(result, Value := aIndent.Substring(0,aIndent.LastIndexOf(FormatOptions.Indentation))));
+          end;
+          if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
+            result.AddNode(new XmlText(result,Value := ""));*/
+          Tokenizer.Next; 
+          if (Tokenizer.Token = XmlTokenKind.Whitespace) then begin
+            if FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace then
+              result.EndTagName := result.LocalName+Tokenizer.Value;
             Tokenizer.Next;
+          end;
+          if not Expected(out aError, XmlTokenKind.TagClose) then exit;
+          result.EndLine := Tokenizer.Row;
+          result.EndColumn := Tokenizer.Column+1;
+          result.CloseTagEndLine := result.EndLine;
+          result.CloseTagEndColumn := result.EndColumn;
+          if result.Parent = nil then exit(result);
+          Tokenizer.Next;
         end;
-        if not Expected(out aError, XmlTokenKind.TagClose) then exit;
-        result.EndLine := Tokenizer.Row;
-        result.EndColumn := Tokenizer.Column+1;
-        result.CloseTagEndLine := result.EndLine;
-        result.CloseTagEndColumn := result.EndColumn;
-        if result.Parent = nil then exit(result);
-        Tokenizer.Next;
       end;
     end
     else  if Tokenizer.Token = XmlTokenKind.EmptyElementEnd then begin

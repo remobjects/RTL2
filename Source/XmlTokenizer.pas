@@ -35,6 +35,7 @@ type
     property Row: Integer read fLastRow + 1;
     property Column: Integer read fPos - fLastRowStart + 1;
     property Value: String read private write;
+    property ErrorMessage: String read private write;
     property Token:XmlTokenKind read private write;
   end;
 
@@ -274,6 +275,7 @@ begin
   loop begin
     if (fPos >= fData.length) then begin
       Value := new String(fData, lStart, fPos-lStart);
+      ErrorMessage := "Attribute value expected but EOF found";
       Token := XmlTokenKind.EOF; exit;
       //break;
     end;
@@ -284,14 +286,19 @@ begin
         if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
         fRowStart := fPos + 1;
         inc(fRow);
+        fLastRow := fRow;
+        fLastRowStart := fRowStart;
       end;
       #10: begin
         fRowStart := fPos + 1;
         inc(fRow);
+        fLastRow := fRow;
+        fLastRowStart := fRowStart;
       end;
       '<' : begin
         Token := XmlTokenKind.SyntaxError;
-        Value := "Syntax error. Symbol '<' is not allowed in attribute value";
+        ErrorMessage := "Syntax error. Symbol '<' is not allowed in attribute value";
+        Value :=  new String(fData, lStart, fPos-lStart);
         exit;
       end;
     end;
