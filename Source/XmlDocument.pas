@@ -478,7 +478,7 @@ begin
     if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then lFormatInsideTags := true;
     if (Version <> nil) or (Encoding <> nil) or (Standalone <> nil) and aFormatOptions.NewLineForElements then result := result + fLineBreak;
     for each aNode in fNodes do
-      if (aNode.NodeType <> XmlNodeType.Text) or (XmlText(aNode).Value.Trim <> "") then
+      if (aNode.NodeType <> XmlNodeType.Text) or (length(XmlText(aNode).Value:Trim) >  0) then
         result := result+aNode.ToString(aSaveFormatted, lFormatInsideTags, aFormatOptions)+fLineBreak;
     if not aFormatOptions.WriteNewLineAtEnd then
       result := result.TrimEnd();
@@ -696,6 +696,7 @@ end;
 
 method XmlNode.ConvertEntity(S: String; C: nullable Char): String;
 begin
+  if S = nil then exit nil;
   result := S.Replace('&',"&amp;");
   result := result.Replace('>',"&gt;");
   result := result.Replace('<',"&lt;");
@@ -862,7 +863,7 @@ begin
         inc(j);
       end;
     end;
-    if lFormat and (fNodes.Item[i-1].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[i-1]).Value.StartsWith(aElement.fParent.Indent)) then begin
+    if lFormat and (fNodes.Item[i-1].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[i-1]).Value:StartsWith(aElement.fParent.Indent)) then begin
       fNodes.Insert(i-1,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
       fNodes.Insert(i,aElement);
       fNodes.Insert(i+1 ,new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));
@@ -906,8 +907,8 @@ begin
     end;
     i:= i-1;
     if found and (i > 0) and (i < fNodes.Count-1)  and
-      (fNodes.Item[i-1].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[i-1]).Value.StartsWith(self.Document.fXmlParser.FormatOptions.Indentation) and
-      (fNodes.Item[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes.Item[i+1]).Value.EndsWith(#10))) then begin
+      (fNodes.Item[i-1].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[i-1]).Value:StartsWith(self.Document.fXmlParser.FormatOptions.Indentation) and
+      (fNodes.Item[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes.Item[i+1]).Value:EndsWith(#10))) then begin
        fNodes.RemoveAt(i-1);
        fNodes.RemoveAt(i-1);
        fNodes.RemoveAt(i-1);
@@ -1025,7 +1026,7 @@ begin
   result := "";
   for each lNode in Nodes do begin
 
-    if (lNode.NodeType = XmlNodeType.Text) and (XmlText(lNode).Value.Trim <> "") then begin
+    if (lNode.NodeType = XmlNodeType.Text) and (length(XmlText(lNode).Value:Trim) > 0) then begin
         if result <> "" then result := result+" ";
         result := result+XmlText(lNode).Value.Trim
     end
@@ -1212,16 +1213,16 @@ begin
     var i := 0;
     for each aNode in fNodes do begin
       if (aNode.NodeType = XmlNodeType.Text) then
-        if (XmlText(aNode).Value.Trim <> "") then begin
+        if (length(XmlText(aNode).Value:Trim) > 0) then begin
           if (aFormatInsideTags and aFormatOptions.NewLineForAttributes) then begin
            // result := result + Document.fLineBreak+ indent + Document.fFormatOptions.Indentation+ aNode.toString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues}) + Document.fLineBreak+indent;
            result := result + Document.fLineBreak+ indent + aFormatOptions.Indentation+ aNode.toString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues}) + Document.fLineBreak+indent;
           end
           else begin
-            if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i-1]).Value.Trim = "") then
+            if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (length(XmlText(fNodes[i-1]).Value:Trim) > 0) then
               result := result + fNodes[i-1].ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues});
             result := result+ aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues});
-            if (i < fNodes.Count-1) and (fNodes[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes[i+1]).Value.Trim = "") then begin
+            if (i < fNodes.Count-1) and (fNodes[i+1].NodeType = XmlNodeType.Text) and (length(XmlText(fNodes[i+1]).Value:Trim) > 0) then begin
               str := fNodes[i+1].ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues});
               if str.IndexOf(Document.fLineBreak) > -1 then
                 str := str.Substring(0, str.LastIndexOf(Document.fLineBreak));
