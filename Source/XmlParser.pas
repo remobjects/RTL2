@@ -576,17 +576,6 @@ begin
       if assigned(aError) then break;
       if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName) then exit;
     end;
-    {if (Tokenizer.Token = XmlTokenKind.SyntaxError) then begin
-      aError := new XmlErrorInfo;
-      if (Tokenizer.Value.Contains(" ")) then begin
-        aError.FillErrorInfo(Tokenizer.Value, "AttributeName", Tokenizer.Row, Tokenizer.Column);  
-        exit;
-      end
-      else begin
-
-        aError.FillErrorInfo("Attribute name expected", "AttributeName", Tokenizer.Row, Tokenizer.Column);
-      end;
-    end;}
     lFormat := false;
     if (Tokenizer.Token = XmlTokenKind.TagClose) or (Tokenizer.Token = XmlTokenKind.EmptyElementEnd) then begin
       result.OpenTagEndLine := Tokenizer.Row;
@@ -751,23 +740,14 @@ begin
         result.CloseTagStartLine := Tokenizer.Row;
         result.CloseTagStartColumn := Tokenizer.Column;
         Tokenizer.Next;
-        if not Expected(out aError, XmlTokenKind.ElementName, XmlTokenKind.SyntaxError) then exit;
-        if Tokenizer.Token = XmlTokenKind.SyntaxError then begin
-          aError := new XmlErrorInfo;
-          if Tokenizer.Value.Contains(" ") then begin
-            aError.FillErrorInfo(Tokenizer.Value, "ElementName", Tokenizer.Row, Tokenizer.Column);
-            exit;
-          end
-          else begin
-            aError.FillErrorInfo("Element name expected", "ElementName", Tokenizer.Row, Tokenizer.Column);
-            result.EndTagName := Tokenizer.Value;
-            var lPos := Tokenizer.Value.IndexOf(':');
-            if lPos > 0 then begin
-              var lPrefix := Tokenizer.Value.Substring(0, lPos);
-              lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
-              if not assigned(lNamespace) then 
-                aError.FillErrorInfo("Unknown prefix "+lPrefix, "", Tokenizer.Row, Tokenizer.Column-lPrefix.Length-1);
-            end;
+        if not Expected(out aError, XmlTokenKind.ElementName) then begin //exit;
+          result.EndTagName := Tokenizer.Value;
+          var lPos := Tokenizer.Value.IndexOf(':');
+          if lPos > 0 then begin
+            var lPrefix := Tokenizer.Value.Substring(0, lPos);
+            lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
+            if not assigned(lNamespace) then 
+            aError.FillErrorInfo("Unknown prefix "+lPrefix, "", Tokenizer.Row, Tokenizer.Column-lPrefix.Length-1);
           end;
         end;
         if lFormat and (aIndent <> nil) and (result.Elements.Count >0) then begin
@@ -784,27 +764,6 @@ begin
             result.EndTagName := Tokenizer.Value;
             //exit;
           end;
-        
-        /*if (Tokenizer.Value.IndexOf(':') > 0) and ((result.Namespace = nil) or (result.Namespace.Prefix = nil) or
-          (Tokenizer.Value <> result.Namespace.Prefix+':'+result.LocalName)) then begin
-          //raise new XmlException(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), Tokenizer.Row, Tokenizer.Column );
-          aError := new XmlErrorInfo;
-          aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column );
-          exit;
-        end;
-        if (Tokenizer.Value.IndexOf(':') <= 0) and (Tokenizer.Value <> result.LocalName) then begin
-          //raise new XmlException(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), Tokenizer.Row, Tokenizer.Column );
-          aError := new XmlErrorInfo;
-          aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column );
-          exit;
-        end;*/
-
-       /* if lFormat and (aIndent <> nil) and (result.Elements.Count >0) then begin
-            result.AddNode(new XmlText(result, Value := fLineBreak));
-            result.AddNode(new XmlText(result, Value := aIndent.Substring(0,aIndent.LastIndexOf(FormatOptions.Indentation))));
-          end;
-          if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
-            result.AddNode(new XmlText(result,Value := ""));*/
           Tokenizer.Next; 
           if (Tokenizer.Token = XmlTokenKind.Whitespace) then begin
             if FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace then

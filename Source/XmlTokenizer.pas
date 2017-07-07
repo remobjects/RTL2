@@ -189,7 +189,10 @@ begin
     fLastRow := fRow;
     fLastRowStart := fRowStart;
     if fPos < fData.Length then Parse
-    else Token := XmlTokenKind.EOF;
+    else begin
+      Token := XmlTokenKind.EOF;
+      Value := "";
+    end;
     if (Token = XmlTokenKind.EOF) or (Token = XmlTokenKind.SyntaxError) then
       exit false;
     exit true;
