@@ -592,7 +592,7 @@ begin
         result.CurrentNamespace := lElement.Namespace;
         exit;
       end;
-    if lElement.LocalName.Contains('.') and (aColumn < lStart+length(lElement.FullName)) then begin
+    if lElement.LocalName.Contains('.') and (aColumn <= lStart+length(lElement.FullName)) then begin
       var lName := lElement.FullName;
       var lPos := lName.IndexOf('.');
       var lPosNext := lPos;
@@ -608,7 +608,7 @@ begin
       exit;
     end;
     if (lPosition = XmlPositionKind.EndTag) then exit result;
-    if (aColumn > lStart+lElement.FullName.Length) then result.CurrentPosition := XmlPositionKind.InsideTag;
+    if (aColumn > lStart+lElement.FullName.Length+1) then result.CurrentPosition := XmlPositionKind.InsideTag;
     if (lElement.Attributes.Count > 0) then begin
       for each lAttr in lElement.attributes do begin
         //var lQuotePos := lAttr
