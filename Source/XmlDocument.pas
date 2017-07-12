@@ -303,7 +303,7 @@ type
     EndTag,
     AttributeValue
   );
- 
+
 implementation
 
 { XmlDocument }
@@ -383,8 +383,8 @@ end;
 
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
-  var lResult := TryFromString(aString);
-  if (lResult:ErrorInfo <> nil) then raise new XmlException(lResult.ErrorInfo.Message, lResult.ErrorInfo.Row, lResult.ErrorInfo.Column);
+  var lResult := TryFromString(aString, true);
+  if (lResult.ErrorInfo <> nil) then raise new XmlException(lResult.ErrorInfo.Message, lResult.ErrorInfo.Row, lResult.ErrorInfo.Column);
   result := lResult as not nullable;
 end;
 
@@ -544,7 +544,7 @@ begin
     for each el in lElement.Elements do begin
       if (el.StartLine > aRow) or ((el.StartLine = aRow) and (el.StartColumn >= aColumn)) then
         break
-      else 
+      else
         result := el
     end;
     if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn <= aColumn))) or
@@ -553,8 +553,8 @@ begin
       break;
     end;
   end;
-      
-  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin 
+
+  if (result.OpenTagEndLine = 0) or (aRow < result.OpenTagEndLine) or (aRow = result.OpenTagEndLine) and (aColumn < result.OpenTagEndColumn) then begin
     if result.IsEmpty then aCursorPosition := XmlPositionKind.SingleTag
     else aCursorPosition := XmlPositionKind.StartTag;
     exit;
@@ -613,7 +613,7 @@ begin
       for each lAttr in lElement.attributes do begin
         //var lQuotePos := lAttr
         if (aRow >= lAttr.StartLine) and (aColumn >=lAttr.StartColumn) and ((lAttr.EndLine = 0) or ((aRow <= lAttr.EndLine) and (aColumn <= lAttr.EndColumn))) then begin
-          if length(lAttr.Namespace:Prefix) > 0 then 
+          if length(lAttr.Namespace:Prefix) > 0 then
             if aColumn = lAttr.StartColumn + length(lAttr.Namespace.Prefix)+1 then
               result.CurrentNamespace := lAttr.Namespace;
           if (lAttr.EndLine - lAttr.StartLine) = 0 then begin
@@ -896,7 +896,7 @@ end;
 method XmlElement.RemoveElement(aElement: not nullable XmlElement);
 begin
   for i: Integer := aElement.ChildIndex+1 to fElements.count -1 do
-    fElements[i].fChildIndex := fElements[i].fChildIndex-1; 
+    fElements[i].fChildIndex := fElements[i].fChildIndex-1;
   fElements.Remove(aElement);
   if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then begin
     var i := 0;
@@ -1148,15 +1148,15 @@ begin
         n := n.Parent;
       end;
     end;
-  end; 
+  end;
   if (aFormatInsideTags and (aFormatOptions.PreserveLinebreaksForAttributes or aFormatOptions.NewLineForAttributes)) then begin
-    for i:Integer := 0 to StartColumn-1 do  
+    for i:Integer := 0 to StartColumn-1 do
       startStr := startStr + " ";
   end;
   for each attr in fAttributesAndNamespaces do begin
     var lWSleft: String := nil;
     var lWSright: String := nil;
-  
+
     if attr.NodeType = XmlNodeType.Attribute then begin
       lWSleft := XmlAttribute(attr).WSleft;
       lWSright := XmlAttribute(attr).WSright;
@@ -1166,14 +1166,14 @@ begin
     end;
     str := "";
     if not(aFormatInsideTags) and (lWSleft <> nil) then str := lWSleft;
-    if (aFormatInsideTags and ((aFormatOptions.PreserveLinebreaksForAttributes) and (lWSleft <> nil) and lWSleft.Contains(lLineBreak)) or (aFormatOptions.NewLineForAttributes))  then 
+    if (aFormatInsideTags and ((aFormatOptions.PreserveLinebreaksForAttributes) and (lWSleft <> nil) and lWSleft.Contains(lLineBreak)) or (aFormatOptions.NewLineForAttributes))  then
       if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (indent = nil) then begin
         str := lLineBreak;
         str := str + startStr;
         str := str  +aFormatOptions.Indentation
       end
       else if (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-        str := lLineBreak+indent+aFormatOptions.Indentation;  
+        str := lLineBreak+indent+aFormatOptions.Indentation;
     if attr.NodeType = XmlNodeType.Attribute then
       str := str + XmlAttribute(attr).ToString(aFormatInsideTags, aFormatOptions)
     else
@@ -1186,7 +1186,7 @@ begin
         str := str  +aFormatOptions.Indentation
       end
       else if (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-        str := str+lLineBreak+indent+aFormatOptions.Indentation;  
+        str := str+lLineBreak+indent+aFormatOptions.Indentation;
     if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
       result := result+" ";
     result := result+str;
