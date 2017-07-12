@@ -383,9 +383,9 @@ end;
 
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
-  var lResult := TryFromString(aString);
-  if (lResult:ErrorInfo <> nil) then raise new XmlException(lResult.ErrorInfo.Message, lResult.ErrorInfo.Row, lResult.ErrorInfo.Column);
-  result := lResult as not nullable;
+  result := TryFromString(aString, true);
+  //if (lResult:ErrorInfo <> nil) then raise new XmlException(lResult.ErrorInfo.Message, lResult.ErrorInfo.Row, lResult.ErrorInfo.Column);
+  //result := lResult as not nullable;
 end;
 
 class method XmlDocument.TryFromString(aString: not nullable String): nullable XmlDocument;
