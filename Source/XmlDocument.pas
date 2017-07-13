@@ -618,7 +618,7 @@ begin
               result.CurrentNamespace := lAttr.Namespace;
           if (lAttr.EndLine - lAttr.StartLine) = 0 then begin
             var lAttrStr := lAttr.ToString;
-            if aColumn > lAttr.StartLine + lAttrStr.IndexOf('=') then begin
+            if aColumn > lAttr.StartColumn + lAttrStr.IndexOf('=') then begin
               result.CurrentPosition := XmlPositionKind.AttributeValue;
               result.CurrentAttribute := lAttr;
             end;
