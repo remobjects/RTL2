@@ -88,6 +88,9 @@ type
     method HexStringToInt32(aValue: not nullable String): UInt32;
     method HexStringToInt64(aValue: not nullable String): UInt64;
     method HexStringToByteArray(aData: not nullable String): array of Byte;
+
+    method ToBase64String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
+    method Base64StringToByteArray(S: String): array of Byte;
   end;
 
 implementation
@@ -408,6 +411,64 @@ begin
   scanner.scanHexLongLong(var result);
   {$ENDIF}
 end;
+
+method Convert.ToBase64String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
+  const Codes64: String = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/';
+begin
+  var sb := new StringBuilder();
+  var a: Int32 := 0;
+  var b: Int32 := 0;
+  var x: Byte;
+  for i: Int32 := aStartIndex to (aStartIndex + aLength) - 1 do begin
+    x := S[i];
+    b := b * 256 + x;
+    a := a + 8;
+    while a >= 6 do begin
+      a := a - 6;
+      x := b div (1 shl a);
+      b := b mod (1 shl a);
+      sb.Append(Codes64[x]);
+    end;
+  end;
+
+  if a > 0 then begin
+    x := b shl (6 - a);
+    sb.Append(Codes64[x]);
+  end;
+  result := sb.ToString;
+end;
+
+method convert.Base64StringToByteArray(S: String): array of Byte;
+  const Codes64: String = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/';
+begin
+  var a := 0;
+  var b := 0;
+  var x: Int32;
+  var lIndex := 0;
+  var lTmp := new Byte[S.Length];
+  for i: Int32 := 0 to S.Length - 1 do begin
+    x := Codes64.IndexOf(S[i]);
+    if x >= 0 then begin
+      b := b * 64 + x;
+      a := a + 6;
+      if a >= 8 then begin
+        a := a - 8;
+        x := b shr a;
+        b := b mod (1 shl a);
+        x := x mod 256;
+        lTmp[lIndex] := x;
+        inc(lIndex);
+      end;
+    end
+    else
+      exit nil;
+  end;
+  
+  result := new Byte[lIndex];
+  for j: Int32 := 0 to lIndex - 1 do
+    result[j] := lTmp[j];
+end;
+
 
 method Convert.ToInt64(aValue: Boolean): Int64;
 begin
