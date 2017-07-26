@@ -213,7 +213,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF (ISLAND AND POSIX) OR COOPER}[Warning("Not Implemented for Island")]{$ENDIF}
+{$IF (ISLAND AND POSIX) OR COOPER}[Warning("Not Implemented for Cooper, Linux and Android")]{$ENDIF}
 method Environment.GetDesktopFolder: Folder;
 begin
   {$IF COOPER}
