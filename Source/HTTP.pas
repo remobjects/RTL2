@@ -670,10 +670,10 @@ begin
         var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new IOException("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode)) else new HttpResponse(data, nsHttpUrlResponse);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
       end else if assigned(error) then begin
-        var response := new HttpResponse(new RTLException withError(error));
+        var response := new HttpResponse withException(new RTLException withError(error));
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
       end else begin
-        var response := new HttpResponse(new RTLException("Request failed without providing an error."));
+        var response := new HttpResponse withException(new RTLException("Request failed without providing an error."));
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
       end;
 
