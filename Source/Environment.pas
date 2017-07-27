@@ -237,7 +237,7 @@ begin
   end
   else
     result := '';
-  {$ELSEIF ISLAND AND POSIX
+  {$ELSEIF ISLAND AND POSIX}
   {$WARNING Not Implemented for Island yet}
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DesktopDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
