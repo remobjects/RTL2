@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -125,6 +125,7 @@
       <VirtualFolder>Files and Paths</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Http.Island.Linux.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Random.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
