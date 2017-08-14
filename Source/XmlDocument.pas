@@ -8,7 +8,7 @@ type
     constructor (aRoot : not nullable XmlElement);
   assembly
     fXmlParser: XmlParser;
-    fFormatOptions: XmlFormattingOptions;
+    //fFormatOptions: XmlFormattingOptions;
     fLineBreak: String;
   private
     fNodes: List<XmlNode> := new List<XmlNode>;
@@ -438,10 +438,10 @@ end;
 
 method XmlDocument.ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
 begin
-  fFormatOptions := aFormatOptions;
+  //fFormatOptions := aFormatOptions;
   fLineBreak := aFormatOptions.NewLineString;
   if (fLineBreak = nil) and (fXmlParser <> nil) then fLineBreak := fXmlParser.fLineBreak;
-  var lPreserveExactStringsForUnchnagedValues := aFormatOptions.PreserveExactStringsForUnchnagedValues;
+  //var lPreserveExactStringsForUnchnagedValues := aFormatOptions.PreserveExactStringsForUnchnagedValues;
   result:="";
   var lFormatInsideTags := false;
   if Version <> nil then result := '<?xml version="'+Version+'"';
@@ -1209,6 +1209,7 @@ begin
   end;
   if fNodes.count > 0 then result := result +">";
   /********/
+  var CloseTagIndent := false;
   if aSaveFormatted and (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
     var i := 0;
     for each aNode in fNodes do begin
@@ -1231,8 +1232,10 @@ begin
           end;
         end else if not aFormatOptions.NewLineForElements then result := result +aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions);
       if (aNode.NodeType <> XmlNodeType.Text) then
-        if lFormat then
+        if lFormat then begin
+          CloseTagIndent := true;
           result := result + Document.fLineBreak + indent + aFormatOptions.Indentation + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions)
+        end
         else result := result + aNode.tostring(aSaveFormatted, aFormatInsideTags, aFormatOptions);
       inc(i);
     end;
@@ -1249,7 +1252,7 @@ begin
         result := result+"/>"
     else begin
       if fNodes.Count = 0 then result := result + ">";
-      if lFormat and (Elements.Count > 0) then begin
+      if lFormat and CloseTagIndent then begin//and (Elements.Count > 0) then begin
         result := result +Document.fLineBreak;
         result := result+indent;
       end;
