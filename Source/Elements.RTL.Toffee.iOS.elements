@@ -39,6 +39,7 @@
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <GenerateBitcode>True</GenerateBitcode>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Foundation" />
