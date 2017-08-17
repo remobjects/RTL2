@@ -1211,7 +1211,7 @@ begin
   /********/
   var CloseTagIndent := false;
   if aSaveFormatted and (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
-    var i := 0;
+    var TextNewLine := "";
     for each aNode in fNodes do begin
       if (aNode.NodeType = XmlNodeType.Text) then
         if (length(XmlText(aNode).Value:Trim) > 0) then begin
@@ -1220,24 +1220,23 @@ begin
            result := result + Document.fLineBreak+ indent + aFormatOptions.Indentation+ aNode.toString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues}) + Document.fLineBreak+indent;
           end
           else begin
-            if (i > 0) and (fNodes[i-1].NodeType = XmlNodeType.Text) and (length(XmlText(fNodes[i-1]).Value:Trim) > 0) then
-              result := result + fNodes[i-1].ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues});
-            result := result+ aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues});
-            if (i < fNodes.Count-1) and (fNodes[i+1].NodeType = XmlNodeType.Text) and (length(XmlText(fNodes[i+1]).Value:Trim) > 0) then begin
-              str := fNodes[i+1].ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues});
-              if str.IndexOf(Document.fLineBreak) > -1 then
-                str := str.Substring(0, str.LastIndexOf(Document.fLineBreak));
-              result := result + str;
-            end;
+            result := result+ TextNewLine + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions);
+            if TextNewLine <> "" then 
+              CloseTagIndent := true;
+            TextNewLine := "";
           end;
-        end else if not aFormatOptions.NewLineForElements then result := result +aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions);
-      if (aNode.NodeType <> XmlNodeType.Text) then
+        end 
+        else 
+          if not aFormatOptions.NewLineForElements then result := result +aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions)
+          else if XmlText(aNode).Value:Contains(Document.fLineBreak) then TextNewLine := Document.fLineBreak + indent + aFormatOptions.Indentation;
+      if (aNode.NodeType <> XmlNodeType.Text) then begin
         if lFormat then begin
           CloseTagIndent := true;
           result := result + Document.fLineBreak + indent + aFormatOptions.Indentation + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions)
         end
         else result := result + aNode.tostring(aSaveFormatted, aFormatInsideTags, aFormatOptions);
-      inc(i);
+        TextNewLine := "";
+      end;
     end;
   end
   /******/
