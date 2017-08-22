@@ -66,8 +66,10 @@ begin
 end;
 
 method XmlTokenizer.CharIsNameStart(C: Char): Boolean;
-begin
-  result := (((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or (C = '_') or (C = ':'));
+begin 
+  result := ((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or ((C>=#192) and (C<=#214)) or ((C>=#216) and (C<=#246)) or ((C>=#248) and (C<=#767)) or 
+    ((C>=#880) and (C<=#893)) or ((C>=#895) and (C<=#8191)) or (C=#8204) or (C=#8205) or ((C>=#8304) and (C<=#8591)) or ((C>=#11264) and (C<=#12271)) or ((C>=#12289) and (C<=#55295)) or 
+    ((C>=#63744) and (C<=#64975)) or ((C>=#65008) and (C<=#65533)){ or ((C>=#65536) and (C<=#983039))} or (C = '_') or (C = ':');
 end;
 
 method XmlTokenizer.CharIsName(C: Char): Boolean;
