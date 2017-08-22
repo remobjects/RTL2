@@ -323,7 +323,7 @@ class method XmlDocument.FromFile(aFileName: not nullable File): not nullable Xm
 begin
   if not aFileName.Exists then
     raise new FileNotFoundException(aFileName);
-  result := TryFromFile(aFileName) as not nullable;
+  result := TryFromFile(aFileName, true) as not nullable;
   try
     if (result:ErrorInfo <> nil) then raise new XmlException(result.ErrorInfo.Message, result.ErrorInfo.Row, result.ErrorInfo.Column);
   except
