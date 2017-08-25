@@ -463,7 +463,7 @@ begin
     else
       exit nil;
   end;
-  
+
   result := new Byte[lIndex];
   for j: Int32 := 0 to lIndex - 1 do
     result[j] := lTmp[j];
@@ -607,7 +607,8 @@ begin
   end;
   {$ENDIF}
 
-  result := DecFormat.parse(aValue, Position).doubleValue;
+  if aValue.StartsWith("+") then aValue := aValue.Substring(1);
+  result := DecFormat.parse(aValue, Position):doubleValue;
 
   if Position.Index < aValue.Length then
     exit nil;

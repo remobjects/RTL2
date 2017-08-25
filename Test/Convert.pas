@@ -16,7 +16,7 @@ type
       Assert.AreEqual(Convert.TryToInt32( "5"),  5);
       Assert.AreEqual(Convert.TryToInt32("+5"),  5);
       Assert.AreEqual(Convert.TryToInt32("123456789"), 123456789);
-      
+
       Assert.IsNil(Convert.TryToInt32("xxx"));
       Assert.IsNil(Convert.TryToInt32("5x"));
       Assert.IsNil(Convert.TryToInt32("5.0"));
@@ -27,12 +27,12 @@ type
 
       Assert.AreEqual(Convert.TryToInt32( "2147483647"), 2147483647);
       Assert.AreEqual(Convert.TryToInt32("-2147483648"), -2147483648);
-      Assert.IsNotNil(Convert.TryToInt32( "2147483647")); 
+      Assert.IsNotNil(Convert.TryToInt32( "2147483647"));
       Assert.IsNotNil(Convert.TryToInt32("-2147483648"));
       Assert.IsNil   (Convert.TryToInt32( "2147483648")); // out of bounds for Int32
       Assert.IsNil   (Convert.TryToInt32("-2147483649")); // out of bounds for Int32
     end;
-    
+
     method TestInt64;
     begin
       Assert.AreEqual(Convert.TryToInt64("-5"), -5);
@@ -48,7 +48,15 @@ type
       Assert.IsNil   (Convert.TryToInt64( "9223372036854775808")); // out of bounds for Int64
       Assert.IsNil   (Convert.TryToInt64("-9223372036854775809")); // out of bounds for Int32
     end;
-    
+
+    method TestDouble;
+    begin
+      Assert.AreEqual(Convert.ToDouble('1.0', Locale.Invariant), 1.0);
+      Assert.AreEqual(Convert.ToDouble('-1.0', Locale.Invariant), -1.0);
+      //Assert.AreEqual(Double.parseDouble('+1.0'); // ok
+      Assert.AreEqual(Convert.ToDouble('+1.0', Locale.Invariant), 1.0);
+    end;
+
     //76669: Odd behavior with nil Int32
     method TestCallsWrongAssert;
     begin
