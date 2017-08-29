@@ -1130,6 +1130,16 @@ begin
 end;
 
 method XmlElement.ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions): String;
+method GetEmptyLines (aWS: String): String;
+begin
+  result := "";
+  if not assigned(aWS) then exit result;
+  var pos := aWS.IndexOf(Document.fLineBreak, 0);
+  while (pos > -1) and (pos < length(aWS)-1) do begin 
+    pos := aWS.IndexOf(Document.fLineBreak, pos+1);
+    if (pos > -1) then result := result + Document.fLineBreak;
+  end;
+end;
 begin
   var str: String;
   result := "<";
@@ -1156,7 +1166,7 @@ begin
   for each attr in fAttributesAndNamespaces do begin
     var lWSleft: String := nil;
     var lWSright: String := nil;
-  
+ 
     if attr.NodeType = XmlNodeType.Attribute then begin
       lWSleft := XmlAttribute(attr).WSleft;
       lWSright := XmlAttribute(attr).WSright;
@@ -1165,28 +1175,36 @@ begin
       lWSright := XmlNamespace(attr).WSright;
     end;
     str := "";
+    var lEmptyLinesleft := "";
+    var lEmptyLinesright := "";
+    if (aFormatInsideTags) and (aFormatOptions.PreserveEmptyLines) then begin
+      if aFormatOptions.PreserveEmptyLines then begin
+        lEmptyLinesleft := GetEmptyLines(lWSleft);
+        lEmptyLinesright := GetEmptyLines(lWSright);
+      end;
+    end;
     if not(aFormatInsideTags) and (lWSleft <> nil) then str := lWSleft;
-    if (aFormatInsideTags and ((aFormatOptions.PreserveLinebreaksForAttributes) and (lWSleft <> nil) and lWSleft.Contains(lLineBreak)) or (aFormatOptions.NewLineForAttributes))  then 
+    if (aFormatInsideTags and ((aFormatOptions.PreserveEmptyLines and (lEmptyLinesleft <> "")) or (aFormatOptions.PreserveLinebreaksForAttributes) and (lWSleft <> nil) and lWSleft.Contains(lLineBreak)) or (aFormatOptions.NewLineForAttributes))  then 
       if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (indent = nil) then begin
-        str := lLineBreak;
-        str := str + startStr;
-        str := str  +aFormatOptions.Indentation
+        str := lLineBreak+lEmptyLinesleft+startStr+aFormatOptions.Indentation;
+        {str := str + startStr;
+        str := str  +aFormatOptions.Indentation}
       end
       else if (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-        str := lLineBreak+indent+aFormatOptions.Indentation;  
+        str := lLineBreak+lEmptyLinesleft+indent+aFormatOptions.Indentation;  
     if attr.NodeType = XmlNodeType.Attribute then
       str := str + XmlAttribute(attr).ToString(aFormatInsideTags, aFormatOptions)
     else
       str := str +XmlNamespace(attr).ToString(aFormatInsideTags, aFormatOptions);
     if not (aFormatInsideTags) and (lWSright <> nil) then str := str + lWSright;
-    if (aFormatInsideTags and ((aFormatOptions.PreserveLinebreaksForAttributes) and (lWSright <> nil) and lWSright.Contains(lLineBreak))) then
+    if (aFormatInsideTags and (((aFormatOptions.PreserveLinebreaksForAttributes) and (lWSright <> nil) and lWSright.Contains(lLineBreak))) or (aFormatOptions.PreserveEmptyLines and (lEmptyLinesright <> ""))) then
       if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (indent = nil) then begin
-        str := str + lLineBreak;
-        str := str + startStr;
-        str := str  +aFormatOptions.Indentation
+        str := str + lLineBreak+lEmptyLinesright+startStr + aFormatOptions.Indentation;
+        {str := str + startStr;
+        str := str  +aFormatOptions.Indentation}
       end
       else if (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-        str := str+lLineBreak+indent+aFormatOptions.Indentation;  
+        str := str+lLineBreak+lEmptyLinesright+indent+aFormatOptions.Indentation;  
     if not(CharIsWhitespace(result[result.Length-1])) and not(CharIsWhitespace(str[0])) then
       result := result+" ";
     result := result+str;
@@ -1226,9 +1244,17 @@ begin
             TextNewLine := "";
           end;
         end 
-        else 
-          if not aFormatOptions.NewLineForElements then result := result +aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions)
-          else if XmlText(aNode).Value:Contains(Document.fLineBreak) then TextNewLine := Document.fLineBreak + indent + aFormatOptions.Indentation;
+        else begin
+          var lEmptyLines := "";
+          if aFormatOptions.PreserveEmptyLines then begin
+            lEmptyLines := GetEmptyLines(XmlText(aNode).Value);
+          end;
+          if not aFormatOptions.NewLineForElements then result := result + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions)
+          else if XmlText(aNode).Value:Contains(Document.fLineBreak) then begin
+            result := result + lEmptyLines;
+            TextNewLine := Document.fLineBreak + indent + aFormatOptions.Indentation;
+          end;
+        end;
       if (aNode.NodeType <> XmlNodeType.Text) then begin
         if lFormat then begin
           CloseTagIndent := true;

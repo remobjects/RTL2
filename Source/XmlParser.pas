@@ -81,6 +81,7 @@ type
     WriteNewLineAtEnd: Boolean := false;
     WriteBOM: Boolean := false;
     PreserveLinebreaksForAttributes := false;
+    PreserveEmptyLines := false;
 
     method UniqueCopy: XmlFormattingOptions;
     begin
@@ -96,6 +97,7 @@ type
       result.WriteNewLineAtEnd := WriteNewLineAtEnd;
       result.WriteBOM := WriteBOM;
       result.PreserveLinebreaksForAttributes := PreserveLinebreaksForAttributes;
+      result.PreserveEmptyLines := PreserveEmptyLines;
     end;
 
   assembly
