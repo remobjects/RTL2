@@ -463,10 +463,10 @@ begin
     lValueStartCol := Tokenizer.Column+1;
     Tokenizer.Next;
     if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-      lValueStartRow := Tokenizer.Row;
-      lValueStartCol := Tokenizer.Column+1;
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSright := Tokenizer.Value;
       Tokenizer.Next;
+      lValueStartRow := Tokenizer.Row;
+      lValueStartCol := Tokenizer.Column;
     end;
     if not Expected(out aError, XmlTokenKind.AttributeValue, XmlTokenKind.EOF, XmlTokenKind.SyntaxError) then exit;
     lValue := Tokenizer.Value;
@@ -478,10 +478,10 @@ begin
       aError := new XmlErrorInfo;
       aError.FillErrorInfo(Tokenizer.ErrorMessage, "AttributeValue", Tokenizer.Row, Tokenizer.Column);
     end else begin
-      lEndRow := Tokenizer.Row;
-      lEndCol := Tokenizer.Column+1;
   /************/
       Tokenizer.Next;
+      lEndRow := Tokenizer.Row;
+      lEndCol := Tokenizer.Column;
       if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.Whitespace, XmlTokenKind.EmptyElementEnd, XmlTokenKind.DeclarationEnd) then exit;
       if Tokenizer.Token = XmlTokenKind.Whitespace then begin
         if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then lWSright := Tokenizer.Value

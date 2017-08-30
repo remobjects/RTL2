@@ -620,17 +620,22 @@ begin
       exit;
     end;
     if (lPosition = XmlPositionKind.EndTag) then exit result;
-    if (aColumn > lStart+lElement.FullName.Length+1) then result.CurrentPosition := XmlPositionKind.InsideTag;
+    if (aRow > lElement.NodeRange.StartLine) or (aColumn > lStart+lElement.FullName.Length+1) then result.CurrentPosition := XmlPositionKind.InsideTag;
     if (lElement.Attributes.Count > 0) then begin
       for each lAttr in lElement.attributes do begin
-        //var lQuotePos := lAttr
         if (aRow >= lAttr.NodeRange.StartLine) and (aColumn >=lAttr.NodeRange.StartColumn) and ((lAttr.NodeRange.EndLine = 0) or ((aRow <= lAttr.NodeRange.EndLine) and (aColumn <= lAttr.NodeRange.EndColumn))) then begin
           if length(lAttr.Namespace:Prefix) > 0 then 
             if aColumn = lAttr.NodeRange.StartColumn + length(lAttr.Namespace.Prefix)+1 then
               result.CurrentNamespace := lAttr.Namespace;
-          if (lAttr.NodeRange.EndLine - lAttr.NodeRange.StartLine) = 0 then begin
-            var lAttrStr := lAttr.ToString;
-            if aColumn > lAttr.NodeRange.StartColumn + lAttrStr.IndexOf('=') then begin
+          if (lAttr.ValueRange.StartLine = lAttr.ValueRange.EndLine) then begin
+            if (aRow = lAttr.ValueRange.StartLine) and (aColumn < lAttr.ValueRange.EndColumn) then begin
+              result.CurrentPosition := XmlPositionKind.AttributeValue;
+              result.CurrentAttribute := lAttr;
+            end;
+          end
+          else begin
+            if ((aRow = lAttr.ValueRange.StartLine) and (aColumn > lAttr.ValueRange.StartColumn)) or 
+              ((aRow > lAttr.ValueRange.StartLine) and ((aRow < lAttr.ValueRange.EndLine) or ((aRow = lAttr.ValueRange.EndLine) and (aColumn < lAttr.ValueRange.EndColumn)))) then begin
               result.CurrentPosition := XmlPositionKind.AttributeValue;
               result.CurrentAttribute := lAttr;
             end;

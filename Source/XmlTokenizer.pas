@@ -274,44 +274,39 @@ method XmlTokenizer.ParseValue;
 begin
   var lQuoteChar := fData[fPos];
   if (lQuoteChar ≠ '"') and (lQuoteChar ≠ '''') then exit;
-
-  var lStart := fPos;
-  inc(fPos);
+  var lPosition := fPos;
+  inc(lPosition);
   loop begin
-    if (fPos >= fData.length) then begin
-      Value := new String(fData, lStart, fPos-lStart);
+    if (lPosition >= fData.length) then begin
+      Value := new String(fData, fPos, lPosition-fPos);
       ErrorMessage := "Attribute value expected but EOF found";
       Token := XmlTokenKind.EOF; exit;
       //break;
     end;
-    var ch := fData[fPos];
+    var ch := fData[lPosition];
     if ch = lQuoteChar then break;
     case ch of
       #13: begin
-        if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
-        fRowStart := fPos + 1;
+        if (fData.Length > lPosition+1) and (fData[lPosition + 1] = #10) then inc(lPosition);
+        fRowStart := lPosition + 1;
         inc(fRow);
-        fLastRow := fRow;
-        fLastRowStart := fRowStart;
       end;
       #10: begin
-        fRowStart := fPos + 1;
+        fRowStart := lPosition + 1;
         inc(fRow);
-        fLastRow := fRow;
-        fLastRowStart := fRowStart;
       end;
       '<' : begin
         Token := XmlTokenKind.SyntaxError;
         ErrorMessage := "Syntax error. Symbol '<' is not allowed in attribute value";
-        Value :=  new String(fData, lStart, fPos-lStart);
+        Value :=  new String(fData, fPos, lPosition-fPos);
         exit;
       end;
     end;
-    inc(fPos);
+    inc(lPosition);
   end;
 
-  Value := new String(fData, lStart, fPos-lStart+1);
-  fLength := 1;
+  Value := new String(fData, fPos, lPosition-fPos+1);
+  fLength := lPosition - fPos+1;
   Token := XmlTokenKind.AttributeValue;
 end;
 
