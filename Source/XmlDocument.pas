@@ -86,10 +86,7 @@ type
     property Parent: nullable XmlElement read fParent;
     property Document: nullable XmlDocument read coalesce(Parent:Document, fDocument) write SetDocument;
     property NodeType: XmlNodeType read GetNodeType;
-    property StartLine: Integer;
-    property StartColumn: Integer;
-    property EndLine: Integer;
-    property EndColumn: Integer;
+    property NodeRange: XmlRange := new XmlRange;
 
     [ToString]
     method ToString(): String; override;
@@ -144,11 +141,8 @@ type
     property EndTagName: String;
     property OpenTagEndLine: Integer;
     property OpenTagEndColumn: Integer;
-    property CloseTagStartLine: Integer;
-    property CloseTagStartColumn: Integer;
-    property CloseTagEndLine: Integer;
-    property CloseTagEndColumn: Integer;
 
+    property CloseTagRange: XmlRange := new XmlRange;
     property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
@@ -215,6 +209,7 @@ type
     property LocalName: not nullable String read GetLocalName write SetLocalName;
     property Value: not nullable String read GetValue write SetValue;
     property FullName: not nullable String read GetFullName;
+    property ValueRange: XmlRange := new XmlRange;
     [ToString]
     method ToString(): String; override;
     method ToString(aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions := new XmlFormattingOptions{aPreserveExactStringsForUnchnagedValues: Boolean := false}): String;
@@ -278,6 +273,21 @@ type
     property SystemId: String;
     property PublicId: String;
     property Declaration: String;
+  end;
+
+  XmlRange = public class
+  public
+    property StartLine: Integer;
+    property StartColumn: Integer;
+    property EndLine: Integer;
+    property EndColumn: Integer;
+    method FillRange(aStartLine, aStartColumn: Integer; aEndLine: Integer := 0; aEndColumn: Integer := 0);
+    begin
+      StartLine := aStartLine;
+      StartColumn := aStartColumn;
+      EndLine := aEndLine;
+      EndColumn := aEndColumn;
+    end;
   end;
 
   XmlError = public class(XmlNode)
@@ -535,8 +545,8 @@ end;
 
 method XmlDocument.NearestOpenTag(aRow: Integer; aColumn: Integer; out aCursorPosition: XmlPositionKind): XmlElement;
 begin
-  if ((aRow < Root.StartLine) or ((aRow = Root.StartLine) and (aColumn <= Root.StartColumn))) or
-  ((Root.EndLine <> 0) and ((aRow > Root.EndLine) or ((aRow = Root.EndLine) and (aColumn >= Root.EndColumn)))) or
+  if ((aRow < Root.NodeRange.StartLine) or ((aRow = Root.NodeRange.StartLine) and (aColumn <= Root.NodeRange.StartColumn))) or
+  ((Root.NodeRange.EndLine <> 0) and ((aRow > Root.NodeRange.EndLine) or ((aRow = Root.NodeRange.EndLine) and (aColumn >= Root.NodeRange.EndColumn)))) or
    (assigned(ErrorInfo) and ((aRow > ErrorInfo.Row) or ((aRow = ErrorInfo.Row) and (aColumn > ErrorInfo.Column)))) then exit nil;
   result := Root;
 //if (Root.StartLine <= aRow) and (Root.StartColumn <= aColumn) then result := Root;
@@ -544,12 +554,12 @@ begin
   while not (result.Elements.Count = 0) and (lElement <> result) do begin
     lElement := result;
     for each el in lElement.Elements do begin
-      if (el.StartLine > aRow) or ((el.StartLine = aRow) and (el.StartColumn >= aColumn)) then
+      if (el.NodeRange.StartLine > aRow) or ((el.NodeRange.StartLine = aRow) and (el.NodeRange.StartColumn >= aColumn)) then
         break
       else 
         result := el
     end;
-    if (result.EndLine <> 0) and ((result.EndLine < aRow) or ((result.EndLine = aRow) and (result.EndColumn <= aColumn))) or
+    if (result.NodeRange.EndLine <> 0) and ((result.NodeRange.EndLine < aRow) or ((result.NodeRange.EndLine = aRow) and (result.NodeRange.EndColumn <= aColumn))) or
       ((result.IsEmpty) and (result.OpenTagEndLine <> 0) and ((result.OpenTagEndLine < aRow) or ((result.OpenTagEndLine = aRow) and (result.OpenTagEndColumn <= aColumn)))) then begin
       result := result.Parent;
       break;
@@ -561,7 +571,7 @@ begin
     else aCursorPosition := XmlPositionKind.StartTag;
     exit;
   end;
-  if (aRow > result.CloseTagStartLine) or (aRow = result.CloseTagStartLine) and (aColumn > result.CloseTagStartColumn) then begin
+  if (aRow > result.CloseTagRange.StartLine) or (aRow = result.CloseTagRange.StartLine) and (aColumn > result.CloseTagRange.StartColumn) then begin
       aCursorPosition := XmlPositionKind.EndTag;
       exit;
   end;
@@ -585,8 +595,8 @@ begin
   result.CurrentPosition := lPosition;
   if (lElement <> nil) and (lPosition in [XmlPositionKind.StartTag, XmlPositionKind.SingleTag, XmlPositionKind.EndTag]) then begin
     var lStart: Integer;
-    if lPosition = XmlPositionKind.EndTag then lStart := lElement.CloseTagStartColumn+1
-    else lStart := lElement.StartColumn;
+    if lPosition = XmlPositionKind.EndTag then lStart := lElement.CloseTagRange.StartColumn+1
+    else lStart := lElement.NodeRange.StartColumn;
     var lPrefixLength: Integer := 0;
     if length(lElement.Namespace:Prefix) > 0 then
       lPrefixLength := length(lElement.Namespace.Prefix)+1;
@@ -614,13 +624,13 @@ begin
     if (lElement.Attributes.Count > 0) then begin
       for each lAttr in lElement.attributes do begin
         //var lQuotePos := lAttr
-        if (aRow >= lAttr.StartLine) and (aColumn >=lAttr.StartColumn) and ((lAttr.EndLine = 0) or ((aRow <= lAttr.EndLine) and (aColumn <= lAttr.EndColumn))) then begin
+        if (aRow >= lAttr.NodeRange.StartLine) and (aColumn >=lAttr.NodeRange.StartColumn) and ((lAttr.NodeRange.EndLine = 0) or ((aRow <= lAttr.NodeRange.EndLine) and (aColumn <= lAttr.NodeRange.EndColumn))) then begin
           if length(lAttr.Namespace:Prefix) > 0 then 
-            if aColumn = lAttr.StartColumn + length(lAttr.Namespace.Prefix)+1 then
+            if aColumn = lAttr.NodeRange.StartColumn + length(lAttr.Namespace.Prefix)+1 then
               result.CurrentNamespace := lAttr.Namespace;
-          if (lAttr.EndLine - lAttr.StartLine) = 0 then begin
+          if (lAttr.NodeRange.EndLine - lAttr.NodeRange.StartLine) = 0 then begin
             var lAttrStr := lAttr.ToString;
-            if aColumn > lAttr.StartColumn + lAttrStr.IndexOf('=') then begin
+            if aColumn > lAttr.NodeRange.StartColumn + lAttrStr.IndexOf('=') then begin
               result.CurrentPosition := XmlPositionKind.AttributeValue;
               result.CurrentAttribute := lAttr;
             end;
@@ -1162,7 +1172,7 @@ begin
     end;
   end; 
   if (aFormatInsideTags and (aFormatOptions.PreserveLinebreaksForAttributes or aFormatOptions.NewLineForAttributes)) then begin
-    for i:Integer := 0 to StartColumn-1 do  
+    for i:Integer := 0 to NodeRange.StartColumn-1 do  
       startStr := startStr + " ";
   end;
   for each attr in fAttributesAndNamespaces do begin
