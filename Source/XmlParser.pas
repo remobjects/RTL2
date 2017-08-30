@@ -460,13 +460,13 @@ begin
     end;
     if not Expected(out aError, XmlTokenKind.AttributeSeparator) then exit;
     lValueStartRow := Tokenizer.Row;
-    lValueStartCol := Tokenizer.Column+1;
+    lValueStartCol := Tokenizer.Column+2;
     Tokenizer.Next;
     if Tokenizer.Token = XmlTokenKind.Whitespace then begin
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSright := Tokenizer.Value;
       Tokenizer.Next;
       lValueStartRow := Tokenizer.Row;
-      lValueStartCol := Tokenizer.Column;
+      lValueStartCol := Tokenizer.Column+1;
     end;
     if not Expected(out aError, XmlTokenKind.AttributeValue, XmlTokenKind.EOF, XmlTokenKind.SyntaxError) then exit;
     lValue := Tokenizer.Value;
@@ -525,7 +525,7 @@ begin
     XmlAttribute(result).LocalName := lLocalName;
     var lparsedValue := if lValue = nil then "" else ParseEntities(lValue);
     XmlAttribute(result).Value := lparsedValue;
-    XmlAttribute(result).ValueRange.FillRange(lValueStartRow, lValuestartCol, lEndRow, lEndCol);
+    XmlAttribute(result).ValueRange.FillRange(lValueStartRow, lValuestartCol, lEndRow, lEndCol-1);
     XmlAttribute(result).QuoteChar := lQuoteChar;
     XmlAttribute(result).WSleft := lWSleft;
     XmlAttribute(result).innerWSleft := linnerWSleft;
