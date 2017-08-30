@@ -205,6 +205,7 @@ type
     method SetNamespace(aNamespace: not nullable XmlNamespace);
     method GetLocalName: not nullable String;
     method GetValue: not nullable String;
+    method GetFullName: not nullable String;
     method SetLocalName(aValue: not nullable String);
     method SetValue(aValue: not nullable String);
   public
@@ -213,6 +214,7 @@ type
     property &Namespace: XmlNamespace read GetNamespace write SetNamespace;
     property LocalName: not nullable String read GetLocalName write SetLocalName;
     property Value: not nullable String read GetValue write SetValue;
+    property FullName: not nullable String read GetFullName;
     [ToString]
     method ToString(): String; override;
     method ToString(aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions := new XmlFormattingOptions{aPreserveExactStringsForUnchnagedValues: Boolean := false}): String;
@@ -1329,6 +1331,13 @@ end;
 method XmlAttribute.GetValue: not nullable String;
 begin
   result := fValue as not nullable;
+end;
+
+method XmlAttribute.GetFullName: not nullable String;
+begin
+  result := "";
+  if length(&Namespace:Prefix) > 0 then result := &Namespace.Prefix+':';
+  result := result + LocalName;
 end;
 
 method XmlAttribute.SetLocalName(aValue: not nullable String);
