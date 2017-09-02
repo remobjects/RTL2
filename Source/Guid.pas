@@ -15,7 +15,7 @@ type
   PlatformGuid = Foundation.NSUUID;
   {$ENDIF}
 
-  Guid = public class 
+  Guid = public class
   {$IF COOPER OR TOFFEE}mapped to PlatformGuid{$ENDIF}
   private
     {$IF ECHOES OR ISLAND}
@@ -35,8 +35,10 @@ type
 
     {$IF NOT TOFFEE}
     method &Equals(aValue: Object): Boolean; override;
+    method GetHashCode: Integer; override;
     {$ELSE}
     method isEqual(aValue: Object): Boolean; //override;
+    method hash: NSUInteger; mapped to hash;
     {$ENDIF}
     operator Equal(a, b: Guid): Boolean;
     operator NotEqual(a, b: Guid): Boolean;
@@ -127,6 +129,15 @@ begin
   result := mapped.Equals(aValue);
   {$ELSEIF ECHOES OR ISLAND}
   result := fGuid.Equals((aValue as Guid).fGuid);
+  {$ENDIF}
+end;
+
+method Guid.GetHashCode: Integer;
+begin
+  {$IF COOPER}
+  result := mapped.GetHashCode;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := fGuid.GetHashCode;
   {$ENDIF}
 end;
 {$ELSE}
