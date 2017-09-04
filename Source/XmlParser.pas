@@ -565,7 +565,7 @@ begin
     else begin
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) or ((FormatOptions.PreserveLinebreaksForAttributes) and Tokenizer.Value.Contains(fLineBreak)) then WS := Tokenizer.Value;
       Tokenizer.Next;
-      if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName, XmlTokenKind.SyntaxError) then exit;
+      var lExp := Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName, XmlTokenKind.SyntaxError);
     end;
     while (Tokenizer.Token in [XmlTokenKind.ElementName, XmlTokenKind.SyntaxError]) do begin
       var lXmlNode := ReadAttribute(result, WS, aIndent, out aError);
@@ -603,12 +603,12 @@ begin
           end;
           lElement := lElement.Parent;
       end;
-
-      aError := new XmlErrorInfo;
-      aError.FillErrorInfo("Unknown prefix '"+lPrefix+":'", lSuggestion, result.NodeRange.StartLine, (result.NodeRange.StartColumn+1));
       result.LocalName := '[ERROR]:'+result.LocalName.Substring(result.LocalName.IndexOf(':')+1, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
       result.OpenTagEndLine := 0;
       result.OpenTagEndColumn := 0;
+      if assigned (aError) then exit;
+      aError := new XmlErrorInfo;
+      aError.FillErrorInfo("Unknown prefix '"+lPrefix+":'", lSuggestion, result.NodeRange.StartLine, (result.NodeRange.StartColumn+1));     
       exit;
     end;
     result.Namespace := lNamespace;
@@ -667,6 +667,7 @@ begin
       lAttribute.LocalName := lLocalName;//lAttribute.LocalName.Substring(lAttribute.LocalName.IndexOf(':')+1, lAttribute.LocalName.Length-lAttribute.LocalName.IndexOf(':')-1);
     end;
   end;
+  if assigned(aError) then exit;
   if (Tokenizer.Token = XmlTokenKind.TagClose) then begin
       if WS <> "" then result.LocalName := result.LocalName + WS;
       Tokenizer.Next;

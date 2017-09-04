@@ -600,7 +600,7 @@ begin
     var lPrefixLength: Integer := 0;
     if length(lElement.Namespace:Prefix) > 0 then
       lPrefixLength := length(lElement.Namespace.Prefix)+1;
-      if (aColumn = lStart + lPrefixLength+1) then begin
+      if (aColumn >= lStart + lPrefixLength+1) and ((lElement.LocalName = "") or (aColumn <= lStart+length(lElement.FullName))) then begin
         result.CurrentNamespace := lElement.Namespace;
         exit;
       end;
@@ -625,7 +625,7 @@ begin
       for each lAttr in lElement.attributes do begin
         if (aRow >= lAttr.NodeRange.StartLine) and (aColumn >=lAttr.NodeRange.StartColumn) and ((lAttr.NodeRange.EndLine = 0) or ((aRow <= lAttr.NodeRange.EndLine) and (aColumn <= lAttr.NodeRange.EndColumn))) then begin
           if length(lAttr.Namespace:Prefix) > 0 then 
-            if aColumn = lAttr.NodeRange.StartColumn + length(lAttr.Namespace.Prefix)+1 then
+            if (aColumn >= lAttr.NodeRange.StartColumn + length(lAttr.Namespace.Prefix)+1) and ((lAttr.NodeRange.EndLine = 0) or (aColumn <= lAttr.NodeRange.StartColumn+length(lAttr.FullName))) then
               result.CurrentNamespace := lAttr.Namespace;
           if (lAttr.ValueRange.StartLine = lAttr.ValueRange.EndLine) then begin
             if (aRow = lAttr.ValueRange.StartLine) and (aColumn >= lAttr.ValueRange.StartColumn) and (aColumn <= lAttr.ValueRange.EndColumn) then begin
