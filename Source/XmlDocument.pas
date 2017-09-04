@@ -628,14 +628,14 @@ begin
             if aColumn = lAttr.NodeRange.StartColumn + length(lAttr.Namespace.Prefix)+1 then
               result.CurrentNamespace := lAttr.Namespace;
           if (lAttr.ValueRange.StartLine = lAttr.ValueRange.EndLine) then begin
-            if (aRow = lAttr.ValueRange.StartLine) and (aColumn < lAttr.ValueRange.EndColumn) then begin
+            if (aRow = lAttr.ValueRange.StartLine) and (aColumn >= lAttr.ValueRange.StartColumn) and (aColumn <= lAttr.ValueRange.EndColumn) then begin
               result.CurrentPosition := XmlPositionKind.AttributeValue;
               result.CurrentAttribute := lAttr;
             end;
           end
           else begin
-            if ((aRow = lAttr.ValueRange.StartLine) and (aColumn > lAttr.ValueRange.StartColumn)) or 
-              ((aRow > lAttr.ValueRange.StartLine) and ((aRow < lAttr.ValueRange.EndLine) or ((aRow = lAttr.ValueRange.EndLine) and (aColumn < lAttr.ValueRange.EndColumn)))) then begin
+            if ((aRow = lAttr.ValueRange.StartLine) and (aColumn >= lAttr.ValueRange.StartColumn)) or 
+              ((aRow > lAttr.ValueRange.StartLine) and ((aRow < lAttr.ValueRange.EndLine) or ((aRow = lAttr.ValueRange.EndLine) and (aColumn <= lAttr.ValueRange.EndColumn)))) then begin
               result.CurrentPosition := XmlPositionKind.AttributeValue;
               result.CurrentAttribute := lAttr;
             end;
