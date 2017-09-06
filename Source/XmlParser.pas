@@ -558,22 +558,18 @@ begin
   var lFormat: Boolean;
   if Tokenizer.Token = XmlTokenKind.ElementName then begin
     Tokenizer.Next;
-    if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.Whitespace) then exit;
-    if Tokenizer.Token <> XmlTokenKind.Whitespace then begin
-      if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd) then exit
-    end
-    else begin
+    if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.Whitespace) then goto checkns;//exit;
+    if Tokenizer.Token = XmlTokenKind.Whitespace then begin
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) or ((FormatOptions.PreserveLinebreaksForAttributes) and Tokenizer.Value.Contains(fLineBreak)) then WS := Tokenizer.Value;
       Tokenizer.Next;
-      var lExp := Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName, XmlTokenKind.SyntaxError);
+      if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName) then goto checkns;
     end;
-    while (Tokenizer.Token in [XmlTokenKind.ElementName, XmlTokenKind.SyntaxError]) do begin
+    while (Tokenizer.Token = XmlTokenKind.ElementName) do begin
       var lXmlNode := ReadAttribute(result, WS, aIndent, out aError);
       if not assigned(lXmlNode) then exit;
       WS := "";
       if lXmlNode.NodeType = XmlNodeType.Namespace then result.AddNamespace(XmlNamespace(lXmlNode))
       else result.AddAttribute(XmlAttribute(lXmlNode));
-      if assigned(aError) then break;
       if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName) then exit;
     end;
     lFormat := false;
@@ -583,12 +579,13 @@ begin
       else result.OpenTagEndColumn := Tokenizer.Column+1;
     end;
   end;
+  checkns:;
   //check prefix for LocalName
   var lNamespace: XmlNamespace := nil;
   if result.LocalName.IndexOf(':') > 0 then begin
     var lPrefix := result.LocalName.Substring(0, result.LocalName.IndexOf(':'));
     lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
-    if (lNamespace = nil) then begin //raise new XmlException("Unknown prefix '"+lPrefix+":'", result.StartLine, (result.StartColumn+1));
+    if (lNamespace = nil) then begin
       var lSuggestion: String := "";
       var lElement := result;
       while (lSuggestion = "") and (lElement <> nil) do begin
@@ -606,7 +603,7 @@ begin
       result.LocalName := '[ERROR]:'+result.LocalName.Substring(result.LocalName.IndexOf(':')+1, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
       result.OpenTagEndLine := 0;
       result.OpenTagEndColumn := 0;
-      if assigned (aError) then exit;
+      //if assigned (aError) then exit;
       aError := new XmlErrorInfo;
       aError.FillErrorInfo("Unknown prefix '"+lPrefix+":'", lSuggestion, result.NodeRange.StartLine, (result.NodeRange.StartColumn+1));     
       exit;

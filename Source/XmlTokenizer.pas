@@ -102,7 +102,7 @@ begin
       end;
       '"' : ParseValue;
       '''' : ParseValue;
-      '<': if (fData.Length >= fPos+1) then
+      '<': if (fData.Length > fPos+1) then
         case fData[fPos+1] of
           '/': begin
               fLength := 2;
@@ -149,7 +149,12 @@ begin
             Value := nil;
             Token := XmlTokenKind.TagOpen;
           end;
-        end;
+        end
+      else begin
+        fLength := 1;
+        Value := nil;
+        Token := XmlTokenKind.TagOpen;
+      end;
       '>': begin
         fLength := 1;
         Value := nil;
