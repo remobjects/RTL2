@@ -419,86 +419,69 @@ begin
   var lValueStartRow, lValueStartCol: Integer;
 
   lWSleft := aWS;
-  if not Expected(out aError, XmlTokenKind.ElementName, XmlTokenKind.SyntaxError) then exit;
+  if not Expected(out aError, XmlTokenKind.ElementName) then exit;
   lStartRow := Tokenizer.Row;
   lStartCol := Tokenizer.Column;
   lLocalName := Tokenizer.Value;
   var lQuoteChar: Char;
-  if Tokenizer.Token = XmlTokenKind.SyntaxError then begin
-    aError := new XmlErrorInfo;
-    if Tokenizer.Value.Contains(" ") then begin
-      aError.FillErrorInfo(Tokenizer.Value, "AttributeName", Tokenizer.Row, Tokenizer.Column);
-      exit;
-    end
-    else begin
-      aError.FillErrorInfo("Attribute name expected", "AttributeName", Tokenizer.Row, Tokenizer.Column);
-      lStartCol := lStartCol - length(lLocalName);
+  if (FormatOptions.PreserveLinebreaksForAttributes) then
+    if(lWSleft.Contains(fLineBreak)) then begin
+      if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then begin
+        lWSleft := fLineBreak;
+        for i:Integer := 0 to aParent.NodeRange.StartColumn-1 do
+          lWSleft := lWSleft + " ";
+        lWSleft := lWSleft +FormatOptions.Indentation
+      end
+      else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
+        lWSleft := fLineBreak+aIndent;
     end;
-  end else begin
-    if (FormatOptions.PreserveLinebreaksForAttributes) then
-      if(lWSleft.Contains(fLineBreak)) then begin
-        if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then begin
-          lWSleft := fLineBreak;
-          for i:Integer := 0 to aParent.NodeRange.StartColumn-1 do
-            lWSleft := lWSleft + " ";
-          lWSleft := lWSleft +FormatOptions.Indentation
-        end
-        else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-          lWSleft := fLineBreak+aIndent;
-      end;
-    if (FormatOptions.NewLineForAttributes) then begin
-      if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then
-        lWSleft := fLineBreak+aParent.NodeRange.StartColumn+FormatOptions.Indentation
-      else
-        if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-          lWSleft := fLineBreak+aIndent;
-    end;
+  if (FormatOptions.NewLineForAttributes) then begin
+    if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (aIndent = nil) then
+      lWSleft := fLineBreak+aParent.NodeRange.StartColumn+FormatOptions.Indentation
+    else
+      if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
+        lWSleft := fLineBreak+aIndent;
+  end;
+  Tokenizer.Next;
+  if Tokenizer.Token = XmlTokenKind.Whitespace then begin
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSleft := Tokenizer.Value;
     Tokenizer.Next;
-    if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-      if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSleft := Tokenizer.Value;
-      Tokenizer.Next;
-    end;
-    if not Expected(out aError, XmlTokenKind.AttributeSeparator) then exit;
+  end;
+  if not Expected(out aError, XmlTokenKind.AttributeSeparator) then goto newattr;//exit;
+  lValueStartRow := Tokenizer.Row;
+  lValueStartCol := Tokenizer.Column+2;
+  Tokenizer.Next;
+  if Tokenizer.Token = XmlTokenKind.Whitespace then begin
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSright := Tokenizer.Value;
+    Tokenizer.Next;
     lValueStartRow := Tokenizer.Row;
-    lValueStartCol := Tokenizer.Column+2;
-    Tokenizer.Next;
-    if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-      if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then linnerWSright := Tokenizer.Value;
-      Tokenizer.Next;
-      lValueStartRow := Tokenizer.Row;
-      lValueStartCol := Tokenizer.Column+1;
-    end;
-    if not Expected(out aError, XmlTokenKind.AttributeValue, XmlTokenKind.EOF, XmlTokenKind.SyntaxError) then exit;
-    lValue := Tokenizer.Value;
-    lQuoteChar := lValue[0];
-    lValue := lValue.Trim([lQuoteChar]);
+    lValueStartCol := Tokenizer.Column+1;
+  end;
+  if not Expected(out aError, XmlTokenKind.AttributeValue) then goto newattr;//exit;
+  lValue := Tokenizer.Value;
+  lQuoteChar := lValue[0];
+  lValue := lValue.Trim([lQuoteChar]);
 
-    /*lValue  := lValue.Substring(1, length(lValue)-2) {$WARNING HACK FOR NOW}*/
-    if Tokenizer.token in [XmlTokenKind.EOF, XmlTokenKind.SyntaxError] then begin
-      aError := new XmlErrorInfo;
-      aError.FillErrorInfo(Tokenizer.ErrorMessage, "AttributeValue", Tokenizer.Row, Tokenizer.Column);
-    end else begin
   /************/
-      Tokenizer.Next;
-      lEndRow := Tokenizer.Row;
-      lEndCol := Tokenizer.Column;
-      if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.Whitespace, XmlTokenKind.EmptyElementEnd, XmlTokenKind.DeclarationEnd) then exit;
-      if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-        if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then lWSright := Tokenizer.Value
-        else if (FormatOptions.PreserveLinebreaksForAttributes) and (Tokenizer.Value.Contains(fLineBreak)) then
-          if (aIndent = nil) then begin
-            lWSright := fLineBreak;
-            for i:Integer := 0 to aParent.NodeRange.StartColumn -1 do
-              lWSright := lWSright + " ";
-            lWSright := lWSright+ FormatOptions.Indentation;
-          end
-          else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-            lWSright := fLineBreak+aIndent;
-        Tokenizer.Next;
-      end;
-    end;
+  Tokenizer.Next;
+  lEndRow := Tokenizer.Row;
+  lEndCol := Tokenizer.Column;
+  if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.Whitespace, XmlTokenKind.EmptyElementEnd, XmlTokenKind.DeclarationEnd) then goto newattr;//exit;
+  if Tokenizer.Token = XmlTokenKind.Whitespace then begin
+    if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace) then lWSright := Tokenizer.Value
+    else if (FormatOptions.PreserveLinebreaksForAttributes) and (Tokenizer.Value.Contains(fLineBreak)) then
+      if (aIndent = nil) then begin
+        lWSright := fLineBreak;
+        for i:Integer := 0 to aParent.NodeRange.StartColumn -1 do
+          lWSright := lWSright + " ";
+        lWSright := lWSright+ FormatOptions.Indentation;
+      end
+      else if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
+        lWSright := fLineBreak+aIndent;
+    Tokenizer.Next;
   end;
   /***********/
+  newattr:;
   if ((lLocalName.StartsWith("xmlns:")) or (lLocalName = "xmlns")) then begin
     if lLocalName.StartsWith("xmlns:") then
       lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
@@ -570,6 +553,7 @@ begin
       WS := "";
       if lXmlNode.NodeType = XmlNodeType.Namespace then result.AddNamespace(XmlNamespace(lXmlNode))
       else result.AddAttribute(XmlAttribute(lXmlNode));
+      if assigned(aError) then exit;
       if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName) then exit;
     end;
     lFormat := false;
