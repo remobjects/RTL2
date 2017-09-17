@@ -4,7 +4,7 @@
 interface
 
 {$IF ECHOES OR (TOFFEE AND MACOS)}
-type 
+type
   {$IF JAVA}
   PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
@@ -115,12 +115,18 @@ begin
     var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
     lTask.Start();
     lTask.WaitFor();
+    aStdOut := "";
+    aStdErr := "";
     var d := stdOut.availableData();
-    if (d ≠ nil) and (d.length() > 0) then
-      aStdOut := new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
+    while (d ≠ nil) and (d.length() > 0) do begin
+      aStdOut := aStdOut+new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
+      d := stdOut.availableData();
+    end;
     d := stdErr.availableData();
-    if (d ≠ nil) and (d.length() > 0) then
-      aStdErr := new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
+    while (d ≠ nil) and (d.length() > 0) do begin
+      aStdErr := aStdErr+new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
+      d := stdErr.availableData();
+    end;
   end;
   {$ENDIF}
 end;
