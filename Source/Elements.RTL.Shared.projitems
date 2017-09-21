@@ -126,6 +126,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Http.Island.Linux.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Random.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Timer.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
