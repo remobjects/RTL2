@@ -195,7 +195,6 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Environment.GetUserHomeFolder: Folder;
 begin
   {$IF COOPER}
@@ -208,13 +207,13 @@ begin
   {$ELSEIF ECHOES}
   exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
+  result := RemObjects.Elements.System.Environment.UserHomeFolder.FullName;
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.homeDirectoryForCurrentUser.path;
   {$ENDIF}
 end;
 
-{$IF ISLAND OR COOPER}[Warning("Not Implemented for Island")]{$ENDIF}
+{$IF (ISLAND AND POSIX) OR COOPER}[Warning("Not Implemented for Cooper, Linux and Android")]{$ENDIF}
 method Environment.GetDesktopFolder: Folder;
 begin
   {$IF COOPER}
@@ -225,7 +224,20 @@ begin
   {$ENDIF}
   {$ELSEIF ECHOES}
   exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.DesktopDirectory));
-  {$ELSEIF ISLAND}
+  {$ELSEIF ISLAND AND WINDOWS}
+  var lAllocator: rtl.IMalloc;
+  var lMalloc: ^rtl.IMalloc := @lAllocator;
+  var lDir: rtl.LPCITEMIDLIST;
+  var lTmp := new Char[rtl.MAX_PATH + 1];
+  if rtl.SHGetMalloc(@lMalloc) = rtl.NOERROR then begin
+    rtl.SHGetSpecialFolderLocation(nil, rtl.CSIDL_DESKTOPDIRECTORY, @lDir);
+    rtl.SHGetPathFromIDList(lDir, @lTmp[0]);
+    lMalloc^.lpVtbl^.Free(lMalloc, lDir);
+    result := new String(lTmp).TrimEnd([Chr(0)]);
+  end
+  else
+    result := '';
+  {$ELSEIF ISLAND AND POSIX}
   {$WARNING Not Implemented for Island yet}
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DesktopDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);

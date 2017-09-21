@@ -66,8 +66,10 @@ begin
 end;
 
 method XmlTokenizer.CharIsNameStart(C: Char): Boolean;
-begin
-  result := (((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or (C = '_') or (C = ':'));
+begin 
+  result := ((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or ((C>=#192) and (C<=#214)) or ((C>=#216) and (C<=#246)) or ((C>=#248) and (C<=#767)) or 
+    ((C>=#880) and (C<=#893)) or ((C>=#895) and (C<=#8191)) or (C=#8204) or (C=#8205) or ((C>=#8304) and (C<=#8591)) or ((C>=#11264) and (C<=#12271)) or ((C>=#12289) and (C<=#55295)) or 
+    ((C>=#63744) and (C<=#64975)) or ((C>=#65008) and (C<=#65533)){ or ((C>=#65536) and (C<=#983039))} or (C = '_') or (C = ':');
 end;
 
 method XmlTokenizer.CharIsName(C: Char): Boolean;
@@ -100,7 +102,7 @@ begin
       end;
       '"' : ParseValue;
       '''' : ParseValue;
-      '<': if (fData.Length >= fPos+1) then
+      '<': if (fData.Length > fPos+1) then
         case fData[fPos+1] of
           '/': begin
               fLength := 2;
@@ -147,7 +149,12 @@ begin
             Value := nil;
             Token := XmlTokenKind.TagOpen;
           end;
-        end;
+        end
+      else begin
+        fLength := 1;
+        Value := nil;
+        Token := XmlTokenKind.TagOpen;
+      end;
       '>': begin
         fLength := 1;
         Value := nil;
@@ -272,44 +279,39 @@ method XmlTokenizer.ParseValue;
 begin
   var lQuoteChar := fData[fPos];
   if (lQuoteChar ≠ '"') and (lQuoteChar ≠ '''') then exit;
-
-  var lStart := fPos;
-  inc(fPos);
+  var lPosition := fPos;
+  inc(lPosition);
   loop begin
-    if (fPos >= fData.length) then begin
-      Value := new String(fData, lStart, fPos-lStart);
+    if (lPosition >= fData.length) then begin
+      Value := new String(fData, fPos, lPosition-fPos);
       ErrorMessage := "Attribute value expected but EOF found";
       Token := XmlTokenKind.EOF; exit;
       //break;
     end;
-    var ch := fData[fPos];
+    var ch := fData[lPosition];
     if ch = lQuoteChar then break;
     case ch of
       #13: begin
-        if (fData.Length > fPos+1) and (fData[fPos + 1] = #10) then inc(fPos);
-        fRowStart := fPos + 1;
+        if (fData.Length > lPosition+1) and (fData[lPosition + 1] = #10) then inc(lPosition);
+        fRowStart := lPosition + 1;
         inc(fRow);
-        fLastRow := fRow;
-        fLastRowStart := fRowStart;
       end;
       #10: begin
-        fRowStart := fPos + 1;
+        fRowStart := lPosition + 1;
         inc(fRow);
-        fLastRow := fRow;
-        fLastRowStart := fRowStart;
       end;
       '<' : begin
         Token := XmlTokenKind.SyntaxError;
         ErrorMessage := "Syntax error. Symbol '<' is not allowed in attribute value";
-        Value :=  new String(fData, lStart, fPos-lStart);
+        Value :=  new String(fData, fPos, lPosition-fPos);
         exit;
       end;
     end;
-    inc(fPos);
+    inc(lPosition);
   end;
 
-  Value := new String(fData, lStart, fPos-lStart+1);
-  fLength := 1;
+  Value := new String(fData, fPos, lPosition-fPos+1);
+  fLength := lPosition - fPos+1;
   Token := XmlTokenKind.AttributeValue;
 end;
 

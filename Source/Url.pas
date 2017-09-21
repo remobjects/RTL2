@@ -44,10 +44,12 @@ type
     constructor; empty;
     constructor(aScheme: not nullable String; aHost: String; aPath: String);
     constructor(aUrlString: not nullable String);
+    constructor(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String);
   public
 
     class method UrlWithString(aUrlString: not nullable String): Url;
     class method TryUrlWithString(aUrlString: nullable String): Url;
+    class method UrlWithComponents(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String): Url;
     class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
     class method UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
@@ -189,6 +191,17 @@ begin
   fPath := Url.AddPercentEncodingsToPath(aPath);
 end;
 
+constructor Url(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String);
+begin
+  fScheme := aScheme;
+  fHost := aHost;
+  fPort := aPort;
+  fPath := aPath;
+  fQueryString := aQueryString;
+  fFragment := aFragment;
+  fUser := aUser;
+end;
+
 class method Url.UrlWithString(aUrlString: not nullable String): Url;
 begin
   if length(aUrlString) > 0 then
@@ -206,6 +219,11 @@ begin
   except
     on UrlException do;
   end;
+end;
+
+class method Url.UrlWithComponents(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String): Url;
+begin
+  result := new Url(aScheme, aHost, aPort, aPath, aQueryString, aFragment, aUser);
 end;
 
 class method Url.UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;

@@ -8,6 +8,16 @@ type
   UrlTests = public class(Test)
   public
 
+    method UrlTypes;
+    begin
+      var ftp := Url.UrlWithString("ftp://ftp.is.co.za/rfc/rfc1808.txt");
+      var gopher := Url.UrlWithString("gopher://spinaltap.micro.umn.edu/00/Weather/California/Los%20Angeles");
+      var http := Url.UrlWithString("http://www.math.uio.no/faq/compression-faq/part1.html");
+      //var mail := Url.UrlWithString("mailto:mduerst@ifi.unizh.ch");
+      //var news := Url.UrlWithString("news:comp.infosystems.www.servers.unix");
+      var telnet := Url.UrlWithString("telnet://melvyl.ucop.edu/");
+    end;
+
     method TestUrlWithString();
     begin
       var s := "http://foo:8986/bar/baz-1340456-786%2dabc/d";
@@ -117,7 +127,7 @@ type
       Assert.IsTrue(lUrl.IsFileUrl);
       Assert.IsTrue(lUrl.IsAbsoluteWindowsFileURL);
       Assert.AreEqual(lUrl.Host,        "SHARE");
-      Assert.AreEqual(lUrl.Path,        "/Program Files/Test/Test.txt");
+      Assert.AreEqual(lUrl.Path,        "/Program%20Files/Test/Test.txt");
       Assert.AreEqual(lUrl.UnixPath,    "/Program Files/Test/Test.txt");
       Assert.AreEqual(lUrl.WindowsPath,  "\\SHARE\Program Files\Test\Test.txt");
       Assert.AreEqual(lUrl.ToAbsoluteString, "file://SHARE/Program%20Files/Test/Test.txt");
@@ -126,7 +136,7 @@ type
       Assert.IsTrue(lUrl.IsFileUrl);
       Assert.IsTrue(lUrl.IsAbsoluteWindowsFileURL);
       Assert.AreEqual(lUrl.Host,        "SHARE");
-      Assert.AreEqual(lUrl.Path,        "/Program Files/Test/Test.txt");
+      Assert.AreEqual(lUrl.Path,        "/Program%20Files/Test/Test.txt");
       Assert.AreEqual(lUrl.UnixPath,    "/Program Files/Test/Test.txt");
       Assert.AreEqual(lUrl.WindowsPath,  "\\SHARE\Program Files\Test\Test.txt");
       Assert.AreEqual(lUrl.ToAbsoluteString, "file://SHARE/Program%20Files/Test/Test.txt");

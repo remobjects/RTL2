@@ -62,8 +62,12 @@ type
     method Contains(Value: String): Boolean; inline;
     method IndexOf(Value: Char): Int32; inline;
     method IndexOf(Value: String): Int32; inline;
+    method IndexOfIgnoringCase(Value: Char): Int32; inline;
+    method IndexOfIgnoringCase(Value: String): Int32; inline;
     method IndexOf(Value: Char; StartIndex: Integer): Integer; inline;
     method IndexOf(Value: String; StartIndex: Integer): Integer; inline;
+    method IndexOfIgnoringCase(Value: Char; StartIndex: Integer): Integer; inline;
+    method IndexOfIgnoringCase(Value: String; StartIndex: Integer): Integer; inline;
     method IndexOfAny(const AnyOf: array of Char): Integer; inline;
     method IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
     method LastIndexOf(Value: Char): Integer; inline;
@@ -483,10 +487,34 @@ begin
   result := IndexOf(Value, 0);
 end;
 
+method String.IndexOfIgnoringCase(Value: Char): Int32;
+begin
+  result := IndexOfIgnoringCase(Value, 0);
+end;
+
+method String.IndexOfIgnoringCase(Value: String): Int32;
+begin
+  result := IndexOfIgnoringCase(Value, 0);
+end;
+
 method String.IndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := mapped.IndexOf(Value, StartIndex);
+  {$ELSEIF TOFFEE}
+  result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
+  {$ENDIF}
+end;
+
+{$IF (ISLAND AND POSIX) OR COOPER}[Warning("Not Implemented for Cooper and Island yet")]{$ENDIF}
+method String.IndexOfIgnoringCase(Value: Char; StartIndex: Integer): Integer;
+begin
+  {$IF COOPER}
+  result := self.ToLower().IndexOf(Character.toLowerCase(Value), StartIndex);
+  {$ELSEIF ECHOES}
+  result := mapped.IndexOf(Value, StartIndex, StringComparison.OrdinalIgnoreCase);
+  {$ELSEIF ISLAND}
+  result := mapped.ToLower.IndexOf(Value.ToLOwer(), StartIndex);
   {$ELSEIF TOFFEE}
   result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
   {$ENDIF}
@@ -503,7 +531,28 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
-  var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
+  var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.LiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
+  result := if r.location = NSNotFound then -1 else Integer(r.location);
+  {$ENDIF}
+end;
+
+{$IF (ISLAND AND POSIX) OR COOPER}[Warning("Not Implemented for Cooper and Island yet")]{$ENDIF}
+method String.IndexOfIgnoringCase(Value: String; StartIndex: Integer): Integer;
+begin
+  if Value = nil then
+    raise new ArgumentNullException("Value");
+
+  if Value.Length = 0 then
+    exit 0;
+
+  {$IF COOPER}
+  result := self.ToLower().IndexOf(Value.ToLower(), StartIndex);
+  {$ELSEIF ECHOES}
+  result := mapped.IndexOf(Value, StartIndex, StringComparison.OrdinalIgnoreCase);
+  {$ELSEIF ISLAND}
+  result := mapped.ToLower().IndexOf(Value.ToLower(), StartIndex);
+  {$ELSEIF TOFFEE}
+  var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
   result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;

@@ -76,7 +76,8 @@ begin
       var arg_format: String;
       ParseFormatSpecifier(aFormat, var ptr, out n, out width, out left_align, out arg_format);
 
-      if n ≥ length(args) then raise new FormatException('Index (zero based) must be greater than or equal to zero and less than the size of the argument list.');
+      if n ≥ length(args) then
+        raise new FormatException('Placeholder index ({0}) must be greater than or equal to zero and less than the size of the argument list ({1}).', n, length(args));
 
       // format argument
       var arg := args[n];
