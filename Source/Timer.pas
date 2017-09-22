@@ -91,6 +91,7 @@ end;
 
 method Timer.Start;
 begin
+  if fEnabled then exit;
   {$IF COOPER}
   if fRepeat then
     fTimer.scheduleAtFixedRate(new FixedTimerTask(self), fInterval, fInterval)
@@ -112,6 +113,7 @@ end;
 
 method Timer.Stop;
 begin
+  if not fEnabled then exit;
   {$IF COOPER}
   fTimer.cancel;
   {$ELSEIF ECHOES}
