@@ -4,6 +4,8 @@ uses
   RemObjects.Elements.RTL,
   RemObjects.Elements.EUnit;
 
+{$IF NOT TOFFEE}
+// For OS X and iOS an NSRunLoop is needed
 type
   TimerTests = public class(Test)
   private
@@ -36,5 +38,6 @@ type
       Assert.AreEqual(lTest, 1);
     end;
   end;
+{$ENDIF}
 
 end.
