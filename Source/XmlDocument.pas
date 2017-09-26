@@ -1,4 +1,4 @@
-﻿namespace RemObjects.Elements.RTL;
+namespace RemObjects.Elements.RTL;
 
 interface
 
@@ -335,11 +335,10 @@ class method XmlDocument.FromFile(aFileName: not nullable File): not nullable Xm
 begin
   if not aFileName.Exists then
     raise new FileNotFoundException(aFileName);
-  result := TryFromFile(aFileName, true) as not nullable;
-  try
-    if (result:ErrorInfo <> nil) then raise new XmlException(result.ErrorInfo.Message, result.ErrorInfo.Row, result.ErrorInfo.Column);
-  except
-  end;
+  var lXMl := TryFromFile(aFileName, true);
+  if assigned(lXMl:ErrorInfo) then 
+    raise new XmlException(lXMl.ErrorInfo.Message, lXMl.ErrorInfo.Row, lXMl.ErrorInfo.Column);
+  result := lXMl as not nullable;
 end;
 
 class method XmlDocument.TryFromFile(aFileName: not nullable File): nullable XmlDocument;
