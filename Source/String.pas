@@ -18,6 +18,7 @@ type
   String = public partial class mapped to PlatformString
   private
     method get_Chars(aIndex: Int32): Char; inline;
+    method get_FirstLine: String;
   public
     constructor(Value: array of Byte; Encoding: Encoding := nil);
     constructor(Value: array of Char);
@@ -109,6 +110,8 @@ type
 
     property Length: Int32 read mapped.Length;
     property Chars[aIndex: Int32]: Char read get_Chars; default; inline;
+
+    property FirstLine: String read get_FirstLine;
 
     {$IF COOPER}
     operator Implicit(aCharSequence: CharSequence): String;
@@ -212,6 +215,14 @@ begin
   {$ELSEIF TOFFEE}
   result := mapped.characterAtIndex(aIndex);
   {$ENDIF}
+end;
+
+method String.get_FirstLine: String;
+begin
+  var p := IndexOfAny([#13, #10]);
+  if p > -1 then
+    exit Substring(0, p);
+  exit self;
 end;
 
 class operator String.Add(Value1: String; Value2: String): not nullable String;

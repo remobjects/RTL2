@@ -27,6 +27,7 @@ type
     method GetDesktopFolder: Folder;
     method GetTempFolder: Folder;
     method GetApplicationSupportFolder: Folder;
+    method GetUserLibraryFolder: Folder;
 
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport("libc")]
@@ -45,6 +46,7 @@ type
     property DesktopFolder: nullable Folder read GetDesktopFolder;
     property TempFolder: nullable Folder read GetTempFolder;
     property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
+    property UserLibraryFolder: nullable Folder read GetUserLibraryFolder; // Mac only
 
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
@@ -277,6 +279,18 @@ begin
     result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType);
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
+  {$ENDIF}
+  if (length(result) > 0) and not Folder.Exists(result) then
+    Folder.Create(result);
+end;
+
+method Environment.GetUserLibraryFolder: Folder;
+begin
+  {$IF ECHOES}
+  if OS = OperatingSystem.macOS then
+    result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
+  {$ELSEIF TOFFEE}
+  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
   if (length(result) > 0) and not Folder.Exists(result) then
     Folder.Create(result);

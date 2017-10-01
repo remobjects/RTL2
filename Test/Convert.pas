@@ -60,11 +60,11 @@ type
     //76669: Odd behavior with nil Int32
     method TestCallsWrongAssert;
     begin
-      Assert.AreNotEqual(nil, -9223372036854775808); // this one callls the correct one on Echoesd and Cooper. It calls *String* assert on Cocoa and fails!
+      Assert.AreNotEqual(nil, -9223372036854775808); // this one calls the correct one on Echoesd and Cooper. It calls *String* assert on Cocoa and fails!
       Assert.AreNotEqual(Convert.TryToInt32("-9223372036854775808"), -9223372036854775808);   // calls wroong Assert 0/0 and fails.
       // at least it consistently fails on Echoes, Cocoa and Java
 
-      //Assert.AreEqual(Convert.TryToInt32("9223372036854775807"), 9223372036854775807);      // fails to compile: // E546 Value "9223372036854775807" exceeds the bounds of target type "Int32"
+      Assert.AreEqual(Convert.TryToInt32("9223372036854775807"), 9223372036854775807);      // fails to compile: // E546 Value "9223372036854775807" exceeds the bounds of target type "Int32"
     end;
 
   end;
