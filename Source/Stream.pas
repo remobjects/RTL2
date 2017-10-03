@@ -126,26 +126,15 @@ type
     property CanWrite: Boolean read GetCanWrite; override;
   end;
 
-  TextStream = public class
-  private
-    fStream: Stream;
-    fEncoding: Encoding := Encoding.UTF8;
-  public
-    constructor(aStream: Stream);
-    constructor(aStream: Stream; aEncoding: Encoding);
-
-    method ReadString(Count: Int32): String;
-    method WriteString(aString: String);
-    property BaseStream: Stream read fStream;
-  end;
-
   BinaryStream = public class
-  private
+  private    
     fStream: Stream;
     fEncoding: Encoding := Encoding.UTF8;
     {$IF TOFFEE OR ISLAND}
+    fBuffer: array of Byte;
+    class const DefBufferSize = 8;
     method ReadRaw(Buffer: ^void; Count: LongInt);
-    method WriteRaw(Buffer: ^void; Count: LongInt);
+    method WriteRaw(Buffer: ^void; Count: LongInt);    
     {$ENDIF}
   public
     constructor(aStream: Stream);
@@ -161,6 +150,7 @@ type
     method ReadInt16: Int16;
     method ReadInt32: Int32;
     method ReadInt64: Int64;
+    method ReadString(Count: Int32): String;
     
     method &Write(aValue: Byte);
     method &Write(aValue: array of Byte; Offset: Int32; Count: Int32);
@@ -171,6 +161,7 @@ type
     method WriteInt16(Value: Int16);
     method WriteInt32(Value: Int32);
     method WriteInt64(Value: Int64);
+    method WriteString(aString: String);
 
     property BaseStream: Stream read fStream;
   end;
@@ -677,6 +668,9 @@ end;
 
 constructor BinaryStream(aStream: Stream);
 begin
+  {$IF TOFFEE OR ISLAND}
+  fBuffer := new Byte[DefBufferSize];
+  {$ENDIF}
   fStream := aStream;
 end;
 
@@ -689,24 +683,22 @@ end;
 {$IF TOFFEE OR ISLAND}
 method BinaryStream.ReadRaw(Buffer: ^void; Count: LongInt);
 begin
-  var lBuf := new Byte[Count];
-  fStream.&Read(lBuf, 0, Count);
+  fStream.&Read(fBuffer, 0, Count);
   {$IF ISLAND}
-  {$IFDEF WINDOWS}ExternalCalls.memcpy(Buffer, @lBuf[0], Count){$ELSEIF POSIX}rtl.memcpy(Buffer, @lBuf[0], Count){$ENDIF};
+  {$IFDEF WINDOWS}ExternalCalls.memcpy(Buffer, @fBuffer[0], Count){$ELSEIF POSIX}rtl.memcpy(Buffer, @fBuffer[0], Count){$ENDIF};
   {$ELSEIF TOFFEE}
-  memcpy(Buffer, @lBuf[0], Count);
+  memcpy(Buffer, @fBuffer[0], Count);
   {$ENDIF}
 end;
 
 method BinaryStream.WriteRaw(Buffer: ^void; Count: LongInt);
 begin
-  var lBuf := new Byte[Count];
   {$IF ISLAND}
-  {$IFDEF WINDOWS}ExternalCalls.memcpy(@lBuf[0], Buffer, Count){$ELSEIF POSIX}rtl.memcpy(@lBuf[0], Buffer, Count){$ENDIF};
+  {$IFDEF WINDOWS}ExternalCalls.memcpy(@fBuffer[0], Buffer, Count){$ELSEIF POSIX}rtl.memcpy(@fBuffer[0], Buffer, Count){$ENDIF};
   {$ELSEIF TOFFEE}
-  memcpy(@lBuf[0], Buffer, Count);
+  memcpy(@fBuffer[0], Buffer, Count);
   {$ENDIF}
-  &Write(lBuf, 0, Count);
+  &Write(fBuffer, 0, Count);
 end;
 {$ENDIF}
 
@@ -839,6 +831,14 @@ begin
   {$ENDIF}
 end;
 
+method BinaryStream.ReadString(Count: Int32): String;
+begin
+  var lTotal := if Count > fStream.Length - fStream.Position then fStream.Length - fStream.Position else Count;
+  var lBytes := new Byte[lTotal];
+  fStream.Read(lBytes, lTotal);
+  result := fEncoding.GetString(lBytes);
+end;
+
 method BinaryStream.Write(aValue: Byte);
 begin
   fStream.WriteByte(aValue);
@@ -939,26 +939,7 @@ begin
   {$ENDIF}
 end;
 
-constructor TextStream(aStream: Stream);
-begin
-  fStream := aStream;
-end;
-
-constructor TextStream(aStream: Stream; aEncoding: Encoding);
-begin
-  fEncoding := aEncoding;
-  constructor(aStream);
-end;
-
-method TextStream.ReadString(Count: Int32): String;
-begin
-  var lTotal := if Count > fStream.Length - fStream.Position then fStream.Length - fStream.Position else Count;
-  var lBytes := new Byte[lTotal];
-  fStream.Read(lBytes, lTotal);
-  result := fEncoding.GetString(lBytes);
-end;
-
-method TextStream.WriteString(aString: String);
+method BinaryStream.WriteString(aString: String);
 begin
   var lBytes := fEncoding.GetBytes(aString);
   fStream.Write(lBytes, 0, length(lBytes));
