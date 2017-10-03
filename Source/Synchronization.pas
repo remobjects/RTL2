@@ -29,7 +29,7 @@ end;
 
 method Monitor.Lock;
 begin
-  {$IF COOPER || TOFFEE}
+  {$IF COOPER OR TOFFEE}
   mapped.lock;
   {$ELSEIF ECHOES}
   mapped.WaitOne;
