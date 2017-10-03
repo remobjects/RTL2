@@ -26,6 +26,8 @@ type
   protected
   public
 
+    class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable array of String): not nullable String;
+
     method WaitFor; inline;
     method Start; inline;
     method Stop; inline;
@@ -303,6 +305,15 @@ begin
       result := result+" ";
     result := result+QuoteArgumentIfNeeded(a);
   end;
+end;
+
+class method Task.StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable array of String): not nullable String;
+begin
+  if aCommand.Contains(" ") then
+    aCommand := String.Format('"{0}"', aCommand);
+  if length(aArguments) > 0 then
+    aCommand := aCommand+" "+BuildArgumentsCommandLine(aArguments);
+  result := aCommand;
 end;
 
 {$ENDIF}

@@ -50,9 +50,9 @@
 		public static readonly uint kTemporaryItemsInCacheDataFolderType = FourCharCode("vtmp"); // A folder inside the kCachedDataFolderType for the given domain which can be used for transient data
 		public static readonly uint kApplicationsFolderType = FourCharCode("apps"); //    Applications on Mac OS X are typically put in this folder ( or a subfolder ).
 		public static readonly uint kVolumeRootFolderType = FourCharCode("root"); // root folder of a volume or domain
-		public static readonly uint kDomainTopLevelFolderType = FourCharCode("dtop"); // The top-level of a Folder domain, e.g. "/System"
+		public static readonly uint kDomainTopLevelFolderType = FourCharCode("dtop"); // The top-level of a Folder domain, e.g. "/System"*/
 		public static readonly uint kDomainLibraryFolderType = FourCharCode("dlib"); // the Library subfolder of a particular domain
-		public static readonly uint kUsersFolderType = FourCharCode("usrs"); // "Users" folder, usually contains one folder for each user.
+		/*public static readonly uint kUsersFolderType = FourCharCode("usrs"); // "Users" folder, usually contains one folder for each user.
 		public static readonly uint kCurrentUserFolderType = FourCharCode("cusr"); // The folder for the currently logged on user; domain passed in is ignored.
 		public static readonly uint kSharedUserDataFolderType = FourCharCode("sdat"); // A Shared folder, readable & writeable by all users
 		public static readonly uint kDocumentsFolderType = FourCharCode("docs");
