@@ -96,15 +96,14 @@ type
   XmlElement = public class(XmlNode)
   private
     fLocalName : String := "";
-    //fAttributes: List<XmlAttribute> := new List<XmlAttribute>;
     fElements: List<XmlElement> := new List<XmlElement>;
     fNodes: List<XmlNode> := new List<XmlNode>;
     fNamespace : XmlNamespace;
-    //fNamespaces: List<XmlNamespace> := new List<XmlNamespace>;
     fDefaultNamespace: XmlNamespace;
 
     fAttributesAndNamespaces: List<XmlNode> := new List<XmlNode>;
     fChildIndex: Integer;
+    fPreserveSpace: Boolean;
 
     method GetNamespace: nullable XmlNamespace;
     method SetNamespace(aNamespace: XmlNamespace);
@@ -122,6 +121,7 @@ type
     method GetNamespace(aPrefix: String): nullable XmlNamespace;
     method GetNamespaces: not nullable sequence of XmlNamespace;
     method GetDefaultNamespace: XmlNamespace;
+    method SetPreserveSpace(aPreserveSpace:Boolean);
 
   assembly
     fIsEmpty: Boolean := true;
@@ -152,6 +152,7 @@ type
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
     property FullName: not nullable String read GetFullName;
     property ChildIndex: Integer read fChildIndex;
+    property PreserveSpace: Boolean read fPreserveSpace  write SetPreserveSpace;
 
     method GetValue (aWithNested: Boolean): nullable String;
     method ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
@@ -1041,15 +1042,16 @@ method XmlElement.GetValue(aWithNested: Boolean): nullable String;
 begin
   result := "";
   for each lNode in Nodes do begin
-
-    if (lNode.NodeType = XmlNodeType.Text) and (length(XmlText(lNode).Value:Trim) > 0) then begin
-        if result <> "" then result := result+" ";
-        result := result+XmlText(lNode).Value.Trim
+    if (lNode.NodeType = XmlNodeType.Text) and ((PreserveSpace) or (length(XmlText(lNode).Value:Trim) > 0)) then begin
+      if (result <> "") and not String.CharacterIsWhitespace(result[result.length-1]) and not string.CharacterIsWhitespace(XmlText(lNode).Value[0]) then 
+        result := result+" ";
+      result := result+XmlText(lNode).Value
     end
     else if lNode.NodeType = XmlNodeType.Element then
       if aWithNested then begin
-        if result <> "" then result := result+" ";
-          result := result+XmlElement(lNode).GetValue(true);
+        if (result <> "") and not String.CharacterIsWhitespace(result[result.length-1]) and not string.CharacterIsWhitespace(XmlText(lNode).Value[0]) then 
+          result := result+" ";
+        result := result+XmlElement(lNode).GetValue(true);
       end
   end
 end;
@@ -1057,6 +1059,26 @@ method XmlElement.SetValue(aValue: nullable String);
 begin
   fNodes.RemoveAll;
   AddNode(new XmlText(self, Value := aValue));
+end;
+
+method XmlElement.SetPreserveSpace(aPreserveSpace: Boolean);
+begin
+  fPreserveSpace := aPreserveSpace;
+  var lPreserveSpaceAttr := GetAttribute("xml:space");
+  if aPreserveSpace then begin
+    if assigned(lPreserveSpaceAttr) then
+      lPreserveSpaceAttr.Value := "preserve"
+    else if not Parent.PreserveSpace then begin
+      lPreserveSpaceAttr := new XmlAttribute withParent(self);
+      lPreserveSpaceAttr.LocalName := "space";
+      lPreserveSpaceAttr.Namespace := new XmlNamespace("xml", Url.UrlWithstring(XmlConsts.XML_NAMESPACE_URL));
+      lPreserveSpaceAttr.Value := "preserve";
+      lPreserveSpaceAttr.Document := Document;
+      AddAttribute(lPreserveSpaceAttr)
+    end
+  end
+  else if assigned(lPreserveSpaceAttr) and (lPreserveSpaceAttr.Value = "preserve") then
+    RemoveAttribute(lPreserveSpaceAttr);
 end;
 
 method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
@@ -1072,7 +1094,10 @@ begin
     var lPrefixPos := aName.IndexOf(':');
     if (lPrefixPos > 0) then begin
       var lNamespaceString := aName.Substring(0, lPrefixPos);
+      
       var lNamespace: XmlNamespace;
+      if lNamespaceString = "xml" then 
+        lNamespace := new XmlNamespace("xml", Url.UrlWithString(XmlConsts.XML_NAMESPACE_URL));
       var lElement := self;
       while (lNamespace = nil) and (lElement <> nil) do begin
         lNamespace:= lElement.&Namespace[lNamespaceString];
@@ -1086,7 +1111,7 @@ end;
 
 method XmlElement.GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
 begin
-  result := Attributes.Where(a -> (a.LocalName = aName) and (a.Namespace = aNamespace)).FirstOrDefault;
+  result := Attributes.Where(a -> (a.LocalName = aName) and (a.Namespace.Prefix = aNamespace.Prefix) and (a.Namespace.Uri = aNamespace.Uri)).FirstOrDefault;
 end;
 
 method XmlElement.GetElements: not nullable sequence of XmlElement;

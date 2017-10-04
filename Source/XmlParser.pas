@@ -27,6 +27,7 @@ type
   public
     const TAG_DECL_OPEN: String =  "<?xml";
     const TAG_DECL_CLOSE: String = "?>";
+    const XML_NAMESPACE_URL: String = "http://www.w3.org/XML/1998/namespace";
   end;
 
   XmlTokenKind = public enum(
@@ -523,6 +524,7 @@ begin
   var WS := "";
   if not Expected(out aError, XmlTokenKind.TagOpen) then exit;
   result := new XmlElement withParent(aParent) Indent(aIndent);
+  if aParent:PreserveSpace then result.PreserveSpace := true;
   if aIndent <> nil then
     aIndent := aIndent + FormatOptions.Indentation;
   result.NodeRange.FillRange(Tokenizer.Row, Tokenizer.Column);
@@ -601,10 +603,18 @@ begin
       var lPrefix := lAttribute.LocalName.Substring(0, lAttribute.LocalName.IndexOf(':'));
       var lLocalName := lAttribute.LocalName.Substring(lAttribute.LocalName.IndexOf(':')+1, lAttribute.LocalName.Length-lAttribute.LocalName.IndexOf(':')-1);
       if lPrefix = "xml" then begin
-        lNamespace := new XmlNamespace(lPrefix, Url.UrlWithString("http://www.w3.org/XML/1998/namespace"));
+        lNamespace := new XmlNamespace(lPrefix, Url.UrlWithString(XmlConsts.XML_NAMESPACE_URL));
         case lLocalName of
           "lang":;
-          "space":;
+          "space": begin 
+            if lAttribute.Value = "preserve" then result.PreserveSpace := true
+            else if lAttribute.Value = "default" then 
+              result.PreserveSpace := false
+            else begin
+              aError := new XmlErrorInfo;
+              aError.FillErrorInfo('Unknown value for "xml:space" attribute', "default", lAttribute.ValueRange.StartLine, lAttribute.ValueRange.StartColumn);
+            end;
+          end;
           "id":;
           "base":;
           else begin
