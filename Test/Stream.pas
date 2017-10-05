@@ -60,10 +60,10 @@ type
       File.Delete(lPath);
     end;
 
-    method TextStreamTests;
+    method BinaryStreamTextTests;
     begin
       var lMemStream := new MemoryStream();
-      var lTextStream := new TextStream(lMemStream, Encoding.UTF16LE);
+      var lTextStream := new BinaryStream(lMemStream, Encoding.UTF16LE);
       lTextStream.WriteString('Testing TextStream');
       
       lTextStream.BaseStream.Position := 0;
