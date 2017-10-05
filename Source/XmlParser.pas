@@ -663,7 +663,7 @@ begin
       if WS <> "" then result.LocalName := result.LocalName + WS;
       Tokenizer.Next;
       var WSValue: String := "";
-      if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and (FormatOptions.NewLineForElements) then
+      if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and (FormatOptions.NewLineForElements) and not result.PreserveSpace then
         lFormat := true;
       while (Tokenizer.Token <> XmlTokenKind.TagElementEnd) do begin
         if not Expected(out aError, XmlTokenKind.SymbolData, XmlTokenKind.Whitespace, XmlTokenKind.Comment, XmlTokenKind.CData, XmlTokenKind.ProcessingInstruction, XmlTokenKind.TagOpen, XmlTokenKind.TagElementEnd) then exit;
@@ -681,15 +681,15 @@ begin
           end;
           case Tokenizer.Token of
             XmlTokenKind.Whitespace: begin
-              if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
+              if result.PreserveSpace or (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
                 result.AddNode(new XmlText(result, Value := Tokenizer.Value));
                 WSValue := "";
               end
               else
                 if ((result.Nodes.Count > 0) and (result.Nodes[result.Nodes.Count-1].NodeType = XmlNodeType.Text) and (XmlText(result.Nodes[result.Nodes.Count-1]).Value.Trim <> "")) then begin
                   WSValue := Tokenizer.Value;
-                  if WSValue.IndexOf(fLineBreak) > -1 then
-                    WSValue := WSValue.Substring(0, WSValue.LastIndexOf(fLineBreak));
+                  {if WSValue.IndexOf(fLineBreak) > -1 then
+                    WSValue := WSValue.Substring(0, WSValue.LastIndexOf(fLineBreak));}
                   result.AddNode(new XmlText(result, Value := WSValue));
                   WSValue := "";
                 end

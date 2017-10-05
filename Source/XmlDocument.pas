@@ -1043,14 +1043,14 @@ begin
   result := "";
   for each lNode in Nodes do begin
     if (lNode.NodeType = XmlNodeType.Text) and ((PreserveSpace) or (length(XmlText(lNode).Value:Trim) > 0)) then begin
-      if (result <> "") and not String.CharacterIsWhitespace(result[result.length-1]) and (XmlText(lNode).Value <> nil) and not string.CharacterIsWhitespace(XmlText(lNode).Value[0]) then 
+      if (result <> "") and not String.CharacterIsWhitespace(result[result.length-1]) and (length(XmlText(lNode).Value) > 0) and not string.CharacterIsWhitespace(XmlText(lNode).Value[0]) then 
         result := result+" ";
       result := result+XmlText(lNode).Value
     end
     else if lNode.NodeType = XmlNodeType.Element then
       if aWithNested then begin
         var lValue := XmlElement(lNode).GetValue(true);
-        if (result <> "") and not String.CharacterIsWhitespace(result[result.length-1]) and (lValue <> nil) and not String.CharacterIsWhitespace(lValue[0]) then 
+        if (result <> "") and not String.CharacterIsWhitespace(result[result.length-1]) and (length(lValue) > 0) and not String.CharacterIsWhitespace(lValue[0]) then 
           result := result+" ";
         result := result+lValue;
       end
