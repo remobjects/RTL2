@@ -1190,7 +1190,7 @@ begin
   var lFormat := false;
   var indent : String := nil;
   var startStr: String := "";
-  if aSaveFormatted and (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
+  if aSaveFormatted and (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and not PreserveSpace then begin
     if aFormatOptions.NewLineForElements  then lFormat := true;
     if lFormat then begin
       indent := "";
@@ -1270,40 +1270,55 @@ begin
   if fNodes.count > 0 then result := result +">";
   /********/
   var CloseTagIndent := false;
-  if aSaveFormatted and (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
-    var TextNewLine := "";
+  var lEmptyLines := "";
+  if aSaveFormatted and (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText)  and not PreserveSpace then begin
+    //var TextNewLine := "";
+    var WSValue := "";
+    var WasText := false;
     for each aNode in fNodes do begin
       if (aNode.NodeType = XmlNodeType.Text) then
         if (length(XmlText(aNode).Value:Trim) > 0) then begin
+          lEmptyLines := "";
           if (aFormatInsideTags and aFormatOptions.NewLineForAttributes) then begin
            // result := result + Document.fLineBreak+ indent + Document.fFormatOptions.Indentation+ aNode.toString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues}) + Document.fLineBreak+indent;
            result := result + Document.fLineBreak+ indent + aFormatOptions.Indentation+ aNode.toString(aSaveFormatted, aFormatInsideTags, aFormatOptions{aPreserveExactStringsForUnchnagedValues}) + Document.fLineBreak+indent;
           end
           else begin
-            result := result+ TextNewLine + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions);
-            if TextNewLine <> "" then 
+            WasText := true;
+            result := result+ WSValue + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions);
+            WSValue := "";
+            //result := result+ TextNewLine + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions);
+            {if TextNewLine <> "" then 
               CloseTagIndent := true;
-            TextNewLine := "";
+            TextNewLine := "";}
           end;
         end 
         else begin
-          var lEmptyLines := "";
+          WSValue := XmlText(aNode).Value;
+          if aFormatOptions.PreserveEmptyLines and not WasText then begin
+            lEmptyLines := GetEmptyLines(WSValue);
+          end;
+          {var lEmptyLines := "";
           if aFormatOptions.PreserveEmptyLines then begin
             lEmptyLines := GetEmptyLines(XmlText(aNode).Value);
-          end;
+          end;}
           if not aFormatOptions.NewLineForElements then result := result + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions)
-          else if XmlText(aNode).Value:Contains(Document.fLineBreak) then begin
+          else if WasText then 
+            result := result+WSValue;
+          {else if XmlText(aNode).Value:Contains(Document.fLineBreak) then begin
             result := result + lEmptyLines;
             TextNewLine := Document.fLineBreak + indent + aFormatOptions.Indentation;
-          end;
+          end;}
         end;
       if (aNode.NodeType <> XmlNodeType.Text) then begin
+        WasText := false;
         if lFormat then begin
           CloseTagIndent := true;
-          result := result + Document.fLineBreak + indent + aFormatOptions.Indentation + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions)
+          result := result +lEmptyLines + Document.fLineBreak + indent + aFormatOptions.Indentation + aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions);
         end
         else result := result + aNode.tostring(aSaveFormatted, aFormatInsideTags, aFormatOptions);
-        TextNewLine := "";
+        lEmptyLines := "";
+        //TextNewLine := "";
       end;
     end;
   end
@@ -1319,7 +1334,9 @@ begin
         result := result+"/>"
     else begin
       if fNodes.Count = 0 then result := result + ">";
-      if lFormat and CloseTagIndent then begin//and (Elements.Count > 0) then begin
+      if lFormat and aFormatOptions.PreserveEmptyLines then
+        result := result + lEmptyLines;
+      if lFormat and (CloseTagIndent or (lEmptyLines <> "")) then begin
         result := result +Document.fLineBreak;
         result := result+indent;
       end;
