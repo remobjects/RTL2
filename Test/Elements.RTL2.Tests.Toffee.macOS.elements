@@ -41,7 +41,9 @@
     <Reference Include="libxml2" />
     <Reference Include="libToffee" />
     <Reference Include="rtl" />
-    <Reference Include="libElements" />
+    <Reference Include="libElements">
+      <HintPath>..\Source\bin\Debug\macOS\libElements.fx</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
