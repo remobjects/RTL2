@@ -83,9 +83,6 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		#endif
 	}
 
-	//func subscribe(_ object: Object, toBroadcast broadcast: String, block: (Dictionary<String,Any>)->()) {
-	//}
-
 	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: (_ sender: Notification!)->()) {
 		subscribe(receiver, toBroadcast: broadcast, block: block, object: nil)
 	}
@@ -93,7 +90,6 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: (_ sender: Notification!)->(), object: Object?) {
 		#if TOFFEE
 		let token = NSNotificationCenter.defaultCenter.addObserver(for: broadcast, object: object, queue: nil, usingBlock: { n in block(n) });
-		//lockWrite() {
 		__lock self {
 			var subs = subscriptions[broadcast]
 			if subs == nil {
@@ -133,7 +129,6 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	public func unsubscribe(_ receiver: Object, fromBroadcast broadcast: String, object: Object? = nil) {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
-		//lockWrite() {
 		__lock self {
 			if let subs = subscriptions[broadcast] {
 				for s in subs.UniqueCopy() {
@@ -166,7 +161,6 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	public func unsubscribe(_ receiver: Object) {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver)
-		//lockWrite() {
 		__lock self {
 			for k in subscriptions.Keys {
 				if let subs = subscriptions[k] {
