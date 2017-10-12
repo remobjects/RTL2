@@ -9,7 +9,7 @@ type
   PlatformParameter = RemObjects.Elements.System.ArgumentInfo;
   {$ENDIF}
 
-  Parameter = public class 
+  Parameter = public class
   {$IF ECHOES OR ISLAND}
   mapped to PlatformParameter
   {$ENDIF}

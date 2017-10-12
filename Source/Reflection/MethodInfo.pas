@@ -14,7 +14,7 @@ type
   PlatformMethod = RemObjects.Elements.System.MethodInfo;
   {$ENDIF}
 
-  &Method = public class 
+  &Method = public class
   {$IF COOPER OR ECHOES OR ISLAND}
     mapped to PlatformMethod
     {$ENDIF}

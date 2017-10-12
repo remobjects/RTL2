@@ -3,7 +3,7 @@
 interface
 
 type
-  ImmutableDictionary<T, U> = public class mapped to 
+  ImmutableDictionary<T, U> = public class mapped to
   {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary{$ENDIF}
   {$IFDEF TOFFEE}
   where T is class, U is class;

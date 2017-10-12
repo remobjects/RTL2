@@ -4,7 +4,7 @@ interface
 
 type
   PlatformMonitor = {$IF COOPER}java.util.concurrent.locks.ReentrantLock{$ELSEIF ECHOES}System.Threading.ManualResetEvent{$ELSEIF ISLAND}Remobjects.Elements.System.Monitor{$ELSEIF TOFFEE}Foundation.NSRecursiveLock{$ENDIF};
-  
+
   Monitor = public class mapped to PlatformMonitor
   public
     constructor;
