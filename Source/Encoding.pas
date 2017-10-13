@@ -13,7 +13,7 @@ type
     method GetIsUTF8: Boolean;
   public
     method GetBytes(aValue: String): not nullable array of Byte; inline;
-    method GetBytes(aValue: String) includeBOM(aBOM: Boolean): not nullable array of Byte;
+    method GetBytes(aValue: String) includeBOM(aIncludeBOM: Boolean): not nullable array of Byte;
 
     method GetString(aValue: not nullable array of Byte): String;
     method GetString(aValue: not nullable array of Byte; aOffset: Integer; aCount: Integer): String;
@@ -42,7 +42,7 @@ begin
   result := GetBytes(aValue) includeBOM(false);
 end;
 
-method Encoding.GetBytes(aValue: String) includeBOM(aBOM: Boolean): not nullable array of Byte;
+method Encoding.GetBytes(aValue: String) includeBOM(aIncludeBOM: Boolean): not nullable array of Byte;
 begin
   {$WARNING Still needs to handle BOM option for non-Toffee and non-UTF-8}
   ArgumentNullException.RaiseIfNil(aValue, "aValue");
@@ -50,24 +50,30 @@ begin
   var Buffer := java.nio.charset.Charset(self).encode(aValue);
   result := new Byte[Buffer.remaining];
   Buffer.get(result);
+  {$WARNNG, need to support includeBOM}
   {$ELSEIF ECHOES}
-  exit mapped.GetBytes(aValue) as not nullable;
+  result := mapped.GetBytes(aValue) as not nullable;
+  if isUTF8 and aIncludeBOM then begin
+    var lPreamble := new Binary(mapped.GetPreamble());
+    lPreamble.Write(result);
+    result := lPreamble.ToArray();
+  end;
   {$ELSEIF ISLAND}
   result := case fName.ToUpper.Replace("-", "") of
-              "UTF8": TextConvert.StringToUTF8(aValue);
-              "UTF16": TextConvert.StringToUTF16(aValue);
-              "UTF16BE": TextConvert.StringToUTF16BE(aValue);
-              "UTF16LE": TextConvert.StringToUTF16LE(aValue);
-              "UTF32": TextConvert.StringToUTF32(aValue);
-              "UTF32BE": TextConvert.StringToUTF32BE(aValue);
-              "UTF32LE": TextConvert.StringToUTF32LE(aValue);
+              "UTF8": TextConvert.StringToUTF8(aValue, aIncludeBOM);
+              "UTF16": TextConvert.StringToUTF16(aValue, aIncludeBOM);
+              "UTF16BE": TextConvert.StringToUTF16BE(aValue, aIncludeBOM);
+              "UTF16LE": TextConvert.StringToUTF16LE(aValue, aIncludeBOM);
+              "UTF32": TextConvert.StringToUTF32(aValue, aIncludeBOM);
+              "UTF32BE": TextConvert.StringToUTF32BE(aValue, aIncludeBOM);
+              "UTF32LE": TextConvert.StringToUTF32LE(aValue, aIncludeBOM);
               //"ASCII","USASCII","UTFASCII": TextConvert.StringToASCII(aValue);
             end;
   {$ELSEIF TOFFEE}
   var lResult := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as ImmutableBinary);
   if not assigned(lResult) then
     raise new FormatException("Unable to convert data");
-  if isUTF8 and aBOM then begin
+  if isUTF8 and aIncludeBOM then begin
     var lBOM: array of Byte := [$EF, $BB, $BF];
     var lResult2 := new Binary();
     lResult2.Write(lBOM);
