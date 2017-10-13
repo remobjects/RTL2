@@ -50,7 +50,6 @@ begin
   var Buffer := java.nio.charset.Charset(self).encode(aValue);
   result := new Byte[Buffer.remaining];
   Buffer.get(result);
-  {$WARNNG, need to support includeBOM}
   {$ELSEIF ECHOES}
   result := mapped.GetBytes(aValue) as not nullable;
   if isUTF8 and aIncludeBOM then begin
