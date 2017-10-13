@@ -18,7 +18,7 @@ method LowerChar(aChar: Char): Char; assembly;
 begin
   {$IF COOPER}
   result := Character.toLowerCase(aChar);
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES}
   result := Char.ToLower(aChar);
   {$ELSEIF ISLAND}
   result := aChar.ToLower();
@@ -31,7 +31,7 @@ method UpperChar(aChar: Char): Char; assembly;
 begin
   {$IF COOPER}
   result := Character.toUpperCase(aChar);
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES}
   result := Char.ToUpper(aChar);
   {$ELSEIF ISLAND}
   result := aChar.ToUpper();
