@@ -276,6 +276,23 @@ type
       {$ENDIF}
     end;
 
+    method Escaping;
+    begin
+      var base := Url.UrlWithFilePath("/foo");
+      var u := base.UrlWithRelativeOrAbsoluteWindowsSubPath("rofx-xcode\samples\website samples\oxygene\dasampleapp\masterviewcontroller.pas");
+      writeLn(u);
+
+      var base2 := Url.UrlWithFilePath("/foo/rofx-xcode/");
+      var u2 := base2.UrlWithRelativeOrAbsoluteWindowsSubPath("samples\website samples\oxygene\dasampleapp\masterviewcontroller.pas");
+      writeLn(u2);
+
+      var base3 := Url.UrlWithString("file:///foo/rofx-xcode/foo.pas");
+      var u3 := base3.CanonicalVersion;
+      writeLn(u3);
+
+      writeLn("x");
+    end;
+
     method TestPathComponents();
     begin
       var lUrl := Url.UrlWithFilePath("/Users/mh/Desktop/Test.txt");
