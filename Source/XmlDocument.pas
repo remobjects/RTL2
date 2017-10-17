@@ -598,12 +598,13 @@ begin
     if lPosition = XmlPositionKind.EndTag then lStart := lElement.CloseTagRange.StartColumn+1
     else lStart := lElement.NodeRange.StartColumn;
     var lPrefixLength: Integer := 0;
-    if length(lElement.Namespace:Prefix) > 0 then
+    if length(lElement.Namespace:Prefix) > 0 then begin
       lPrefixLength := length(lElement.Namespace.Prefix)+1;
       if (aColumn >= lStart + lPrefixLength+1) and ((lElement.LocalName = "") or (aColumn <= lStart+length(lElement.FullName))) then begin
         result.CurrentNamespace := lElement.Namespace;
         exit;
       end;
+    end;
     if lElement.LocalName.Contains('.') and (aColumn <= lStart+length(lElement.FullName)) then begin
       var lName := lElement.FullName;
       var lPos := lName.IndexOf('.');
