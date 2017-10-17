@@ -28,8 +28,8 @@ public class Notification {
 
 #if TOFFEE
 fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
-	/*weak*/ var receiver: Object?
-	/*weak*/ var object: Object?
+	weak var receiver: Object?
+	weak var object: Object?
 	var token: id;
 	init (_ receiver: Object, _ object: Object?, _ token: id) {
 		self.receiver = receiver
@@ -52,13 +52,8 @@ fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
 
 public static class RemObjects.Elements.RTL.BroadcastManager {
 
-	typealias SubscriptionList = List<BroadcastManagerSubscription>
-
-	#if TOFFEE
+	private typealias SubscriptionList = List<BroadcastManagerSubscription>
 	private let subscriptions = Dictionary<String,SubscriptionList>() // receiver, object, token
-	#else
-	private let subscriptions = Dictionary<String,SubscriptionList>() // receiver, block
-	#endif
 
 	#if ECHOES
 	private let lock = System.Threading.ReaderWriterLockSlim(System.Threading.LockRecursionPolicy.SupportsRecursion)
@@ -88,20 +83,17 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		#endif
 	}
 
-	//func subscribe(_ object: Object, toBroadcast broadcast: String, block: (Dictionary<String,Any>)->()) {
-	//}
-
-	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: (_ sender: Notification)->()) {
+	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: (_ sender: Notification!)->()) {
 		subscribe(receiver, toBroadcast: broadcast, block: block, object: nil)
 	}
 
-	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: (_ sender: Notification)->(), object: Object?) {
+	public func subscribe(_ receiver: Object, toBroadcast broadcast: String, block: (_ sender: Notification!)->(), object: Object?) {
 		#if TOFFEE
 		let token = NSNotificationCenter.defaultCenter.addObserver(for: broadcast, object: object, queue: nil, usingBlock: { n in block(n) });
-		lockWrite() {
+		__lock self {
 			var subs = subscriptions[broadcast]
 			if subs == nil {
-				subs = List<BroadcastManagerSubscription>()
+				subs = SubscriptionList()
 				subscriptions[broadcast] = subs
 			}
 			subs!.Add(BroadcastManagerSubscription(receiver, object, token))
@@ -137,7 +129,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	public func unsubscribe(_ receiver: Object, fromBroadcast broadcast: String, object: Object? = nil) {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver, name: broadcast, object: nil)
-		lockWrite() {
+		__lock self {
 			if let subs = subscriptions[broadcast] {
 				for s in subs.UniqueCopy() {
 					if s.receiver == nil || (s.receiver == receiver && (s.object == object || s.object == nil || object == nil)) {
@@ -169,7 +161,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 	public func unsubscribe(_ receiver: Object) {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver)
-		lockWrite() {
+		__lock self {
 			for k in subscriptions.Keys {
 				if let subs = subscriptions[k] {
 					for s in subs.UniqueCopy() {

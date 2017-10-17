@@ -2,7 +2,7 @@
 
 interface
 
-uses 
+uses
   {$IF COOPER}
   com.remobjects.elements.linq,
   {$ENDIF}
@@ -72,14 +72,14 @@ type
   public
     method DeleteFolder(Value: java.io.File);
   end;
-{$ENDIF}  
+{$ENDIF}
 {$IF TOFFEE}
 type
   FolderHelper = static class
   public
     method IsDirectory(Value: String): Boolean;
   end;
-{$ENDIF}  
+{$ENDIF}
 {$IF NETSTANDARD}
 type
   FolderHelper = static class

@@ -261,6 +261,9 @@ begin
         exit;
       end;
     end
+    else if aPath.StartsWith("\") then begin
+      aPath := aPath;
+    end
     else begin
       aPath := "/"+aPath; // Windows paths always get an extra "/"
     end;
@@ -802,9 +805,18 @@ begin
   var lNewPath := lParts.JoinedString("/");
   if lNewPath ≠ fPath then begin
     fCanonicalVersion := CopyWithPath(lNewPath);
+    if IsFileUrl then
+      fCanonicalVersion := Url.UrlWithFilePath(fCanonicalVersion.FilePath);
     result := fCanonicalVersion;
   end
   else begin
+    if IsFileUrl then begin
+      var lCanonicalVersion := Url.UrlWithFilePath(FilePath);
+      if FilePath ≠ lCanonicalVersion then begin
+        fCanonicalVersion := lCanonicalVersion;
+        exit fCanonicalVersion;
+      end;
+    end;
     fIsCanonical := true;
     result := self;
   end;
@@ -1010,7 +1022,8 @@ begin
   if obj = self then
     exit true;
   if obj is Url then
-    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
+    exit (CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString()) or
+         (IsFileUrl and (obj as Url).IsFileUrl and (CanonicalVersion.FilePath = (obj as Url).CanonicalVersion.FilePath));
   if obj is NSURL then
     exit CanonicalVersion.ToAbsoluteString() = ((obj as NSURL) as Url).CanonicalVersion.ToAbsoluteString();
 end;

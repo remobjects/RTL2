@@ -42,7 +42,7 @@ begin
   fTimer := new PlatformTimer();
   {$ENDIF}
   {$IF ECHOES}
-  fTimer.Elapsed += ElapsedEventHandler;    
+  fTimer.Elapsed += ElapsedEventHandler;
   {$ENDIF}
   {$IF ISLAND}
   fTimer.Elapsed := () -> begin

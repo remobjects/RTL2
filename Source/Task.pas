@@ -124,11 +124,13 @@ begin
       aStdOut := aStdOut+new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
       d := stdOut.availableData();
     end;
+    stdOut.closeFile();
     d := stdErr.availableData();
     while (d ≠ nil) and (d.length() > 0) do begin
       aStdErr := aStdErr+new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
       d := stdErr.availableData();
     end;
+    stdErr.closeFile();
   end;
   {$ENDIF}
 end;
@@ -209,6 +211,7 @@ begin
         processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
         d := stdOut.availableData;
       end;
+      stdOut.closeFile();
     end);
 
   if assigned(aStdErrCallback) then
@@ -229,6 +232,7 @@ begin
         processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
         d := stdErr.availableData;
       end;
+      stdErr.closeFile();
     end);
 
   lTask.Start();

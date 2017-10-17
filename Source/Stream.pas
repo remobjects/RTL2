@@ -127,19 +127,19 @@ type
   end;
 
   BinaryStream = public class
-  private    
+  private
     fStream: Stream;
     fEncoding: Encoding := Encoding.UTF8;
     {$IF TOFFEE OR ISLAND}
     fBuffer: array of Byte;
     class const DefBufferSize = 8;
     method ReadRaw(Buffer: ^void; Count: LongInt);
-    method WriteRaw(Buffer: ^void; Count: LongInt);    
+    method WriteRaw(Buffer: ^void; Count: LongInt);
     {$ENDIF}
   public
     constructor(aStream: Stream);
     constructor(aStream: Stream; aEncoding: Encoding);
-    
+
     method ReadByte: Byte;
     method PeekChar: Int32;
     method &Read: Int32;
@@ -151,7 +151,7 @@ type
     method ReadInt32: Int32;
     method ReadInt64: Int64;
     method ReadString(Count: Int32): String;
-    
+
     method &Write(aValue: Byte);
     method &Write(aValue: array of Byte; Offset: Int32; Count: Int32);
     method WriteSByte(Value: ShortInt);

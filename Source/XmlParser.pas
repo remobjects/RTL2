@@ -591,7 +591,7 @@ begin
       result.OpenTagEndColumn := 0;
       //if assigned (aError) then exit;
       aError := new XmlErrorInfo;
-      aError.FillErrorInfo("Unknown prefix '"+lPrefix+":'", lSuggestion, result.NodeRange.StartLine, (result.NodeRange.StartColumn+1));     
+      aError.FillErrorInfo("Unknown prefix '"+lPrefix+":'", lSuggestion, result.NodeRange.StartLine, (result.NodeRange.StartColumn+1));
       exit;
     end;
     result.Namespace := lNamespace;
@@ -606,9 +606,9 @@ begin
         lNamespace := new XmlNamespace(lPrefix, Url.UrlWithString(XmlConsts.XML_NAMESPACE_URL));
         case lLocalName of
           "lang":;
-          "space": begin 
+          "space": begin
             if lAttribute.Value = "preserve" then result.PreserveSpace := true
-            else if lAttribute.Value = "default" then 
+            else if lAttribute.Value = "default" then
               result.PreserveSpace := false
             else begin
               aError := new XmlErrorInfo;
@@ -630,7 +630,7 @@ begin
         end;
       end
       else begin
-        lNamespace := coalesce(result.Namespace[lPrefix] , GetNamespaceForPrefix(lPrefix, aParent));
+        lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
         if lNamespace = nil then begin //raise new XmlException("Unknown prefix '"+lPrefix+":'", lAttribute.StartLine, lAttribute.StartColumn);
           aError := new XmlErrorInfo;
           var lSuggestion: String := "";
@@ -790,13 +790,13 @@ begin
 end;
 //end;
 
-method XmlParser.GetNamespaceForPrefix(aPrefix:not nullable String; aParent: XmlElement): XmlNamespace;
+method XmlParser.GetNamespaceForPrefix(aPrefix: not nullable String; aParent: XmlElement): XmlNamespace;
 begin
-  var ParentElem := aParent;
-  while (ParentElem <> nil) and (result = nil) do begin
-    if ParentElem.Namespace[aPrefix] <> nil
-    then result := ParentElem.Namespace[aPrefix]
-    else ParentElem := XmlElement(ParentElem.Parent);
+  while assigned(aParent) do begin
+    result := aParent.Namespace[aPrefix];
+    if assigned(result) then
+      exit;
+    aParent := XmlElement(aParent.Parent);
   end;
 end;
 

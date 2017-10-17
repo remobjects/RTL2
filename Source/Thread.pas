@@ -25,13 +25,13 @@ type
     constructor (aEntrypoint: not nullable block);
     method Start; mapped to Start;
 
-    {$IF COOPER OR ECHOES} 
+    {$IF COOPER OR ECHOES}
     method &Join; mapped to &Join;
     method &Join(Timeout: Integer);  mapped to &Join(Timeout);
     {$ENDIF}
     {$IF TOFFEE}
-    method &Join; 
-    method &Join(Timeout: Integer);  
+    method &Join;
+    method &Join(Timeout: Integer);
     {$ENDIF}
 
     {$HIDE W28}

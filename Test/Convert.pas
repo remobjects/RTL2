@@ -64,7 +64,8 @@ type
       Assert.AreNotEqual(Convert.TryToInt32("-9223372036854775808"), -9223372036854775808);   // calls wroong Assert 0/0 and fails.
       // at least it consistently fails on Echoes, Cocoa and Java
 
-      Assert.AreEqual(Convert.TryToInt32("9223372036854775807"), 9223372036854775807);      // fails to compile: // E546 Value "9223372036854775807" exceeds the bounds of target type "Int32"
+      //writeLn(Convert.TryToInt32("9223372036854775807"));
+      //Assert.AreEqual(Convert.TryToInt32("9223372036854775807"), 9223372036854775807);      // fails to compile: // E546 Value "9223372036854775807" exceeds the bounds of target type "Int32"
     end;
 
   end;

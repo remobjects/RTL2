@@ -37,7 +37,7 @@ type
     {$IFDEF COOPER}
     method ToArray: not nullable array of T; inline;
     {$ELSE}
-    method ToArray: not nullable array of T; 
+    method ToArray: not nullable array of T;
     {$ENDIF}
     method ToList<U>: not nullable ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
 
