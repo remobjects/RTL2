@@ -261,6 +261,9 @@ begin
         exit;
       end;
     end
+    else if aPath.StartsWith("\") then begin
+      aPath := aPath;
+    end
     else begin
       aPath := "/"+aPath; // Windows paths always get an extra "/"
     end;
