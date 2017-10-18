@@ -812,7 +812,7 @@ begin
   else begin
     if IsFileUrl then begin
       var lCanonicalVersion := Url.UrlWithFilePath(FilePath);
-      if FilePath ≠ lCanonicalVersion then begin
+      if FilePath ≠ lCanonicalVersion.FilePath then begin
         fCanonicalVersion := lCanonicalVersion;
         exit fCanonicalVersion;
       end;
