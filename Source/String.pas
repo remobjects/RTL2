@@ -184,7 +184,7 @@ begin
   {$ELSEIF ECHOES}
   result := new PlatformString(Value, Offset, Count);
   {$ELSEIF ISLAND}
-  result := PlatformString.FromPChar((@Value)+Offset*sizeOf(Char), Count);
+  result := PlatformString.FromPChar((@Value)+Offset/*sizeOf(Char)*/, Count);
   {$ELSEIF TOFFEE}
   result := new PlatformString withCharacters(@Value[Offset]) length(Count);
   {$ENDIF}
