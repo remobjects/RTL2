@@ -966,36 +966,42 @@ end;
 class operator Url.Equal(Value1: Url; Value2: Url): Boolean;
 begin
   if not assigned(Value1) then exit not assigned(Value2);
+  if not assigned(Value2) then exit false;
   result := Value1.ToAbsoluteString() = Value2:ToAbsoluteString();
 end;
 
 class operator Url.NotEqual(Value1: Url; Value2: Url): Boolean;
 begin
   if not assigned(Value1) then exit assigned(Value2);
+  if not assigned(Value2) then exit true;
   result := Value1.ToAbsoluteString() ≠ Value2:ToAbsoluteString();
 end;
 
 class operator Url.Equal(Value1: Url; Value2: Object): Boolean;
 begin
   if not assigned(Value1) then exit not assigned(Value2);
+  if not assigned(Value2) then exit false;
   result := Value1.ToAbsoluteString() = Url(Value2):ToAbsoluteString();
 end;
 
 class operator Url.NotEqual(Value1: Url; Value2: Object): Boolean;
 begin
   if not assigned(Value1) then exit assigned(Value2);
+  if not assigned(Value2) then exit true;
   result := Value1.ToAbsoluteString() ≠ Url(Value2):ToAbsoluteString();
 end;
 
 class operator Url.Equal(Value1: Object; Value2: Url): Boolean;
 begin
   if not assigned(Value1) then exit not assigned(Value2);
+  if not assigned(Value2) then exit false;
   result := Url(Value1):ToAbsoluteString() = Value2.ToAbsoluteString();
 end;
 
 class operator Url.NotEqual(Value1: Object; Value2: Url): Boolean;
 begin
   if not assigned(Value1) then exit assigned(Value2);
+  if not assigned(Value2) then exit true;
   result := Url(Value1):ToAbsoluteString() ≠ Value2.ToAbsoluteString();
 end;
 
