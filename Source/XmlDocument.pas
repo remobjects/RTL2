@@ -757,10 +757,10 @@ begin
     aNamespace := GetNamespaceFromName(var aLocalName);
     if assigned(aNamespace) then
       result := Elements.Where(c -> (c.LocalName = aLocalName) and (c.Namespace = aNamespace)) as not nullable
-    else 
+    else
       result := Elements.Where(c -> (c.LocalName = aLocalName) or (c.FullName = aLocalName)) as not nullable
   end
-  else 
+  else
     result := Elements.Where(c -> (c.LocalName = aLocalName) and (c.Namespace = aNamespace)) as not nullable
 end;
 
@@ -780,7 +780,7 @@ begin
     for each e in fElements do
       if (e.LocalName = aLocalName) or (e.FullName = aLocalName) then
         exit e;
-    
+
     aNamespace := GetNamespaceFromName( var aLocalName);
     if assigned(aNamespace) then
       result := FirstElementWithName(aLocalName, aNamespace);
@@ -1346,7 +1346,7 @@ begin
   end;
 end;
 
-method XmlElement.GetNamespaceFromName(var aName: String): XmlNamespace;
+method XmlElement.GetNamespaceFromName(var aName: String): nullable XmlNamespace;
 begin
   var lNamespace: XmlNamespace;
   var lBracePos := aName.IndexOf('{');
