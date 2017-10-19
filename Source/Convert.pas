@@ -382,7 +382,6 @@ begin
     result[i] := Byte((HexValue(aData[i shl 1]) shl 4) + HexValue(aData[(i shl 1) + 1]));
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.HexStringToInt32(aValue: not nullable String): UInt32;
 begin
   {$IF COOPER}
@@ -397,7 +396,6 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.HexStringToInt64(aValue: not nullable String): UInt64;
 begin
   {$IF COOPER}
@@ -759,7 +757,7 @@ end;
 
 method Convert.ToUtf8Bytes(aValue: not nullable String): array of Byte;
 begin
-  result := Encoding.UTF8.GetBytes(aValue);
+  result := Encoding.UTF8.GetBytes(aValue) includeBOM(false);
 end;
 
 method Convert.Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String;
