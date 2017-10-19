@@ -29,7 +29,7 @@ type
     method IntGetFilePath: nullable String;
     method GetWindowsPath: nullable String;
     method GetUnixPath: nullable String;
-    method GetCanonicalVersion(): Url;
+    method GetCanonicalVersion(): not nullable Url;
 
     method GetPathExtension: nullable String;
     method GetLastPathComponent: nullable String;
@@ -77,7 +77,7 @@ type
 
     //property PathWithoutLastComponent: String read GetPathWithoutLastComponent; // includes trailing "/" or "\", NOT decoded
 
-    property CanonicalVersion: Url read GetCanonicalVersion;
+    property CanonicalVersion: not nullable Url read GetCanonicalVersion;
     property IsFileUrl: Boolean read fScheme = "file";
     property FileExists: Boolean read IsFileUrl and File.Exists(FilePath);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(FilePath);
@@ -775,7 +775,7 @@ begin
   result := SubUrl(aSubPath);
 end;*/
 
-method Url.GetCanonicalVersion(): Url;
+method Url.GetCanonicalVersion(): not nullable Url;
 begin
   if fIsCanonical then
     exit self;
@@ -807,14 +807,14 @@ begin
     fCanonicalVersion := CopyWithPath(lNewPath);
     if IsFileUrl then
       fCanonicalVersion := Url.UrlWithFilePath(fCanonicalVersion.FilePath);
-    result := fCanonicalVersion;
+    result := fCanonicalVersion as not nullable;
   end
   else begin
     if IsFileUrl then begin
       var lCanonicalVersion := Url.UrlWithFilePath(FilePath);
       if FilePath ≠ lCanonicalVersion.FilePath then begin
         fCanonicalVersion := lCanonicalVersion;
-        exit fCanonicalVersion;
+        exit fCanonicalVersion as not nullable;
       end;
     end;
     fIsCanonical := true;
