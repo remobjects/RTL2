@@ -839,9 +839,15 @@ begin
     if fNodes.Count > 0 then begin
       var LastNodePos := fNodes.Count-1;
       if XmlText(fNodes.Item[LastNodePos]):Value = aElement.fParent.Indent then begin
-        fNodes.Insert(LastNodePos,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
+        //It doesn't work on Island
+        {fNodes.Insert(LastNodePos,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
         fNodes.Insert(LastNodePos+1,aElement);
-        fNodes.Insert(LastNodePos+2 ,new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));
+        fNodes.Insert(LastNodePos+2 ,new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));}
+        fNodes.Add(new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
+        fNodes.Add(aElement);
+        fNodes.Add(new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));
+        fNodes.Add(new XmlText(self, Value := aElement.fParent.Indent));
+        fNodes.RemoveAt(LastNodePos);
       end;
      end
      else begin
