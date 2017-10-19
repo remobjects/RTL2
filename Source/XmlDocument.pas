@@ -122,7 +122,7 @@ type
     method GetNamespaces: not nullable sequence of XmlNamespace;
     method GetDefaultNamespace: XmlNamespace;
     method SetPreserveSpace(aPreserveSpace:Boolean);
-
+    method GetNamespaceFromName(var aName: String): nullable XmlNamespace;
   assembly
     fIsEmpty: Boolean := true;
     constructor withParent(aParent: XmlElement := nil);
@@ -753,9 +753,14 @@ end;
 
 method XmlElement.ElementsWithName(aLocalName: not nullable String; aNamespace: nullable XmlNamespace := nil): not nullable sequence of XmlElement;
 begin
-  if aNamespace = nil then
-    result := Elements.Where(c -> (c.LocalName = aLocalName)) as not nullable
-  else
+  if aNamespace = nil then begin
+    aNamespace := GetNamespaceFromName(var aLocalName);
+    if assigned(aNamespace) then
+      result := Elements.Where(c -> (c.LocalName = aLocalName) and (c.Namespace = aNamespace)) as not nullable
+    else 
+      result := Elements.Where(c -> (c.LocalName = aLocalName) or (c.FullName = aLocalName)) as not nullable
+  end
+  else 
     result := Elements.Where(c -> (c.LocalName = aLocalName) and (c.Namespace = aNamespace)) as not nullable
 end;
 
@@ -773,27 +778,12 @@ begin
   end
   else begin
     for each e in fElements do
-      if e.LocalName = aLocalName then
+      if (e.LocalName = aLocalName) or (e.FullName = aLocalName) then
         exit e;
-
-    var lBracePos := aLocalName.IndexOf('{');
-    if (lBracePos = 0) then begin
-      var lClosingBracePos := aLocalName.IndexOf('}');
-      if lClosingBracePos > lBracePos then begin
-        aNamespace := &Namespace[Uri.TryUriWithString(aLocalName.Substring(1, lClosingBracePos-1))];
-        if assigned(aNamespace) then
-          result := FirstElementWithName(aLocalName.Substring(lClosingBracePos+1, aLocalName.Length-lClosingBracePos-1), aNamespace);
-      end;
-    end
-    else begin
-      var lPrefixPos := aLocalName.IndexOf(':');
-      if (lPrefixPos > 0) then begin
-        var lNamespaceString := aLocalName.Substring(0, lPrefixPos);
-        aNamespace := &Namespace[lNamespaceString];
-        if assigned(aNamespace) then
-          result := FirstElementWithName(aLocalName.Substring(lPrefixPos+1, aLocalName.Length-lPrefixPos-1), aNamespace);
-      end;
-    end;
+    
+    aNamespace := GetNamespaceFromName( var aLocalName);
+    if assigned(aNamespace) then
+      result := FirstElementWithName(aLocalName, aNamespace);
   end;
 end;
 
@@ -1355,6 +1345,22 @@ begin
     end;
   end;
 end;
+
+method XmlElement.GetNamespaceFromName(var aName: String): XmlNamespace;
+begin
+  var lNamespace: XmlNamespace;
+  var lBracePos := aName.IndexOf('{');
+  if (lBracePos = 0) then begin
+    var lClosingBracePos := aName.IndexOf('}');
+    if lClosingBracePos > lBracePos then begin
+      lNamespace := &Namespace[Uri.TryUriWithString(aName.Substring(1, lClosingBracePos-1))];
+      if assigned(lNamespace) then
+        aName := aName.Substring(lClosingBracePos+1, aName.Length-lClosingBracePos-1)
+    end;
+  end;
+  exit lNamespace;
+end;
+
 
 { XmlAttribute }
 
