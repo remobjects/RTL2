@@ -53,7 +53,7 @@ fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
 public static class RemObjects.Elements.RTL.BroadcastManager {
 
 	private typealias SubscriptionList = List<BroadcastManagerSubscription>
-	private let subscriptions = Dictionary<String,SubscriptionList>() // receiver, object, token
+	private let subscriptions = Dictionary<String,SubscriptionList>()
 
 	#if ECHOES
 	private let lock = System.Threading.ReaderWriterLockSlim(System.Threading.LockRecursionPolicy.SupportsRecursion)
