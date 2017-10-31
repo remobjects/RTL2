@@ -26,8 +26,9 @@ type
     method GetUserHomeFolder: Folder;
     method GetDesktopFolder: Folder;
     method GetTempFolder: Folder;
-    method GetApplicationSupportFolder: Folder;
+    method GetUserApplicationSupportFolder: Folder;
     method GetUserLibraryFolder: Folder;
+    method GetUserDownloadsFolder: Folder;
 
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport("libc")]
@@ -45,8 +46,9 @@ type
     property UserHomeFolder: nullable Folder read GetUserHomeFolder;
     property DesktopFolder: nullable Folder read GetDesktopFolder;
     property TempFolder: nullable Folder read GetTempFolder;
-    property UserApplicationSupportFolder: nullable Folder read GetApplicationSupportFolder; // Mac only
+    property UserApplicationSupportFolder: nullable Folder read GetUserApplicationSupportFolder; // Mac only
     property UserLibraryFolder: nullable Folder read GetUserLibraryFolder; // Mac only
+    property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder; // Mac only
 
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
@@ -272,11 +274,13 @@ begin
   {$ENDIF}
 end;
 
-method Environment.GetApplicationSupportFolder: Folder;
+method Environment.GetUserApplicationSupportFolder: Folder;
 begin
   {$IF ECHOES}
-  if OS = OperatingSystem.macOS then
-    result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType);
+  case OS of
+    OperatingSystem.macOS: result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType);
+    OperatingSystem.Windows: result := System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
+  end;
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
@@ -291,6 +295,26 @@ begin
     result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
+  {$ENDIF}
+  if (length(result) > 0) and not Folder.Exists(result) then
+    Folder.Create(result);
+end;
+
+method Environment.GetUserDownloadsFolder: Folder;
+begin
+  {$IF ECHOES}
+  case OS of
+    OperatingSystem.macOS: begin
+        //result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
+        result := Path.Combine(GetUserApplicationSupportFolder, "Downloads");
+      end;
+    //OperatingSystem.Windows: begin
+        //result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
+        //result := Path.Combine(GetApplicationSupportFolder, "Downloads");
+      //end;
+  end;
+  {$ELSEIF TOFFEE}
+  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
   if (length(result) > 0) and not Folder.Exists(result) then
     Folder.Create(result);
