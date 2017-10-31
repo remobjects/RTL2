@@ -1,6 +1,5 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-
 interface
 
 {$IF ECHOES OR (TOFFEE AND MACOS)}
@@ -27,6 +26,7 @@ type
   public
 
     class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable array of String): not nullable String;
+    class method SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable array of String;
 
     method WaitFor; inline;
     method Start; inline;
@@ -299,6 +299,34 @@ begin
   result := aArgument;
   if result.Contains(" ") then
     result := '"'+result.Replace('"', '\"')+'"'
+end;
+
+class method Task.SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable array of String;
+begin
+  var lResult := new List<String>;
+  var lCurrent: String := ""; // why is this needed for lCurrent to not become an NSString?
+  var lInQuotes := false;
+  for i: Integer := 0 to length(aArgumentString) do begin
+    var ch := aArgumentString[i];
+    case ch of
+      ' ': begin
+          if lInQuotes then begin
+            lCurrent := lCurrent+ch;
+          end
+          else begin
+            lCurrent := lCurrent.Trim();
+            if length(lCurrent) > 0 then
+              lResult.Add(lCurrent);
+            lCurrent := "";
+          end;
+        end;
+      '"': lInQuotes := not lInQuotes;
+      else begin
+          lCurrent := lCurrent+ch;
+        end;
+    end;
+  end;
+  result := lResult.ToArray;
 end;
 
 class method Task.BuildArgumentsCommandLine(aArguments: not nullable array of String): not nullable String;
