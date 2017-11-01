@@ -326,6 +326,11 @@ begin
         end;
     end;
   end;
+
+  lCurrent := lCurrent.Trim();
+  if length(lCurrent) > 0 then
+    lResult.Add(lCurrent);
+
   result := lResult.ToArray;
 end;
 
