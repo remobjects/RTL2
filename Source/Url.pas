@@ -41,6 +41,8 @@ type
 
     method DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String; //inline; 76882: Echoes: E0 Internal error: GOUNKEX137 with `inline`
 
+    class method AddPercentEncodingsToPath(aString: String; aDontDoubleEncode: Boolean): String;
+
     constructor; empty;
     constructor(aScheme: not nullable String; aHost: String; aPath: String);
     constructor(aUrlString: not nullable String);
@@ -802,7 +804,7 @@ begin
 
   {$HINT needs to fix case to match disk case, if present? }
 
-  var lNewPath := lParts.JoinedString("/");
+  var lNewPath := AddPercentEncodingsToPath(lParts.JoinedString("/"), true);
   if lNewPath ≠ fPath then begin
     fCanonicalVersion := CopyWithPath(lNewPath);
     if IsFileUrl then
@@ -828,6 +830,11 @@ end;
 
 class method Url.AddPercentEncodingsToPath(aString: String): String;
 begin
+  result := AddPercentEncodingsToPath(aString, false);
+end;
+
+class method Url.AddPercentEncodingsToPath(aString: String; aDontDoubleEncode: Boolean): String;
+begin
   var lResult := new StringBuilder();
   var len := length(aString);
   var i := 0;
@@ -841,7 +848,7 @@ begin
         lResult.Append("%"+Convert.ToHexString(ord(b), 2));
       inc(i);
     end
-    else if (c < 46) or (58 < c < 65) or (90 < c < 95) or (c = 96) or (122 < c) then begin
+    else if ((c < 46) or (58 < c < 65) or (90 < c < 95) or (c = 96) or (122 < c)) and ((c ≠ 37) or not aDontDoubleEncode) then begin
       var lBytes := Convert.ToUtf8Bytes(ch);
       for each b in lBytes do
         lResult.Append("%"+Convert.ToHexString(ord(b), 2));
