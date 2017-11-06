@@ -51,6 +51,7 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Architecture>wasm32</Architecture>
+    <DefineConstants>WEBASSEMBLY</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Island" />
