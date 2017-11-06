@@ -373,7 +373,7 @@ begin
   {$HINT Fix Below} // 78937: `defined()` doesnt seem to work (and adds extra warning)
   raise new XmlException("Not implemented for WebAssemlbly yet");
   {$ELSE}
-  if not defined("WEBASSEMBLY") and aUrl.IsFileUrl and aUrl.FilePath.FileExists then
+  if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
   else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
     {$IFDEF ISLAND}
@@ -397,7 +397,7 @@ begin
   {$IF WEBASSEMBLY}
   {$HINT Fix Below} // 78937: `defined()` doesnt seem to work (and adds extra warning)
   {$ELSE}
-  if not defined("WEBASSEMBLY") and aUrl.IsFileUrl and aUrl.FilePath.FileExists then
+  if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := TryFromFile(aUrl.FilePath, aAllowBrokenDocument)
   else if aUrl.Scheme in ["http", "https"] then try
     {$IFDEF ISLAND}

@@ -115,7 +115,8 @@ begin
   {$ELSEIF ECHOES}
   exit System.IO.Path.DirectorySeparatorChar;
   {$ELSEIF ISLAND}
-  exit if defined("WEBASSEMBLY") then '/' else RemObjects.Elements.System.Path.DirectorySeparatorChar;
+  {$IF WEBASSEMBLY}exit '/';{$ELSE}exit RemObjects.Elements.System.Path.DirectorySeparatorChar;{$ENDIF}
+  //exit if defined("WEBASSEMBLY") then '/' else RemObjects.Elements.System.Path.DirectorySeparatorChar;
   {$ELSEIF TOFFEE}
   exit '/';
   {$ENDIF}
