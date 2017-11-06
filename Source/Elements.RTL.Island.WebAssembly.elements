@@ -49,10 +49,9 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <Architecture>wasm32</Architecture>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="rtl" />
-    <Reference Include="gc" />
     <Reference Include="Island" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.WebAssembly.targets" />
