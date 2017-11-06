@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT WEBASSEMBLY}
+
 interface
 
 type
@@ -181,5 +183,7 @@ begin
   async aBlock();
   {$ENDIF}
 end;
+
+{$ENDIF}
 
 end.

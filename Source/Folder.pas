@@ -15,17 +15,22 @@ type
     {$IF COOPER}
     property JavaFile: java.io.File read new java.io.File(mapped);
     {$ENDIF}
-    {$IF ISLAND}
+    {$IF ISLAND AND NOT WEBASSEMBLY}
     property IslandFolder: RemObjects.Elements.System.Folder read new RemObjects.Elements.System.Folder(mapped);
     {$ENDIF}
     {$IF TOFFEE}
     method Combine(BasePath: String; SubPath: String): String;
     {$ENDIF}
 
+    {$IF NOT WEBASSEMBLY}
     method DoGetFiles(aFolder: Folder; aList: List<File>);
+    {$ENDIF}
   public
     constructor(aPath: not nullable String);
 
+    class property Separator: Char read GetSeparator;
+
+    {$IF NOT WEBASSEMBLY}
     method Exists: Boolean; // Workaround for 74547: Mapped types: static methods can be called with class type as parameter
     method Create(FailIfExists: Boolean := false);
     method CreateFile(FileName: String; FailIfExists: Boolean := false): File;
@@ -47,8 +52,7 @@ type
     class method GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
     class method GetFilesAndFolders(aFolderName: Folder): not nullable ImmutableList<String>;
     class method GetSubfolders(aFolderName: Folder): not nullable List<Folder>;
-
-    class property Separator: Char read GetSeparator;
+    {$ENDIF}
 
     {$IF NETSTANDARD}
     property FullPath: not nullable String read mapped.Path;
@@ -57,11 +61,15 @@ type
     property FullPath: not nullable String read mapped;
     property Name: not nullable String read Path.GetFileName(mapped);
     {$ENDIF}
+
     property &Extension: not nullable String read Path.GetExtension(FullPath);
   end;
 
   {$IF NETSTANDARD}
   extension method Windows.Foundation.IAsyncOperation<TResult>.Await<TResult>: TResult;
+  begin
+    exit self.AsTask.Result;
+  end;
   {$ENDIF}
 
 implementation
@@ -98,6 +106,22 @@ begin
   {$ENDIF}
 end;
 
+class method Folder.GetSeparator: Char;
+begin
+  {$IF NETSTANDARD}
+  exit '\';
+  {$ELSEIF COOPER}
+  exit java.io.File.separatorChar;
+  {$ELSEIF ECHOES}
+  exit System.IO.Path.DirectorySeparatorChar;
+  {$ELSEIF ISLAND}
+  exit if defined("WEBASSEMBLY") then '/' else RemObjects.Elements.System.Path.DirectorySeparatorChar;
+  {$ELSEIF TOFFEE}
+  exit '/';
+  {$ENDIF}
+end;
+
+{$IF NOT WEBASSEMBLY}
 class method Folder.Exists(aFolderName: nullable Folder): Boolean;
 begin
   result := (length(aFolderName) > 0) and aFolderName.Exists;
@@ -161,52 +185,6 @@ begin
   if aRecursive then
     for each f in GetSubfolders() do
       Folder(f).CopyContentsTo(Path.Combine(aNewFolder, Path.getFileName(f)));
-end;
-
-{$IF NETSTANDARD}
-extension method Windows.Foundation.IAsyncOperation<TResult>.&Await<TResult>: TResult;
-begin
-  exit self.AsTask.Result;
-end;
-
-class method FolderHelper.GetFile(Folder: Windows.Storage.StorageFolder; FileName: String): Windows.Storage.StorageFile;
-begin
-  ArgumentNullException.RaiseIfNil(Folder, "Folder");
-  ArgumentNullException.RaiseIfNil(FileName, "FileName");
-  try
-    exit Folder.GetFileAsync(FileName).Await;
-  except
-    exit nil;
-  end;
-end;
-
-class method FolderHelper.GetFolder(Folder: Windows.Storage.StorageFolder; FolderName: String): Windows.Storage.StorageFolder;
-begin
-  ArgumentNullException.RaiseIfNil(Folder, "Folder");
-  ArgumentNullException.RaiseIfNil(FolderName, "FolderName");
-  try
-    exit Folder.GetFolderAsync(FolderName).Await;
-  except
-    exit nil;
-  end;
-end;
-{$ENDIF}
-
-
-
-class method Folder.GetSeparator: Char;
-begin
-  {$IF NETSTANDARD}
-  exit '\';
-  {$ELSEIF COOPER}
-  exit java.io.File.separatorChar;
-  {$ELSEIF ECHOES}
-  exit System.IO.Path.DirectorySeparatorChar;
-  {$ELSEIF ISLAND}
-  exit RemObjects.Elements.System.Path.DirectorySeparatorChar;
-  {$ELSEIF TOFFEE}
-  exit '/';
-  {$ENDIF}
 end;
 
 method Folder.CreateFile(FileName: String; FailIfExists: Boolean := false): File;
@@ -461,6 +439,31 @@ begin
   {$ENDIF}
 end;
 
+{$ENDIF}
+
+{$IF NETSTANDARD}
+class method FolderHelper.GetFile(Folder: Windows.Storage.StorageFolder; FileName: String): Windows.Storage.StorageFile;
+begin
+  ArgumentNullException.RaiseIfNil(Folder, "Folder");
+  ArgumentNullException.RaiseIfNil(FileName, "FileName");
+  try
+    exit Folder.GetFileAsync(FileName).Await;
+  except
+    exit nil;
+  end;
+end;
+
+class method FolderHelper.GetFolder(Folder: Windows.Storage.StorageFolder; FolderName: String): Windows.Storage.StorageFolder;
+begin
+  ArgumentNullException.RaiseIfNil(Folder, "Folder");
+  ArgumentNullException.RaiseIfNil(FolderName, "FolderName");
+  try
+    exit Folder.GetFolderAsync(FolderName).Await;
+  except
+    exit nil;
+  end;
+end;
+{$ENDIF}
 
 {$IF COOPER}
 class method FolderHelper.DeleteFolder(Value: java.io.File);

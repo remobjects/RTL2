@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT WEBASSEMBLY}
+
 interface
 
 {$DEFINE XML}{$DEFINE JSON}
@@ -1179,5 +1181,7 @@ begin
   end;
 end;
 *)
+
+{$ENDIF}
 
 end.

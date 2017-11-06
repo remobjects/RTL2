@@ -20,18 +20,24 @@ type
     method SetRoot(aRoot: not nullable XmlElement);
 
   public
+    {$IF NOT WEBASSEMBLY}
     class method FromFile(aFileName: not nullable File): not nullable XmlDocument;
+    {$ENDIF}
     class method FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
     class method FromString(aString: not nullable String): not nullable XmlDocument;
     class method FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
     class method WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
     class method WithRootElement(aName: not nullable String): not nullable XmlDocument;
 
+    {$IF NOT WEBASSEMBLY}
     class method TryFromFile(aFileName: not nullable File): nullable XmlDocument; inline;
+    {$ENDIF}
     class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument; inline;
     class method TryFromString(aString: not nullable String): nullable XmlDocument; inline;
     class method TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument; inline;
+    {$IF NOT WEBASSEMBLY}
     class method TryFromFile(aFileName: not nullable File; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+    {$ENDIF}
     class method TryFromUrl(aUrl: not nullable Url; aAllowBrokenDocument: Boolean): nullable XmlDocument;
     class method TryFromString(aString: not nullable String; aAllowBrokenDocument: Boolean): nullable XmlDocument;
     class method TryFromBinary(aBinary: not nullable ImmutableBinary; aAllowBrokenDocument: Boolean): nullable XmlDocument; inline;
@@ -41,9 +47,10 @@ type
     method ToString(aFormatOptions: XmlFormattingOptions): String;
     method ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
 
+    {$IF NOT WEBASSEMBLY}
     method SaveToFile(aFileName: not nullable File);
     method SaveToFile(aFileName: not nullable File; aFormatOptions: XmlFormattingOptions);
-
+    {$ENDIF}
 
     property Nodes: ImmutableList<XmlNode> read GetNodes;
     property Root: not nullable XmlElement read GetRoot write SetRoot;
@@ -332,6 +339,7 @@ begin
   AddNode(fRoot);
 end;
 
+{$IF NOT WEBASSEMBLY}
 class method XmlDocument.FromFile(aFileName: not nullable File): not nullable XmlDocument;
 begin
   if not aFileName.Exists then
@@ -357,10 +365,15 @@ begin
     if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
   end;
 end;
+{$ENDIF}
 
 class method XmlDocument.FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
 begin
-  if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
+  {$IF WEBASSEMBLY}
+  {$HINT Fix Below} // 78937: `defined()` doesnt seem to work (and adds extra warning)
+  raise new XmlException("Not implemented for WebAssemlbly yet");
+  {$ELSE}
+  if not defined("WEBASSEMBLY") and aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := FromFile(aUrl.FilePath)
   else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
     {$IFDEF ISLAND}
@@ -368,8 +381,10 @@ begin
     {$ELSE}
     result := Http.GetXml(new HttpRequest(aUrl))
     {$ENDIF}
-  end else
+  end
+  else
     raise new XmlException(String.Format("Cannot load XML from URL '{0}'.", aUrl.ToAbsoluteString()));
+  {$ENDIF}
 end;
 
 class method XmlDocument.TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
@@ -379,7 +394,10 @@ end;
 
 class method XmlDocument.TryFromUrl(aUrl: not nullable Url; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
-  if aUrl.IsFileUrl and aUrl.FilePath.FileExists then
+  {$IF WEBASSEMBLY}
+  {$HINT Fix Below} // 78937: `defined()` doesnt seem to work (and adds extra warning)
+  {$ELSE}
+  if not defined("WEBASSEMBLY") and aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := TryFromFile(aUrl.FilePath, aAllowBrokenDocument)
   else if aUrl.Scheme in ["http", "https"] then try
     {$IFDEF ISLAND}
@@ -391,6 +409,7 @@ begin
     on E: XmlException do;
     on E: HttpException do;
   end;
+  {$ENDIF}
 end;
 
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
@@ -497,6 +516,7 @@ begin
   end;
 end;
 
+{$IF NOT WEBASSEMBLY}
 method XmlDocument.SaveToFile(aFileName: not nullable File);
 begin
   var lEncoding: String;
@@ -512,7 +532,7 @@ begin
   var lBytes := lEncoding.GetBytes(lStringValue) includeBOM(aFormatOptions.WriteBOM);
   File.WriteBytes(aFileName.FullPath, lBytes);
 end;
-
+{$ENDIF}
 
 method XmlDocument.AddNode(aNode: not nullable XmlNode);
 begin

@@ -20,9 +20,11 @@ type
 
   public
 
+    {$IF NOT WEBASSEMBLY}
     property FileExists: Boolean read File.Exists(self);
     property FolderExists: Boolean read Folder.Exists(self);
     property FileOrFolderExists: Boolean read File.Exists(self) or Folder.Exists(self);
+    {$ENDIF}
 
     property LastPathComponent: String read Path.GetFilename(self);             // uses the platform-specific folder separator
     property LastUnixPathComponent: String read GetLastUnixPathComponent;       // always uses `/`

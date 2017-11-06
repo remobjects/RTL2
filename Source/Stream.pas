@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT WEBASSEMBLY}
+
 interface
 
 type
@@ -944,5 +946,7 @@ begin
   var lBytes := fEncoding.GetBytes(aString);
   fStream.Write(lBytes, 0, length(lBytes));
 end;
+
+{$ENDIF}
 
 end.

@@ -24,7 +24,9 @@ type
     method GetWindowsFileName(aFileName: not nullable String): not nullable String;
     method GetFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
     method GetPathWithoutExtension(aFileName: not nullable String): not nullable String;
+    {$IF NOT WEBASSEMBLY}
     method GetFullPath(RelativePath: not nullable String): not nullable String;
+    {$ENDIF}
     method GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): not nullable String;
 
     method GetNetworkServerName(aFileName: not nullable String): nullable String;
@@ -184,6 +186,7 @@ begin
   exit aFileName;
 end;
 
+{$IF NOT WEBASSEMBLY}
 method Path.GetFullPath(RelativePath: not nullable String): not nullable String;
 begin
   {$IF COOPER}
@@ -200,6 +203,7 @@ begin
   exit (RelativePath as NSString).stringByStandardizingPath;
   {$ENDIF}
 end;
+{$ENDIF}
 
 method path.GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): not nullable String;
 begin

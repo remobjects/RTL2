@@ -15,10 +15,14 @@ type
   public
     property Root: not nullable JsonNode read fRootNode;
 
+    {$IF NOT WEBASSEMBLY}
     class method FromFile(aFile: not nullable File): not nullable JsonDocument;
+    {$ENDIF}
     class method FromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): not nullable JsonDocument;
     class method FromString(aString: not nullable String): not nullable JsonDocument;
+    {$IF NOT WEBASSEMBLY}
     class method TryFromFile(aFile: not nullable File): nullable JsonDocument;
+    {$ENDIF}
     class method TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): nullable JsonDocument;
     class method TryFromString(aString: not nullable String): nullable JsonDocument;
     class method CreateDocument: not nullable JsonDocument;
@@ -91,10 +95,12 @@ begin
   fRootNode := aRoot;
 end;
 
+{$IF NOT WEBASSEMBLY}
 class method JsonDocument.FromFile(aFile: not nullable File): not nullable JsonDocument;
 begin
   result := new JsonDocument(new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize)
 end;
+{$ENDIF}
 
 class method JsonDocument.FromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): not nullable JsonDocument;
 begin
@@ -107,6 +113,7 @@ begin
   result := new JsonDocument(new JsonDeserializer(aString).Deserialize)
 end;
 
+{$IF NOT WEBASSEMBLY}
 class method JsonDocument.TryFromFile(aFile: not nullable File): nullable JsonDocument;
 begin
   try
@@ -116,6 +123,7 @@ begin
       exit nil;
   end;
 end;
+{$ENDIF}
 
 class method JsonDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): nullable JsonDocument;
 begin

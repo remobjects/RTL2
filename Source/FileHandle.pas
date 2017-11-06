@@ -1,10 +1,20 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+
 interface
 
 type
   FileOpenMode = public (&ReadOnly, &Create, ReadWrite);
   SeekOrigin = public (&Begin, Current, &End);
+
+  {$IF ECHOES}
+  PlatformSeekOrigin = public System.IO.SeekOrigin;
+  {$ENDIF}
+  {$IF ISLAND}
+  PlatformSeekOrigin = public RemObjects.Elements.System.SeekOrigin;
+  {$ENDIF}
+
+  {$IF NOT WEBASSEMBLY}
 
   {$IF ECHOES}
   PlatformFileMode = System.IO.FileMode;
@@ -48,7 +58,11 @@ type
     property Position: Int64 read GetPosition write SetPosition;
   end;
 
+  {$ENDIF}
+
 implementation
+
+{$IF NOT WEBASSEMBLY}
 
 constructor FileHandle(FileName: String; Mode: FileOpenMode);
 begin
@@ -314,5 +328,7 @@ begin
   Seek(value, SeekOrigin.Begin);
   {$ENDIF}
 end;
+
+{$ENDIF}
 
 end.

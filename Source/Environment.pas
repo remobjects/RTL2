@@ -3,7 +3,7 @@
 interface
 
 type
-  OperatingSystem = public enum(Unknown, Windows, Linux, macOS, iOS, tvOS, watchOS, Android, WindowsPhone, Xbox);
+  OperatingSystem = public enum(Unknown, Windows, Linux, macOS, iOS, tvOS, watchOS, Android, WindowsPhone, Xbox, Browser);
 
   ApplicationContext = public Object;
 
@@ -211,7 +211,9 @@ begin
   {$ELSEIF ECHOES}
   exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
   {$ELSEIF ISLAND}
-  result := RemObjects.Elements.System.Environment.UserHomeFolder.FullName;
+    {$IFNDEF WEBASSEMBLY}
+    result := RemObjects.Elements.System.Environment.UserHomeFolder.FullName;
+    {$ENDIF}
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.homeDirectoryForCurrentUser.path;
   {$ENDIF}
@@ -284,8 +286,10 @@ begin
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
+  {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
     Folder.Create(result);
+  {$ENDIF}
 end;
 
 method Environment.GetUserLibraryFolder: Folder;
@@ -296,8 +300,10 @@ begin
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
+  {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
     Folder.Create(result);
+  {$ENDIF}
 end;
 
 method Environment.GetUserDownloadsFolder: Folder;
@@ -316,8 +322,10 @@ begin
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
+  {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
     Folder.Create(result);
+  {$ENDIF}
 end;
 
 method Environment.GetOS: OperatingSystem;
@@ -355,7 +363,10 @@ begin
     exit OperatingSystem.Android;
     {$ELSEIF WINDOWS}
     exit OperatingSystem.Windows;
+    {$ELSEIF WEBASSEMBLY}
+    exit OperatingSystem.Browser;
     {$ELSE}
+    exit OperatingSystem.Windows;
       {$ERROR Unsupported Island platform}
     {$ENDIF}
   {$ELSEIF TOFFEE}

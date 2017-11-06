@@ -81,8 +81,10 @@ type
 
     property CanonicalVersion: not nullable Url read GetCanonicalVersion;
     property IsFileUrl: Boolean read fScheme = "file";
+    {$IF NOT WEBASSEMBLY}
     property FileExists: Boolean read IsFileUrl and File.Exists(FilePath);
     property FolderExists: Boolean read IsFileUrl and Folder.Exists(FilePath);
+    {$ENDIF}
     property IsAbsoluteWindowsFileURL: Boolean
       read IsFileUrl
         and (((Path:Length ≥ 3) and ((Path[2] = ':') or // absolute drive path, eg `C:`

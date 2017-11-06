@@ -5,17 +5,21 @@ interface
 type
   File = public class mapped to {$IF NETSTANDARD}Windows.Storage.StorageFile{$ELSE}PlatformString{$ENDIF}
   private
+    {$IF NOT WEBASSEMBLY}
     method getDateModified: DateTime;
     method getDateCreated: DateTime;
     method getSize: Int64;
+    {$ENDIF}
+
     {$IF COOPER}
     property JavaFile: java.io.File read new java.io.File(mapped);
-    {$ELSEIF ISLAND}
+    {$ELSEIF ISLAND AND NOT WEBASSEMBLY}
     property IslandFile: RemObjects.Elements.System.File read new RemObjects.Elements.System.File(mapped);
     {$ENDIF}
   public
     constructor(aPath: not nullable String);
 
+    {$IF NOT WEBASSEMBLY}
     method CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
     method CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := true): not nullable File;
     method Delete;
@@ -46,6 +50,11 @@ type
     class method AppendBytes(aFileName: String; Content: array of Byte);
     class method AppendBinary(aFileName: String; Content: ImmutableBinary);
 
+    property DateCreated: DateTime read getDateCreated;
+    property DateModified: DateTime read getDateModified;
+    property Size: Int64 read getSize;
+    {$ENDIF}
+
     {$IF NETSTANDARD}
     property FullPath: not nullable String read mapped.Path;
     property Name: not nullable String read mapped.Name;
@@ -55,9 +64,6 @@ type
     {$ENDIF}
     property &Extension: not nullable String read Path.GetExtension(FullPath);
 
-    property DateCreated: DateTime read getDateCreated;
-    property DateModified: DateTime read getDateModified;
-    property Size: Int64 read getSize;
   end;
 
 implementation
@@ -70,6 +76,8 @@ begin
   exit File(aPath);
   {$ENDIF}
 end;
+
+{$IF NOT WEBASSEMBLY}
 
 method File.CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
 begin
@@ -383,5 +391,7 @@ begin
     Handle.Close;
   end;
 end;
+
+{$ENDIF}
 
 end.
