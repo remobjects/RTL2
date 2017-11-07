@@ -71,9 +71,9 @@ type
       {$IF COOPER}
       result := StackTrace.ToList();
       {$ELSEIF ECHOES}
-      result := (StackTrace.Replace(#13, #10) as String).Split(#10);
+      result := (StackTrace.Replace(#13, "") as String).Split(#10);
       {$ELSEIF ISLAND}
-      result := new ImmutableList<String>(); {$WARNING Not implemented/supported for Island yet}
+      result := new ImmutableList<String>("Exception call stack not available."); {$WARNING Not implemented/supported for Island yet}
       {$ELSEIF TOFFEE}
       result := callstackSymbols;
       {$ENDIF}
