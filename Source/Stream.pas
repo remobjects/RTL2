@@ -45,6 +45,8 @@ type
 
     property Length: Int64 read GetLength; override;
     property Position: Int64 read GetPosition write SetPosition; override;
+
+    operator Implicit(aStream: WrappedPlatformStream): PlatformStream;
   end;
   {$ENDIF}
 
@@ -281,6 +283,12 @@ begin
   result := fPlatformStream.Seek(Offset, RemObjects.Elements.System.SeekOrigin(Origin));
   {$ENDIF}
 end;
+
+operator WrappedPlatformStream.Implicit(aStream: WrappedPlatformStream): PlatformStream;
+begin
+  result := aStream:fPlatformStream;
+end;
+
 {$ENDIF}
 
 method MemoryStream.GetBytes: array of Byte;
