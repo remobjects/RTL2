@@ -280,7 +280,11 @@ begin
         if lPos > 0 then begin
           var lKey := k.Substring(0, lPos - 1).Trim;
           var lValue := k.Substring(lPos + 1).Trim;
-          Headers.Add(lKey, lValue);
+          // Allow multiple Set-Cookie
+          if (lkey = 'Set-Cookie') and Headers.ContainsKey(lkey) then
+              Headers[lkey] := Headers[lkey]+','+lValue
+          else
+              Headers[lKey] := lValue;
         end;
       end;
     end;
