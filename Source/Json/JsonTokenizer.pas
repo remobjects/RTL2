@@ -48,6 +48,9 @@ begin
   Json := aJson;
   ArgumentNullException.RaiseIfNil(Json, "Json");
   self.IgnoreWhitespaces := SkipWhitespaces;
+  {$IF ISLAND}
+   fData := aJson.ToCharArray;
+  {$ELSE}
   var CharData := Json.ToCharArray;
   fData := new Char[CharData.Length + 4];
   {$IF COOPER}
@@ -57,6 +60,7 @@ begin
   {$ELSEIF TOFFEE}
   rtl.memset(@fData[0], 0, fData.length);
   memcpy(@fData[0], @CharData[0], sizeOf(Char) * CharData.Length);
+  {$ENDIF}
   {$ENDIF}
   Token := JsonTokenKind.BOF;
 end;
