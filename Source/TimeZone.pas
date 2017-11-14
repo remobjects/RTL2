@@ -3,7 +3,9 @@
 interface
 
 type
-  TimeZone = public class mapped to {$IFDEF ECHOES}System.TimeZoneInfo{$ELSEIF TOFEE}NSTimeZone{$ELSEIF COOPER}java.util.TimeZone{$ELSEIF ISLAND}RemObjects.Elements.System.TimeZone{$ENDIF}
+  PlatformTimeZone = {$IFDEF ECHOES}System.TimeZoneInfo{$ELSEIF TOFFEE}Foundation.NSTimeZone{$ELSEIF COOPER}java.util.TimeZone{$ELSEIF ISLAND}RemObjects.Elements.System.TimeZone{$ENDIF};
+
+  TimeZone = public class mapped to PlatformTimeZone
   private
     class method get_LocalTimeZone: not nullable TimeZone;
     class method get_UtcTimeZone: not nullable TimeZone;
