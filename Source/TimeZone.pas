@@ -3,8 +3,7 @@
 interface
 
 type
-  {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
-  TimeZone = public class {$IFDEF ECHOES}mapped to System.TimeZoneInfo{$ELSEIF TOFFEE}mapped to NSTimeZone{$ELSEIF COOPER}mapped to java.util.TimeZone{$ENDIF}
+TimeZone = public class {$IFDEF ECHOES}mapped to System.TimeZoneInfo{$ELSEIF TOFEE}mapped to NSTimeZone{$ELSEIF COOPER}mapped to java.util.TimeZone{$ELSEIF ISLAND}mapped to RemObjects.Elements.System.TimeZone{$ENDIF}
   private
     class method get_LocalTimeZone: not nullable TimeZone;
     class method get_UtcTimeZone: not nullable TimeZone;
@@ -30,9 +29,8 @@ type
     {$ENDIF}
     property OffsetToUTC: TimeSpan read mapped.BaseUtcOffset;
     {$ELSEIF ISLAND}
-    property Name: String read nil; {$WARNING Not Implemented}
-    property Identifier: String read nil; {$WARNING Not Implemented}
-    property OffsetToUTC: TimeSpan read new TimeSpan(0); {$WARNING Not Implemented}
+    property Identifier: String read mapped.Identifier;
+    property OffsetToUTC: TimeSpan read new TimeSpan(0, mapped.OffsetToUTC, 0);
     {$ELSEIF TOFFEE}
     property Name: String read mapped.name;
     property Identifier: String read mapped.abbreviation;
@@ -52,7 +50,7 @@ begin
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.GetSystemTimeZones().Select(tz -> tz.Id) as not nullable;
   {$ELSEIF ISLAND}
-  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
+  result := RemObjects.Elements.System.TimeZone.TimeZoneNames;
   {$ELSEIF TOFFEE}
   result := NSTimeZone.knownTimeZoneNames as not nullable;
   {$ENDIF}
@@ -65,7 +63,7 @@ begin
   {$ELSEIF ECHOES}
    raise new NotSupportedException();
   {$ELSEIF ISLAND}
-  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
+  raise new NotSupportedException();
   {$ELSEIF TOFFEE}
   result := NSTimeZone.timeZoneWithAbbreviation(aAbbreviation);
   {$ENDIF}
@@ -81,7 +79,7 @@ begin
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.FindSystemTimeZoneById(aName);
   {$ELSEIF ISLAND}
-  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
+  result := RemObjects.Elements.System.TimeZone.TimeZoneByName[aName];
   {$ELSEIF TOFFEE}
   result := NSTimeZone.timeZoneWithName(aName);
   {$ENDIF}
@@ -94,7 +92,7 @@ begin
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.Local as not nullable;
   {$ELSEIF ISLAND}
-  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
+  result := RemObjects.Elements.System.TimeZone.Local;
   {$ELSEIF TOFFEE}
   result := NSTimeZone.localTimeZone as not nullable;
   {$ENDIF}
@@ -107,7 +105,7 @@ begin
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.Utc as not nullable;
   {$ELSEIF ISLAND}
-  raise new NotImplementedException("TimeZone is not implemented for Island yet.");
+  result := RemObjects.Elements.System.TimeZone.Utc;
   {$ELSEIF TOFFEE}
   result := NSTimeZone.timeZoneWithAbbreviation("UTC") as not nullable;
   {$ENDIF}
