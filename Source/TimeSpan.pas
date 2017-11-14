@@ -91,7 +91,7 @@ end;
 
 constructor TimeSpan(d: Int32; h: Int32; m: Int32; s: Int32; ms: Int32);
 begin
-  exit new TimeSpan(((((((((Int64(d) * 24) + h) * 60) + m) * 60) + s) * 1000) + ms) * TicksPerMillisecond);
+  exit new TimeSpan(((((((((d * 24) + h) * 60) + m) * 60) + s) * 1000) + ms) * TicksPerMillisecond);
 end;
 
 method TimeSpan.get_TotalMilliSeconds: Double;

@@ -54,12 +54,7 @@
     <DefineConstants>WEBASSEMBLY</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Island">
-      <HintPath>Island</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
+    <Reference Include="Island" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.WebAssembly.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />

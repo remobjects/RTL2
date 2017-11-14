@@ -48,18 +48,9 @@
     <Architecture>x86_64;i386</Architecture>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gc">
-      <HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Windows\i386\gc.fx</HintPath>
-    </Reference>
-    <Reference Include="Island">
-      <HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Windows\i386\Island.fx</HintPath>
-    </Reference>
-    <Reference Include="rtl">
-      <HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Windows\i386\rtl.fx</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
+    <Reference Include="gc" />
+    <Reference Include="Island" />
+    <Reference Include="rtl" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />

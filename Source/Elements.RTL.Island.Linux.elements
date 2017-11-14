@@ -53,18 +53,9 @@
     <Architecture>x86_64;armv6</Architecture>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="rtl">
-      <HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Linux\x86_64\rtl.fx</HintPath>
-    </Reference>
-    <Reference Include="gc">
-      <HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Linux\x86_64\gc.fx</HintPath>
-    </Reference>
-    <Reference Include="Island">
-      <HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Linux\x86_64\Island.fx</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
+    <Reference Include="Island" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Linux.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
