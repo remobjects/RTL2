@@ -31,6 +31,7 @@ type
     constructor(aValue: not nullable String);
     {$IF ECHOES OR ISLAND}
     constructor (aGuid: PlatformGuid);
+    constructor; begin fGuid := new PlatformGuid end;
     {$ENDIF}
 
     {$IF NOT TOFFEE}

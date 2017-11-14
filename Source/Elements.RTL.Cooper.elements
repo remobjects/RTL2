@@ -56,6 +56,10 @@
     <Compile Include="Cooper\EnumerationSequence.pas" />
     <Compile Include="Cooper\LocaleUtils.pas" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Cooper\" />
+    <Folder Include="Properties\" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Cooper.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
 </Project>

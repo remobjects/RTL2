@@ -133,6 +133,8 @@
     <Folder Include="Files and Paths">
       <Virtual>True</Virtual>
     </Folder>
+    <Folder Include="Json\" />
+    <Folder Include="Reflection\" />
     <Folder Include="String">
       <Virtual>True</Virtual>
     </Folder>
