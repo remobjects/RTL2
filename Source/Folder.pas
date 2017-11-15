@@ -49,9 +49,9 @@ type
     class method Create(aFolderName: Folder; FailIfExists: Boolean := false): Folder;
     class method Delete(aFolderName: Folder);
     class method Exists(aFolderName: nullable Folder): Boolean;
-    class method GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
+    class method GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<String>;
     class method GetFilesAndFolders(aFolderName: Folder): not nullable ImmutableList<String>;
-    class method GetSubfolders(aFolderName: Folder): not nullable List<Folder>;
+    class method GetSubfolders(aFolderName: Folder): not nullable List<String>;
     {$ENDIF}
 
     {$IF NETSTANDARD}
@@ -128,7 +128,7 @@ begin
   result := (length(aFolderName) > 0) and aFolderName.Exists;
 end;
 
-class method Folder.GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<File>;
+class method Folder.GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<String>;
 begin
   result := if aRecursive then aFolderName.GetFiles(true) else aFolderName.GetFiles(); // latter is optimized
 end;
@@ -141,7 +141,7 @@ begin
   result := lList;
 end;
 
-class method Folder.GetSubfolders(aFolderName: Folder): not nullable List<Folder>;
+class method Folder.GetSubfolders(aFolderName: Folder): not nullable List<String>;
 begin
   result := aFolderName.GetSubfolders();
 end;
