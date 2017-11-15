@@ -49,7 +49,7 @@ begin
   ArgumentNullException.RaiseIfNil(Json, "Json");
   self.IgnoreWhitespaces := SkipWhitespaces;
   {$IF ISLAND}
-   fData := aJson.ToCharArray;
+  fData := aJson.ToCharArray;
   {$ELSE}
   var CharData := Json.ToCharArray;
   fData := new Char[CharData.Length + 4];
