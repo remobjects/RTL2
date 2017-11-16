@@ -48,20 +48,7 @@ begin
   Json := aJson;
   ArgumentNullException.RaiseIfNil(Json, "Json");
   self.IgnoreWhitespaces := SkipWhitespaces;
-  {$IF ISLAND}
   fData := aJson.ToCharArray;
-  {$ELSE}
-  var CharData := Json.ToCharArray;
-  fData := new Char[CharData.Length + 4];
-  {$IF COOPER}
-  System.arraycopy(CharData, 0, fData, 0, CharData.Length);
-  {$ELSEIF ECHOES}
-  Array.Copy(CharData, 0, fData, 0, CharData.Length);
-  {$ELSEIF TOFFEE}
-  rtl.memset(@fData[0], 0, fData.length);
-  memcpy(@fData[0], @CharData[0], sizeOf(Char) * CharData.Length);
-  {$ENDIF}
-  {$ENDIF}
   Token := JsonTokenKind.BOF;
 end;
 
