@@ -24,7 +24,7 @@ type
   protected
   public
 
-    class method JoinArgumentsCommandLine(aArguments: not nullable array of String): not nullable String;
+    class method JoinAndQuoteArgumentsForCommandLine(aArguments: not nullable array of String): not nullable String;
     class method SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable array of String;
 
     class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable array of String): not nullable String;
