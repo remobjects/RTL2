@@ -277,7 +277,7 @@ begin
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
     lResult.StartInfo.WorkingDirectory := aWorkingDirectory;
   if length(aArguments) > 0 then
-    lResult.StartInfo.Arguments := JoinArgumentsCommandLine(aArguments);
+    lResult.StartInfo.Arguments := JoinAndQuoteArgumentsForCommandLine(aArguments);
   for each k in aEnvironment:Keys do
     lResult.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
   lResult.StartInfo.UseShellExecute := false;
@@ -335,7 +335,7 @@ begin
   result := lResult.ToArray;
 end;
 
-class method Task.JoinArgumentsCommandLine(aArguments: not nullable array of String): not nullable String;
+class method Task.JoinAndQuoteArgumentsForCommandLine(aArguments: not nullable array of String): not nullable String;
 begin
   result := "";
   for each a in aArguments do begin
@@ -350,7 +350,7 @@ begin
   if aCommand.Contains(" ") then
     aCommand := String.Format('"{0}"', aCommand);
   if length(aArguments) > 0 then
-    aCommand := aCommand+" "+JoinArgumentsCommandLine(aArguments);
+    aCommand := aCommand+" "+JoinAndQuoteArgumentsForCommandLine(aArguments);
   result := aCommand;
 end;
 
