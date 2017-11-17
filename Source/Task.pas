@@ -17,7 +17,6 @@ type
   Task = public class mapped to PlatformTask
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
-    class method BuildArgumentsCommandLine(aArguments: not nullable array of String): not nullable String;
     class method SetUpTask(aCommand: String; aArguments: array of String; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Task;
     {$IF TOFFEE}
     class method processStdOutData(rawString: String) lastIncompleteLogLine(out lastIncompleteLogLine: String) callback(callback: block(aLine: String));
@@ -25,8 +24,10 @@ type
   protected
   public
 
-    class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable array of String): not nullable String;
+    class method JoinArgumentsCommandLine(aArguments: not nullable array of String): not nullable String;
     class method SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable array of String;
+
+    class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable array of String): not nullable String;
 
     method WaitFor; inline;
     method Start; inline;
@@ -276,7 +277,7 @@ begin
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
     lResult.StartInfo.WorkingDirectory := aWorkingDirectory;
   if length(aArguments) > 0 then
-    lResult.StartInfo.Arguments := BuildArgumentsCommandLine(aArguments);
+    lResult.StartInfo.Arguments := JoinArgumentsCommandLine(aArguments);
   for each k in aEnvironment:Keys do
     lResult.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
   lResult.StartInfo.UseShellExecute := false;
@@ -334,7 +335,7 @@ begin
   result := lResult.ToArray;
 end;
 
-class method Task.BuildArgumentsCommandLine(aArguments: not nullable array of String): not nullable String;
+class method Task.JoinArgumentsCommandLine(aArguments: not nullable array of String): not nullable String;
 begin
   result := "";
   for each a in aArguments do begin
@@ -349,7 +350,7 @@ begin
   if aCommand.Contains(" ") then
     aCommand := String.Format('"{0}"', aCommand);
   if length(aArguments) > 0 then
-    aCommand := aCommand+" "+BuildArgumentsCommandLine(aArguments);
+    aCommand := aCommand+" "+JoinArgumentsCommandLine(aArguments);
   result := aCommand;
 end;
 
