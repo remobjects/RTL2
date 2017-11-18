@@ -24,6 +24,10 @@ type
 
     {$IF NOT WEBASSEMBLY}
     method DoGetFiles(aFolder: Folder; aList: List<File>);
+
+    method getDateCreated: DateTime;
+    method getDateModified: DateTime;
+    method setDateModified(aDateTime: DateTime);
     {$ENDIF}
   public
     constructor(aPath: not nullable String);
@@ -52,6 +56,9 @@ type
     class method GetFiles(aFolderName: Folder; aRecursive: Boolean := false): not nullable ImmutableList<String>;
     class method GetFilesAndFolders(aFolderName: Folder): not nullable ImmutableList<String>;
     class method GetSubfolders(aFolderName: Folder): not nullable List<String>;
+
+    property DateCreated: DateTime read getDateCreated;
+    property DateModified: DateTime read getDateModified write setDateModified;
     {$ENDIF}
 
     {$IF NETSTANDARD}
@@ -437,6 +444,71 @@ begin
     raise new NSErrorException(lError);
 
   result := NewFolderName;
+  {$ENDIF}
+end;
+
+method Folder.getDateCreated: DateTime;
+begin
+  if not Exists then
+    raise new FileNotFoundException(FullPath);
+  {$IF COOPER}
+  {$WARNING Not implemented}
+  //result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
+  {$ELSEIF NETSTANDARD}
+  {$WARNING Not implemented}
+  //result := mapped.DateCreated.UtcDateTime;
+  {$ELSEIF ECHOES}
+  result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
+  {$ELSEIF ISLAND}
+  {$WARNING Not implemented}
+  //result := new DateTime(IslandFile.DateCreated);
+  {$ELSEIF TOFFEE}
+  {$WARNING Not implemented}
+  //result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
+  {$ENDIF}
+end;
+
+method Folder.getDateModified: DateTime;
+begin
+  if not Exists then
+    raise new FileNotFoundException(FullPath);
+  {$IF COOPER}
+  {$WARNING Not implemented}
+  //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  {$ELSEIF NETSTANDARD}
+  {$WARNING Not implemented}
+  //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
+  {$ELSEIF ECHOES}
+  result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
+  {$ELSEIF ISLAND}
+  {$WARNING Not implemented}
+  //result := new DateTime(IslandFile.DateModified);
+  {$ELSEIF TOFFEE}
+  {$WARNING Not implemented}
+  //result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
+  {$ENDIF}
+end;
+
+method Folder.setDateModified(aDateTime: DateTime);
+begin
+  if not Exists then
+    raise new FileNotFoundException(FullPath);
+  {$IF COOPER}
+  {$WARNING Not implemented}
+  //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  {$ELSEIF NETSTANDARD}
+  {$WARNING Not implemented}
+  //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
+  {$ELSEIF ECHOES}
+  writeLn("setDateModified "+aDateTime);
+  System.IO.File.SetLastWriteTimeUtc(mapped, aDateTime);
+  writeLn("set to "+new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped)));
+  {$ELSEIF ISLAND}
+  {$WARNING Not implemented}
+  //result := new DateTime(IslandFile.DateModified);
+  {$ELSEIF TOFFEE}
+  {$WARNING Not implemented}
+  //result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
   {$ENDIF}
 end;
 
