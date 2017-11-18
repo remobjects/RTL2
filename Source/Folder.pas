@@ -452,19 +452,16 @@ begin
   if not Exists then
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
-  {$WARNING Not implemented}
-  //result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
+  result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
   {$ELSEIF NETSTANDARD}
   {$WARNING Not implemented}
   //result := mapped.DateCreated.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
   {$ELSEIF ISLAND}
-  {$WARNING Not implemented}
-  //result := new DateTime(IslandFile.DateCreated);
+  result := new DateTime(IslandFolder.DateCreated);
   {$ELSEIF TOFFEE}
-  {$WARNING Not implemented}
-  //result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
   {$ENDIF}
 end;
 
@@ -473,19 +470,16 @@ begin
   if not Exists then
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
-  {$WARNING Not implemented}
-  //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  result := new DateTime(new java.util.Date(JavaFile.lastModified()));
   {$ELSEIF NETSTANDARD}
   {$WARNING Not implemented}
   //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
   {$ELSEIF ISLAND}
-  {$WARNING Not implemented}
-  //result := new DateTime(IslandFile.DateModified);
+  result := new DateTime(IslandFolder.DateModified);
   {$ELSEIF TOFFEE}
-  {$WARNING Not implemented}
-  //result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
   {$ENDIF}
 end;
 
@@ -495,20 +489,20 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   {$WARNING Not implemented}
+  //JavaFile.setLastModified(...)
   //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
   {$ELSEIF NETSTANDARD}
   {$WARNING Not implemented}
   //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
-  writeLn("setDateModified "+aDateTime);
   System.IO.File.SetLastWriteTimeUtc(mapped, aDateTime);
-  writeLn("set to "+new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped)));
   {$ELSEIF ISLAND}
   {$WARNING Not implemented}
-  //result := new DateTime(IslandFile.DateModified);
+  //IslandFolder.DateModified := aDateTime;
   {$ELSEIF TOFFEE}
-  {$WARNING Not implemented}
-  //result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
+  var lError: NSError := nil;
+  if not NSFileManager.defaultManager.setAttributes(NSDictionary.dictionaryWithObject(aDateTime) forKey(NSFileModificationDate)) ofItemAtPath(self.FullPath) error(var lError) then
+    raise new NSErrorException withError(lError);
   {$ENDIF}
 end;
 
