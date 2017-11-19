@@ -90,10 +90,10 @@ type
     property IsValueType: Boolean read mapped.isPrimitive();
     {$ENDIF}
     {$IF TOFFEE}
-    method initWithID: instancetype;
-    method initWithClass(aClass: &Class): instancetype;
-    method initWithProtocol(aProtocol: id): instancetype;
-    method initWithSimpleType(aTypeEncoding: String): instancetype;
+    constructor withID;
+    constructor withClass(aClass: &Class);
+    constructor withProtocol(aProtocol: id);
+    constructor withSimpleType(aTypeEncoding: String);
     property Interfaces: ImmutableList<&Type> read Get_Interfaces();
     property Methods: ImmutableList<&Method> read Get_Methods();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
@@ -150,7 +150,7 @@ begin
 end;
 
 {$IF TOFFEE}
-method &Type.initWithID: instancetype;
+constructor &Type withID;
 begin
   self := inherited init;
   if assigned(self) then begin
@@ -159,7 +159,7 @@ begin
   result := self;
 end;
 
-method &Type.initWithClass(aClass: &Class): instancetype;
+constructor &Type withClass(aClass: &Class);
 begin
   self := inherited init;
   if assigned(self) then begin
@@ -168,7 +168,7 @@ begin
   result := self;
 end;
 
-method &Type.initWithProtocol(aProtocol: id): instancetype;
+constructor &Type withProtocol(aProtocol: id);
 begin
   self := inherited init;
   if assigned(self) then begin
@@ -177,7 +177,7 @@ begin
   result := self;
 end;
 
-method &Type.initWithSimpleType(aTypeEncoding: String): instancetype;
+constructor &Type withSimpleType(aTypeEncoding: String);
 begin
   self := inherited init;
   if assigned(self) then begin
