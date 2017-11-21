@@ -44,7 +44,9 @@ type
     method AddMinutes(Value: Integer): DateTime;
     method AddMonths(Value: Integer): DateTime;
     method AddSeconds(Value: Integer): DateTime;
+    method AddMilliSeconds(Value: Integer): DateTime;
     method AddYears(Value: Integer): DateTime;
+    method &Add(Value: TimeSpan): DateTime;
 
     method CompareTo(Value: DateTime): Integer;
     method ToString(aTimeZone: TimeZone := nil): String;
@@ -433,6 +435,18 @@ begin
   {$ENDIF}
 end;
 
+method DateTime.AddMilliSeconds(Value: Integer): DateTime;
+begin
+  {$IF COOPER}
+  result := DateTime(mapped.clone);
+  Calendar(result).add(Calendar.MILLISECOND, Value);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := new DateTime(fDateTime.AddMilliseconds(Value));
+  {$ELSEIF TOFFEE}
+  result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSCalendarUnitNanosecond, Int64(Value)*Int64(1 000 000));
+  {$ENDIF}
+end;
+
 method DateTime.AddYears(Value: Integer): DateTime;
 begin
   {$IF COOPER}
@@ -443,6 +457,11 @@ begin
   {$ELSEIF TOFFEE}
   result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSYearCalendarUnit, Value);
   {$ENDIF}
+end;
+
+method DateTime.Add(Value: TimeSpan): DateTime;
+begin
+  result := new DateTime(self.Ticks + Value.Ticks);
 end;
 
 operator DateTime.Add(a: DateTime; b: TimeSpan): DateTime;
