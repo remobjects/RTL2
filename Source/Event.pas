@@ -9,16 +9,18 @@ type PlatformEvent = NSCondition;
 {$ENDIF}
 
 type
+  EventMode = public enum(Manual, AutoReset);
+
   &Event = public class
   private
     fPlatformEvent: PlatformEvent;
     {$IF TOFFEE}
-    fAutoReset: Boolean;
+    fMode: EventMode;
     fState: Boolean;
     {$ENDIF}
   protected
   public
-    constructor withState(aState: Boolean := false) mode(aAutoReset: Boolean := true);
+    constructor withState(aState: Boolean := false) mode(aMode: EventMode := EventMode.AutoReset);
 
     method &Set;
     method Reset;
@@ -29,12 +31,12 @@ type
 
 implementation
 
-constructor &Event withState(aState: Boolean := false) mode(aAutoReset: Boolean := true);
+constructor &Event withState(aState: Boolean := false) mode(aMode: EventMode := EventMode.AutoReset);
 begin
   {$IF ECHOES}
-  fPlatformEvent := if aAutoReset then new System.Threading.AutoResetEvent(aState) else new System.Threading.ManualResetEvent(aState);
+  fPlatformEvent := if aMode = EventMode.AutoReset then new System.Threading.AutoResetEvent(aState) else new System.Threading.ManualResetEvent(aState);
   {$ELSEIF TOFFEE}
-  fAutoReset := aAutoReset;
+  fMode := aMode;
   fState := aState;
   fPlatformEvent := new NSCondition;
   {$ENDIF}
@@ -72,7 +74,7 @@ begin
   fPlatformEvent.lock();
   while not fState do
     fPlatformEvent.wait();
-  if fAutoReset then
+  if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
   {$ENDIF}
@@ -87,7 +89,7 @@ begin
   var lWaitTime := DateTime.UtcNow.AddMilliseconds(aTimeoutInMilliseconds);
   while not fState do
     fPlatformEvent.waitUntilDate(lWaitTime);
-  if fAutoReset then
+  if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
   {$ENDIF}
@@ -102,7 +104,7 @@ begin
   var lWaitTime := DateTime.UtcNow.Add(aTimeout);
   while not fState do
     fPlatformEvent.waitUntilDate(lWaitTime);
-  if fAutoReset then
+  if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
   {$ENDIF}
