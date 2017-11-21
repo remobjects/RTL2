@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT WEBASSEMBLY}
+
 interface
 
 {$IF COOPER}
@@ -7,7 +9,7 @@ type PlatformEvent = java.util.concurrent.locks.ReentrantLock;
 {$ELSEIF ECHOES}
 type PlatformEvent = System.Threading.EventWaitHandle;
 {$ELSEIF ISLAND}
-type PlatformEvent = Object;
+type PlatformEvent = RemObjects.Elements.System.EventWaitHandle;
 {$ELSEIF TOFFEE}
 type PlatformEvent = NSCondition;
 {$ENDIF}
@@ -43,6 +45,8 @@ begin
   fMode := aMode;
   fState := aState;
   fPlatformEvent := new PlatformEvent;
+  {$ELSEIF ISLAND}
+  fPlatformEvent := new PlatformEvent(aMode = EventMode.AutoReset, aState);
   {$ENDIF}
 end;
 
@@ -53,7 +57,7 @@ begin
   fState := true;
   fPlatformEvent.Notify();
   fPlatformEvent.unlock();
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   fPlatformEvent.Set();
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
@@ -65,7 +69,7 @@ end;
 
 method &Event.Reset;
 begin
-  {$IF ECHOES}
+  {$IF ECHOES OR ISLAND}
   fPlatformEvent.Reset();
   {$ELSEIF COOPER OR TOFFEE}
   fPlatformEvent.lock();
@@ -85,6 +89,8 @@ begin
   if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
+  {$ELSEIF ISLAND}
+  fPlatformEvent.Wait();
   {$ENDIF}
 end;
 
@@ -99,6 +105,8 @@ begin
   fPlatformEvent.unlock();
   {$ELSEIF ECHOES}
   fPlatformEvent.WaitOne(aTimeoutInMilliseconds);
+  {$ELSEIF ISLAND}
+  fPlatformEvent.Wait(aTimeoutInMilliseconds);
   {$ELSEIF TOFFEE}
   WaitFor(TimeSpan.FromMilliseconds(aTimeoutInMilliseconds));
   {$ENDIF}
@@ -110,6 +118,8 @@ begin
   WaitFor(Int32(aTimeout.TotalMilliSeconds));
   {$ELSEIF ECHOES}
   fPlatformEvent.WaitOne(aTimeout);
+  {$ELSEIF ISLAND}
+  fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds));
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
   var lWaitTime := DateTime.UtcNow.Add(aTimeout);
@@ -120,5 +130,7 @@ begin
   fPlatformEvent.unlock();
   {$ENDIF}
 end;
+
+{$ENDIF}
 
 end.
