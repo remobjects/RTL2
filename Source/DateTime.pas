@@ -108,7 +108,7 @@ type
   DateTimeHelpers = static class
   public
     method GetComponent(aSelf: NSDate; Component: NSCalendarUnit): Integer;
-    method AdjustDate(aSelf: NSDate; Component: NSCalendarUnit; Value: Integer): DateTime;
+    method AdjustDate(aSelf: NSDate; Component: NSCalendarUnit; Value: NSInteger): DateTime;
     class property LocalTimezone: NSTimeZone := NSTimeZone.localTimeZone;
   end;
 {$ENDIF}
@@ -344,7 +344,7 @@ end;
 //
 
 {$IF TOFFEE}
-method DateTimeHelpers.AdjustDate(aSelf: NSDate; Component: NSCalendarUnit; Value: Integer): DateTime;
+method DateTimeHelpers.AdjustDate(aSelf: NSDate; Component: NSCalendarUnit; Value: NSInteger): DateTime;
 begin
   var Components: NSDateComponents := new NSDateComponents();
 
@@ -455,7 +455,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   result := new DateTime(fDateTime.AddYears(Value));
   {$ELSEIF TOFFEE}
-  result := DateTimeHelpers.AdjustDate(mapped, NSCalendarUnit.NSYearCalendarUnit, Value);
+  result := &Add(TimeSpan.FromMilliseconds(Value));
   {$ENDIF}
 end;
 

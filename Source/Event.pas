@@ -49,8 +49,8 @@ begin
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
   fState := true;
-  fPlatformEvent.unlock();
   fPlatformEvent.signal();
+  fPlatformEvent.unlock();
   {$ENDIF}
 end;
 
@@ -62,7 +62,6 @@ begin
   fPlatformEvent.lock();
   fState := false;
   fPlatformEvent.unlock();
-  fPlatformEvent.signal();
   {$ENDIF}
 end;
 
@@ -85,13 +84,7 @@ begin
   {$IF ECHOES}
   fPlatformEvent.WaitOne(aTimeoutInMilliseconds);
   {$ELSE IF TOFFEE}
-  fPlatformEvent.lock();
-  var lWaitTime := DateTime.UtcNow.AddMilliseconds(aTimeoutInMilliseconds);
-  while not fState do
-    fPlatformEvent.waitUntilDate(lWaitTime);
-  if fMode = EventMode.AutoReset then
-    fState := false;
-  fPlatformEvent.unlock();
+  WaitFor(TimeSpan.FromMilliseconds(aTimeoutInMilliseconds));
   {$ENDIF}
 end;
 
@@ -102,7 +95,7 @@ begin
   {$ELSE IF TOFFEE}
   fPlatformEvent.lock();
   var lWaitTime := DateTime.UtcNow.Add(aTimeout);
-  while not fState do
+  if not fState then
     fPlatformEvent.waitUntilDate(lWaitTime);
   if fMode = EventMode.AutoReset then
     fState := false;
