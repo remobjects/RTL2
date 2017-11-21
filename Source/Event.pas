@@ -2,8 +2,12 @@
 
 interface
 
-{$IF ECHOES}
+{$IF COOPER}
+type PlatformEvent = java.util.concurrent.locks.ReentrantLock;
+{$ELSEIF ECHOES}
 type PlatformEvent = System.Threading.EventWaitHandle;
+{$ELSEIF ISLAND}
+type PlatformEvent = Object;
 {$ELSEIF TOFFEE}
 type PlatformEvent = NSCondition;
 {$ENDIF}
@@ -14,7 +18,7 @@ type
   &Event = public class
   private
     fPlatformEvent: PlatformEvent;
-    {$IF TOFFEE}
+    {$IF COOPER OR TOFFEE}
     fMode: EventMode;
     fState: Boolean;
     {$ENDIF}
@@ -35,16 +39,21 @@ constructor &Event withState(aState: Boolean := false) mode(aMode: EventMode := 
 begin
   {$IF ECHOES}
   fPlatformEvent := if aMode = EventMode.AutoReset then new System.Threading.AutoResetEvent(aState) else new System.Threading.ManualResetEvent(aState);
-  {$ELSEIF TOFFEE}
+  {$ELSEIF COOPER OR TOFFEE}
   fMode := aMode;
   fState := aState;
-  fPlatformEvent := new NSCondition;
+  fPlatformEvent := new PlatformEvent;
   {$ENDIF}
 end;
 
 method &Event.Set;
 begin
-  {$IF ECHOES}
+  {$IF COOPER}
+  fPlatformEvent.lock();
+  fState := true;
+  fPlatformEvent.Notify();
+  fPlatformEvent.unlock();
+  {$ELSEIF ECHOES}
   fPlatformEvent.Set();
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
@@ -58,7 +67,7 @@ method &Event.Reset;
 begin
   {$IF ECHOES}
   fPlatformEvent.Reset();
-  {$ELSEIF TOFFEE}
+  {$ELSEIF COOPER OR TOFFEE}
   fPlatformEvent.lock();
   fState := false;
   fPlatformEvent.unlock();
@@ -69,7 +78,7 @@ method &Event.WaitFor;
 begin
   {$IF ECHOES}
   fPlatformEvent.WaitOne();
-  {$ELSEIF TOFFEE}
+  {$ELSEIF COOPER OR TOFFEE}
   fPlatformEvent.lock();
   while not fState do
     fPlatformEvent.wait();
@@ -81,18 +90,27 @@ end;
 
 method &Event.WaitFor(aTimeoutInMilliseconds: Int32);
 begin
-  {$IF ECHOES}
+  {$IF COOPER}
+  fPlatformEvent.lock();
+  if not fState then
+    fPlatformEvent.wait(aTimeoutInMilliseconds);
+  if fMode = EventMode.AutoReset then
+    fState := false;
+  fPlatformEvent.unlock();
+  {$ELSEIF ECHOES}
   fPlatformEvent.WaitOne(aTimeoutInMilliseconds);
-  {$ELSE IF TOFFEE}
+  {$ELSEIF TOFFEE}
   WaitFor(TimeSpan.FromMilliseconds(aTimeoutInMilliseconds));
   {$ENDIF}
 end;
 
 method &Event.WaitFor(aTimeout: Timespan);
 begin
-  {$IF ECHOES}
+  {$IF COOPER}
+  WaitFor(Int32(aTimeout.TotalMilliSeconds));
+  {$ELSEIF ECHOES}
   fPlatformEvent.WaitOne(aTimeout);
-  {$ELSE IF TOFFEE}
+  {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
   var lWaitTime := DateTime.UtcNow.Add(aTimeout);
   if not fState then
