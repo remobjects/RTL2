@@ -20,6 +20,9 @@ type
   &Event = public class
   private
     fPlatformEvent: PlatformEvent;
+    {$IF COOPER}
+    fCond: java.util.concurrent.locks.Condition;
+    {$ENDIF}
     {$IF COOPER OR TOFFEE}
     fMode: EventMode;
     fState: Boolean;
@@ -45,6 +48,9 @@ begin
   fMode := aMode;
   fState := aState;
   fPlatformEvent := new PlatformEvent;
+  {$IF COOPER}
+  fCond := fPlatformEvent.newCondition;
+  {$ENDIF}
   {$ELSEIF ISLAND}
   fPlatformEvent := new PlatformEvent(aMode = EventMode.AutoReset, aState);
   {$ENDIF}
@@ -55,7 +61,7 @@ begin
   {$IF COOPER}
   fPlatformEvent.lock();
   fState := true;
-  fPlatformEvent.Notify();
+  fCond.signal();
   fPlatformEvent.unlock();
   {$ELSEIF ECHOES OR ISLAND}
   fPlatformEvent.Set();
@@ -85,7 +91,11 @@ begin
   {$ELSEIF COOPER OR TOFFEE}
   fPlatformEvent.lock();
   while not fState do
+  {$IF COOPER}
+    fCond.await();
+  {$ELSE}
     fPlatformEvent.wait();
+  {$ENDIF}
   if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
@@ -99,7 +109,7 @@ begin
   {$IF COOPER}
   fPlatformEvent.lock();
   if not fState then
-    fPlatformEvent.wait(aTimeoutInMilliseconds);
+    fCond.await(aTimeoutInMilliseconds, java.util.concurrent.TimeUnit.MILLISECONDS);
   if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
