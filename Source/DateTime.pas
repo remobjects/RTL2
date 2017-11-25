@@ -14,7 +14,7 @@ uses
 type
   PlatformDateTime = {$IF COOPER}java.util.Calendar{$ELSEIF ECHOES}System.DateTime{$ELSEIF ISLAND}RemObjects.Elements.System.DateTime{$ELSEIF TOFFEE}NSDate{$ENDIF};
 
-  DateTime = public class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
+  DateTime = public partial class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
   private
     {$IF ECHOES OR ISLAND}
     fDateTime: PlatformDateTime;
@@ -56,6 +56,7 @@ type
     method ToShortDateString(aTimeZone: TimeZone := nil): String;
     method ToShortTimeString(aTimeZone: TimeZone := nil): String;
 
+    method ToShortPrettyDateAndTimeString(aTimeZone: TimeZone := nil): String;
     method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
     method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
 
@@ -100,6 +101,12 @@ type
     operator Implicit(aDateTime: DateTime): PlatformDateTime;
     {$ENDIF}
   end;
+
+  {$IF ECHOES}
+  DateTime = public partial class(IComparable<DateTime>)
+  end;
+  {$ENDIF}
+
 
 implementation
 
@@ -295,6 +302,11 @@ begin
   lFormatter.timeStyle := NSDateFormatterStyle.ShortStyle;
   result := lFormatter.stringFromDate(mapped);
   {$ENDIF}
+end;
+
+method DateTime.ToShortPrettyDateAndTimeString(aTimeZone: TimeZone := nil): String;
+begin
+  result := ToShortPrettyDateString(aTimeZone)+" "+ToShortTimeString(aTimeZone);
 end;
 
 method DateTime.ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
