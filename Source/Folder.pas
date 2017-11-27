@@ -180,7 +180,7 @@ end;
 method Folder.GetFiles(aRecursive: Boolean): not nullable ImmutableList<String>;
 begin
   if not aRecursive then exit GetFiles();
-  var lResult := new List<File>() as not nullable;
+  var lResult := new List<String>() as not nullable;
   DoGetFiles(self, lResult);
   result := lResult;
 end;
@@ -366,7 +366,7 @@ begin
   {$ELSEIF ISLAND}
   result := IslandFolder.GetFiles().Select(f -> f.FullName).ToList() as not nullable;
   {$ELSEIF TOFFEE}
-  var lResult := new List<File> as not nullable;
+  var lResult := new List<String> as not nullable;
   var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
   if Items = nil then
     exit lResult;
