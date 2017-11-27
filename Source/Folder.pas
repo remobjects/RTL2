@@ -46,9 +46,9 @@ type
     method CopyContentsTo(aNewFolder: Folder; aRecursive: Boolean := true);
 
     method GetFile(FileName: String): File;
-    method GetFiles: not nullable ImmutableList<File>;
-    method GetFiles(aRecursive: Boolean): not nullable ImmutableList<File>;
-    method GetSubfolders: not nullable List<Folder>;
+    method GetFiles: not nullable ImmutableList<String>;
+    method GetFiles(aRecursive: Boolean): not nullable ImmutableList<String>;
+    method GetSubfolders: not nullable List<String>;
 
     class method Create(aFolderName: Folder; FailIfExists: Boolean := false): Folder;
     class method Delete(aFolderName: Folder);
@@ -177,7 +177,7 @@ begin
     DoGetFiles(f, aList);
 end;
 
-method Folder.GetFiles(aRecursive: Boolean): not nullable ImmutableList<File>;
+method Folder.GetFiles(aRecursive: Boolean): not nullable ImmutableList<String>;
 begin
   if not aRecursive then exit GetFiles();
   var lResult := new List<File>() as not nullable;
@@ -352,7 +352,7 @@ begin
   {$ENDIF}
 end;
 
-method Folder.GetFiles: not nullable ImmutableList<File>;
+method Folder.GetFiles: not nullable ImmutableList<String>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles((f,n)->new java.io.File(f, n).isFile).Select(f->f.path).ToList() as not nullable;
@@ -380,7 +380,7 @@ begin
   {$ENDIF}
 end;
 
-method Folder.GetSubfolders: not nullable List<Folder>;
+method Folder.GetSubfolders: not nullable List<String>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles( (f,n) -> new java.io.File(f, n).isDirectory).Select(f -> f.Path).ToList() as not nullable;
