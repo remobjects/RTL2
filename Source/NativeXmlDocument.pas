@@ -32,9 +32,6 @@ type
 
     fRoot: XmlElement;
     method GetRoot: not nullable XmlElement;
-    method GetNamespaces: not nullable sequence of XmlNamespace;
-    method GetNamespace(aUrl: Url): nullable XmlNamespace;
-    method GetNamespace(aPrefix: String): nullable XmlNamespace;
 
   public
     class method FromFile(aFileName: not nullable File): nullable XmlDocument;
@@ -49,14 +46,6 @@ type
     method SaveToFile(aFileName: not nullable File);
 
     property Root: not nullable XmlElement read GetRoot;
-    property Namespaces: not nullable sequence of XmlNamespace read GetNamespaces;
-    property &Namespace[aUrl: Url]: nullable XmlNamespace read GetNamespace;
-    property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace(aPrefix);
-
-    method AddNamespace(aNamespace: not nullable XmlNamespace);
-    method AddNamespace(aPrefix: nullable String; aUrl: not nullable Url): XmlNamespace;
-    method RemoveNamespace(aNamespace: not nullable XmlNamespace);
-    method RemoveNamespace(aPrefix: not nullable String);
   end;
 
   XmlNode = public class
@@ -73,7 +62,7 @@ type
 
   XmlElement = public class(XmlNode)
   private
-    method GetNamespace: nullable XmlNamespace;
+    method GetNamespace: nullable Uri;
     method GetLocalName: not nullable String;
     method SetLocalName(aValue: not nullable String);
     method GetValue: nullable String;
@@ -85,7 +74,7 @@ type
     method GetNodes: not nullable sequence of XmlNode;
 
   public
-    property &Namespace: XmlNamespace read GetNamespace;
+    property &Namespace: nullable Uri read GetNamespace;
     property LocalName: not nullable String read GetLocalName write SetLocalName;
     property Value: nullable String read GetValue write SetValue;
 
@@ -119,12 +108,12 @@ type
     constructor (aLocalName: not nullable String; aNamespace: nullable XmlNamespace; aValue: not nullable String);
     constructor (aNativeXmlNode: NativeXmlNode; aParent: XmlNode := nil);
   private
-    method GetNamespace: XmlNamespace;
+    method GetNamespace: Uri;
     method GetLocalName: not nullable String;
     method GetValue: not nullable String;
     method SetValue(aValue: not nullable String);
   public
-    property &Namespace: XmlNamespace read GetNamespace;
+    property &Namespace: Uri read GetNamespace;
     property LocalName: not nullable String read GetLocalName;
     property Value: not nullable String read GetValue write SetValue;
   end;
@@ -265,27 +254,6 @@ begin
   {$ENDIF}
 end;
 
-
-method XmlDocument.AddNamespace(aNamespace: not nullable XmlNamespace);
-begin
-  {$HINT Not Implemented yet}
-end;
-
-method XmlDocument.AddNamespace(aPrefix: nullable String; aUrl: not nullable Url): XmlNamespace;
-begin
-  {$HINT Not Implemented yet}
-end;
-
-method XmlDocument.RemoveNamespace(aNamespace: not nullable XmlNamespace);
-begin
-  {$HINT Not Implemented yet}
-end;
-
-method XmlDocument.RemoveNamespace(aPrefix: not nullable String);
-begin
-  {$HINT Not Implemented yet}
-end;
-
 method XmlDocument.GetRoot: not nullable XmlElement;
 begin
   if not assigned(fRoot) then begin
@@ -297,22 +265,6 @@ begin
     fRoot.fDocument := self;
   end;
   result := fRoot as not nullable;
-end;
-
-method XmlDocument.GetNamespaces: not nullable sequence of XmlNamespace;
-begin
-  {$HINT Not Implemented yet}
-  result := [];
-end;
-
-method XmlDocument.GetNamespace(aUrl: Url): nullable XmlNamespace;
-begin
-  {$HINT Not Implemented yet}
-end;
-
-method XmlDocument.GetNamespace(aPrefix: String): nullable XmlNamespace;
-begin
-  {$HINT Not Implemented yet}
 end;
 
 { XmlNode }
@@ -512,7 +464,7 @@ begin
   {$ENDIF}
 end;
 
-method XmlElement.GetNamespace: nullable XmlNamespace;
+method XmlElement.GetNamespace: nullable Uri;
 begin
   {$IF ECHOES}
   var lURI := (fNativeXmlNode as XElement).Name.NamespaceName;
@@ -520,7 +472,7 @@ begin
   var lURI := fNativeXmlNode.URI;
   {$ENDIF}
   if length(lURI) > 0 then
-    result := Document.Namespace[Url.UrlWithString(lURI)];
+    result := Uri.UriWithString(lURI);
 end;
 
 method XmlElement.GetValue: nullable String;
@@ -633,7 +585,7 @@ begin
   {$ENDIF}
 end;
 
-method XmlAttribute.GetNamespace: XmlNamespace;
+method XmlAttribute.GetNamespace: Uri;
 begin
   {$IF ECHOES}
   var lURI := (fNativeXmlNode as XAttribute).Name.NamespaceName;
@@ -641,7 +593,7 @@ begin
   var lURI := fNativeXmlNode.URI;
   {$ENDIF}
   if length(lURI) > 0 then
-    result := Document.Namespace[Url.UrlWithString(lURI)];
+    result := Uri.UriWithString(lURI);
 end;
 
 method XmlAttribute.GetValue: not nullable String;
