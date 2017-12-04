@@ -17,8 +17,8 @@ type
   assembly
     fLineBreak: String;
   public
-    constructor (XmlString: String);
-    constructor (XmlString: String; aOptions: XmlFormattingOptions);
+    constructor (aXmlString: String);
+    constructor (aXmlString: String; aOptions: XmlFormattingOptions);
     method Parse(): not nullable XmlDocument;
     FormatOptions: XmlFormattingOptions;
   end;
@@ -132,25 +132,25 @@ type
 
 implementation
 
-constructor XmlParser( XmlString: String);
+constructor XmlParser(aXmlString: String);
 begin
-  Tokenizer := new XmlTokenizer(XmlString);
+  Tokenizer := new XmlTokenizer(aXmlString);
   FormatOptions := new XmlFormattingOptions;
   fLineBreak := FormatOptions.NewLineString;
   if fLineBreak = nil then
-    if XmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
-    else if XmlString.IndexOf(#10) > -1 then fLineBreak := #10
+    if aXmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
+    else if aXmlString.IndexOf(#10) > -1 then fLineBreak := #10
       else fLineBreak := Environment.LineBreak;
 end;
 
-constructor XmlParser(XmlString: String; aOptions: XmlFormattingOptions);
+constructor XmlParser(aXmlString: String; aOptions: XmlFormattingOptions);
 begin
-  Tokenizer := new XmlTokenizer(XmlString);
+  Tokenizer := new XmlTokenizer(aXmlString);
   FormatOptions := aOptions;
   fLineBreak := FormatOptions.NewLineString;
   if fLineBreak = nil then
-    if XmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
-    else if XmlString.IndexOf(#10) > -1 then fLineBreak := #10
+    if aXmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
+    else if aXmlString.IndexOf(#10) > -1 then fLineBreak := #10
       else fLineBreak := Environment.LineBreak;
 end;
 
