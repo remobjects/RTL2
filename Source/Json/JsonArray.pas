@@ -6,17 +6,17 @@ type
   JsonArray = public class (JsonNode, ISequence<JsonNode>)
   private
     fItems: List<JsonNode>;
-    method GetItem(&Index: Integer): not nullable JsonNode;
-    method SetItem(&Index: Integer; Value: not nullable JsonNode);
+    method GetItem(aIndex: Integer): not nullable JsonNode;
+    method SetItem(aIndex: Integer; aValue: not nullable JsonNode);
 
   public
     constructor;
     constructor(aItems: List<JsonNode>);
 
-    method &Add(Value: not nullable JsonNode);
-    method Insert(&Index: Integer; Value: not nullable JsonNode);
+    method &Add(aValue: not nullable JsonNode);
+    method Insert(aIndex: Integer; aValue: not nullable JsonNode);
     method Clear;
-    method &RemoveAt(&Index: Integer);
+    method &RemoveAt(aIndex: Integer);
 
     method ToStrings: not nullable sequence of String;
     method ToStringList: not nullable List<String>;
@@ -40,7 +40,7 @@ type
     class method Load(JsonString: String): not nullable JsonArray;
 
     property Count: Integer read fItems.Count; override;
-    property Item[&Index: Integer]: not nullable JsonNode read GetItem write SetItem; default; override;
+    property Item[aIndex: Integer]: not nullable JsonNode read GetItem write SetItem; default; override;
   end;
 
 implementation
@@ -55,25 +55,24 @@ begin
   fItems := aItems;
 end;
 
-method JsonArray.GetItem(&Index: Integer): not nullable JsonNode;
+method JsonArray.GetItem(aIndex: Integer): not nullable JsonNode;
 begin
-  exit fItems[&Index];
+  exit fItems[aIndex] as not nullable;
 end;
 
-method JsonArray.SetItem(&Index: Integer; Value: not nullable JsonNode);
+method JsonArray.SetItem(aIndex: Integer; aValue: not nullable JsonNode);
 begin
-  ArgumentNullException.RaiseIfNil(Value, "Value");
-  fItems[&Index] := Value;
+  fItems[aIndex] := aValue;
 end;
 
-method JsonArray.Add(Value: not nullable JsonNode);
+method JsonArray.Add(aValue: not nullable JsonNode);
 begin
-  fItems.Add(Value);
+  fItems.Add(aValue);
 end;
 
-method JsonArray.Insert(&Index: Integer; Value: not nullable JsonNode);
+method JsonArray.Insert(aIndex: Integer; aValue: not nullable JsonNode);
 begin
-  fItems.Insert(&Index, Value);
+  fItems.Insert(aIndex, aValue);
 end;
 
 method JsonArray.Clear;
@@ -81,9 +80,9 @@ begin
   fItems.RemoveAll;
 end;
 
-method JsonArray.RemoveAt(&Index: Integer);
+method JsonArray.RemoveAt(aIndex: Integer);
 begin
-  fItems.RemoveAt(&Index);
+  fItems.RemoveAt(aIndex);
 end;
 
 class method JsonArray.Load(JsonString: String): not nullable JsonArray;
@@ -92,9 +91,9 @@ begin
   var lValue := Serializer.Deserialize;
 
   if not (lValue is JsonArray) then
-    raise new InvalidOperationException("String does not contains valid Json array");
+    raise new InvalidOperationException("String does not contain a valid Json array");
 
-  result := lValue as JsonArray;
+  result := lValue as JsonArray as not nullable;
 end;
 
 method JsonArray.ToJson: String;
@@ -131,7 +130,9 @@ end;
 {$ELSEIF TOFFEE}
 method JsonArray.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
 begin
+  {$HIDE CPW8}
   exit NSArray(fItems).countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
+  {$SHOW CPW8}
 end;
 {$ENDIF}
 

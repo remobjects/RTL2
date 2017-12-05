@@ -9,8 +9,8 @@ type
 
     [ToString]
     method ToString: String; override;
-        {$IF TOFFEE}
-    method isEqual(obj: id): Boolean;
+    {$IF TOFFEE}
+    method isEqual(obj: id): Boolean; override;
     {$ELSE}
     method &Equals(Obj: Object): Boolean; override;
     {$ENDIF}

@@ -447,6 +447,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF NETSTANDARD}[Warning("Not Implemented for all .NET Standard")]{$ENDIF}
 method Folder.getDateCreated: DateTime;
 begin
   if not Exists then
@@ -465,6 +466,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF NETSTANDARD}[Warning("Not Implemented for all .NET Standard")]{$ENDIF}
 method Folder.getDateModified: DateTime;
 begin
   if not Exists then
@@ -483,6 +485,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF COOPER OR ISLAND OR NETSTANDARD}[Warning("Not Implemented for all platforms")]{$ENDIF}
 method Folder.setDateModified(aDateTime: DateTime);
 begin
   if not Exists then
@@ -552,7 +555,9 @@ end;
 {$IF TOFFEE}
 class method FolderHelper.IsDirectory(Value: String): Boolean;
 begin
+  {$HIDE CPW8}
   Foundation.NSFileManager.defaultManager.fileExistsAtPath(Value) isDirectory(@Result);
+  {$SHOW CPW8}
 end;
 
 method Folder.Combine(BasePath: String; SubPath: String): String;
