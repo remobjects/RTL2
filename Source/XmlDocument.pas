@@ -319,6 +319,7 @@ type
     StartTag,
     SingleTag,
     InsideTag,
+    InsideXmlns,
     BetweenTags,
     EndTag,
     AttributeValue
@@ -663,6 +664,13 @@ begin
           end;
         end;
 
+      end;
+    end;
+    if lElement.DefinedNamespaces.Count > 0 then begin
+      for each lN in lElement.definedNamespaces do begin          
+        if ((aRow = lN.NodeRange.StartLine) and (aColumn >= lN.NodeRange.StartColumn+6) and (aColumn < lN.NodeRange.EndColumn)) or
+          ((aRow > lN.NodeRange.StartLine) and ((aRow < lN.NodeRange.EndLine) or ((aRow = lN.NodeRange.EndLine) and (aColumn < lN.NodeRange.EndColumn)))) then
+          result.CurrentPosition := XmlPositionKind.InsideXmlns;
       end;
     end;
   end;
