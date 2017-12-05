@@ -254,7 +254,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := new Binary(self);
   {$ELSEIF TOFFEE}
-  result := mapped.mutableCopy;
+  result := mapped.mutableCopy as not nullable;
   {$ENDIF}
 end;
 
@@ -268,7 +268,7 @@ begin
   if self is NSMutableData then
     result := self as NSMutableData
   else
-    result := mapped.mutableCopy;
+    result := mapped.mutableCopy as not nullable;
   {$ENDIF}
 end;
 

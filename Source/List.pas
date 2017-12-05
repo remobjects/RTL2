@@ -624,7 +624,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := new List<T>(self);
   {$ELSEIF TOFFEE}
-  result := mapped.mutableCopy;
+  result := mapped.mutableCopy as not nullable;
   {$ENDIF}
 end;
 
@@ -636,7 +636,7 @@ begin
   if self is NSMutableArray then
     result := self as NSMutableArray
   else
-    result := mapped.mutableCopy;
+    result := mapped.mutableCopy as not nullable;
   {$ENDIF}
 end;
 

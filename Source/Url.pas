@@ -49,13 +49,13 @@ type
     constructor(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String);
   public
 
-    class method UrlWithString(aUrlString: not nullable String): Url;
-    class method TryUrlWithString(aUrlString: nullable String): Url;
-    class method UrlWithComponents(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String): Url;
-    class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
-    class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
-    class method UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
-    class method UrlWithUnixPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
+    class method UrlWithString(aUrlString: not nullable String): not nullable Url;
+    class method TryUrlWithString(aUrlString: nullable String): nullable Url;
+    class method UrlWithComponents(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String): not nullable Url;
+    class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
+    class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
+    class method UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
+    class method UrlWithUnixPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
 
     property Scheme: String read fScheme;
     property Host: String read fHost;
@@ -130,9 +130,9 @@ type
     method UrlWithFragment(aFragment: nullable String): not nullable Url;
     method UrlWithoutFragment(): not nullable Url; inline;
 
-    method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; inline;
-    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String; inline;
-    method UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
+    method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String; inline;
+    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String; inline;
+    method UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 
     method FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; //inline; 76830: Toffee: "E0 Internal error: Could not resolve member op_Implicit on RemObjects.Elements.RTL.String" with inline
     method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; inline;
@@ -206,13 +206,12 @@ begin
   fUser := aUser;
 end;
 
-class method Url.UrlWithString(aUrlString: not nullable String): Url;
+class method Url.UrlWithString(aUrlString: not nullable String): not nullable Url;
 begin
-  if length(aUrlString) > 0 then
-    result := new Url(aUrlString);
+  result := new Url(aUrlString);
 end;
 
-class method Url.TryUrlWithString(aUrlString: nullable String): Url;
+class method Url.TryUrlWithString(aUrlString: nullable String): nullable Url;
 begin
   try
     if length(aUrlString) > 0 then begin
@@ -225,12 +224,12 @@ begin
   end;
 end;
 
-class method Url.UrlWithComponents(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String): Url;
+class method Url.UrlWithComponents(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String): not nullable Url;
 begin
   result := new Url(aScheme, aHost, aPort, aPath, aQueryString, aFragment, aUser);
 end;
 
-class method Url.UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
+class method Url.UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
 begin
   {$IF NOT KNOWN_UNIX}
   if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
@@ -241,7 +240,7 @@ begin
   result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
 end;
 
-class method Url.UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): Url;
+class method Url.UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
 begin
   if aPath.IsAbsolutePath then
     result := UrlWithFilePath(aPath) isDirectory(aIsDirectory)
@@ -249,7 +248,7 @@ begin
     result := UrlWithFilePath(Path.Combine(aUrl.FilePath, aPath)) isDirectory(aIsDirectory).CanonicalVersion;
 end;
 
-class method Url.UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
+class method Url.UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
 begin
   if aPath.IsAbsoluteWindowsPath then begin
     if (length(aPath) ≥ 2) and (aPath[0] = '\') and (aPath[1] = '\') then begin
@@ -266,7 +265,7 @@ begin
       end;
     end
     else if aPath.StartsWith("\") then begin
-      aPath := aPath;
+      //aPath := aPath;
     end
     else begin
       aPath := "/"+aPath; // Windows paths always get an extra "/"
@@ -276,7 +275,7 @@ begin
   result := UrlWithUnixPath(aPath) isDirectory(aIsDirectory);
 end;
 
-class method Url.UrlWithUnixPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): Url;
+class method Url.UrlWithUnixPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
 begin
   if aIsDirectory and not aPath.EndsWith("/") then
     aPath := aPath+"/";
@@ -437,7 +436,7 @@ begin
   end;
 end;
 
-method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
+method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
   result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
   {$IF NOT KNOWN_UNIX}
@@ -446,13 +445,13 @@ begin
   {$ENDIF}
 end;
 
-method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
+method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
   result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
   result := result:Replace('/', '\');
 end;
 
-method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): String;
+method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
   var SelfIsAbsoluteWindowsUrl := IsAbsoluteWindowsFileURL;
   var BaseIsAbsoluteWindowsUrl := aUrl.IsAbsoluteWindowsFileURL;

@@ -32,7 +32,9 @@ type
     method GetNonGenericEnumerator(): IEnumerator; implements IEnumerable.GetEnumerator;
     method GetEnumerator(): IEnumerator<JsonNode>;
     {$ELSEIF TOFFEE}
+    {$HIDE CPW8}
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
+    {$SHOW CPW8}
     {$ENDIF}
 
     class method Load(JsonString: String): JsonArray;

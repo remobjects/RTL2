@@ -743,7 +743,7 @@ end;
 method String.Remove(aStartIndex: Int32; aLength: Int32): not nullable String;
 begin
   {$IF COOPER}
-  exit mapped.substring(0, aStartIndex)+mapped.substring(aStartIndex+aLength) as not nullable;
+  exit (mapped.substring(0, aStartIndex)+mapped.substring(aStartIndex+aLength)) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Remove(aStartIndex, aLength) as not nullable;
   {$ELSEIF TOFFEE}

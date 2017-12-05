@@ -27,7 +27,7 @@ type
     {$IF NOT WEBASSEMBLY}
     method GetFullPath(RelativePath: not nullable String): not nullable String;
     {$ENDIF}
-    method GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): not nullable String;
+    method GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): nullable String;
 
     method GetNetworkServerName(aFileName: not nullable String): nullable String;
 
@@ -205,7 +205,7 @@ begin
 end;
 {$ENDIF}
 
-method path.GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): not nullable String;
+method Path.GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): nullable String;
 begin
   result := Url.UrlWithFilePath(aFullPath).FilePathRelativeToUrl(Url.UrlWithFilePath(aBasePath)) Always(true);
 end;

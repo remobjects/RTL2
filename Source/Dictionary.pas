@@ -158,9 +158,9 @@ end;
 method ImmutableDictionary<T, U>.GetKeys: not nullable ImmutableList<T>;
 begin
   {$IF COOPER}
-  exit mapped.keySet.ToList();
+  exit mapped.keySet.ToList() as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Keys.ToList();
+  exit mapped.Keys.ToList() as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.allKeys;
   {$ENDIF}
@@ -169,9 +169,9 @@ end;
 method ImmutableDictionary<T, U>.GetValues: not nullable sequence of U;
 begin
   {$IF COOPER}
-  exit mapped.values;
+  exit mapped.values as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Values;
+  exit mapped.Values as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.allValues;
   {$ENDIF}

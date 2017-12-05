@@ -433,7 +433,7 @@ begin
     x := b shl (6 - a);
     sb.Append(Codes64[x]);
   end;
-  result := sb.ToString;
+  result := sb.ToString as not nullable;
 end;
 
 method convert.Base64StringToByteArray(S: String): array of Byte;
