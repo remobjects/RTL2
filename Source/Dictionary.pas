@@ -9,8 +9,8 @@ type
   where T is class, U is class;
   {$ENDIF}
   private
-    method GetKeys: ImmutableList<T>;
-    method GetValues: sequence of U;
+    method GetKeys: not nullable ImmutableList<T>;
+    method GetValues: not nullable sequence of U;
     method GetItem(aKey: not nullable T): nullable U; inline;
   protected
 
@@ -22,9 +22,9 @@ type
 
     method ForEach(Action: Action<KeyValuePair<T, U>>);
 
-    property Item[Key: not nullable T]: U read GetItem; default; inline; // will return nil for unknown keys
-    property Keys: ImmutableList<T> read GetKeys;
-    property Values: sequence of U read GetValues;
+    property Item[Key: not nullable T]: nullable U read GetItem; default; inline; // will return nil for unknown keys
+    property Keys: not nullable ImmutableList<T> read GetKeys;
+    property Values: not nullable sequence of U read GetValues;
     property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
 
     method UniqueCopy: not nullable ImmutableDictionary<T,U>;
@@ -137,7 +137,7 @@ begin
   result := mapped[aKey];
   {$ELSEIF ECHOES OR ISLAND}
   if not mapped.TryGetValue(aKey, out result) then
-    result := nil;
+    result := nil; // should be unnecessary?
   {$ELSEIF TOFFEE}
   result := mapped.objectForKey(aKey);
   {$ENDIF}
@@ -149,13 +149,13 @@ begin
   result := mapped[aKey];
   {$ELSEIF ECHOES OR ISLAND}
   if not mapped.TryGetValue(aKey, out result) then
-    result := nil;
+    result := nil; // should be unnecessary?
   {$ELSEIF TOFFEE}
   result := mapped.objectForKey(aKey);
   {$ENDIF}
 end;
 
-method ImmutableDictionary<T, U>.GetKeys: ImmutableList<T>;
+method ImmutableDictionary<T, U>.GetKeys: not nullable ImmutableList<T>;
 begin
   {$IF COOPER}
   exit mapped.keySet.ToList();
@@ -166,7 +166,7 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableDictionary<T, U>.GetValues: sequence of U;
+method ImmutableDictionary<T, U>.GetValues: not nullable sequence of U;
 begin
   {$IF COOPER}
   exit mapped.values;
