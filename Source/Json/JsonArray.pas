@@ -6,15 +6,15 @@ type
   JsonArray = public class (JsonNode, ISequence<JsonNode>)
   private
     fItems: List<JsonNode>;
+    method GetItem(&Index: Integer): not nullable JsonNode;
+    method SetItem(&Index: Integer; Value: not nullable JsonNode);
 
-    method GetItem(&Index: Integer): JsonNode;
-    method SetItem(&Index: Integer; Value: JsonNode);
   public
     constructor;
     constructor(aItems: List<JsonNode>);
 
-    method &Add(Value: JsonNode);
-    method Insert(&Index: Integer; Value: JsonNode);
+    method &Add(Value: not nullable JsonNode);
+    method Insert(&Index: Integer; Value: not nullable JsonNode);
     method Clear;
     method &RemoveAt(&Index: Integer);
 
@@ -37,10 +37,10 @@ type
     {$SHOW CPW8}
     {$ENDIF}
 
-    class method Load(JsonString: String): JsonArray;
+    class method Load(JsonString: String): not nullable JsonArray;
 
     property Count: Integer read fItems.Count; override;
-    property Item[&Index: Integer]: JsonNode read GetItem write SetItem; default; override;
+    property Item[&Index: Integer]: not nullable JsonNode read GetItem write SetItem; default; override;
   end;
 
 implementation
@@ -55,23 +55,23 @@ begin
   fItems := aItems;
 end;
 
-method JsonArray.GetItem(&Index: Integer): JsonNode;
+method JsonArray.GetItem(&Index: Integer): not nullable JsonNode;
 begin
   exit fItems[&Index];
 end;
 
-method JsonArray.SetItem(&Index: Integer; Value: JsonNode);
+method JsonArray.SetItem(&Index: Integer; Value: not nullable JsonNode);
 begin
   ArgumentNullException.RaiseIfNil(Value, "Value");
   fItems[&Index] := Value;
 end;
 
-method JsonArray.Add(Value: JsonNode);
+method JsonArray.Add(Value: not nullable JsonNode);
 begin
   fItems.Add(Value);
 end;
 
-method JsonArray.Insert(&Index: Integer; Value: JsonNode);
+method JsonArray.Insert(&Index: Integer; Value: not nullable JsonNode);
 begin
   fItems.Insert(&Index, Value);
 end;
@@ -86,7 +86,7 @@ begin
   fItems.RemoveAt(&Index);
 end;
 
-class method JsonArray.Load(JsonString: String): JsonArray;
+class method JsonArray.Load(JsonString: String): not nullable JsonArray;
 begin
   var Serializer := new JsonDeserializer(JsonString);
   var lValue := Serializer.Deserialize;

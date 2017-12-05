@@ -46,8 +46,8 @@ type
   private
     method CantGetItem(Key: String): nullable JsonNode;
     method CantSetItem(Key: String; Value: JsonNode);
-    method CantGetItem(aIndex: Integer): nullable JsonNode;
-    method CantSetItem(aIndex: Integer; Value: JsonNode);
+    method CantGetItem(aIndex: Integer): not nullable JsonNode;
+    method CantSetItem(aIndex: Integer; Value: not nullable JsonNode);
     method CantGetKeys: not nullable sequence of String;
     method GetIntegerValue: Int64;
     method GetFloatValue: Double;
@@ -64,8 +64,8 @@ type
     method ToJson: String; virtual; abstract;
 
     property Count: Integer read 1; virtual;
-    property Item[Key: String]: nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
-    property Item[&Index: Integer]: JsonNode read CantGetItem write CantSetItem; default; virtual;
+    property Item[Key: not nullable String]: nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
+    property Item[&Index: Integer]: not nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
     property Keys: not nullable sequence of String read CantGetKeys; virtual;
     property IntegerValue: Int64 read GetIntegerValue write SetIntegerValue; virtual;
     property FloatValue: Double read GetFloatValue write SetFloatValue; virtual;
@@ -198,12 +198,12 @@ begin
   raise new JsonNodeTypeException("JSON Node is not a dictionary.")
 end;
 
-method JsonNode.CantGetItem(aIndex: Integer): nullable JsonNode;
+method JsonNode.CantGetItem(aIndex: Integer): not nullable JsonNode;
 begin
   raise new JsonNodeTypeException("JSON Node is not an array.")
 end;
 
-method JsonNode.CantSetItem(aIndex: Integer; Value: JsonNode);
+method JsonNode.CantSetItem(aIndex: Integer; Value: not nullable JsonNode);
 begin
   raise new JsonNodeTypeException("JSON Node is not an array.")
 end;

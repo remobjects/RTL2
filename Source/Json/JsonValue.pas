@@ -73,6 +73,12 @@ type
     //property StringValue: String read ToJson write ToJson; override;
   end;
 
+  JsonNullValue = public class(JsonValue<Boolean>)
+  public
+    method ToJson: String; override;
+    class property Null: JsonNullValue := new JsonNullValue(false); lazy;
+  end;
+
 implementation
 
 { JsonValue<T> }
@@ -242,6 +248,13 @@ end;
 operator JsonBooleanValue.Implicit(aValue: Boolean): JsonBooleanValue;
 begin
   result := new JsonBooleanValue(aValue);
+end;
+
+{ JsonNullValue }
+
+method JsonNullValue.ToJson: String;
+begin
+  result := JsonConsts.NULL_VALUE;
 end;
 
 end.

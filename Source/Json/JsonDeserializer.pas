@@ -136,7 +136,7 @@ begin
           result := new JsonIntegerValue(Convert.ToInt64(lValue))
       end;
     end;
-    JsonTokenKind.Null: result := nil;
+    JsonTokenKind.Null: result := JsonNullValue.Null;
     JsonTokenKind.True: result := new JsonBooleanValue(true);
     JsonTokenKind.False: result := new JsonBooleanValue(false);
     JsonTokenKind.ArrayStart: result := ReadArray();
