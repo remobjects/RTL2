@@ -35,6 +35,8 @@ type
     method uname(buf: IntPtr): Integer; external;
     method unameWrapper: String;
     class var unameResult: String;
+    [System.Runtime.InteropServices.DllImport("shell32.dll")]
+    class method SHGetKnownFolderPath([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStruct)] rfid: System.Guid; dwFlags: Cardinal; hToken: IntPtr; var pszPath: IntPtr): Integer; external;
     {$ENDIF}
   public
     property LineBreak: String read GetNewLine;
@@ -48,7 +50,7 @@ type
     property TempFolder: nullable Folder read GetTempFolder;
     property UserApplicationSupportFolder: nullable Folder read GetUserApplicationSupportFolder; // Mac only
     property UserLibraryFolder: nullable Folder read GetUserLibraryFolder; // Mac only
-    property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder; // Mac only
+    property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder;
 
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
@@ -314,10 +316,13 @@ begin
         //result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
         result := Path.Combine(GetUserApplicationSupportFolder, "Downloads");
       end;
-    //OperatingSystem.Windows: begin
-        //result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
-        //result := Path.Combine(GetApplicationSupportFolder, "Downloads");
-      //end;
+    OperatingSystem.Windows: begin
+        var lFolder: IntPtr;
+        if SHGetKnownFolderPath(new System.Guid("374DE290-123F-4565-9164-39C4925E467B"), $00004000, nil, var lFolder) >= 0 then
+          result:= System.Runtime.InteropServices.Marshal.PtrToStringUni(lFolder)
+        else
+          result := '';
+      end;
   end;
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
