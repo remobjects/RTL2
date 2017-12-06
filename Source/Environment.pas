@@ -486,8 +486,6 @@ method Environment.GetCurrentDirectory(): String;
 begin
   {$IF COOPER}
   exit System.getProperty("user.dir");
-  {$ELSEIF NETFX_CORE}
-  exit Windows.Storage.ApplicationData.Current.LocalFolder.Path;
   {$ELSEIF NETSTANDARD}
   exit System.Environment.CurrentDirectory;
   {$ELSEIF ECHOES}
