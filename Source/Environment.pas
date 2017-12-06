@@ -324,6 +324,15 @@ begin
           result := '';
       end;
   end;
+  {$ELSEIF ISLAND AND WINDOWS}
+  result := '';
+  var lGuidString := "{374DE290-123F-4565-9164-39C4925E467B}".ToCharArray(true);
+  var lGuid: rtl.GUID;
+  if rtl.IIDFromString(@lGuidString[0], @lGuid) >= 0 then begin
+    var lFolder: rtl.PWSTR;
+    if rtl.SHGetKnownFolderPath(@lGuid, rtl.DWORD(rtl.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY), nil, @lFolder) >= 0 then
+      result := RemObjects.Elements.System.String.FromPChar(lFolder);
+  end;
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
