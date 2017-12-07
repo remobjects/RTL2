@@ -16,8 +16,7 @@
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <KnownConditionalDefines>DEBUG;NETSTANDARD;TRACE</KnownConditionalDefines>
-    <TargetFramework>.NETFramework4.7</TargetFramework>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFramework>.NETStandard1.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
