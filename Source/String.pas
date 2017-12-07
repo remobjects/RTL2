@@ -706,7 +706,7 @@ begin
   {$ELSEIF TOFFEE}
   result := mapped.componentsSeparatedByString(aSeparator);
   if aRemoveEmptyEntries then
-    result := result.Where(p -> length(p) > 0).ToList();
+    result := result.Where(p -> p:Length > 0).ToList();
   {$ENDIF}
 end;
 
