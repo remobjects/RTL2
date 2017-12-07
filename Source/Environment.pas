@@ -28,7 +28,7 @@ type
     method GetTempFolder: Folder;
     method GetUserApplicationSupportFolder: Folder;
     method GetUserLibraryFolder: Folder;
-    method GetUserDownloadsFolder: Folder;
+    method GetUserDownloadsFolder: nullable Folder;
 
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport("libc")]
@@ -308,7 +308,7 @@ begin
   {$ENDIF}
 end;
 
-method Environment.GetUserDownloadsFolder: Folder;
+method Environment.GetUserDownloadsFolder: nullable Folder;
 begin
   {$IF ECHOES}
   case OS of
@@ -319,20 +319,19 @@ begin
     OperatingSystem.Windows: begin
         var lFolder: IntPtr;
         if SHGetKnownFolderPath(new System.Guid("374DE290-123F-4565-9164-39C4925E467B"), $00004000, nil, var lFolder) >= 0 then
-          result:= System.Runtime.InteropServices.Marshal.PtrToStringUni(lFolder)
-        else
-          result := '';
+          result:= System.Runtime.InteropServices.Marshal.PtrToStringUni(lFolder);
       end;
   end;
-  {$ELSEIF ISLAND AND WINDOWS}
-  result := '';
-  var lGuidString := "{374DE290-123F-4565-9164-39C4925E467B}".ToCharArray(true);
-  var lGuid: rtl.GUID;
-  if rtl.IIDFromString(@lGuidString[0], @lGuid) >= 0 then begin
-    var lFolder: rtl.PWSTR;
-    if rtl.SHGetKnownFolderPath(@lGuid, rtl.DWORD(rtl.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY), nil, @lFolder) >= 0 then
-      result := RemObjects.Elements.System.String.FromPChar(lFolder);
-  end;
+  {$ELSEIF ISLAND}
+    {$IF WINDOWS}
+    var lGuidString := "{374DE290-123F-4565-9164-39C4925E467B}".ToCharArray(true);
+    var lGuid: rtl.GUID;
+    if rtl.IIDFromString(@lGuidString[0], @lGuid) >= 0 then begin
+      var lFolder: rtl.PWSTR;
+      if rtl.SHGetKnownFolderPath(@lGuid, rtl.DWORD(rtl.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY), nil, @lFolder) >= 0 then
+        result := RemObjects.Elements.System.String.FromPChar(lFolder);
+    end;
+    {$ENDIF}
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
