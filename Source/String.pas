@@ -674,6 +674,8 @@ method String.Split(Separator: not nullable String): not nullable ImmutableList<
 begin
   if IsNullOrEmpty(Separator) then
     exit new ImmutableList<String>(self);
+  if IsNullOrEmpty(self) then
+    exit new ImmutableList<String>();
 
   {$IF COOPER}
   //exit mapped.split(java.util.regex.Pattern.quote(Separator)) as not nullable;
