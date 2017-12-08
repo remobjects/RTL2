@@ -1,8 +1,9 @@
 ﻿namespace RemObjects.Elements.RTL;
 
 {$IF ISLAND AND LINUX}
-
 {$GLOBALS ON}
+{$HIDE CPW7}
+{$HIDE CPW8}
 
 interface
 
@@ -142,6 +143,7 @@ type
   );
 
   curl_slist = public record
+  public
     data: ^AnsiChar;
     next: ^curl_slist;
   end;
