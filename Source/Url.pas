@@ -57,6 +57,8 @@ type
     class method UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
     class method UrlWithUnixPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
 
+    method CopyWithQueryString(aQueryString: nullable String): not nullable Url;
+
     property Scheme: String read fScheme;
     property Host: String read fHost;
     property Port: nullable Integer read fPort;
@@ -692,6 +694,18 @@ begin
   result.fHost := fHost;
   result.fPath := aPath;
   result.fQueryString := fQueryString;
+  result.fFragment := fFragment;
+  result.fUser := fUser;
+  result.fPort := fPort;
+end;
+
+method Url.CopyWithQueryString(aQueryString: nullable String): not nullable Url;
+begin
+  result := new Url();
+  result.fScheme := fScheme;
+  result.fHost := fHost;
+  result.fPath := fPath;
+  result.fQueryString := aQueryString;
   result.fFragment := fFragment;
   result.fUser := fUser;
   result.fPort := fPort;
