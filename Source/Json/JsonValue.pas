@@ -25,13 +25,16 @@ type
     {$ENDIF}
 
     property Value: not nullable T;
-    operator Implicit(aValue: JsonValue<T>): not nullable T;
+    operator Implicit(aValue: JsonValue<T>): T;
   end;
 
   JsonStringValue = public class(JsonValue<not nullable String>)
   public
     method ToJson: String; override;
     operator Implicit(aValue: not nullable String): JsonStringValue;
+    operator Equal(aLeft: JsonStringValue; aRight: Object): Boolean;
+    operator Equal(aLeft: Object; aRight: JsonStringValue): Boolean;
+
     //property StringValue: String read Value write Value; override;
   end;
 
@@ -130,7 +133,7 @@ begin
 end;
 {$ENDIF}
 
-operator JsonValue<T>.Implicit(aValue: JsonValue<T>): not nullable T;
+operator JsonValue<T>.Implicit(aValue: JsonValue<T>): T;
 begin
   result := aValue:Value;
 end;
@@ -169,6 +172,20 @@ end;
 operator JsonStringValue.Implicit(aValue: not nullable String): JsonStringValue;
 begin
   result := new JsonStringValue(aValue);
+end;
+
+operator JsonStringValue.&Equal(aLeft: JsonStringValue; aRight: Object): Boolean;
+begin
+  if not assigned(aLeft) and not assigned(aRight) then exit true;
+  if not assigned(aLeft) then exit false;
+  if not assigned(aRight) then exit false;
+  if aRight is String then exit aLeft.Value = aRight as String;
+  if aRight is JsonStringValue then exit aLeft.Value = (aRight as JsonStringValue).Value;
+end;
+
+operator JsonStringValue.&Equal(aLeft: Object; aRight: JsonStringValue): Boolean;
+begin
+  result := aRight = aLeft;
 end;
 
 { JsonIntegerValue }
