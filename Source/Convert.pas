@@ -202,7 +202,7 @@ end;
 method Convert.ToString(aValue: Object): not nullable String;
 begin
   //74584: Two more bogus nullable warnings
-  result := coalesce(aValue.ToString, '');
+  result := coalesce(aValue:ToString, '');
 end;
 
 method Convert.ToInt32(aValue: Boolean): Int32;
