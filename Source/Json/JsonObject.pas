@@ -18,7 +18,8 @@ type
     method &Add(aKey: not nullable String; aValue: not nullable JsonNode);
     method &Remove(aKey: not nullable String): Boolean;
     method Clear;
-    method ContainsKey(aKey: not nullable String): Boolean;
+    method ContainsKey(aKey: not nullable String): Boolean; // will return false for non-exist-ent keys and for JsonNullValue!
+    method ContainsExplicitJsonNullValueForKey(aKey: not nullable String): Boolean; // will return false for non-exist-ent keys and values other than JsonNullValue!
 
     method ToJson: String; override;
 
@@ -58,13 +59,16 @@ end;
 
 method JsonObject.GetItem(aKey: not nullable String): nullable JsonNode;
 begin
-  if fItems.ContainsKey(aKey) then
-    exit fItems[aKey];
+  if fItems.ContainsKey(aKey) then begin
+    result := fItems[aKey];
+    if result is JsonNullValue then
+      result := nil;
+  end;
 end;
 
 method JsonObject.SetItem(aKey: not nullable String; aValue: nullable JsonNode);
 begin
-  fItems[aKey] := coalesce(aValue, JsonNullValue.Null);
+  fItems[aKey] := aValue;
 end;
 
 method JsonObject.Add(aKey: not nullable String; aValue: not nullable JsonNode);
@@ -79,7 +83,13 @@ end;
 
 method JsonObject.ContainsKey(aKey: not nullable String): Boolean;
 begin
-  exit fItems.ContainsKey(aKey);
+  var lValue := fItems[aKey];
+  exit assigned(lValue) and (lValue is not JsonNullValue);
+end;
+
+method JsonObject.ContainsExplicitJsonNullValueForKey(aKey: not nullable String): Boolean;
+begin
+  exit fItems[aKey] is JsonNullValue;
 end;
 
 method JsonObject.Remove(aKey: not nullable String): Boolean;
