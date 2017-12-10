@@ -191,6 +191,8 @@ type
     [ToString]
     method ToString(): String; override;
     method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions := new XmlFormattingOptions): String; override;
+
+    method UniqueCopy: not nullable XmlElement;
   end;
 
   XmlAttribute = public class(XmlNode)
@@ -667,7 +669,7 @@ begin
       end;
     end;
     if lElement.DefinedNamespaces.Count > 0 then begin
-      for each lN in lElement.definedNamespaces do begin          
+      for each lN in lElement.definedNamespaces do begin
         if ((aRow = lN.NodeRange.StartLine) and (aColumn >= lN.NodeRange.StartColumn+6) and (aColumn < lN.NodeRange.EndColumn)) or
           ((aRow > lN.NodeRange.StartLine) and ((aRow < lN.NodeRange.EndLine) or ((aRow = lN.NodeRange.EndLine) and (aColumn < lN.NodeRange.EndColumn)))) then
           result.CurrentPosition := XmlPositionKind.InsideXmlns;
@@ -1389,6 +1391,17 @@ begin
   exit lNamespace;
 end;
 
+method XmlElement.UniqueCopy: not nullable XmlElement;
+begin
+  result := new XmlElement withName(LocalName);
+  result.Namespace := &Namespace;
+  //for each a in fAttributesAndNamespaces do
+    //result.fAttributesAndNamespaces.Add(a.UniqueCopy);
+  for each e in Elements do
+    result.AddElement(e.UniqueCopy);
+  if Elements.Count = 0 then
+    result.Value := Value;
+end;
 
 { XmlAttribute }
 
