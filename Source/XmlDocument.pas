@@ -98,6 +98,8 @@ type
     [ToString]
     method ToString(): String; override;
     method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions := new XmlFormattingOptions): String; virtual;
+
+    method UniqueCopy: not nullable XmlNode; virtual;
   end;
 
   XmlElement = public class(XmlNode)
@@ -192,7 +194,7 @@ type
     method ToString(): String; override;
     method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions := new XmlFormattingOptions): String; override;
 
-    method UniqueCopy: not nullable XmlElement;
+    method UniqueCopy: not nullable XmlNode; override; 
   end;
 
   XmlAttribute = public class(XmlNode)
@@ -223,6 +225,7 @@ type
     [ToString]
     method ToString(): String; override;
     method ToString(aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions := new XmlFormattingOptions{aPreserveExactStringsForUnchnagedValues: Boolean := false}): String;
+    method UniqueCopy: not nullable XmlNode; override;
   end;
 
   XmlComment = public class(XmlNode)
@@ -255,6 +258,7 @@ type
     method ToString(): String; override;
     method ToString(aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions): String;
 
+    method UniqueCopy: not nullable XmlNode; override;
   end;
 
   XmlProcessingInstruction = public class(XmlNode)
@@ -735,6 +739,11 @@ begin
       result := result + ">";
     end;
   end;
+end;
+
+method XmlNode.UniqueCopy: not nullable XmlNode;
+begin
+   exit self;
 end;
 
 method XmlNode.CharIsWhitespace(C: String): Boolean;
@@ -1391,16 +1400,32 @@ begin
   exit lNamespace;
 end;
 
-method XmlElement.UniqueCopy: not nullable XmlElement;
+method XmlElement.UniqueCopy: not nullable XmlNode;
 begin
-  result := new XmlElement withName(LocalName);
-  result.Namespace := &Namespace;
-  //for each a in fAttributesAndNamespaces do
-    //result.fAttributesAndNamespaces.Add(a.UniqueCopy);
-  for each e in Elements do
-    result.AddElement(e.UniqueCopy);
-  if Elements.Count = 0 then
-    result.Value := Value;
+  var res := new XmlElement withName(LocalName);
+  res.Namespace := &Namespace;  
+  for each a in fAttributesAndNamespaces do begin
+    var uc := a.UniqueCopy();
+    uc.fParent := res;
+    res.fAttributesAndNamespaces.Add(uc);
+  end;
+  for each n in Nodes do begin
+    var uc := n.UniqueCopy; 
+    uc.fParent := res;
+    //res.fNodes.Add(n.UniqueCopy);
+    if n.NodeType = XmlNodeType.Element then
+        res.fElements.Add(uc as XmlElement);
+      //res.fElements.Add(res.Nodes.LastObject as XmlElement); 
+  end;
+  res.EndTagName := EndTagName;
+  res.fDefaultNamespace := DefaultNamespace;
+  res.OpenTagEndColumn := OpenTagEndColumn;
+  res.OpenTagEndLine := OpenTagEndLine;
+  res.CloseTagRange := CloseTagRange;
+  res.NodeRange := NodeRange;
+  res.fChildIndex := ChildIndex;
+  res.PreserveSpace  := PreserveSpace;
+  exit res;
 end;
 
 { XmlAttribute }
@@ -1482,6 +1507,14 @@ begin
   result := result+QuoteChar;
 end;
 
+method XmlAttribute.UniqueCopy: not nullable XmlNode;
+begin
+  var nmsp := &Namespace:UniqueCopy;  
+  result := new XmlAttribute(LocalName, XmlNamespace(nmsp), Value, 
+    innerWSleft := innerWSleft, innerWSright := innerWSright, QuoteChar := QuoteChar, originalRawValue := originalRawValue, NodeRange := NodeRange,
+    ValueRange := ValueRange, WSleft := WSleft, WSright := WSright, Indent := Indent);
+end;
+
 { XmlNamespace}
 constructor XmlNamespace withParent(aParent: XmlElement);
 begin
@@ -1525,6 +1558,12 @@ begin
   result := result+QuoteChar;
   if assigned(Uri) then result := result + Uri.ToString;
   result := result+QuoteChar;
+end;
+
+method XmlNamespace.UniqueCopy: not nullable XmlNode;
+begin
+  result := self;
+  //new XmlNamespace(Prefix, Uri, innerWSleft := innerWSleft, innerWSright := innerWSright, QuoteChar := QuoteChar, Indent := Indent);
 end;
 
 {XmlComment}
