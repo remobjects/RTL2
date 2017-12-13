@@ -1419,10 +1419,6 @@ begin
   end;
   res.EndTagName := EndTagName;
   res.fDefaultNamespace := DefaultNamespace;
-  res.OpenTagEndColumn := OpenTagEndColumn;
-  res.OpenTagEndLine := OpenTagEndLine;
-  res.CloseTagRange := CloseTagRange;
-  res.NodeRange := NodeRange;
   res.fChildIndex := ChildIndex;
   res.PreserveSpace  := PreserveSpace;
   exit res;
@@ -1509,10 +1505,8 @@ end;
 
 method XmlAttribute.UniqueCopy: not nullable XmlNode;
 begin
-  var nmsp := &Namespace:UniqueCopy;  
-  result := new XmlAttribute(LocalName, XmlNamespace(nmsp), Value, 
-    innerWSleft := innerWSleft, innerWSright := innerWSright, QuoteChar := QuoteChar, originalRawValue := originalRawValue, NodeRange := NodeRange,
-    ValueRange := ValueRange, WSleft := WSleft, WSright := WSright, Indent := Indent);
+  result := new XmlAttribute(LocalName, &Namespace, Value, 
+    innerWSleft := innerWSleft, innerWSright := innerWSright, QuoteChar := QuoteChar, originalRawValue := originalRawValue, WSleft := WSleft, WSright := WSright, Indent := Indent);
 end;
 
 { XmlNamespace}
