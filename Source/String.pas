@@ -675,7 +675,7 @@ begin
   if IsNullOrEmpty(aSeparator) then
     exit new ImmutableList<String>(self);
   if IsNullOrEmpty(self) then
-    exit new ImmutableList<String>();
+    exit if aRemoveEmptyEntries then new ImmutableList<String>() else new ImmutableList<String>("");
 
   {$IF COOPER}
   //exit mapped.split(java.util.regex.Pattern.quote(aSeparator)) as not nullable;
