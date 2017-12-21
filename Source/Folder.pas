@@ -9,7 +9,7 @@ uses
   RemObjects.Elements;
 
 type
-  Folder = public class mapped to {$IF NETSTANDARD}Windows.Storage.StorageFolder{$ELSE}PlatformString{$ENDIF}
+  Folder = public class mapped to PlatformString
   private
     class method GetSeparator: Char;
     {$IF COOPER}
@@ -61,23 +61,11 @@ type
     property DateModified: DateTime read getDateModified write setDateModified;
     {$ENDIF}
 
-    {$IF NETSTANDARD}
-    property FullPath: not nullable String read mapped.Path;
-    property Name: not nullable String read mapped.Name;
-    {$ELSE}
     property FullPath: not nullable String read mapped;
     property Name: not nullable String read Path.GetFileName(mapped);
-    {$ENDIF}
 
     property &Extension: not nullable String read Path.GetExtension(FullPath);
   end;
-
-  {$IF NETSTANDARD}
-  extension method Windows.Foundation.IAsyncOperation<TResult>.Await<TResult>: TResult;
-  begin
-    exit self.AsTask.Result;
-  end;
-  {$ENDIF}
 
 implementation
 
@@ -106,11 +94,7 @@ type
 
 constructor Folder(aPath: not nullable String);
 begin
-  {$IF NETSTANDARD}
-  exit Windows.Storage.StorageFolder.GetFolderFromPathAsync(aPath).Await;
-  {$ELSE}
   exit Folder(aPath);
-  {$ENDIF}
 end;
 
 class method Folder.GetSeparator: Char;

@@ -3,7 +3,7 @@
 interface
 
 type
-  File = public class mapped to {$IF NETSTANDARD}Windows.Storage.StorageFile{$ELSE}PlatformString{$ENDIF}
+  File = public class mapped to PlatformString
   private
     {$IF NOT WEBASSEMBLY}
     method getDateModified: DateTime;
@@ -55,13 +55,8 @@ type
     property Size: Int64 read getSize;
     {$ENDIF}
 
-    {$IF NETSTANDARD}
-    property FullPath: not nullable String read mapped.Path;
-    property Name: not nullable String read mapped.Name;
-    {$ELSE}
     property FullPath: not nullable String read mapped;
     property Name: not nullable String read Path.GetFileName(mapped);
-    {$ENDIF}
     property &Extension: not nullable String read Path.GetExtension(FullPath);
 
   end;
@@ -70,11 +65,7 @@ implementation
 
 constructor File(aPath: not nullable String);
 begin
-  {$IF NETSTANDARD}
-  exit StorageFile.GetFileFromPathAsync(aPath).Await();
-  {$ELSE}
   exit File(aPath);
-  {$ENDIF}
 end;
 
 {$IF NOT WEBASSEMBLY}
@@ -100,18 +91,14 @@ begin
   source.close;
   dest.close;
   {$ELSEIF ECHOES}
-    {$IF NETSTANDARD}
-    exit mapped.CopyAsync(Destination, NewName, NameCollisionOption.FailIfExists).Await;
-    {$ELSE}
-    if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
-      if lNewFile.Exists then
-        Delete(lNewFile);
-      if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
-        raise new RTLException("Failed to copy file");
-    end
-    else
-      System.IO.File.Copy(mapped, lNewFile, true);
-    {$ENDIF}
+  if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
+    if lNewFile.Exists then
+      Delete(lNewFile);
+    if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
+      raise new RTLException("Failed to copy file");
+  end
+  else
+    System.IO.File.Copy(mapped, lNewFile, true);
   {$ELSEIF ISLAND}
   IslandFile.Copy(lNewFile);
   {$ELSEIF TOFFEE}
@@ -134,7 +121,7 @@ begin
   {$IF COOPER}
   JavaFile.delete;
   {$ELSEIF NETSTANDARD}
-  mapped.DeleteAsync.AsTask.Wait;
+  System.IO.File.Delete(mapped);
   {$ELSEIF ECHOES}
   System.IO.File.Delete(mapped);
   {$ELSEIF ISLAND}
