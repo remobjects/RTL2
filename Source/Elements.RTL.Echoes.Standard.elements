@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
@@ -16,7 +16,7 @@
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <KnownConditionalDefines>DEBUG;NETSTANDARD;TRACE</KnownConditionalDefines>
-    <TargetFramework>.NETStandard1.0</TargetFramework>
+    <TargetFramework>.NETStandard2.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
@@ -55,10 +55,7 @@
     <DefineConstants>NETSTANDARD</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <NuGetReference Include="System:*" />
-    <NuGetReference Include="System.Linq:*" />
-    <NuGetReference Include="System.IO:*" />
-    <NuGetReference Include="System.Runtime:*" />
+    <NuGetReference Include="NETStandard.Library:2.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.pas" />

@@ -134,11 +134,6 @@ begin
   try
     {$IF COOPER}
     exit java.nio.charset.Charset.forName(aName);
-    {$ELSEIF NETSTANDARD}
-    result := CustomEncoding.ForName(aName);
-
-    if result = nil then
-      result := System.Text.Encoding.GetEncoding(aName);
     {$ELSEIF ECHOES}
     result := System.Text.Encoding.GetEncoding(aName);
     {$ELSEIF ISLAND}

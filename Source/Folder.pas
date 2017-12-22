@@ -83,14 +83,6 @@ type
     method IsDirectory(Value: String): Boolean;
   end;
 {$ENDIF}
-{$IF NETSTANDARD}
-type
-  FolderHelper = static class
-  public
-    method GetFile(Folder: Windows.Storage.StorageFolder; FileName: String): Windows.Storage.StorageFile;
-    method GetFolder(Folder: Windows.Storage.StorageFolder; FolderName: String): Windows.Storage.StorageFolder;
-  end;
-{$ENDIF}
 
 constructor Folder(aPath: not nullable String);
 begin
@@ -181,9 +173,7 @@ end;
 
 method Folder.CreateFile(FileName: String; FailIfExists: Boolean := false): File;
 begin
-  {$IF NETSTANDARD}
-  exit mapped.CreateFileAsync(FileName, iif(FailIfExists, Windows.Storage.CreationCollisionOption.FailIfExists, Windows.Storage.CreationCollisionOption.OpenIfExists)).Await;
-  {$ELSEIF COOPER}
+  {$IF COOPER}
   var lNewFile := new java.io.File(mapped, FileName);
   if lNewFile.exists then begin
     if FailIfExists then
@@ -227,14 +217,7 @@ end;
 
 method Folder.Exists: Boolean;
 begin
-  {$IFDEF NETSTANDARD}
-  try
-    var item := Windows.Storage.ApplicationData.Current.LocalFolder.GetItemAsync(mapped.Name).Await();
-    exit assigned(item);
-  except
-    exit false;
-  end;
-  {$ELSEIF COOPER}
+  {$IF COOPER}
   result := JavaFile.exists;
   {$ELSEIF ECHOES}
   result := System.IO.Directory.Exists(mapped);
@@ -248,9 +231,7 @@ end;
 
 method Folder.Create(FailIfExists: Boolean := false);
 begin
-  {$IF NETSTANDARD}
-  mapped.CreateFolderAsync(self.FullPath, iif(FailIfExists, Windows.Storage.CreationCollisionOption.FailIfExists, Windows.Storage.CreationCollisionOption.OpenIfExists)).Await();
-  {$ELSEIF COOPER}
+  {$IF COOPER}
   var lFile := JavaFile;
   if lFile.exists then begin
     if FailIfExists then
@@ -295,8 +276,6 @@ begin
     raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, mapped);
 
   FolderHelper.DeleteFolder(lFile);
-  {$ELSEIF NETSTANDARD}
-  mapped.DeleteAsync.AsTask.Wait;
   {$ELSEIF ECHOES}
   System.IO.Directory.Delete(mapped, true);
   {$ELSEIF ISLAND}
@@ -316,8 +295,6 @@ begin
     exit nil;
 
   exit ExistingFile.path;
-  {$ELSEIF NETSTANDARD}
-  exit FolderHelper.GetFile(mapped, FileName);
   {$ELSEIF ECHOES}
   var ExistingFileName := System.IO.Path.Combine(mapped, FileName);
   if System.IO.File.Exists(ExistingFileName) then
@@ -340,11 +317,6 @@ method Folder.GetFiles: not nullable ImmutableList<String>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles((f,n)->new java.io.File(f, n).isFile).Select(f->f.path).ToList() as not nullable;
-  {$ELSEIF NETSTANDARD}
-  var files := mapped.GetFilesAsync.Await;
-  result := new ImmutableList<File>();
-  for i: Integer := 0 to files.Count-1 do
-    result.Add(File(files.Item[i]));
   {$ELSEIF ECHOES}
   result := new ImmutableList<File>(System.IO.Directory.GetFiles(mapped));
   {$ELSEIF ISLAND}
@@ -368,11 +340,6 @@ method Folder.GetSubfolders: not nullable List<String>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles( (f,n) -> new java.io.File(f, n).isDirectory).Select(f -> f.Path).ToList() as not nullable;
-  {$ELSEIF NETSTANDARD}
-  var folders := mapped.GetFoldersAsync.Await;
-  result := new List<Folder>();
-  for i: Integer := 0 to folders.Count-1 do
-    result.Add(Folder(folders.Item[i]));
   {$ELSEIF ECHOES}
   result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
   {$ELSEIF ISLAND}
@@ -403,8 +370,6 @@ begin
     raise new IOException(RTLErrorMessages.IO_RENAME_ERROR, mapped, NewName);
 
   result := NewName;
-  {$ELSEIF NETSTANDARD}
-  mapped.RenameAsync(NewName, Windows.Storage.NameCollisionOption.FailIfExists).AsTask().Wait();
   {$ELSEIF ECHOES}
   var TopLevel := System.IO.Path.GetDirectoryName(mapped);
   var FolderName := System.IO.Path.Combine(TopLevel, NewName);
@@ -431,16 +396,12 @@ begin
   {$ENDIF}
 end;
 
-{$IF NETSTANDARD}[Warning("Not Implemented for all .NET Standard")]{$ENDIF}
 method Folder.getDateCreated: DateTime;
 begin
   if not Exists then
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
-  {$ELSEIF NETSTANDARD}
-  {$WARNING Not implemented}
-  //result := mapped.DateCreated.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
   {$ELSEIF ISLAND}
@@ -450,16 +411,12 @@ begin
   {$ENDIF}
 end;
 
-{$IF NETSTANDARD}[Warning("Not Implemented for all .NET Standard")]{$ENDIF}
 method Folder.getDateModified: DateTime;
 begin
   if not Exists then
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified()));
-  {$ELSEIF NETSTANDARD}
-  {$WARNING Not implemented}
-  //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
   {$ELSEIF ISLAND}
@@ -469,7 +426,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF COOPER OR ISLAND OR NETSTANDARD}[Warning("Not Implemented for all platforms")]{$ENDIF}
+{$IF COOPER OR ISLAND}[Warning("Not Implemented for all platforms")]{$ENDIF}
 method Folder.setDateModified(aDateTime: DateTime);
 begin
   if not Exists then
@@ -478,9 +435,6 @@ begin
   {$WARNING Not implemented}
   //JavaFile.setLastModified(...)
   //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
-  {$ELSEIF NETSTANDARD}
-  {$WARNING Not implemented}
-  //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   System.IO.File.SetLastWriteTimeUtc(mapped, aDateTime);
   {$ELSEIF ISLAND}
@@ -493,30 +447,6 @@ begin
   {$ENDIF}
 end;
 
-{$ENDIF}
-
-{$IF NETSTANDARD}
-class method FolderHelper.GetFile(Folder: Windows.Storage.StorageFolder; FileName: String): Windows.Storage.StorageFile;
-begin
-  ArgumentNullException.RaiseIfNil(Folder, "Folder");
-  ArgumentNullException.RaiseIfNil(FileName, "FileName");
-  try
-    exit Folder.GetFileAsync(FileName).Await;
-  except
-    exit nil;
-  end;
-end;
-
-class method FolderHelper.GetFolder(Folder: Windows.Storage.StorageFolder; FolderName: String): Windows.Storage.StorageFolder;
-begin
-  ArgumentNullException.RaiseIfNil(Folder, "Folder");
-  ArgumentNullException.RaiseIfNil(FolderName, "FolderName");
-  try
-    exit Folder.GetFolderAsync(FolderName).Await;
-  except
-    exit nil;
-  end;
-end;
 {$ENDIF}
 
 {$IF COOPER}

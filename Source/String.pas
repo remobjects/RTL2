@@ -442,11 +442,7 @@ begin
   {$IF COOPER}
   exit mapped.equalsIgnoreCase(Value); // aready invariant, on Java
   {$ELSEIF ECHOES}
-  {$IF NETSTANDARD}
-  exit mapped.Equals(Value, StringComparison.OrdinalIgnoreCase); {$HINT TODO}
-  {$ELSE}
   exit mapped.Equals(Value, StringComparison.InvariantCultureIgnoreCase);
-  {$ENDIF}
   {$ELSEIF ISLAND}
   exit mapped.EqualsIgnoreCaseInvariant(Value);
   {$ELSEIF TOFFEE}
@@ -856,11 +852,7 @@ begin
   {$IF COOPER}
   exit mapped.toLowerCase(aLocale) as not nullable;
   {$ELSEIF ECHOES}
-  {$IF NETSTANDARD}
-  exit mapped.ToLower as not nullable; {$HINT TODO}
-  {$ELSE}
   exit mapped.ToLower(aLocale) as not nullable;
-  {$ENDIF}
   {$ELSEIF ISLAND}
   {$WARNING Not Implemeted for Island}
   raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
@@ -899,11 +891,7 @@ begin
   {$IF COOPER}
   exit mapped.toUpperCase(aLocale) as not nullable;
   {$ELSEIF ECHOES}
-  {$IF NETSTANDARD}
-  exit mapped.ToUpper as not nullable; {$HINT TODO}
-  {$ELSE}
   exit mapped.ToUpper(aLocale) as not nullable;
-  {$ENDIF}
   {$ELSEIF ISLAND}
   {$WARNING Not Implemeted for Island}
   raise new NotImplementedException("Some String APIs are not implemented for Island yet.");

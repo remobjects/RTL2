@@ -142,13 +142,7 @@ end;
 method File.Exists: Boolean;
 begin
   if length(mapped) = 0 then exit false;
-  {$IF NETSTANDARD}
-  try
-    result := assigned(GetFile(aFileName));
-  except
-    result := false;
-  end;
-  {$ELSEIF ECHOES}
+  {$IF ECHOES}
   result := System.IO.File.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFile.Exists;
@@ -179,8 +173,6 @@ begin
   {$IF COOPER}
   result := CopyTo(NewPathAndName) as not nullable;
   JavaFile.delete;
-  {$ELSEIF NETSTANDARD}
-  exit mapped.CopyAsync(new Folder(NewPathAndName.FullPath), NewPathAndName.Name, NameCollisionOption.FailIfExists).Await();
   {$ELSEIF ECHOES}
   System.IO.File.Move(mapped, NewPathAndName);
   result := NewPathAndName;
@@ -245,8 +237,6 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
-  {$ELSEIF NETSTANDARD}
-  result := mapped.DateCreated.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
   {$ELSEIF ISLAND}
@@ -262,8 +252,6 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified()));
-  {$ELSEIF NETSTANDARD}
-  result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
   {$ELSEIF ISLAND}
@@ -279,8 +267,6 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := JavaFile.length;
-  {$ELSEIF NETSTANDARD}
-  //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new System.IO.FileInfo(mapped).Length;
   {$ELSEIF ISLAND}
