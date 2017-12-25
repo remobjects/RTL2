@@ -196,7 +196,7 @@ begin
     end;
     if lXmlAttr.LocalName = "version" then begin
       //check version
-      if (lXmlAttr.Value.IndexOf("1.") <> 0) or (lXmlAttr.Value.Length <> 3) or
+      if not(lXmlAttr.Value.StartsWith("1.")) or (lXmlAttr.Value.Length <> 3) or
         ((lXmlAttr.Value.Chars[2] < '0') or (lXmlAttr.Value.Chars[2] > '9')) then begin
         //aError := new XmlErrorInfo;
         //aError.FillErrorInfo(String.Format("Unknown XML version '{0}'", lXmlAttr.Value), "1.0", lXmlAttr.EndLine, lXmlAttr.EndColumn, result);
@@ -268,7 +268,7 @@ begin
     end;
     if lXmlAttr.LocalName = "standalone" then begin
       //check yes/no
-      if (lXmlAttr.Value.Trim <> "yes") and (lXmlAttr.Value.Trim <> "no") then begin
+      if (lXmlAttr.Value <> "yes") and (lXmlAttr.Value <> "no") then begin
         //aError := new XmlErrorInfo;
         //aError.FillErrorInfo("Unknown 'standalone' value", "no", lXmlAttr.EndLine, lXmlAttr.EndColumn, result);
         result.ErrorInfo := new XmlErrorInfo;
@@ -484,9 +484,10 @@ begin
   /***********/
   newattr:;
   if ((lLocalName.StartsWith("xmlns:")) or (lLocalName = "xmlns")) then begin
-    if lLocalName.StartsWith("xmlns:") then
-      lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
-    else if lLocalName = "xmlns" then lLocalName:="";
+    if lLocalName = "xmlns" then lLocalName:=""
+    else
+     // lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
+       lLocalName:=lLocalName.Substring(6);
     result := new XmlNamespace withParent(aParent);
     (result as XmlNamespace).Prefix := lLocalName;
     var lUri := Uri.TryUriWithString(lValue);
@@ -568,8 +569,9 @@ begin
   checkns:;
   //check prefix for LocalName
   var lNamespace: XmlNamespace := nil;
-  if result.LocalName.IndexOf(':') > 0 then begin
-    var lPrefix := result.LocalName.Substring(0, result.LocalName.IndexOf(':'));
+  var lColonPos := result.LocalName.IndexOf(':');
+  if lColonPos > 0 then begin
+    var lPrefix := result.LocalName.Substring(0, lColonPos);
     lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
     if (lNamespace = nil) then begin
       var lSuggestion: String := "";
@@ -586,7 +588,7 @@ begin
           end;
           lElement := lElement.Parent;
       end;
-      result.LocalName := '[ERROR]:'+result.LocalName.Substring(result.LocalName.IndexOf(':')+1, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
+      result.LocalName := '[ERROR]:'+result.LocalName.Substring(lColonPos+1);//, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
       result.OpenTagEndLine := 0;
       result.OpenTagEndColumn := 0;
       //if assigned (aError) then exit;
@@ -595,13 +597,14 @@ begin
       exit;
     end;
     result.Namespace := lNamespace;
-    result.LocalName := result.LocalName.Substring(result.LocalName.IndexOf(':')+1, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
+    result.LocalName := result.LocalName.Substring(lColonPos+1);//, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
   end;
   //check prefix for attributes
   for each lAttribute in result.Attributes do begin
-    if lAttribute.LocalName.IndexOf(':') >0 then begin
-      var lPrefix := lAttribute.LocalName.Substring(0, lAttribute.LocalName.IndexOf(':'));
-      var lLocalName := lAttribute.LocalName.Substring(lAttribute.LocalName.IndexOf(':')+1, lAttribute.LocalName.Length-lAttribute.LocalName.IndexOf(':')-1);
+	lColonPos := lAttribute.LocalName.IndexOf(':');
+    if lColonPos >0 then begin
+      var lPrefix := lAttribute.LocalName.Substring(0, lColonPos);
+      var lLocalName := lAttribute.LocalName.Substring(lColonPos+1);
       if lPrefix = "xml" then begin
         lNamespace := new XmlNamespace(lPrefix, Url.UrlWithString(XmlConsts.XML_NAMESPACE_URL));
         case lLocalName of

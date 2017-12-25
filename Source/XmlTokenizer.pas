@@ -88,8 +88,8 @@ begin
     and (fPos < fData.length) and (not(CharIsWhitespace(fData[fPos]))) and (fData[fPos] <> '<') then ParseSymbolData()
   else
     if CharIsNameStart(fData[fPos]) then ParseName
-    else if (fData.Length >= fPos+XmlConsts.TAG_DECL_CLOSE.Length) and (new String(fData,fPos,XmlConsts.TAG_DECL_CLOSE.Length) = XmlConsts.TAG_DECL_CLOSE) then begin
-      fLength := XmlConsts.TAG_DECL_CLOSE.Length;
+    else if (fData.Length >= fPos+2{XmlConsts.TAG_DECL_CLOSE.Length}) and (new String(fData,fPos,2{XmlConsts.TAG_DECL_CLOSE.Length}) = XmlConsts.TAG_DECL_CLOSE) then begin
+      fLength := 2;//XmlConsts.TAG_DECL_CLOSE.Length;
       Value:=nil;
       Token := XmlTokenKind.DeclarationEnd;
     end
@@ -126,10 +126,10 @@ begin
                   Value := "Unknown token";
                 end;
           '?': begin
-            if (fData.Length >= fPos+XmlConsts.TAG_DECL_OPEN.Length) and
-              (new String(fData,fPos,XmlConsts.TAG_DECL_OPEN.Length)  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+XmlConsts.TAG_DECL_OPEN.Length])) then begin
+            if (fData.Length >= fPos+5{XmlConsts.TAG_DECL_OPEN.Length}) and
+              (new String(fData,fPos,5{XmlConsts.TAG_DECL_OPEN.Length})  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+5{XmlConsts.TAG_DECL_OPEN.Length}])) then begin
               if fPos = 0 then begin Token := XmlTokenKind.DeclarationStart;
-                fLength:= XmlConsts.TAG_DECL_OPEN.Length;
+                fLength:= 5;//XmlConsts.TAG_DECL_OPEN.Length;
                 Value := nil;
               end
               else begin
