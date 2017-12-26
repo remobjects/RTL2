@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # RemObjects Fire
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Echoes.Standard", "Elements.RTL.Echoes.Standard.elements", "{B42BF0FD-E746-4A64-A0DF-AF8FFF55DAE5}"
 EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Shared", "Elements.RTL.Shared.elements", "{ABEC8ACC-B076-406C-871B-581E8AF0A453}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|AnyCPU = Debug|AnyCPU
