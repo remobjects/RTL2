@@ -307,7 +307,7 @@ begin
   var lResult := new List<String>;
   var lCurrent: String := ""; // why is this needed for lCurrent to not become an NSString?
   var lInQuotes := false;
-  for i: Integer := 0 to length(aArgumentString) do begin
+  for i: Integer := 0 to length(aArgumentString)-1 do begin
     var ch := aArgumentString[i];
     case ch of
       ' ': begin
