@@ -128,8 +128,6 @@ begin
   result := Accounts[0].name;
   {$ELSEIF COOPER}
   result := System.getProperty("user.name");
-  {$ELSEIF NETSTANDARD}
-  result := Windows.Networking.Proximity.PeerFinder.DisplayName;
   {$ELSEIF NETFX_CORE}
   result := Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
   {$ELSEIF ECHOES}

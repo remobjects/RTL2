@@ -85,7 +85,6 @@ type
     {$IF JSON}method GetContentAsJson(contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);{$ENDIF}
     method SaveContentAsFile(aTargetFile: File; contentCallback: not nullable HttpContentResponseBlock<File>);
 
-    {$IF NOT NETSTANDARD}
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
     method GetContentAsBinarySynchronous: not nullable ImmutableBinary;
     {$IF XML}method GetContentAsXmlSynchronous: not nullable XmlDocument;{$ENDIF}
@@ -93,7 +92,6 @@ type
     {$IF JSON}method GetContentAsJsonSynchronous: not nullable JsonDocument;{$ENDIF}
     {$IF JSON}method TryGetContentAsJsonSynchronous: nullable JsonDocument;{$ENDIF}
     method SaveContentAsFileSynchronous(aTargetFile: File);
-    {$ENDIF}
   end;
 
   HttpResponseContent<T> = public class
@@ -112,19 +110,15 @@ type
     property Session := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration); lazy;
     {$ENDIF}
     method StringForRequestType(aMode: HttpRequestMode): String;
-    {$IF NOT NETSTANDARD}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
-    {$ENDIF}
     {$IF ISLAND AND WINDOWS}
     property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
     {$ENDIF}
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
-    {$IF NOT NETSTANDARD}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
     method TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
-    {$ENDIF}
 
     method ExecuteRequestAsString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<String>);
     method ExecuteRequestAsBinary(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
@@ -132,7 +126,7 @@ type
     {$IF JSON}method ExecuteRequestAsJson(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);{$ENDIF}
     method ExecuteRequestAndSaveAsFile(aRequest: not nullable HttpRequest; aTargetFile: not nullable File; contentCallback: not nullable HttpContentResponseBlock<File>);
 
-    {$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
+    {$IF NOT NETFX_CORE}
     method GetString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest): not nullable String;
     method GetBinary(aRequest: not nullable HttpRequest): not nullable ImmutableBinary;
     {$IF XML}method GetXml(aRequest: not nullable HttpRequest): not nullable XmlDocument;{$ENDIF}
@@ -422,21 +416,6 @@ begin
     contentCallback(new HttpResponseContent<File>(Content := aTargetFile));
   end;
   {$ELSEIF ECHOES}
-  {$IF NETSTANDARD}
-  try
-    using responseStream := Response.GetResponseStream() do begin
-      var storageFile := Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync(aTargetFile.Name, Windows.Storage.CreationCollisionOption.ReplaceExisting).Await();
-
-      using fileStream := await System.IO.WindowsRuntimeStorageExtensions.OpenStreamForWriteAsync(storageFile) do begin
-        await responseStream.CopyToAsync(fileStream);
-      end;
-    end;
-    contentCallback(new HttpResponseContent<File>(Content := aTargetFile));
-  except
-    on E: Exception do
-      contentCallback(new HttpResponseContent<File>(Exception := E));
-  end;
-  {$ELSE}
   async begin
     try
       using responseStream := Response.GetResponseStream() do
@@ -448,7 +427,6 @@ begin
         contentCallback(new HttpResponseContent<File>(Exception := E));
     end;
   end;
-  {$ENDIF}
   {$ELSEIF ISLAND}
   Task.Run(() -> begin
     try
@@ -472,7 +450,6 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT NETSTANDARD}
 method HttpResponse.GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
 begin
   if aEncoding = nil then aEncoding := Encoding.Default;
@@ -552,7 +529,6 @@ begin
   File.WriteBinary(aTargetFile, GetContentAsBinarySynchronous());
   {$HINT implement more efficiently}
 end;
-{$ENDIF}
 
 { Http }
 
@@ -692,7 +668,6 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT NETSTANDARD}
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 begin
   result := ExecuteRequestSynchronous(aRequest, true) as not nullable;
@@ -962,7 +937,6 @@ begin
   end;
   {$ENDIF}
 end;
-{$ENDIF}
 
 {method Http.ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
 begin
@@ -1038,7 +1012,7 @@ begin
   end);
 end;
 
-{$IF NOT ECHOES OR (NOT NETSTANDARD AND NOT NETFX_CORE)}
+{$IF NOT NETFX_CORE}
 method Http.GetString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest): not nullable String;
 begin
   result := ExecuteRequestSynchronous(aRequest).GetContentAsStringSynchronous(aEncoding);

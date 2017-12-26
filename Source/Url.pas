@@ -926,9 +926,7 @@ begin
   {$IF COOPER}
   exit java.net.URLEncoder.Encode(aString, 'utf-8');
   {$ELSEIF ECHOES}
-    {$IF NETSTANDARD}
-    result := System.Net.HttpUtility.UrlEncode(aString);
-    {$ELSEIF NETFX_CORE}
+    {$IF NETFX_CORE}
     result := System.Net.WebUtility.UrlEncode(aString);
     {$ELSE}
     result := System.Web.HttpUtility.UrlEncode(aString);
