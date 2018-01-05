@@ -24,6 +24,9 @@ type
     const DEFAULT_FORMAT_DATE_SHORT = "d/M/yyyy";
     const DEFAULT_FORMAT_TIME = "hh:mm:ss";
     const DEFAULT_FORMAT_TIME_SHORT = "hh:mm";
+    const MILLISECONDS_PER_DAY = 86400000;
+    const OADATE_OFFSET: Int64 = 599264352000000000;
+    const TICKS_PER_MILLISECOND: Int64 = 10000;
   public
     constructor;
     constructor(aTicks: Int64);
@@ -59,6 +62,9 @@ type
     method ToShortPrettyDateAndTimeString(aTimeZone: TimeZone := nil): String;
     method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
     method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
+
+    class method ToOADate(aDateTime: DateTime): Double;
+    class method FromOADate(aOADate: Double): DateTime;
 
     {$IF ECHOES OR ISLAND}
     method ToString: PlatformString; override;
@@ -594,5 +600,32 @@ begin
   result := aDateTime.fDateTime;
 end;
 {$ENDIF}
+
+class method DateTime.ToOADate(aDateTime: DateTime): Double;
+begin
+  var lTicks := aDateTime.Ticks;
+  if lTicks = 0 then
+    exit 0.0;
+
+  var lMillis: Int64 := (lTicks - OADATE_OFFSET) / TICKS_PER_MILLISECOND;
+  if lMillis < 0 then begin
+    var lMod := lMillis mod MILLISECONDS_PER_DAY;
+    if lMod <> 0 then
+      lMillis := lMillis - ((MILLISECONDS_PER_DAY + lMod) * 2);
+  end;
+  result := Double(lMillis) / MILLISECONDS_PER_DAY;
+end;
+
+class method DateTime.FromOADate(aOADate: Double): DateTime;
+begin
+  var lValue := if aOADate > 0 then 0.5 else -0.5;
+  var lMillis: Int64 := Int64((aOADate * MILLISECONDS_PER_DAY) + lValue);
+  
+  if lMillis < 0 then
+    lMillis := lMillis - ((lMillis mod MILLISECONDS_PER_DAY) * 2);
+
+  lMillis := lMillis + (OADATE_OFFSET / TICKS_PER_MILLISECOND);
+  result := new DateTime(lMillis * TICKS_PER_MILLISECOND);
+end;
 
 end.
