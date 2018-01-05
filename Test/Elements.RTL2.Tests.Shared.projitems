@@ -9,6 +9,7 @@
     <Import_RootNamespace>Elements.RTL2.Tests.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DateTime.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Files.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Stream.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Timer.pas" />
