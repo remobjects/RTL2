@@ -194,7 +194,7 @@ type
     method ToString(): String; override;
     method ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions := new XmlFormattingOptions): String; override;
 
-    method UniqueCopy: not nullable XmlNode; override; 
+    method UniqueCopy: not nullable XmlNode; override;
   end;
 
   XmlAttribute = public class(XmlNode)
@@ -1402,21 +1402,22 @@ end;
 
 method XmlElement.UniqueCopy: not nullable XmlNode;
 begin
-  var res := new XmlElement withName(LocalName);
-  res.Namespace := &Namespace;  
+  var res := new XmlElement withName(LocalName) as not nullable;
+  res.Namespace := &Namespace;
   for each a in fAttributesAndNamespaces do begin
     var uc := a.UniqueCopy();
     uc.fParent := res;
     res.fAttributesAndNamespaces.Add(uc);
   end;
   for each n in Nodes do begin
-    var uc := n.UniqueCopy; 
+    var uc := n.UniqueCopy;
     uc.fParent := res;
     //res.fNodes.Add(n.UniqueCopy);
     if n.NodeType = XmlNodeType.Element then
         res.fElements.Add(uc as XmlElement);
-      //res.fElements.Add(res.Nodes.LastObject as XmlElement); 
+      //res.fElements.Add(res.Nodes.LastObject as XmlElement);
   end;
+  res.Value := Value; // HACK for 79323: RTL2 XmlElement.UniqueCopy is broken
   res.EndTagName := EndTagName;
   res.fDefaultNamespace := DefaultNamespace;
   res.fChildIndex := ChildIndex;
@@ -1505,7 +1506,7 @@ end;
 
 method XmlAttribute.UniqueCopy: not nullable XmlNode;
 begin
-  result := new XmlAttribute(LocalName, &Namespace, Value, 
+  result := new XmlAttribute(LocalName, &Namespace, Value,
     innerWSleft := innerWSleft, innerWSright := innerWSright, QuoteChar := QuoteChar, originalRawValue := originalRawValue, WSleft := WSleft, WSright := WSright, Indent := Indent);
 end;
 

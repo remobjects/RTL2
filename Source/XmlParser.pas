@@ -601,7 +601,7 @@ begin
   end;
   //check prefix for attributes
   for each lAttribute in result.Attributes do begin
-	lColonPos := lAttribute.LocalName.IndexOf(':');
+  lColonPos := lAttribute.LocalName.IndexOf(':');
     if lColonPos >0 then begin
       var lPrefix := lAttribute.LocalName.Substring(0, lColonPos);
       var lLocalName := lAttribute.LocalName.Substring(lColonPos+1);
