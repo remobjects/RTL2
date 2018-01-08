@@ -81,9 +81,21 @@ type
 
   end;
 
-  NotImplementedException = public class(RTLException);
-  NotSupportedException = public class(RTLException);
-  ArgumentException = public class(RTLException);
+  {$IF COOPER}NotImplementedException = public class(RTLException);{$ENDIF}
+  {$IF ECHOES}NotImplementedException = public System.NotImplementedException;{$ENDIF}
+  {$IF ISLAND}NotImplementedException = public RemObjects.Elements.System.NotImplementedException;{$ENDIF}
+  {$IF TOFFEE}NotImplementedException = public class(RTLException);{$ENDIF}
+
+  {$IF COOPER}NotSupportedException = public java.lang.UnsupportedOperationException;{$ENDIF}
+  {$IF ECHOES}NotSupportedException = public System.NotSupportedException;{$ENDIF}
+  {$IF ISLAND}NotSupportedException = public RemObjects.Elements.System.NotSupportedException;{$ENDIF}
+  {$IF TOFFEE}NotSupportedException = public class(RTLException);{$ENDIF}
+
+  {$IF COOPER}ArgumentException = public java.lang.IllegalArgumentException;{$ENDIF}
+  {$IF ECHOES}ArgumentException = public System.ArgumentException;{$ENDIF}
+  {$IF ISLAND}ArgumentException = public RemObjects.Elements.System.ArgumentException;{$ENDIF}
+  {$IF TOFFEE}ArgumentException = public class(RTLException);{$ENDIF}
+
   UrlException = public class (RTLException);
   UrlParserException = public class(UrlException);
   ConversionException = public class(RTLException);
@@ -98,7 +110,7 @@ type
 
     constructor(aMessage: String);
     begin
-      inherited constructor(RTLErrorMessages.ARG_NULL_ERROR, aMessage)
+      inherited constructor(String.Format(RTLErrorMessages.ARG_NULL_ERROR, aMessage))
     end;
 
     class method RaiseIfNil(Value: Object; Name: String);
@@ -119,12 +131,12 @@ type
 
     constructor(aMessage: String);
     begin
-      inherited constructor(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, aMessage)
+      inherited constructor(String.Format(RTLErrorMessages.ARG_OUT_OF_RANGE_ERROR, aMessage))
     end;
 
     constructor(aFormat: String; params aParams: array of Object);
     begin
-      inherited constructor(aFormat, aParams);
+      inherited constructor(String.Format(aFormat, aParams));
     end;
 
   end;

@@ -58,14 +58,15 @@ begin
   {$ENDIF}
 end;
 
+{$IF ECHOES}[Warning("TimeZoneWithAbreviation is not suppoprted on .NET")]{$ENDIF}
 class method TimeZone.get_TimeZoneWithAbreviation(aAbbreviation: String): nullable TimeZone;
 begin
   {$IF COOPER}
   result := java.util.TimeZone.getTimeZone(aAbbreviation);
   {$ELSEIF ECHOES}
-   raise new NotSupportedException();
+  raise new NotSupportedException("TimeZoneWithAbreviation is not suppoprted on .NET");
   {$ELSEIF ISLAND}
-  raise new NotSupportedException();
+  raise new NotImplementedException();
   {$ELSEIF TOFFEE}
   result := NSTimeZone.timeZoneWithAbbreviation(aAbbreviation);
   {$ENDIF}

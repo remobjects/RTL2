@@ -203,8 +203,8 @@ const
   bufSize = 4 * 1024;
 begin
   if Destination = nil then raise new Exception('Destination is null');
-  if not self.CanRead then raise new NotSupportedException;
-  if not Destination.CanWrite then raise new NotSupportedException;
+  if not self.CanRead then raise new NotSupportedException("Stream.CopyTo is only supported if the source CanRead.");
+  if not Destination.CanWrite then raise new NotSupportedException("Stream.CopyTo is only supported if the target CanWrite.");
   var lBuf := new Byte[bufSize];
   while true do begin
     var lRest := &Read(lBuf, bufSize);
@@ -215,7 +215,7 @@ end;
 
 method Stream.GetLength: Int64;
 begin
-  if not CanSeek then raise new NotSupportedException();
+  if not CanSeek then raise new NotSupportedException("Stream.Length is only supported if the CanSeek is true.");
   var lPos := Seek(0, SeekOrigin.Current);
   var lTemp := Seek(0, SeekOrigin.End);
   Seek(lPos, SeekOrigin.Begin);
