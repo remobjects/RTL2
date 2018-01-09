@@ -824,6 +824,7 @@ begin
     fCanonicalVersion := CopyWithPath(lNewPath);
     if IsFileUrl then
       fCanonicalVersion := Url.UrlWithFilePath(fCanonicalVersion.FilePath);
+    fCanonicalVersion.fIsCanonical := true;
     result := fCanonicalVersion as not nullable;
   end
   else begin
@@ -831,6 +832,7 @@ begin
       var lCanonicalVersion := Url.UrlWithFilePath(FilePath);
       if FilePath ≠ lCanonicalVersion.FilePath then begin
         fCanonicalVersion := lCanonicalVersion;
+        fCanonicalVersion.fIsCanonical := true;
         exit fCanonicalVersion as not nullable;
       end;
     end;
