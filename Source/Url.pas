@@ -782,7 +782,7 @@ begin
   if aSubPath.IsAbsolutePath then
     exit Url.UrlWithWindowsPath(aSubPath);
   aSubPath := aSubPath.Replace('\', '/');
-  result := SubUrl(aSubPath);;
+  result := SubUrl(aSubPath);
 end;
 
 /*method Url.UrlWithRelativeOrAbsoluteSubPath(aSubPath: not nullable String): nullable Url;
