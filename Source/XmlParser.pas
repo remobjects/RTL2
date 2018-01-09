@@ -778,8 +778,6 @@ begin
     else  if Tokenizer.Token = XmlTokenKind.EmptyElementEnd then begin
       result.NodeRange.EndLine := Tokenizer.Row;
       result.NodeRange.EndColumn := Tokenizer.Column+2;
-      result.OpenTagEndLine := result.NodeRange.EndLine;
-      result.OpenTagEndColumn := result.NodeRange.EndColumn;
       if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then
         if (FormatOptions.EmptyTagSyle = XmlTagStyle.PreferOpenAndCloseTag) then
           result.AddNode(new XmlText(result,Value := ""))

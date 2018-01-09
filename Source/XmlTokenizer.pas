@@ -348,11 +348,10 @@ begin
     end;
     inc(lPosition);
   end;
-  Value := new String(fData, lStart, lPosition-lStart);
   while CharIsWhitespace(fData[lPosition-1]) do
     lPosition := lPosition-1;
   fLength := lPosition - fPos;
-  Value := Value.Trim;
+  Value := new String(fData, lStart, lPosition-lStart);
   Token := XmlTokenKind.SymbolData;
 end;
 

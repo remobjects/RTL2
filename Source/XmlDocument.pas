@@ -133,7 +133,7 @@ type
     method SetPreserveSpace(aPreserveSpace:Boolean);
     method GetNamespaceFromName(var aName: String): nullable XmlNamespace;
   assembly
-    fIsEmpty: Boolean := true;
+    //fIsEmpty: Boolean := true;
     constructor withParent(aParent: XmlElement := nil);
     constructor withParent(aParent: XmlElement) Indent(aIndent: String := "");
 
@@ -146,7 +146,7 @@ type
     property DefaultNamespace: XmlNamespace read  GetDefaultNamespace;
     property LocalName: not nullable String read GetLocalName write SetLocalName;
     property Value: nullable String read GetValue(true) write SetValue;
-    property IsEmpty: Boolean read fIsEmpty;
+    property IsEmpty: Boolean read Nodes.Count = 0;//fIsEmpty;
     property EndTagName: String;
     property OpenTagEndLine: Integer;
     property OpenTagEndColumn: Integer;
@@ -887,7 +887,7 @@ begin
   end
   else fNodes.Add(aElement);
   fElements.Add(aElement);
-  fIsEmpty := false;
+  //fIsEmpty := false;
 end;
 
 method XmlElement.AddElements(aElements: not nullable sequence of XmlElement);
@@ -923,7 +923,7 @@ begin
     end
     else fNodes.Insert(i,aElement);
   end;
-  fIsEmpty := false;
+  //fIsEmpty := false;
 end;
 
 method XmlElement.AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
@@ -969,7 +969,7 @@ begin
     else fNodes.Remove(aElement);
   end
   else fNodes.Remove(aElement);
-  if fNodes.count = 0 then fIsEmpty := true;
+ // if fNodes.count = 0 then fIsEmpty := true;
   aElement.fParent := nil;
 end;
 
@@ -1023,8 +1023,8 @@ end;
 
 method XmlElement.AddNode(aNode: not nullable XmlNode);
 begin
-  fIsEmpty := false;
-  if (aNode.NodeType = XmlNodeType.Text) and (XmlText(aNode).Value = "") then exit;
+  //fIsEmpty := false;
+  //if (aNode.NodeType = XmlNodeType.Text) and (XmlText(aNode).Value = "") then exit;
   fNodes.Add(aNode);
 end;
 
@@ -1412,12 +1412,11 @@ begin
   for each n in Nodes do begin
     var uc := n.UniqueCopy;
     uc.fParent := res;
-    //res.fNodes.Add(n.UniqueCopy);
+    res.fNodes.Add(uc);
     if n.NodeType = XmlNodeType.Element then
         res.fElements.Add(uc as XmlElement);
-      //res.fElements.Add(res.Nodes.LastObject as XmlElement);
   end;
-  res.Value := Value; // HACK for 79323: RTL2 XmlElement.UniqueCopy is broken
+  //res.Value := Value; // HACK for 79323: RTL2 XmlElement.UniqueCopy is broken
   res.EndTagName := EndTagName;
   res.fDefaultNamespace := DefaultNamespace;
   res.fChildIndex := ChildIndex;
