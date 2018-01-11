@@ -1416,7 +1416,6 @@ begin
     if n.NodeType = XmlNodeType.Element then
         res.fElements.Add(uc as XmlElement);
   end;
-  //res.Value := Value; // HACK for 79323: RTL2 XmlElement.UniqueCopy is broken
   res.EndTagName := EndTagName;
   res.fDefaultNamespace := DefaultNamespace;
   res.fChildIndex := ChildIndex;
