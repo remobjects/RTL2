@@ -444,7 +444,7 @@ end;
 method Environment.GetOSVersion: String;
 begin
   {$IF COOPER}
-  System.getProperty("os.version");
+  exit System.getProperty("os.version");
   {$ELSEIF NETSTANDARD}
   exit System.Environment.OSVersion.Version.ToString;
   {$ELSEIF NETFX_CORE}
