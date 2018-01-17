@@ -846,16 +846,12 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.ToLower(aLocale: Locale): not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toLowerCase(aLocale) as not nullable;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToLower(aLocale) as not nullable;
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseStringWithLocale(aLocale);
   {$ENDIF}
@@ -885,16 +881,12 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.ToUpper(aLocale: Locale): not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toUpperCase(aLocale) as not nullable;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToUpper(aLocale) as not nullable;
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseStringWithLocale(aLocale);
   {$ENDIF}
