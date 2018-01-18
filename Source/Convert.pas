@@ -175,11 +175,11 @@ begin
   else
     result := aValue.ToString("0."+new String('0', aDigitsAfterDecimalPoint), aLocale) as not nullable
   {$ELSEIF ISLAND}
+  if aLocale = nil then aLocale := Locale.Current;
   if aDigitsAfterDecimalPoint < 0 then
-    result := aValue.ToString() as not nullable
+    result := aValue.ToString(aLocale) as not nullable
   else
-    result := aValue.ToString(aDigitsAfterDecimalPoint) as not nullable
-  {$HINT Does not use locale for Island yet?}
+    result := aValue.ToString(aDigitsAfterDecimalPoint, aLocale) as not nullable
   {$ELSEIF TOFFEE}
   var numberFormatter := new NSNumberFormatter();
   numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
