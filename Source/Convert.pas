@@ -569,7 +569,6 @@ begin
   result := TryToDouble(aValue, Locale.Invariant);
 end;
 
-{$IF ISLAND}[Warning("Does not honor the Locale yet, on Island")]{$ENDIF}
 method Convert.ToDouble(aValue: not nullable String; aLocale: Locale): Double;
 begin
   var lResult := TryToDouble(aValue, aLocale);
@@ -579,7 +578,6 @@ begin
     raise new FormatException(String.Format("Invalid double value '{0}' for locale {1}", aValue, aLocale.Identifier));
 end;
 
-{$IF ISLAND}[Warning("Does not honor the Locale yet, on Island")]{$ENDIF}
 method Convert.TryToDouble(aValue: nullable String; aLocale: Locale): nullable Double;
 begin
   if String.IsNullOrWhiteSpace(aValue) then
@@ -619,9 +617,8 @@ begin
   if Double.TryParse(aValue, System.Globalization.NumberStyles.Any, aLocale, out lResult) then
     exit valueOrDefault(lResult);
   {$ELSEIF ISLAND}
-  {$WARNING Does not honor the Locale yet, on Island}
   var lResult: Double;
-  if Double.TryParse(aValue, out lResult) then
+  if Double.TryParse(aValue, aLocale, out lResult) then
     exit valueOrDefault(lResult);
   {$ELSEIF TOFFEE}
   var Number := TryParseNumber(aValue, aLocale);
@@ -669,7 +666,6 @@ begin
   result := ord(aValue);
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.ToByte(aValue: not nullable String): Byte;
 begin
   if aValue = nil then
@@ -683,8 +679,10 @@ begin
   {$ELSEIF ECHOES}
   exit System.Convert.ToByte(aValue);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("Convert.ToByte() is not implemented for Island yet.");
+  var lNumber: Int64;
+  if not RemObjects.Elements.System.Convert.TryParseInt64(aValue, out lNumber, true) then
+    raise new FormatException("Unable to convert string '{0}' to byte.", aValue);
+  exit ToByte(lNumber);
   {$ELSEIF TOFFEE}
   var Number: Int32 := ParseInt32(aValue);
   exit ToByte(Number);
