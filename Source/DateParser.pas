@@ -76,7 +76,7 @@ begin
     end
 
     else begin
-      while (lIndex < aFormat.Length) and (not (lChar in ['a'..'z'])) and (not (lChar in ['A'..'Z'])) do begin
+      while (lIndex < aFormat.Length) and (not (lChar in ['a'..'z'])) and (not (lChar in ['A'..'Z']) and (not (lChar in ['0'..'9']))) do begin
         inc(lIndex);
         lChar := aFormat[lIndex];
       end;
@@ -175,7 +175,7 @@ begin
   if aFormat.Length = 1 then
     exit ParseStandard(aDateTime, aFormat, var output);
     
-    var lDay, lMonth, lYear, lHour, lMin, lSec: Integer;
+    var lDay, lMonth, lYear, lHour, lMin, lSec, lOffset: Integer;
     var lTmp: String;
     var lFormat := aFormat.Trim;
     var lDateTime := aDateTime.Trim;
@@ -276,16 +276,21 @@ begin
 
         end;
 
-        'z': begin // timezone, with no '0', -2
-
-        end;
-
-        'zz': begin // timezone, -02
-
+        'z', 'zz': begin // timezone, with no '0', -2
+          lTmp := GetNextSepOrStringToken(var lDateTime);
+          if (lTmp <> '+') and (lTmp <> '-') then exit false;
+          if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23) then exit false;
+          if lTmp = '-' then lOffset := -lOffset;
         end;
 
         'zzz': begin // timezone, with minutes, -02:00
-
+          lTmp := GetNextSepOrStringToken(var lDateTime);
+          if (lTmp <> '+') and (lTmp <> '-') then exit false;
+          if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23) then exit false;
+          if not SkipToNextToken(var lFormat, var lDateTime) then exit false;
+          var lMinutes: Integer;
+          if not GetNextNumberToken(var lDateTime, var lMinutes, 0, 23) then exit false;
+          if lTmp = '-' then lOffset := -lOffset;
         end;
 
         else begin // separators or literals
