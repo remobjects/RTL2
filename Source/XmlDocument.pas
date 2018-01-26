@@ -629,10 +629,10 @@ begin
       lPrefixLength := length(lElement.Namespace.Prefix)+1;
       if (aColumn >= lStart + lPrefixLength+1) and ((lElement.LocalName = "") or (aColumn <= lStart+length(lElement.FullName))) then begin
         result.CurrentNamespace := lElement.Namespace;
-        exit;
+        //exit;
       end;
     end;
-    if lElement.LocalName.Contains('.') and (aColumn <= lStart+length(lElement.FullName)) then begin
+    if lElement.LocalName.Contains('.') and (aColumn <= lStart+length(lElement.FullName)+1) then begin
       var lName := lElement.FullName;
       var lPos := lName.IndexOf('.');
       var lPosNext := lPos;
@@ -647,6 +647,7 @@ begin
         result.CurrentIdentifier := lName.Substring(lPrefixLength, lPos - lPrefixLength);
       exit;
     end;
+    if result.CurrentNamespace <> nil then exit;
     if (lPosition = XmlPositionKind.EndTag) then exit result;
     if (aRow > lElement.NodeRange.StartLine) or (aColumn > lStart+lElement.FullName.Length+1) then result.CurrentPosition := XmlPositionKind.InsideTag;
     if (lElement.Attributes.Count > 0) then begin
