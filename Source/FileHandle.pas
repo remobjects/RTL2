@@ -128,8 +128,6 @@ method FileHandle.Flush;
 begin
   {$IF COOPER}
   mapped.Channel.force(false);
-  {$ELSEIF NETSTANDARD}
-  mapped.Flush;
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Flush;
   {$ELSEIF TOFFEE}
@@ -172,8 +170,6 @@ begin
 
   {$IF COOPER}
   exit mapped.read(Buffer, Offset, Count);
-  {$ELSEIF NETSTANDARD}
-  exit mapped.Read(Buffer, Offset, Count);
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Read(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
@@ -207,8 +203,6 @@ begin
 
   {$IF COOPER}
   mapped.write(Buffer, Offset, Count);
-  {$ELSEIF NETSTANDARD}
-  mapped.Write(Buffer, Offset, Count);
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
@@ -241,8 +235,6 @@ begin
     SeekOrigin.Current: mapped.seek(Position + Offset);
     SeekOrigin.End: mapped.seek(Length + Offset);
   end;
-  {$ELSEIF NETSTANDARD}
-  mapped.Seek(Offset, System.IO.SeekOrigin(Origin));
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Seek(Offset, PlatformSeekOrigin(Origin));
   {$ELSEIF TOFFEE}
@@ -258,8 +250,6 @@ method FileHandle.GetLength: Int64;
 begin
   {$IF COOPER}
   exit mapped.length;
-  {$ELSEIF NETSTANDARD}
-  exit mapped.Length;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Length;
   {$ELSEIF TOFFEE}
@@ -289,8 +279,6 @@ method FileHandle.GetPosition: Int64;
 begin
   {$IF COOPER}
   exit mapped.FilePointer;
-  {$ELSEIF NETSTANDARD}
-  exit mapped.Position;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Position;
   {$ELSEIF TOFFEE}
@@ -302,8 +290,6 @@ method FileHandle.SetPosition(value: Int64);
 begin
   {$IF COOPER}
   Seek(value, SeekOrigin.Begin);
-  {$ELSEIF NETSTANDARD}
-  mapped.Position := value;
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Position := value;
   {$ELSEIF TOFFEE}

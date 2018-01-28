@@ -120,8 +120,6 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   JavaFile.delete;
-  {$ELSEIF NETSTANDARD}
-  System.IO.File.Delete(mapped);
   {$ELSEIF ECHOES}
   System.IO.File.Delete(mapped);
   {$ELSEIF ISLAND}

@@ -193,8 +193,6 @@ begin
   exit new java.io.File(RelativePath).AbsolutePath as not nullable;
   {$ELSEIF NETFX_CORE}
   exit RelativePath; //api has no such function
-  {$ELSEIF NETSTANDARD}
-  exit System.IO.Path.GetFullPath(RelativePath)  as not nullable;
   {$ELSEIF ECHOES}
   exit System.IO.Path.GetFullPath(RelativePath) as not nullable;
   {$ELSEIF ISLAND}
