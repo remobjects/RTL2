@@ -25,7 +25,9 @@ type
     property LastPathComponent: String read Path.GetFilename(self); inline;                                 // uses the platform-specific folder separator
     property LastPathComponentWithoutExtension: String read Path.GetFilenameWithoutExtension(self); inline; // uses the platform-specific folder separator
     property LastUnixPathComponent: String read GetLastPathComponentWithSeparatorChar('/');
+    property LastUnixPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastUnixPathComponent);
     property LastWindowsPathComponent: String read GetLastPathComponentWithSeparatorChar('\');
+    property LastWindowsPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastWindowsPathComponent);
 
     property PathWithoutExtension: String read Path.GetPathWithoutExtension(self); inline;
     property PathExtension: String read Path.GetExtension(self); inline;
