@@ -91,9 +91,7 @@ end;
 
 class method Folder.GetSeparator: Char;
 begin
-  {$IF NETSTANDARD}
-  exit '\';
-  {$ELSEIF COOPER}
+  {$IF COOPER}
   exit java.io.File.separatorChar;
   {$ELSEIF ECHOES}
   exit System.IO.Path.DirectorySeparatorChar;

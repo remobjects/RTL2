@@ -275,11 +275,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
-    {$IF NETSTANDARD}
-    result := fDateTime.ToString;
-    {$ELSE}
-    result := fDateTime.ToShortDateString;
-    {$ENDIF}
+  result := fDateTime.ToShortDateString;
   {$ELSEIF TOFFEE}
   var lFormatter: NSDateFormatter := new NSDateFormatter();
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
@@ -296,11 +292,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
-    {$IF NETSTANDARD}
-    result := fDateTime.ToString();
-    {$ELSE}
-    result := fDateTime.ToShortTimeString();
-    {$ENDIF}
+  result := fDateTime.ToShortTimeString();
   {$ELSEIF TOFFEE}
   var lFormatter: NSDateFormatter := new NSDateFormatter();
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
@@ -322,11 +314,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
-    {$IF NETSTANDARD}
-    result := ToShortDateString();
-    {$ELSE}
-    result := ToShortDateString();
-    {$ENDIF}
+  result := ToShortDateString();
   {$ELSEIF TOFFEE}
   var lFormatter: NSDateFormatter := new NSDateFormatter();
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
@@ -343,11 +331,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   result := lFormatter.format(mapped.Time);
   {$ELSEIF ECHOES}
-    {$IF NETSTANDARD}
-    result := fDateTime.ToString;
-    {$ELSE}
-    result := fDateTime.ToShortDateString;
-    {$ENDIF}
+  result := fDateTime.ToShortDateString;
   {$ELSEIF TOFFEE}
   var lFormatter: NSDateFormatter := new NSDateFormatter();
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
@@ -620,7 +604,7 @@ class method DateTime.FromOADate(aOADate: Double): DateTime;
 begin
   var lValue := if aOADate > 0 then 0.5 else -0.5;
   var lMillis: Int64 := Int64((aOADate * MILLISECONDS_PER_DAY) + lValue);
-  
+
   if lMillis < 0 then
     lMillis := lMillis - ((lMillis mod MILLISECONDS_PER_DAY) * 2);
 
