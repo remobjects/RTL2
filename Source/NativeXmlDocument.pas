@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL.Native;
 
-{$IF (ECHOES AND NOT NETSTANDARD) OR (TOFFEE AND MACOS)}
+{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 //
 // For now, XmlDocument is implemented as a simple wraopper around NativeXmlElement (Toffee) and System.Xml (Echoes),
