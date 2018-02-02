@@ -7,7 +7,7 @@ type
   public
     constructor(aKey: T; aValue: U);
     {$IF TOFFEE}
-    method isEqual(obj: id): Boolean;
+    method isEqual(obj: id): Boolean; override;
     {$ELSE}
     method &Equals(Obj: Object): Boolean; override;
     {$ENDIF}
