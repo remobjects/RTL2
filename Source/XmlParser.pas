@@ -898,18 +898,18 @@ end;
 method XmlParser.ParseEntities(S: String): nullable String;
 begin
   var i := 0;
-  result := S;
-  var len := length(result);
+   var Sb := new StringBuilder(S);
+  var len := Sb.Length;
   while i < len do begin
-    if result[i] = '&' then begin
+    if Sb[i] = '&' then begin
       var lStart := i;
       var lEntity: String;
       inc(i);
-      while i < length(result) do begin
-        var ch := result[i];
+      while i < Sb.Length do begin
+        var ch := Sb[i];
         if ch = ';' then begin
           inc(i);
-          lEntity := result.Substring(lStart, i-lStart);
+          lEntity := Sb.Substring(lStart, i-lStart);
           break;
         end
         else if ch in ['a'..'z','A'..'Z','0'..'9','#'] then begin
@@ -922,7 +922,7 @@ begin
       if assigned(lEntity) then begin
         var lResolvedEntity := ResolveEntity(lEntity);
         if assigned(lResolvedEntity) then begin
-          result := result.Replace(lStart, length(lEntity), lResolvedEntity);
+          Sb := Sb.Replace(lStart, length(lEntity), lResolvedEntity);
           var diff := (length(lEntity)-length(lResolvedEntity));
           i := i-diff;
           len := len-diff
@@ -932,6 +932,7 @@ begin
     else
       inc(i);
   end;
+  result := Sb.ToString;
 end;
 
 method XmlParser.ResolveEntity(S: not nullable String): nullable String;
