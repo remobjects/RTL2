@@ -556,7 +556,7 @@ begin
       WS := "";
       if lXmlNode.NodeType = XmlNodeType.Namespace then result.AddNamespace(XmlNamespace(lXmlNode))
       else result.AddAttribute(XmlAttribute(lXmlNode));
-      if assigned(aError) then exit;
+      if assigned(aError) then goto checkns;
       if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName) then exit;
     end;
     lFormat := false;
@@ -734,31 +734,75 @@ begin
       if Tokenizer.Token = XmlTokenKind.TagElementEnd then begin
         result.CloseTagRange.StartLine := Tokenizer.Row;
         result.CloseTagRange.StartColumn := Tokenizer.Column;
+        if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
+          result.AddNode(new XmlText(result,Value := ""));
         Tokenizer.Next;
-        if not Expected(out aError, XmlTokenKind.ElementName) then begin //exit;
+        if Expected(out aError, XmlTokenKind.ElementName) then begin //exit;
           result.EndTagName := Tokenizer.Value;
-          var lPos := Tokenizer.Value.IndexOf(':');
-          if lPos > 0 then begin
-            var lPrefix := Tokenizer.Value.Substring(0, lPos);
-            lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
-            if not assigned(lNamespace) then
-            aError.FillErrorInfo("Unknown prefix "+lPrefix, "", Tokenizer.Row, Tokenizer.Column-lPrefix.Length-1);
+          if (result.FullName <> Tokenizer.Value) then begin
+            var lEndTagName := result.EndTagName;    
+            aError := new XmlErrorInfo;
+            var lPos := result.EndTagName.IndexOf(':');
+            var lPrefix := "";
+            var lPrefixLength := 0;
+            if lPos > 0 then begin
+              lPrefix := Tokenizer.Value.Substring(0, lPos);
+              lPrefixLength := lPrefix.Length;
+              lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
+              if not assigned(lNamespace) then begin
+                aError.FillErrorInfo("Unknown prefix "+lPrefix, "", Tokenizer.Row, Tokenizer.Column-lPrefixLength-1);
+                exit;
+              end else
+                lEndTagName := lEndTagName.Substring(lPos+1);
+            end else begin
+              if ((result.Namespace:Prefix <> nil) and (result.Namespace.Prefix <> "") and  not result.Namespace.Prefix.StartsWith(Tokenizer.Value)) then begin
+                aError.FillErrorInfo("Unknown prefix "+Tokenizer.Value, "", Tokenizer.Row, Tokenizer.Column);
+                exit;
+              end;
+            end;
+            var lDotPosStart := result.LocalName.IndexOf('.');
+            if lDotPosStart > 0 then begin
+              var lStartTagNames := result.LocalName.Split('.');
+              var lDotPosEnd := lEndTagName.IndexOf('.');
+              var lEndTagNames := lEndTagName.Split('.');
+              for i: Integer := 0 to lStartTagNames.Count-1 do begin
+                if (lEndTagNames.Count > i) then
+                  if lEndTagNames[i]<> lStartTagNames[i] then
+                    if (lStartTagNames[i].StartsWith(lEndTagNames[i])) and (lEndTagNames.Count = i+1) then
+                      aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column+Tokenizer.Value.length)
+                    else begin
+                      var lErrorColumn := Tokenizer.Column;
+                      if lPrefixLength > 0 then lErrorColumn := lErrorColumn +lPrefixLength+1;
+                      if i > 0 then
+                        for j: Integer := 0 to i-1 do
+                          lErrorColumn := lErrorColumn + lEndTagNames[j].Length + 1;
+                      aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, lErrorColumn);
+                      exit;
+                    end;
+              end;
+            end;
+            if not result.LocalName.StartsWith(lEndTagName) then begin
+              aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), "", Tokenizer.Row, Tokenizer.Column+length(lPrefix));
+              exit;
+            end
+            else 
+              aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column+Tokenizer.Value.length);
           end;
         end;
         if lFormat and (aIndent <> nil) and (result.Elements.Count >0) then begin
           result.AddNode(new XmlText(result, Value := fLineBreak));
           result.AddNode(new XmlText(result, Value := aIndent.Substring(0,aIndent.LastIndexOf(FormatOptions.Indentation))));
         end;
-        if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
-          result.AddNode(new XmlText(result,Value := ""));
 
         if Tokenizer.Token = XmlTokenKind.ElementName then begin
-          if (result.FullName <> Tokenizer.Value) then begin
-            aError := new XmlErrorInfo;
-            aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column + Tokenizer.Value.length );
+          /*if (result.FullName <> Tokenizer.Value) then begin
+            if not assigned (aError) then begin
+              aError := new XmlErrorInfo;
+              aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column+Tokenizer.Value.length);
+            end;
             result.EndTagName := Tokenizer.Value;
-            //exit;
-          end;
+            exit;
+          end;*/
           Tokenizer.Next;
           if (Tokenizer.Token = XmlTokenKind.Whitespace) then begin
             if FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace then

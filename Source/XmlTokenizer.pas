@@ -244,11 +244,13 @@ begin
     if not CharIsName(ch) then break;
     if ch = ':' then begin
       inc(colonSymbol);
-      if (fData.Length < (lPosition+1)) then begin
+      if (fData.Length <= (lPosition+1)) then begin
         //fPos := lPosition+1;
-        Token := XmlTokenKind.SyntaxError;
+        lPosition := lPosition + 1;
+        break;
+        {Token := XmlTokenKind.SyntaxError;
         Value := new String(fData, fPos, lPosition+1 - fPos);
-        fPos := lPosition+1;
+        fPos := lPosition+1;}
         //Value := "Name expected";
         exit;
       end
