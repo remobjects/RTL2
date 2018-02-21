@@ -33,6 +33,7 @@ type
     method Start; inline;
     method Stop; inline;
     property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ENDIF};
+    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF TOFFEE}mapped.isRunning{$ENDIF};
 
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer;
