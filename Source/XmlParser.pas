@@ -738,8 +738,8 @@ begin
           result.AddNode(new XmlText(result,Value := ""));
         Tokenizer.Next;
         if Expected(out aError, XmlTokenKind.ElementName) then begin //exit;
-          result.EndTagName := Tokenizer.Value;
           if (result.FullName <> Tokenizer.Value) then begin
+            result.EndTagName := Tokenizer.Value;
             var lEndTagName := result.EndTagName;    
             aError := new XmlErrorInfo;
             var lPos := result.EndTagName.IndexOf(':');

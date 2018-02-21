@@ -1058,6 +1058,7 @@ end;
 method XmlElement.SetLocalName(aValue: not nullable String);
 begin
   fLocalName := aValue;
+  EndTagName := nil;
 end;
 
 method XmlElement.GetNamespace: nullable XmlNamespace;
