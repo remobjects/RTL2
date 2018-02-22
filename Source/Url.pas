@@ -513,7 +513,7 @@ begin
     localComponents := localComponents.SubList(i);
 
     if baseComponents.count-1 >= aThreshold then
-      exit RemovePercentEncodingsFromPath(local);
+      exit UnixPath;
 
     baseUrl := baseComponents.JoinedString("/");
     local := localComponents.JoinedString("/");
