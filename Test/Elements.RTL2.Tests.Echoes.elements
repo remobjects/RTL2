@@ -52,9 +52,6 @@
     <Reference Include="RemObjects.Elements.EUnit">
       <Private>True</Private>
     </Reference>
-    <Reference Include="Sugar">
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />

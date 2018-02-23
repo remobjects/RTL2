@@ -39,7 +39,7 @@ type
     method GetUnixPathWithoutLastComponent: String;
     method GetUrlWithoutLastComponent: nullable Url;
 
-    method DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String; //inline; 76882: Echoes: E0 Internal error: GOUNKEX137 with `inline`
+    method DoUnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3) CaseInsensitive(aCaseInsensitive: Boolean := false): String;
 
     class method AddPercentEncodingsToPath(aString: String; aDontDoubleEncode: Boolean): String;
 
@@ -132,13 +132,15 @@ type
     method UrlWithFragment(aFragment: nullable String): not nullable Url;
     method UrlWithoutFragment(): not nullable Url; inline;
 
-    method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String; inline;
-    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String; inline;
+    method CanGetPathRelativeToUrl(aUrl: not nullable Url): Boolean;
+
+    method FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
+    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
     method UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 
-    method FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; //inline; 76830: Toffee: "E0 Internal error: Could not resolve member op_Implicit on RemObjects.Elements.RTL.String" with inline
-    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; inline;
-    method UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String; inline;
+    method FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
+    method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
+    method UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 
     /* Needed for fire
 
@@ -440,42 +442,48 @@ end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
-  result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
-  {$IF NOT KNOWN_UNIX}
-  if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
-    result := result:Replace('/', RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
-  {$ENDIF}
+  if defined("KNOWN_UNIX") or (RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/') then
+    result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold)
+  else
+    result := WindowsPathRelativeToUrl(aUrl) Threshold(aThreshold)
 end;
 
 method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
-  result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold);
-  result := result:Replace('/', '\');
+  result := coalesce(DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(false), WindowsPath);
 end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
+  result := coalesce(DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true), UnixPath);
+end;
+
+method Url.CanGetPathRelativeToUrl(aUrl: not nullable Url): Boolean;
+begin
   var SelfIsAbsoluteWindowsUrl := IsAbsoluteWindowsFileURL;
   var BaseIsAbsoluteWindowsUrl := aUrl.IsAbsoluteWindowsFileURL;
   if SelfIsAbsoluteWindowsUrl ≠ BaseIsAbsoluteWindowsUrl then begin
-    exit nil; // can never be relative;
+    exit false; // can never be relative;
   end
   else if SelfIsAbsoluteWindowsUrl and BaseIsAbsoluteWindowsUrl then begin
     var SelfIsDriveletter := IsAbsoluteWindowsDriveLetterFileURL;
     var BaseIsDriveletter := aUrl.IsAbsoluteWindowsDriveLetterFileURL;
     if SelfIsDriveletter ≠ BaseIsDriveletter then begin
-      exit nil; // can never be relative;
+      exit false; // can never be relative;
     end
     else if SelfIsDriveletter and BaseIsDriveletter then begin
-      if LowerChar(Path[1]) ≠ LowerChar(aUrl.Path[1]) then exit nil; // different drive, can never be relative;
-      result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
+      if LowerChar(Path[1]) ≠ LowerChar(aUrl.Path[1]) then exit false; // different drive, can never be relative;
+      result := true;
+    end
+    else if Host:ToLowerInvariant ≠ aUrl.Host:ToLowerInvariant then begin
+      exit false; // different host, can never be relative;
     end
     else begin// both network urls
-      result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true);
+      result := true;
     end;
   end
   else begin
-    result := DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(false);
+    result := true;
   end;
 end;
 
@@ -513,7 +521,7 @@ begin
     localComponents := localComponents.SubList(i);
 
     if baseComponents.count-1 >= aThreshold then
-      exit UnixPath;
+      exit nil;
 
     baseUrl := baseComponents.JoinedString("/");
     local := localComponents.JoinedString("/");
@@ -528,17 +536,20 @@ end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
-  result := FilePathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+  if not aAlways or CanGetPathRelativeToUrl(aUrl) then
+    result := FilePathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
 end;
 
 method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
-  result := WindowsPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+  if not aAlways or CanGetPathRelativeToUrl(aUrl) then
+    result := WindowsPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
 end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
-  result := UnixPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+  if not aAlways or CanGetPathRelativeToUrl(aUrl) then
+    result := UnixPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
 end;
 
 method Url.IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
