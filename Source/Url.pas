@@ -442,7 +442,7 @@ end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
-  if defined("KNOWN_UNIX") or (RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/') then
+  if defined("KNOWN_UNIX") or (RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '\') then
     result := UnixPathRelativeToUrl(aUrl) Threshold(aThreshold)
   else
     result := WindowsPathRelativeToUrl(aUrl) Threshold(aThreshold)
