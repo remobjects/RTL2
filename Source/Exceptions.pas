@@ -58,7 +58,7 @@ type
     end;
 
     property Message: String read reason;
-    property StackTrace: String read (callStackSymbols as List<String>).JoinedString(Environment.LineBreak);
+    property StackTrace: String read (callStackSymbols as ImmutableList<String>).JoinedString(Environment.LineBreak);
     {$ENDIF}
 
     property CallStack: ImmutableList<String> read _GetCallStack;
