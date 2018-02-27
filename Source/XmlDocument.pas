@@ -878,6 +878,7 @@ begin
   aElement.fParent := self;
   aElement.Document := Document;
   aElement.fChildIndex := Elements.Count;
+  if self.PreserveSpace then aElement.PreserveSpace := true;
   if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then begin
     if fNodes.Count > 0 then begin
       var LastNodePos := fNodes.Count-1;
@@ -917,6 +918,7 @@ begin
   else begin
     aElement.fParent := self;
     aElement.Document := Document;
+    if PreserveSpace then aElement.PreserveSpace := true;
     fElements.Insert(aIndex, aElement);
     for i: Integer := aIndex+1 to fElements.Count -1 do
       fElements[i].FChildIndex := fElements[i].fChildIndex +1;
@@ -1120,7 +1122,7 @@ begin
   if aPreserveSpace then begin
     if assigned(lPreserveSpaceAttr) then
       lPreserveSpaceAttr.Value := "preserve"
-    else if not Parent.PreserveSpace then begin
+    else if not assigned(Parent) or not Parent.PreserveSpace then begin
       lPreserveSpaceAttr := new XmlAttribute withParent(self);
       lPreserveSpaceAttr.LocalName := "space";
       lPreserveSpaceAttr.Namespace := new XmlNamespace("xml", Url.UrlWithstring(XmlConsts.XML_NAMESPACE_URL));
