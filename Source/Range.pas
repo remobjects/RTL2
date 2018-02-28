@@ -13,6 +13,19 @@ type
     property Location: Integer read mapped.location write mapped.location;
     property Length: Integer read mapped.length write mapped.length;
     {$ENDIF}
+    property &End: Integer read Location+Length;
+
+    method OverlappingSubRange(aRange: Range): nullable Range;
+    begin
+      if (aRange.Location ≥ &End) then
+        exit nil;
+      if (aRange.End ≤ Location) then
+        exit nil;
+      var lNewStart := Math.Max(&Location, aRange.Location);
+      var lNewEnd := Math.Min(&End, aRange.End);
+      result := new Range(lNewStart, lNewEnd-lNewStart);
+    end;
+
   end;
 
   RangeHelper = public static class
