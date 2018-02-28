@@ -450,7 +450,7 @@ end;
 
 method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
-  result := coalesce(DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(false), WindowsPath);
+  result := coalesce(DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(false), WindowsPath).Replace("/", "\");
 end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
