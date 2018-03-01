@@ -7,6 +7,7 @@ type
   private
     {$IF NOT WEBASSEMBLY}
     method getDateModified: DateTime;
+    method setDateModified(aDateTime: DateTime);
     method getDateCreated: DateTime;
     method getSize: Int64;
     {$ENDIF}
@@ -256,6 +257,27 @@ begin
   result := new DateTime(IslandFile.DateModified);
   {$ELSEIF TOFFEE}
   result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
+  {$ENDIF}
+end;
+
+{$IF COOPER OR ISLAND}[Warning("Not Implemented for all platforms")]{$ENDIF}
+method File.setDateModified(aDateTime: DateTime);
+begin
+  if not Exists then
+    raise new FileNotFoundException(FullPath);
+  {$IF COOPER}
+  {$WARNING Not implemented}
+  //JavaFile.setLastModified(...)
+  //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  {$ELSEIF ECHOES}
+  System.IO.File.SetLastWriteTimeUtc(mapped, aDateTime);
+  {$ELSEIF ISLAND}
+  {$WARNING Not implemented}
+  //IslandFolder.DateModified := aDateTime;
+  {$ELSEIF TOFFEE}
+  var lError: NSError := nil;
+  if not NSFileManager.defaultManager.setAttributes(NSDictionary.dictionaryWithObject(aDateTime) forKey(NSFileModificationDate)) ofItemAtPath(self.FullPath) error(var lError) then
+    raise new NSErrorException withError(lError);
   {$ENDIF}
 end;
 
