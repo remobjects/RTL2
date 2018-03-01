@@ -52,7 +52,7 @@ type
     class method AppendBinary(aFileName: String; Content: ImmutableBinary);
 
     property DateCreated: DateTime read getDateCreated;
-    property DateModified: DateTime read getDateModified;
+    property DateModified: DateTime read getDateModified write setDateModified;
     property Size: Int64 read getSize;
     {$ENDIF}
 
