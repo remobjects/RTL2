@@ -42,10 +42,12 @@ type
     method ReadBinary: ImmutableBinary;
 
     class method ReadText(aFileName: String; Encoding: Encoding := nil): String;
+    class method ReadLines(aFileName: String; Encoding: Encoding := nil): ImmutableList<String>;
     class method ReadBytes(aFileName: String): array of Byte;
     class method ReadBinary(aFileName: String): ImmutableBinary;
     class method WriteBytes(aFileName: String; Content: array of Byte);
     class method WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
+    class method WriteLines(aFileName: String; Content: ImmutableList<String>; aEncoding: Encoding := nil);
     class method WriteBinary(aFileName: String; Content: ImmutableBinary);
     class method AppendText(aFileName: String; Content: String);
     class method AppendBytes(aFileName: String; Content: array of Byte);
@@ -305,6 +307,12 @@ begin
   exit new String(ReadBytes(aFileName), Encoding);
 end;
 
+class method File.ReadLines(aFileName: String; Encoding: Encoding := nil): ImmutableList<String>;
+begin
+  var lText := ReadText(aFileName, Encoding);
+  result := lText.Split(#10).Select(s -> s.Trim([#13])).ToList();
+end;
+
 class method File.ReadBytes(aFileName: String): array of Byte;
 begin
   exit ReadBinary(aFileName).ToArray;
@@ -341,6 +349,11 @@ begin
   if not assigned(aEncoding) then
     aEncoding := Encoding.Default;
   WriteBytes(aFileName, Content.ToByteArray(aEncoding));
+end;
+
+class method File.WriteLines(aFileName: String; Content: ImmutableList<String>; aEncoding: Encoding := nil);
+begin
+  WriteText(aFileName, Content.JoinedString(Environment.LineBreak));
 end;
 
 class method File.WriteBinary(aFileName: String; Content: ImmutableBinary);
