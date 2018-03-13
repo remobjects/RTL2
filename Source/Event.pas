@@ -5,13 +5,13 @@
 interface
 
 {$IF COOPER}
-type PlatformEvent = java.util.concurrent.locks.ReentrantLock;
+type PlatformEvent = public java.util.concurrent.locks.ReentrantLock;
 {$ELSEIF ECHOES}
-type PlatformEvent = System.Threading.EventWaitHandle;
+type PlatformEvent = public System.Threading.EventWaitHandle;
 {$ELSEIF ISLAND}
-type PlatformEvent = RemObjects.Elements.System.EventWaitHandle;
+type PlatformEvent = public RemObjects.Elements.System.EventWaitHandle;
 {$ELSEIF TOFFEE}
-type PlatformEvent = NSCondition;
+type PlatformEvent = public NSCondition;
 {$ENDIF}
 
 type

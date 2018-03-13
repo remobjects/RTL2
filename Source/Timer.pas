@@ -4,7 +4,7 @@ interface
 
 type
 TimerElapsedBlock = public block (aData: Object);
-PlatformTimer = {$IF COOPER}java.util.Timer{$ELSEIF ECHOES}System.Timers.Timer{$ELSEIF ISLAND}RemObjects.Elements.System.Timer{$ELSEIF TOFFEE}NSTimer{$ENDIF};
+PlatformTimer = public {$IF COOPER}java.util.Timer{$ELSEIF ECHOES}System.Timers.Timer{$ELSEIF ISLAND}RemObjects.Elements.System.Timer{$ELSEIF TOFFEE}NSTimer{$ENDIF};
 
 Timer = public class
 private

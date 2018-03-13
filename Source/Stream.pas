@@ -30,7 +30,7 @@ type
   end;
 
   {$IF ECHOES OR ISLAND}
-  PlatformStream = {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+  PlatformStream = public {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
   WrappedPlatformStream = public abstract class(Stream)
   protected
     fPlatformStream: PlatformStream;
@@ -50,7 +50,7 @@ type
   end;
   {$ENDIF}
 
-  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+  PlatformMemoryStream = public {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
@@ -97,7 +97,7 @@ type
     property CanWrite: Boolean read GetCanWrite; override;
   end;
 
-  PlatformInternalFileStream = {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+  PlatformInternalFileStream = public {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
   FileStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   {$IF COOPER OR TOFFEE}

@@ -4,11 +4,11 @@ interface
 
 type
   {$IF JAVA}
-  PlatformMath = java.lang.Math;
+  PlatformMath = public java.lang.Math;
   {$ELSEIF ECHOES}
-  PlatformMath = System.Math;
+  PlatformMath = public System.Math;
   {$ELSEIF ISLAND}
-  PlatformMath = RemObjects.Elements.System.Math;
+  PlatformMath = public RemObjects.Elements.System.Math;
   {$ENDIF}
 
   {$IF COOPER}

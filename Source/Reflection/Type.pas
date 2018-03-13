@@ -11,13 +11,16 @@ type Protocol = id;
 
 type
   {$IF ECHOES}
-  PlatformType = System.Type;
+  PlatformType = public System.Type;
   {$ENDIF}
   {$IF COOPER}
-  PlatformType = java.lang.Class;
+  PlatformType = public java.lang.Class;
   {$ENDIF}
   {$IF ISLAND}
-  PlatformType = RemObjects.Elements.System.Type;
+  PlatformType = public RemObjects.Elements.System.Type;
+  {$ENDIF}
+  {$IF TOFFEE}
+  PlatformType = public &Class;
   {$ENDIF}
 
   &Type = public class

@@ -7,11 +7,11 @@ type
   {$IF JAVA}
   PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
-  PlatformTask = System.Diagnostics.Process;
+  PlatformTask = public System.Diagnostics.Process;
   {$ELSEIF ISLAND}
   PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF TOFFEE}
-  PlatformTask = Foundation.NSTask;
+  PlatformTask = public Foundation.NSTask;
   {$ENDIF}
 
   Task = public class mapped to PlatformTask

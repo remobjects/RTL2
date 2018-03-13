@@ -4,9 +4,9 @@ interface
 
 type
   {$IF ECHOES}
-  PlatformParameter = System.Reflection.ParameterInfo;
+  PlatformParameter = public System.Reflection.ParameterInfo;
   {$ELSEIF ISLAND}
-  PlatformParameter = RemObjects.Elements.System.ArgumentInfo;
+  PlatformParameter = public RemObjects.Elements.System.ArgumentInfo;
   {$ENDIF}
 
   Parameter = public class

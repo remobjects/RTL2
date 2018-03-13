@@ -4,14 +4,14 @@ interface
 
 type
   {$IF ECHOES}
-  ImmutablePlatformBinary = System.IO.MemoryStream;
-  PlatformBinary = System.IO.MemoryStream;
+  ImmutablePlatformBinary = public System.IO.MemoryStream;
+  PlatformBinary = public System.IO.MemoryStream;
   {$ELSEIF ISLAND}
-  ImmutablePlatformBinary = RemObjects.Elements.System.MemoryStream;
-  PlatformBinary = RemObjects.Elements.System.MemoryStream;
+  ImmutablePlatformBinary = public RemObjects.Elements.System.MemoryStream;
+  PlatformBinary = public RemObjects.Elements.System.MemoryStream;
   {$ELSEIF TOFFEE}
-  ImmutablePlatformBinary = Foundation.NSData;
-  PlatformBinary = Foundation.NSMutableData;
+  ImmutablePlatformBinary = public Foundation.NSData;
+  PlatformBinary = public Foundation.NSMutableData;
   {$ENDIF}
 
   ImmutableBinary = public class {$IF ECHOES OR ISLAND OR TOFFEE}mapped to ImmutablePlatformBinary{$ENDIF}

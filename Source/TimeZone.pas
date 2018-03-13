@@ -3,7 +3,7 @@
 interface
 
 type
-  PlatformTimeZone = {$IFDEF ECHOES}System.TimeZoneInfo{$ELSEIF TOFFEE}Foundation.NSTimeZone{$ELSEIF COOPER}java.util.TimeZone{$ELSEIF ISLAND}RemObjects.Elements.System.TimeZone{$ENDIF};
+  PlatformTimeZone = public {$IFDEF ECHOES}System.TimeZoneInfo{$ELSEIF TOFFEE}Foundation.NSTimeZone{$ELSEIF COOPER}java.util.TimeZone{$ELSEIF ISLAND}RemObjects.Elements.System.TimeZone{$ENDIF};
 
   TimeZone = public class mapped to PlatformTimeZone
   private
