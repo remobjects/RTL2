@@ -657,7 +657,7 @@ end;
 
 method List<T>.RemoveFirstObject;
 begin
-  if Count > 0 then RemoveAt(Count-1);
+  if Count > 0 then RemoveAt(0);
 end;
 
 method List<T>.RemoveLastObject;
