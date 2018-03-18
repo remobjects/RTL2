@@ -913,7 +913,7 @@ begin
         inc(i);
       end
       else if (i < length(aString)-2) and (aString[i+1] in ['0'..'9','A'..'F','a'..'f']) and (aString[i+2] in ['0'..'9','A'..'F','a'..'f']) then begin
-        var c := Convert.HexStringToInt32(aString[i+1]+aString[i+2]);
+        var c := Convert.HexStringToUInt32(aString[i+1]+aString[i+2]);
         lResultBytes[j] := Byte(c);
         inc(i, 2);
       end;

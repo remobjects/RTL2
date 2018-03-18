@@ -740,7 +740,7 @@ begin
         if Expected(out aError, XmlTokenKind.ElementName) then begin //exit;
           if (result.FullName <> Tokenizer.Value) then begin
             result.EndTagName := Tokenizer.Value;
-            var lEndTagName := result.EndTagName;    
+            var lEndTagName := result.EndTagName;
             aError := new XmlErrorInfo;
             var lPos := result.EndTagName.IndexOf(':');
             var lPrefix := "";
@@ -785,7 +785,7 @@ begin
               aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), "", Tokenizer.Row, Tokenizer.Column+length(lPrefix));
               exit;
             end
-            else 
+            else
               aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column+Tokenizer.Value.length);
           end;
         end;
@@ -984,7 +984,7 @@ begin
   if S.StartsWith("&#x") then begin
     var lHex := S.Substring(3, length(S)-4);
     try
-      var lValue := Convert.HexStringToInt32(lHex);
+      var lValue := Convert.HexStringToUInt32(lHex);
       result := chr(lValue);
     except
     end;
