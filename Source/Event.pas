@@ -29,7 +29,7 @@ type
     {$ENDIF}
   protected
   public
-    constructor withState(aState: Boolean := false) mode(aMode: EventMode := EventMode.AutoReset);
+    constructor withState(aState: Boolean := false) Mode(aMode: EventMode := EventMode.AutoReset);
 
     method &Set;
     method Reset;
@@ -40,7 +40,7 @@ type
 
 implementation
 
-constructor &Event withState(aState: Boolean := false) mode(aMode: EventMode := EventMode.AutoReset);
+constructor &Event withState(aState: Boolean := false) Mode(aMode: EventMode := EventMode.AutoReset);
 begin
   {$IF ECHOES}
   fPlatformEvent := if aMode = EventMode.AutoReset then new System.Threading.AutoResetEvent(aState) else new System.Threading.ManualResetEvent(aState);
