@@ -406,6 +406,7 @@ constructor MemoryStream(aValue: array of Byte; aCanWrite: Boolean);
 begin
   constructor;
   &write(aValue, 0, aValue.Length);
+  Position := 0;
   fCanWrite := aCanWrite;
 end;
 
@@ -756,6 +757,7 @@ begin
 
       try
         lConverted := fEncoding.GetString(lRead, 0, lBytes);
+        lTotal := lConverted.Length;
       except
        if fStream.CanSeek then
          fStream.Position := lOldPos;
@@ -765,7 +767,7 @@ begin
   if lConverted.Length = 0 then
     result := -1
   else
-    result := lRead[0];
+    result := Ord(lConverted[0]);
 end;
 
 method BinaryStream.Read(Count: Integer): array of Byte;
