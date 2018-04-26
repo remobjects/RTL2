@@ -77,8 +77,13 @@ type
     method LastIndexOf(const Value: String; StartIndex: Integer): Integer;
     method Substring(StartIndex: Int32): not nullable String; inline;
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String; inline;
+    method SubstringToFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
+    method SubstringFromFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
+    method SubstringToLastOccurrenceOf(aSeparator: not nullable String): not nullable String;
+    method SubstringFromLastOccurrenceOf(aSeparator: not nullable String): not nullable String;
     method Split(aSeparator: not nullable String; aRemoveEmptyEntries: Boolean := false): not nullable ImmutableList<String>;
     method SplitAtFirstOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
+    method SplitAtLastOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method &Remove(aStartIndex: Int32; aLength: Int32): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
@@ -713,6 +718,47 @@ begin
     result := new ImmutableList<String>(Substring(0, p), Substring(p+aSeparator.Length))
   else
     result := new ImmutableList<String>(self);
+end;
+
+method String.SplitAtLastOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
+begin
+  var p := LastIndexOf(aSeparator);
+  if p > -1 then
+    result := new ImmutableList<String>(Substring(0, p), Substring(p+aSeparator.Length))
+  else
+    result := new ImmutableList<String>(self);
+end;
+
+method String.SubstringToFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
+begin
+  result := self;
+  var p := IndexOf(aSeparator);
+  if p > -1 then
+    result := result.Substring(0, p);
+end;
+
+method String.SubstringFromFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
+begin
+  result := self;
+  var p := IndexOf(aSeparator);
+  if p > -1 then
+    result := result.Substring(p+aSeparator.Length);
+end;
+
+method String.SubstringToLastOccurrenceOf(aSeparator: not nullable String): not nullable String;
+begin
+  result := self;
+  var p := LastIndexOf(aSeparator);
+  if p > -1 then
+    result := result.Substring(0, p);
+end;
+
+method String.SubstringFromLastOccurrenceOf(aSeparator: not nullable String): not nullable String;
+begin
+  result := self;
+  var p := LastIndexOf(aSeparator);
+  if p > -1 then
+    result := result.Substring(p+aSeparator.Length);
 end;
 
 method String.Replace(OldValue: String; NewValue: String): not nullable String;
