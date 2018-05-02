@@ -168,12 +168,9 @@ begin
 end;
 
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 class method Thread.Async(aBlock: block);
 begin
-  {$IF NOT ISLAND}
   async aBlock();
-  {$ENDIF}
 end;
 
 {$ENDIF}
