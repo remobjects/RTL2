@@ -189,12 +189,14 @@ end;
 
 method XmlTokenizer.Next: Boolean;
 begin
-  if Token = XmlTokenKind.EOF then
-    exit false;
+  //if Token = XmlTokenKind.EOF then
+  //  exit false;
   while true do begin
     fPos := fPos + fLength;
     fLastRow := fRow;
     fLastRowStart := fRowStart;
+    if Token = XmlTokenKind.EOF then
+      exit false;
     if fPos < fData.Length then Parse
     else begin
       Token := XmlTokenKind.EOF;
@@ -287,6 +289,7 @@ begin
     if (lPosition >= fData.length) then begin
       Value := new String(fData, fPos, lPosition-fPos);
       ErrorMessage := "Attribute value expected but EOF found";
+      fLength := lPosition - fPos+1;
       Token := XmlTokenKind.EOF; exit;
       //break;
     end;
@@ -305,6 +308,7 @@ begin
       '<' : begin
         Token := XmlTokenKind.SyntaxError;
         ErrorMessage := "Syntax error. Symbol '<' is not allowed in attribute value";
+        fLength := lPosition - fPos;
         Value :=  new String(fData, fPos, lPosition-fPos);
         exit;
       end;

@@ -458,10 +458,17 @@ begin
     lValueStartRow := Tokenizer.Row;
     lValueStartCol := Tokenizer.Column+1;
   end;
-  if not Expected(out aError, XmlTokenKind.AttributeValue) then goto newattr;//exit;
-  lValue := Tokenizer.Value;
-  lQuoteChar := lValue[0];
-  lValue := lValue.Trim([lQuoteChar]);
+  if assigned(Tokenizer.Value) and ((Tokenizer.Value[0] = '"') or (Tokenizer.Value[0] = "'")) then begin
+    lValue := Tokenizer.Value;
+    lQuoteChar := lValue[0];
+    lValue := lValue.Trim([lQuoteChar]);
+  end;
+  if not Expected(out aError, XmlTokenKind.AttributeValue) then begin 
+    Tokenizer.Next;
+    aError.Row := Tokenizer.Row;
+    aError.Column := Tokenizer.Column;
+    goto newattr;
+  end;
 
   /************/
   Tokenizer.Next;
