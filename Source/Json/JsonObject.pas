@@ -8,6 +8,9 @@ type
     fItems: Dictionary<String, JsonNode>;
     method GetItem(aKey: not nullable String): nullable JsonNode;
     method SetItem(aKey: not nullable String; aValue: nullable JsonNode);
+    method SetItem(aKey: not nullable String; aValue: nullable String);
+    method SetItem(aKey: not nullable String; aValue: Boolean);
+    method SetItem(aKey: not nullable String; aValue: Int32);
     method GetKeys: not nullable sequence of String;
     method GetProperties: sequence of KeyValuePair<String, JsonNode>; iterator;
 
@@ -41,6 +44,9 @@ type
 
     property Count: Integer read fItems.Count; override;
     property Item[aKey: not nullable String]: nullable JsonNode read GetItem write SetItem; default; override;
+    property Item[aKey: not nullable String]: nullable String write SetItem; default; override;
+    property Item[aKey: not nullable String]: Boolean write SetItem; default; override;
+    property Item[aKey: not nullable String]: Int32 write SetItem; default; override;
     property Keys: not nullable sequence of String read GetKeys; override;
     property Properties: sequence of KeyValuePair<String, JsonNode> read GetProperties;
   end;
@@ -69,6 +75,21 @@ end;
 method JsonObject.SetItem(aKey: not nullable String; aValue: nullable JsonNode);
 begin
   fItems[aKey] := aValue;
+end;
+
+method JsonObject.SetItem(aKey: not nullable String; aValue: nullable String);
+begin
+  fItems[aKey] := new JsonStringValue(aValue);
+end;
+
+method JsonObject.SetItem(aKey: not nullable String; aValue: Boolean);
+begin
+  fItems[aKey] := new JsonBooleanValue(aValue);
+end;
+
+method JsonObject.SetItem(aKey: not nullable String; aValue: Int32);
+begin
+  fItems[aKey] := new JsonIntegerValue(aValue);
 end;
 
 method JsonObject.Add(aKey: not nullable String; aValue: not nullable JsonNode);
