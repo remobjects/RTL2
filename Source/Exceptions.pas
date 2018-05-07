@@ -61,6 +61,11 @@ type
     property StackTrace: String read (callStackSymbols as ImmutableList<String>).JoinedString(Environment.LineBreak);
     {$ENDIF}
 
+    constructor (aMessage: String; params aParams: array of Object);
+    begin
+      result := new Exception(String.Format(aMessage, aParams));
+    end;
+
     property CallStack: ImmutableList<String> read _GetCallStack;
 
   private
