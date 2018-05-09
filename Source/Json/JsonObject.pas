@@ -79,7 +79,7 @@ end;
 
 method JsonObject.SetItem(aKey: not nullable String; aValue: nullable String);
 begin
-  fItems[aKey] := new JsonStringValue(aValue);
+  fItems[aKey] := JsonStringValue.Create(aValue);
 end;
 
 method JsonObject.SetItem(aKey: not nullable String; aValue: Boolean);
