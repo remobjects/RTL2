@@ -5,7 +5,7 @@ interface
 type
   ImmutableDictionary<T, U> = public class mapped to
   {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary{$ENDIF}
-  {$IFDEF TOFFEE}
+  {$IF ECHOES OR TOFFEE}
   where T is class, U is class;
   {$ENDIF}
   private
@@ -217,7 +217,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := UniqueMutableCopy();
   {$ELSEIF TOFFEE}
-  result := mapped.copy;
+  result := mapped.copy as not nullable;
   {$ENDIF}
 end;
 
