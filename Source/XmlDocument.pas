@@ -484,7 +484,7 @@ begin
   var Sb := new StringBuilder;
   result:="";
   var lFormatInsideTags := false;
-  if Version <> nil then begin 
+  if Version <> nil then begin
     Sb.Append('<?xml version="');
     Sb.Append(Version);
     Sb.Append('"');
@@ -684,10 +684,10 @@ begin
             if (aColumn >= lStart + lPrefixLength) and ((lAttr.NodeRange.EndLine = 0) or (aColumn <= lStart+length(lAttr.FullName))) then
               result.CurrentNamespace := lAttr.Namespace;
           end;
-          
+
           if lAttr.LocalName.Contains('.') and (aColumn <= lStart+length(lAttr.FullName)) then begin
             result.CurrentIdentifier := GetCurrentIdentifier(aColumn, lStart, lPrefixLength, lAttr.FullName);
-            exit;   
+            exit;
           end;
           if (lAttr.ValueRange.StartLine = lAttr.ValueRange.EndLine) then begin
             if (aRow = lAttr.ValueRange.StartLine) and (aColumn >= lAttr.ValueRange.StartColumn) and (aColumn <= lAttr.ValueRange.EndColumn) then begin
@@ -755,7 +755,7 @@ begin
       Sb.Append("<![CDATA[");
       Sb.Append(XmlCData(self).Value);
       Sb.Append("]]>");
-    end;      
+    end;
     XmlNodeType.ProcessingInstruction: begin
       Sb.Append("<?");
       Sb.Append(XmlProcessingInstruction(self).Target);
@@ -1447,7 +1447,7 @@ begin
       if lFormat and aFormatOptions.PreserveEmptyLines then
         Sb.Append(lEmptyLines);
       if lFormat and (CloseTagIndent or (lEmptyLines <> "")) then begin
-        Sb.Append(fDocument.fLineBreak);
+        Sb.Append(coalesce(fDocument:fLineBreak, Environment.LineBreak));
         Sb.Append(indent);
       end;
       Sb.Append("</");
@@ -1455,10 +1455,10 @@ begin
         Sb.Append(EndTagName);
         Sb.Append('>');
       end
-      else begin 
+      else begin
         if (&Namespace <> nil) and (&Namespace.Prefix <> "") and (&Namespace.Prefix <> nil) then begin
           Sb.Append(&Namespace.Prefix);
-          Sb.Append(':'); 
+          Sb.Append(':');
         end;
         Sb.Append(LocalName);
         Sb.Append('>');
@@ -1575,7 +1575,7 @@ begin
   result := "";
   var Sb := new StringBuilder();
   var aPreserveExactStringsForUnchnagedValues := aFormatOptions.PreserveExactStringsForUnchnagedValues;
-  if &Namespace<>nil then begin 
+  if &Namespace<>nil then begin
     Sb.Append(&Namespace.Prefix);
     Sb.Append(':');
   end;
@@ -1631,7 +1631,7 @@ end;
 method XmlNamespace.ToString(aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions): String;
 begin
   var Sb := new StringBuilder("xmlns");
-  if (Prefix <> "") and (Prefix <> nil) then begin 
+  if (Prefix <> "") and (Prefix <> nil) then begin
     Sb.Append(':');
     Sb.Append(Prefix);
   end;
