@@ -37,7 +37,7 @@ type
   end;
 
   Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary{$ENDIF}
-  {$IFDEF TOFFEE}
+  {$IF ECHOES OR TOFFEE}
   where T is class, U is class;
   {$ENDIF}
   private
