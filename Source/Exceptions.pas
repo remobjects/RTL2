@@ -178,8 +178,18 @@ type
       Response := aResponse;
     end;
 
+    constructor(aCode: Integer);
+    begin
+      inherited constructor(String.Format("Unable to complete request, error code: {0}", aCode));
+      fCode := aCode;
+    end;
+
+  private
+    fCode: nullable Integer;
+
   public
     property Response: nullable HttpResponse; readonly;
+    property Code: Integer read coalesce(Response:Code, fCode);
   {$ENDIF}
   end;
 
