@@ -809,7 +809,7 @@ begin
     exit self;
 
   if assigned(fCanonicalVersion) then
-    exit fCanonicalVersion;
+    exit fCanonicalVersion as not nullable;
 
   var lParts := fPath.Split("/").UniqueMutableCopy();
   var i := 0;
