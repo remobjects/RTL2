@@ -218,6 +218,8 @@ begin
   {$IF COOPER}
   result := JavaFile.exists;
   {$ELSEIF ECHOES}
+  if mapped.Contains("*") or mapped.Contains("?") then
+    exit false;
   result := System.IO.Directory.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFolder.Exists();

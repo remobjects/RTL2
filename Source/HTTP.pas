@@ -562,7 +562,7 @@ begin
     end;
 
     try
-      var lResponse := if lConnection.ResponseCode >= 300 then new HttpResponse withException(new IOException("Unable to complete request. Error code: {0}", lConnection.responseCode)) else new HttpResponse(lConnection);
+      var lResponse := if lConnection.ResponseCode >= 300 then new HttpResponse withException(new HttpException(lConnection.responseCode)) else new HttpResponse(lConnection);
       responseCallback(lResponse);
     except
       on E: Exception do
@@ -609,7 +609,7 @@ begin
 
       try
         var webResponse := webRequest.EndGetResponse(ar) as HttpWebResponse;
-        var response := if webResponse.StatusCode >= 300 then new HttpResponse withException(new IOException("Unable to complete request. Error code: {0}", webResponse.StatusCode)) else new HttpResponse(webResponse);
+        var response := if webResponse.StatusCode >= 300 then new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer)) else new HttpResponse(webResponse);
         ResponseCallback(response);
       except
         on E: Exception do
@@ -649,7 +649,7 @@ begin
 
       var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
       if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
-        var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new IOException("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode)) else new HttpResponse(data, nsHttpUrlResponse);
+        var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new HttpException(nsHttpUrlResponse.statusCode)) else new HttpResponse(data, nsHttpUrlResponse);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
       end else if assigned(error) then begin
         var response := new HttpResponse withException(new RTLException withError(error));
