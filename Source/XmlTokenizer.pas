@@ -254,7 +254,7 @@ begin
         Value := new String(fData, fPos, lPosition+1 - fPos);
         fPos := lPosition+1;}
         //Value := "Name expected";
-        exit;
+        //exit;
       end
       else if (CharIsNameStart(fData[lPosition+1]) = false) then begin
         Token := XmlTokenKind.SyntaxError;

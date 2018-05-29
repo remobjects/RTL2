@@ -135,12 +135,13 @@ implementation
 constructor XmlParser(aXmlString: String);
 begin
   Tokenizer := new XmlTokenizer(aXmlString);
+  //FormatOptions := new XmlFormattingOptions;
+  //fLineBreak := FormatOptions.NewLineString;
+  //if fLineBreak = nil then
+  if aXmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
+  else if aXmlString.IndexOf(#10) > -1 then fLineBreak := #10
+  else fLineBreak := Environment.LineBreak;
   FormatOptions := new XmlFormattingOptions;
-  fLineBreak := FormatOptions.NewLineString;
-  if fLineBreak = nil then
-    if aXmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
-    else if aXmlString.IndexOf(#10) > -1 then fLineBreak := #10
-      else fLineBreak := Environment.LineBreak;
 end;
 
 constructor XmlParser(aXmlString: String; aOptions: XmlFormattingOptions);

@@ -477,10 +477,8 @@ end;
 
 method XmlDocument.ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
 begin
-  //fFormatOptions := aFormatOptions;
   fLineBreak := aFormatOptions.NewLineString;
   if (fLineBreak = nil) and (fXmlParser <> nil) then fLineBreak := fXmlParser.fLineBreak;
-  //var lPreserveExactStringsForUnchnagedValues := aFormatOptions.PreserveExactStringsForUnchnagedValues;
   var Sb := new StringBuilder;
   result:="";
   var lFormatInsideTags := false;
@@ -678,7 +676,7 @@ begin
     if (lElement.Attributes.Count > 0) then begin
       for each lAttr in lElement.attributes do begin
         if (aRow >= lAttr.NodeRange.StartLine) and (aColumn >=lAttr.NodeRange.StartColumn) and ((lAttr.NodeRange.EndLine = 0) or ((aRow <= lAttr.NodeRange.EndLine) and (aColumn <= lAttr.NodeRange.EndColumn))) then begin
-          lStart := lAttr.NodeRange.Startcolumn;
+          lStart := lAttr.NodeRange.StartColumn;
           if length(lAttr.Namespace:Prefix) > 0 then begin
             lPrefixLength := length(lAttr.Namespace.Prefix)+1;
             if (aColumn >= lStart + lPrefixLength) and ((lAttr.NodeRange.EndLine = 0) or (aColumn <= lStart+length(lAttr.FullName))) then
@@ -1260,21 +1258,21 @@ begin
 end;
 
 method XmlElement.ToString(aSaveFormatted: Boolean; aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions): String;
-method GetEmptyLines (aWS: String): String;
+method GetEmptyLines (aWS: String; aLineBreak: String): String;
 begin
   result := "";
   if not assigned(aWS) then exit result;
-  var pos := aWS.IndexOf(Document.fLineBreak, 0);
+  var pos := aWS.IndexOf(coalesce(Document:fLineBreak, Environment.LineBreak), 0);
   while (pos > -1) and (pos < length(aWS)-1) do begin
-    pos := aWS.IndexOf(Document.fLineBreak, pos+1);
-    if (pos > -1) then result := result + Document.fLineBreak;
+    pos := aWS.IndexOf(coalesce(Document:fLineBreak, Environment.LineBreak), pos+1);
+    if (pos > -1) then result := result + aLineBreak;//Document.fLineBreak;
   end;
 end;
 begin
   var strSb := new StringBuilder();
   var Sb := new StringBuilder("<");
   Sb.Append(FullName);
-  var lLineBreak := aFormatOptions.NewLineString;
+  var lLineBreak := coalesce(aFormatOptions.NewLineString, Document:fLineBreak, Environment.LineBreak);
   var lFormat := false;
   var indent : String := nil;
   var startStr: String := "";
@@ -1294,7 +1292,7 @@ begin
     var startStrSb := new StringBuilder();
     for i:Integer := 0 to NodeRange.StartColumn-1 do
       startStrSb.Append(' ');
-    startStr := StartStrsb.ToString();
+    startStr := StartStrsSb.ToString();
   end;
   for each attr in fAttributesAndNamespaces do begin
     var lWSleft: String := nil;
@@ -1312,17 +1310,17 @@ begin
     var lEmptyLinesright := "";
     if (aFormatInsideTags) and (aFormatOptions.PreserveEmptyLines) then begin
       if aFormatOptions.PreserveEmptyLines then begin
-        lEmptyLinesleft := GetEmptyLines(lWSleft);
-        lEmptyLinesright := GetEmptyLines(lWSright);
+        lEmptyLinesleft := GetEmptyLines(lWSleft, lLineBreak);
+        lEmptyLinesright := GetEmptyLines(lWSright, lLineBreak);
       end;
     end;
     if not(aFormatInsideTags) and (lWSleft <> nil) then strSb.Append(lWSleft);
     if (aFormatInsideTags and ((aFormatOptions.PreserveEmptyLines and (lEmptyLinesleft <> "")) or (aFormatOptions.PreserveLinebreaksForAttributes) and (lWSleft <> nil) and lWSleft.Contains(lLineBreak)) or (aFormatOptions.NewLineForAttributes))  then
       if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (indent = nil) then begin
-        strsb.Append(lLineBreak);
+        strSb.Append(lLineBreak);
         strSb.Append(lEmptyLinesleft);
-        strsb.append(startStr);
-        strsb.Append(aFormatOptions.Indentation);
+        strSb.append(startStr);
+        strSb.Append(aFormatOptions.Indentation);
       end
       else if (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) then begin
         strSb.Append(lLineBreak);
@@ -1333,7 +1331,7 @@ begin
     if attr.NodeType = XmlNodeType.Attribute then
       strSb.Append(XmlAttribute(attr).ToString(aFormatInsideTags, aFormatOptions))
     else
-      strsb.Append(XmlNamespace(attr).ToString(aFormatInsideTags, aFormatOptions));
+      strSb.Append(XmlNamespace(attr).ToString(aFormatInsideTags, aFormatOptions));
     if not (aFormatInsideTags) and (lWSright <> nil) then strsb.Append(lWSright);
     if (aFormatInsideTags and (((aFormatOptions.PreserveLinebreaksForAttributes) and (lWSright <> nil) and lWSright.Contains(lLineBreak))) or (aFormatOptions.PreserveEmptyLines and (lEmptyLinesright <> ""))) then
       if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (indent = nil) then begin
@@ -1382,11 +1380,11 @@ begin
         if (length(XmlText(aNode).Value:Trim) > 0) then begin
           lEmptyLines := "";
           if (aFormatInsideTags and aFormatOptions.NewLineForAttributes) then begin
-            Sb.Append(Document.fLineBreak);
+            Sb.Append(lLineBreak);
             Sb.Append(indent);
             Sb.Append(aFormatOptions.Indentation);
             Sb.Append(aNode.toString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
-            Sb.Append(Document.fLineBreak);
+            Sb.Append(lLineBreak);
             Sb.Append(indent);
           end
           else begin
@@ -1402,7 +1400,7 @@ begin
         else begin
           WSValue := XmlText(aNode).Value;
           if aFormatOptions.PreserveEmptyLines and not WasText then begin
-            lEmptyLines := GetEmptyLines(WSValue);
+            lEmptyLines := GetEmptyLines(WSValue, lLineBreak);
           end;
           {var lEmptyLines := "";
           if aFormatOptions.PreserveEmptyLines then begin
@@ -1410,7 +1408,7 @@ begin
           end;}
           if not aFormatOptions.NewLineForElements then Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions))
           else if WasText then
-            Sb.Append(WsValue);
+            Sb.Append(WSValue);
           {else if XmlText(aNode).Value:Contains(Document.fLineBreak) then begin
             result := result + lEmptyLines;
             TextNewLine := Document.fLineBreak + indent + aFormatOptions.Indentation;
@@ -1421,7 +1419,7 @@ begin
         if lFormat then begin
           CloseTagIndent := true;
           Sb.Append(lEmptyLines);
-          Sb.Append(Document.fLineBreak);
+          Sb.Append(lLineBreak);
           Sb.Append(indent);
           Sb.append(aFormatOptions.Indentation);
           Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
@@ -1447,7 +1445,7 @@ begin
       if lFormat and aFormatOptions.PreserveEmptyLines then
         Sb.Append(lEmptyLines);
       if lFormat and (CloseTagIndent or (lEmptyLines <> "")) then begin
-        Sb.Append(coalesce(fDocument:fLineBreak, Environment.LineBreak));
+        Sb.Append(lLineBreak);
         Sb.Append(indent);
       end;
       Sb.Append("</");
