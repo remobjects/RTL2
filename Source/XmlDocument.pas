@@ -1292,7 +1292,7 @@ begin
     var startStrSb := new StringBuilder();
     for i:Integer := 0 to NodeRange.StartColumn-1 do
       startStrSb.Append(' ');
-    startStr := StartStrsSb.ToString();
+    startStr := StartStrSb.ToString();
   end;
   for each attr in fAttributesAndNamespaces do begin
     var lWSleft: String := nil;
