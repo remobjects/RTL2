@@ -17,8 +17,8 @@ type
   assembly
     fLineBreak: String;
   public
-    constructor (XmlString: String);
-    constructor (XmlString: String; aOptions: XmlFormattingOptions);
+    constructor (aXmlString: String);
+    constructor (aXmlString: String; aOptions: XmlFormattingOptions);
     method Parse(): not nullable XmlDocument;
     FormatOptions: XmlFormattingOptions;
   end;
@@ -132,25 +132,26 @@ type
 
 implementation
 
-constructor XmlParser( XmlString: String);
+constructor XmlParser(aXmlString: String);
 begin
-  Tokenizer := new XmlTokenizer(XmlString);
+  Tokenizer := new XmlTokenizer(aXmlString);
+  //FormatOptions := new XmlFormattingOptions;
+  //fLineBreak := FormatOptions.NewLineString;
+  //if fLineBreak = nil then
+  if aXmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
+  else if aXmlString.IndexOf(#10) > -1 then fLineBreak := #10
+  else fLineBreak := Environment.LineBreak;
   FormatOptions := new XmlFormattingOptions;
-  fLineBreak := FormatOptions.NewLineString;
-  if fLineBreak = nil then
-    if XmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
-    else if XmlString.IndexOf(#10) > -1 then fLineBreak := #10
-      else fLineBreak := Environment.LineBreak;
 end;
 
-constructor XmlParser(XmlString: String; aOptions: XmlFormattingOptions);
+constructor XmlParser(aXmlString: String; aOptions: XmlFormattingOptions);
 begin
-  Tokenizer := new XmlTokenizer(XmlString);
+  Tokenizer := new XmlTokenizer(aXmlString);
   FormatOptions := aOptions;
   fLineBreak := FormatOptions.NewLineString;
   if fLineBreak = nil then
-    if XmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
-    else if XmlString.IndexOf(#10) > -1 then fLineBreak := #10
+    if aXmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
+    else if aXmlString.IndexOf(#10) > -1 then fLineBreak := #10
       else fLineBreak := Environment.LineBreak;
 end;
 
@@ -196,7 +197,7 @@ begin
     end;
     if lXmlAttr.LocalName = "version" then begin
       //check version
-      if (lXmlAttr.Value.IndexOf("1.") <> 0) or (lXmlAttr.Value.Length <> 3) or
+      if not(lXmlAttr.Value.StartsWith("1.")) or (lXmlAttr.Value.Length <> 3) or
         ((lXmlAttr.Value.Chars[2] < '0') or (lXmlAttr.Value.Chars[2] > '9')) then begin
         //aError := new XmlErrorInfo;
         //aError.FillErrorInfo(String.Format("Unknown XML version '{0}'", lXmlAttr.Value), "1.0", lXmlAttr.EndLine, lXmlAttr.EndColumn, result);
@@ -268,7 +269,7 @@ begin
     end;
     if lXmlAttr.LocalName = "standalone" then begin
       //check yes/no
-      if (lXmlAttr.Value.Trim <> "yes") and (lXmlAttr.Value.Trim <> "no") then begin
+      if (lXmlAttr.Value <> "yes") and (lXmlAttr.Value <> "no") then begin
         //aError := new XmlErrorInfo;
         //aError.FillErrorInfo("Unknown 'standalone' value", "no", lXmlAttr.EndLine, lXmlAttr.EndColumn, result);
         result.ErrorInfo := new XmlErrorInfo;
@@ -458,10 +459,17 @@ begin
     lValueStartRow := Tokenizer.Row;
     lValueStartCol := Tokenizer.Column+1;
   end;
-  if not Expected(out aError, XmlTokenKind.AttributeValue) then goto newattr;//exit;
-  lValue := Tokenizer.Value;
-  lQuoteChar := lValue[0];
-  lValue := lValue.Trim([lQuoteChar]);
+  if assigned(Tokenizer.Value) and ((Tokenizer.Value[0] = '"') or (Tokenizer.Value[0] = "'")) then begin
+    lValue := Tokenizer.Value;
+    lQuoteChar := lValue[0];
+    lValue := lValue.Trim([lQuoteChar]);
+  end;
+  if not Expected(out aError, XmlTokenKind.AttributeValue) then begin 
+    Tokenizer.Next;
+    aError.Row := Tokenizer.Row;
+    aError.Column := Tokenizer.Column;
+    goto newattr;
+  end;
 
   /************/
   Tokenizer.Next;
@@ -484,9 +492,10 @@ begin
   /***********/
   newattr:;
   if ((lLocalName.StartsWith("xmlns:")) or (lLocalName = "xmlns")) then begin
-    if lLocalName.StartsWith("xmlns:") then
-      lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
-    else if lLocalName = "xmlns" then lLocalName:="";
+    if lLocalName = "xmlns" then lLocalName:=""
+    else
+     // lLocalName:=lLocalName.Substring("xmlns:".Length, lLocalName.Length- "xmlns:".Length)
+       lLocalName:=lLocalName.Substring(6);
     result := new XmlNamespace withParent(aParent);
     (result as XmlNamespace).Prefix := lLocalName;
     var lUri := Uri.TryUriWithString(lValue);
@@ -555,7 +564,7 @@ begin
       WS := "";
       if lXmlNode.NodeType = XmlNodeType.Namespace then result.AddNamespace(XmlNamespace(lXmlNode))
       else result.AddAttribute(XmlAttribute(lXmlNode));
-      if assigned(aError) then exit;
+      if assigned(aError) then goto checkns;
       if not Expected(out aError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd, XmlTokenKind.ElementName) then exit;
     end;
     lFormat := false;
@@ -568,8 +577,9 @@ begin
   checkns:;
   //check prefix for LocalName
   var lNamespace: XmlNamespace := nil;
-  if result.LocalName.IndexOf(':') > 0 then begin
-    var lPrefix := result.LocalName.Substring(0, result.LocalName.IndexOf(':'));
+  var lColonPos := result.LocalName.IndexOf(':');
+  if lColonPos > 0 then begin
+    var lPrefix := result.LocalName.Substring(0, lColonPos);
     lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
     if (lNamespace = nil) then begin
       var lSuggestion: String := "";
@@ -586,7 +596,7 @@ begin
           end;
           lElement := lElement.Parent;
       end;
-      result.LocalName := '[ERROR]:'+result.LocalName.Substring(result.LocalName.IndexOf(':')+1, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
+      result.LocalName := '[ERROR]:'+result.LocalName.Substring(lColonPos+1);//, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
       result.OpenTagEndLine := 0;
       result.OpenTagEndColumn := 0;
       //if assigned (aError) then exit;
@@ -595,13 +605,14 @@ begin
       exit;
     end;
     result.Namespace := lNamespace;
-    result.LocalName := result.LocalName.Substring(result.LocalName.IndexOf(':')+1, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
+    result.LocalName := result.LocalName.Substring(lColonPos+1);//, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
   end;
   //check prefix for attributes
   for each lAttribute in result.Attributes do begin
-    if lAttribute.LocalName.IndexOf(':') >0 then begin
-      var lPrefix := lAttribute.LocalName.Substring(0, lAttribute.LocalName.IndexOf(':'));
-      var lLocalName := lAttribute.LocalName.Substring(lAttribute.LocalName.IndexOf(':')+1, lAttribute.LocalName.Length-lAttribute.LocalName.IndexOf(':')-1);
+  lColonPos := lAttribute.LocalName.IndexOf(':');
+    if lColonPos >0 then begin
+      var lPrefix := lAttribute.LocalName.Substring(0, lColonPos);
+      var lLocalName := lAttribute.LocalName.Substring(lColonPos+1);
       if lPrefix = "xml" then begin
         lNamespace := new XmlNamespace(lPrefix, Url.UrlWithString(XmlConsts.XML_NAMESPACE_URL));
         case lLocalName of
@@ -731,31 +742,75 @@ begin
       if Tokenizer.Token = XmlTokenKind.TagElementEnd then begin
         result.CloseTagRange.StartLine := Tokenizer.Row;
         result.CloseTagRange.StartColumn := Tokenizer.Column;
+        if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
+          result.AddNode(new XmlText(result,Value := ""));
         Tokenizer.Next;
-        if not Expected(out aError, XmlTokenKind.ElementName) then begin //exit;
-          result.EndTagName := Tokenizer.Value;
-          var lPos := Tokenizer.Value.IndexOf(':');
-          if lPos > 0 then begin
-            var lPrefix := Tokenizer.Value.Substring(0, lPos);
-            lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
-            if not assigned(lNamespace) then
-            aError.FillErrorInfo("Unknown prefix "+lPrefix, "", Tokenizer.Row, Tokenizer.Column-lPrefix.Length-1);
+        if Expected(out aError, XmlTokenKind.ElementName) then begin //exit;
+          if (result.FullName <> Tokenizer.Value) then begin
+            result.EndTagName := Tokenizer.Value;
+            var lEndTagName := result.EndTagName;
+            aError := new XmlErrorInfo;
+            var lPos := result.EndTagName.IndexOf(':');
+            var lPrefix := "";
+            var lPrefixLength := 0;
+            if lPos > 0 then begin
+              lPrefix := Tokenizer.Value.Substring(0, lPos);
+              lPrefixLength := lPrefix.Length;
+              lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
+              if not assigned(lNamespace) then begin
+                aError.FillErrorInfo("Unknown prefix "+lPrefix, "", Tokenizer.Row, Tokenizer.Column-lPrefixLength-1);
+                exit;
+              end else
+                lEndTagName := lEndTagName.Substring(lPos+1);
+            end else begin
+              if ((result.Namespace:Prefix <> nil) and (result.Namespace.Prefix <> "") and  not result.Namespace.Prefix.StartsWith(Tokenizer.Value)) then begin
+                aError.FillErrorInfo("Unknown prefix "+Tokenizer.Value, "", Tokenizer.Row, Tokenizer.Column);
+                exit;
+              end;
+            end;
+            var lDotPosStart := result.LocalName.IndexOf('.');
+            if lDotPosStart > 0 then begin
+              var lStartTagNames := result.LocalName.Split('.');
+              var lDotPosEnd := lEndTagName.IndexOf('.');
+              var lEndTagNames := lEndTagName.Split('.');
+              for i: Integer := 0 to lStartTagNames.Count-1 do begin
+                if (lEndTagNames.Count > i) then
+                  if lEndTagNames[i]<> lStartTagNames[i] then
+                    if (lStartTagNames[i].StartsWith(lEndTagNames[i])) and (lEndTagNames.Count = i+1) then
+                      aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column+Tokenizer.Value.length)
+                    else begin
+                      var lErrorColumn := Tokenizer.Column;
+                      if lPrefixLength > 0 then lErrorColumn := lErrorColumn +lPrefixLength+1;
+                      if i > 0 then
+                        for j: Integer := 0 to i-1 do
+                          lErrorColumn := lErrorColumn + lEndTagNames[j].Length + 1;
+                      aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, lErrorColumn);
+                      exit;
+                    end;
+              end;
+            end;
+            if not result.LocalName.StartsWith(lEndTagName) then begin
+              aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), "", Tokenizer.Row, Tokenizer.Column+length(lPrefix));
+              exit;
+            end
+            else
+              aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column+Tokenizer.Value.length);
           end;
         end;
         if lFormat and (aIndent <> nil) and (result.Elements.Count >0) then begin
           result.AddNode(new XmlText(result, Value := fLineBreak));
           result.AddNode(new XmlText(result, Value := aIndent.Substring(0,aIndent.LastIndexOf(FormatOptions.Indentation))));
         end;
-        if (result.IsEmpty) and (FormatOptions.EmptyTagSyle <> XmlTagStyle.PreferSingleTag) then
-          result.AddNode(new XmlText(result,Value := ""));
 
         if Tokenizer.Token = XmlTokenKind.ElementName then begin
-          if (result.FullName <> Tokenizer.Value) then begin
-            aError := new XmlErrorInfo;
-            aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column + Tokenizer.Value.length );
+          /*if (result.FullName <> Tokenizer.Value) then begin
+            if not assigned (aError) then begin
+              aError := new XmlErrorInfo;
+              aError.FillErrorInfo(String.Format("End tag '{0}' doesn't match start tag '{1}'", Tokenizer.Value, result.LocalName), result.LocalName, Tokenizer.Row, Tokenizer.Column+Tokenizer.Value.length);
+            end;
             result.EndTagName := Tokenizer.Value;
-            //exit;
-          end;
+            exit;
+          end;*/
           Tokenizer.Next;
           if (Tokenizer.Token = XmlTokenKind.Whitespace) then begin
             if FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveAllWhitespace then
@@ -775,8 +830,6 @@ begin
     else  if Tokenizer.Token = XmlTokenKind.EmptyElementEnd then begin
       result.NodeRange.EndLine := Tokenizer.Row;
       result.NodeRange.EndColumn := Tokenizer.Column+2;
-      result.OpenTagEndLine := result.NodeRange.EndLine;
-      result.OpenTagEndColumn := result.NodeRange.EndColumn;
       if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace) then
         if (FormatOptions.EmptyTagSyle = XmlTagStyle.PreferOpenAndCloseTag) then
           result.AddNode(new XmlText(result,Value := ""))
@@ -897,18 +950,18 @@ end;
 method XmlParser.ParseEntities(S: String): nullable String;
 begin
   var i := 0;
-  result := S;
-  var len := length(result);
+   var Sb := new StringBuilder(S);
+  var len := Sb.Length;
   while i < len do begin
-    if result[i] = '&' then begin
+    if Sb[i] = '&' then begin
       var lStart := i;
       var lEntity: String;
       inc(i);
-      while i < length(result) do begin
-        var ch := result[i];
+      while i < Sb.Length do begin
+        var ch := Sb[i];
         if ch = ';' then begin
           inc(i);
-          lEntity := result.Substring(lStart, i-lStart);
+          lEntity := Sb.Substring(lStart, i-lStart);
           break;
         end
         else if ch in ['a'..'z','A'..'Z','0'..'9','#'] then begin
@@ -921,7 +974,7 @@ begin
       if assigned(lEntity) then begin
         var lResolvedEntity := ResolveEntity(lEntity);
         if assigned(lResolvedEntity) then begin
-          result := result.Replace(lStart, length(lEntity), lResolvedEntity);
+          Sb := Sb.Replace(lStart, length(lEntity), lResolvedEntity);
           var diff := (length(lEntity)-length(lResolvedEntity));
           i := i-diff;
           len := len-diff
@@ -931,6 +984,7 @@ begin
     else
       inc(i);
   end;
+  result := Sb.ToString;
 end;
 
 method XmlParser.ResolveEntity(S: not nullable String): nullable String;
@@ -938,7 +992,7 @@ begin
   if S.StartsWith("&#x") then begin
     var lHex := S.Substring(3, length(S)-4);
     try
-      var lValue := Convert.HexStringToInt32(lHex);
+      var lValue := Convert.HexStringToUInt32(lHex);
       result := chr(lValue);
     except
     end;

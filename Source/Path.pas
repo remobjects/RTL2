@@ -27,7 +27,7 @@ type
     {$IF NOT WEBASSEMBLY}
     method GetFullPath(RelativePath: not nullable String): not nullable String;
     {$ENDIF}
-    method GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): not nullable String;
+    method GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): nullable String;
 
     method GetNetworkServerName(aFileName: not nullable String): nullable String;
 
@@ -193,8 +193,6 @@ begin
   exit new java.io.File(RelativePath).AbsolutePath as not nullable;
   {$ELSEIF NETFX_CORE}
   exit RelativePath; //api has no such function
-  {$ELSEIF NETSTANDARD}
-  exit System.IO.Path.GetFullPath(RelativePath)  as not nullable;
   {$ELSEIF ECHOES}
   exit System.IO.Path.GetFullPath(RelativePath) as not nullable;
   {$ELSEIF ISLAND}
@@ -205,7 +203,7 @@ begin
 end;
 {$ENDIF}
 
-method path.GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): not nullable String;
+method Path.GetPath(aFullPath: not nullable String) RelativeToPath(aBasePath: not nullable String): nullable String;
 begin
   result := Url.UrlWithFilePath(aFullPath).FilePathRelativeToUrl(Url.UrlWithFilePath(aBasePath)) Always(true);
 end;

@@ -6,13 +6,13 @@ type
   GuidFormat = public enum (&Default, Braces, Parentheses);
 
   {$IF JAVA}
-  PlatformGuid = java.util.UUID;
+  PlatformGuid = public java.util.UUID;
   {$ELSEIF ECHOES}
-  PlatformGuid = System.Guid;
+  PlatformGuid = public System.Guid;
   {$ELSEIF ISLAND}
-  PlatformGuid = RemObjects.Elements.System.Guid;
+  PlatformGuid = public RemObjects.Elements.System.Guid;
   {$ELSEIF TOFFEE}
-  PlatformGuid = Foundation.NSUUID;
+  PlatformGuid = public Foundation.NSUUID;
   {$ENDIF}
 
   Guid = public class

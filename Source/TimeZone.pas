@@ -3,7 +3,7 @@
 interface
 
 type
-  PlatformTimeZone = {$IFDEF ECHOES}System.TimeZoneInfo{$ELSEIF TOFFEE}Foundation.NSTimeZone{$ELSEIF COOPER}java.util.TimeZone{$ELSEIF ISLAND}RemObjects.Elements.System.TimeZone{$ENDIF};
+  PlatformTimeZone = public {$IFDEF ECHOES}System.TimeZoneInfo{$ELSEIF TOFFEE}Foundation.NSTimeZone{$ELSEIF COOPER}java.util.TimeZone{$ELSEIF ISLAND}RemObjects.Elements.System.TimeZone{$ENDIF};
 
   TimeZone = public class mapped to PlatformTimeZone
   private
@@ -26,9 +26,7 @@ type
     property OffsetToUTC: TimeSpan read TimeSpan.FromMilliseconds(mapped.RawOffset);
     {$ELSEIF ECHOES}
     property Name: String read mapped.DisplayName;
-    {$IF NOT NETSTANDARD}
     property Identifier: String read mapped.Id;
-    {$ENDIF}
     property OffsetToUTC: TimeSpan read mapped.BaseUtcOffset;
     {$ELSEIF ISLAND}
     property Identifier: String read mapped.Identifier;
@@ -46,9 +44,6 @@ class method TimeZone.get_TimeZoneNames: not nullable sequence of String;
 begin
   {$IF COOPER}
   result := java.util.TimeZone.getAvailableIDs() as not nullable;
-  {$ELSEIF NETSTANDARD}
-  // Windows Phone 8.1 and Windows 8.1 do not expose any managed API for enumerating TimeZones
-  raise new NotSupportedException();
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.GetSystemTimeZones().Select(tz -> tz.Id) as not nullable;
   {$ELSEIF ISLAND}
@@ -58,14 +53,15 @@ begin
   {$ENDIF}
 end;
 
+{$IF ECHOES}[Warning("TimeZoneWithAbreviation is not suppoprted on .NET")]{$ENDIF}
 class method TimeZone.get_TimeZoneWithAbreviation(aAbbreviation: String): nullable TimeZone;
 begin
   {$IF COOPER}
   result := java.util.TimeZone.getTimeZone(aAbbreviation);
   {$ELSEIF ECHOES}
-   raise new NotSupportedException();
+  raise new NotSupportedException("TimeZoneWithAbreviation is not suppoprted on .NET");
   {$ELSEIF ISLAND}
-  raise new NotSupportedException();
+  raise new NotImplementedException();
   {$ELSEIF TOFFEE}
   result := NSTimeZone.timeZoneWithAbbreviation(aAbbreviation);
   {$ENDIF}
@@ -75,9 +71,6 @@ class method TimeZone.get_TimeZoneWithName(aName: String): nullable TimeZone;
 begin
   {$IF COOPER}
   result := java.util.TimeZone.getTimeZone(aName);
-  {$ELSEIF NETSTANDARD}
-  // Windows Phone 8.1 and Windows 8.1 do not expose any managed API for this
-  raise new NotSupportedException();
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.FindSystemTimeZoneById(aName);
   {$ELSEIF ISLAND}

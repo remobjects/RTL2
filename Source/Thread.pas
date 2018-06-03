@@ -115,11 +115,7 @@ end;
 method Thread.GetPriority: ThreadPriority;
 begin
   {$IF ECHOES}
-    {$IF NETSTANDARD}
-    exit ThreadPriority.Normal;
-    {$ELSE}
-    exit ThreadPriority(mapped.Priority);
-    {$ENDIF}
+  exit ThreadPriority(mapped.Priority);
   {$ELSEIF COOPER}
   case mapped.Priority of
     1,2: exit ThreadPriority.Lowest;
@@ -134,11 +130,7 @@ end;
 method Thread.SetPriority(Value: ThreadPriority);
 begin
   {$IF ECHOES}
-    {$IF NETSTANDARD}
-    raise new SugarException("Changing thread priority is not supported on Windows Phone");
-    {$ELSE}
-    mapped.Priority := System.Threading.ThreadPriority(Value);
-    {$ENDIF}
+  mapped.Priority := System.Threading.ThreadPriority(Value);
   {$ELSEIF COOPER}
   case Value of
     ThreadPriority.Lowest: mapped.Priority := 2;
@@ -176,12 +168,9 @@ begin
 end;
 
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 class method Thread.Async(aBlock: block);
 begin
-  {$IF NOT ISLAND}
   async aBlock();
-  {$ENDIF}
 end;
 
 {$ENDIF}

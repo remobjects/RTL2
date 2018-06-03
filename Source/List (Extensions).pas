@@ -22,6 +22,11 @@ type
       result := (self as ImmutableList<T>).UniqueCopy();
     end;
 
+    method JoinedString(aSeparator: nullable String := nil): not nullable String;
+    begin
+      result := (self as ImmutableList<T>).JoinedString(aSeparator);
+    end;
+
   end;
 {$ENDIF}
 

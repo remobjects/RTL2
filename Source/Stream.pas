@@ -30,7 +30,7 @@ type
   end;
 
   {$IF ECHOES OR ISLAND}
-  PlatformStream = {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+  PlatformStream = public {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
   WrappedPlatformStream = public abstract class(Stream)
   protected
     fPlatformStream: PlatformStream;
@@ -50,7 +50,7 @@ type
   end;
   {$ENDIF}
 
-  PlatformMemoryStream = {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+  PlatformMemoryStream = public {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
@@ -97,7 +97,7 @@ type
     property CanWrite: Boolean read GetCanWrite; override;
   end;
 
-  PlatformInternalFileStream = {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+  PlatformInternalFileStream = public {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
   FileStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   {$IF COOPER OR TOFFEE}
@@ -203,8 +203,8 @@ const
   bufSize = 4 * 1024;
 begin
   if Destination = nil then raise new Exception('Destination is null');
-  if not self.CanRead then raise new NotSupportedException;
-  if not Destination.CanWrite then raise new NotSupportedException;
+  if not self.CanRead then raise new NotSupportedException("Stream.CopyTo is only supported if the source CanRead.");
+  if not Destination.CanWrite then raise new NotSupportedException("Stream.CopyTo is only supported if the target CanWrite.");
   var lBuf := new Byte[bufSize];
   while true do begin
     var lRest := &Read(lBuf, bufSize);
@@ -215,7 +215,7 @@ end;
 
 method Stream.GetLength: Int64;
 begin
-  if not CanSeek then raise new NotSupportedException();
+  if not CanSeek then raise new NotSupportedException("Stream.Length is only supported if the CanSeek is true.");
   var lPos := Seek(0, SeekOrigin.Current);
   var lTemp := Seek(0, SeekOrigin.End);
   Seek(lPos, SeekOrigin.Begin);
@@ -406,6 +406,7 @@ constructor MemoryStream(aValue: array of Byte; aCanWrite: Boolean);
 begin
   constructor;
   &write(aValue, 0, aValue.Length);
+  Position := 0;
   fCanWrite := aCanWrite;
 end;
 
@@ -756,6 +757,7 @@ begin
 
       try
         lConverted := fEncoding.GetString(lRead, 0, lBytes);
+        lTotal := lConverted.Length;
       except
        if fStream.CanSeek then
          fStream.Position := lOldPos;
@@ -765,7 +767,7 @@ begin
   if lConverted.Length = 0 then
     result := -1
   else
-    result := lRead[0];
+    result := Ord(lConverted[0]);
 end;
 
 method BinaryStream.Read(Count: Integer): array of Byte;

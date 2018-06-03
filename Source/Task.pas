@@ -7,11 +7,11 @@ type
   {$IF JAVA}
   PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
-  PlatformTask = System.Diagnostics.Process;
+  PlatformTask = public System.Diagnostics.Process;
   {$ELSEIF ISLAND}
   PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF TOFFEE}
-  PlatformTask = Foundation.NSTask;
+  PlatformTask = public Foundation.NSTask;
   {$ENDIF}
 
   Task = public class mapped to PlatformTask
@@ -33,6 +33,7 @@ type
     method Start; inline;
     method Stop; inline;
     property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ENDIF};
+    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF TOFFEE}mapped.isRunning{$ENDIF};
 
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer;
@@ -307,7 +308,7 @@ begin
   var lResult := new List<String>;
   var lCurrent: String := ""; // why is this needed for lCurrent to not become an NSString?
   var lInQuotes := false;
-  for i: Integer := 0 to length(aArgumentString) do begin
+  for i: Integer := 0 to length(aArgumentString)-1 do begin
     var ch := aArgumentString[i];
     case ch of
       ' ': begin

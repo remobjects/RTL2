@@ -29,7 +29,7 @@ type
   PlatformFileStream = RemObjects.Elements.System.FileStream;
   {$ENDIF}
 
-  FileHandle = public class mapped to {$IF COOPER}java.io.RandomAccessFile{$ELSEIF NETSTANDARD}Stream{$ELSEIF ECHOES OR ISLAND}PlatformFileStream{$ELSEIF TOFFEE}NSFileHandle{$ENDIF}
+  FileHandle = public class mapped to {$IF COOPER}java.io.RandomAccessFile{$ELSEIF ECHOES OR ISLAND}PlatformFileStream{$ELSEIF TOFFEE}NSFileHandle{$ENDIF}
   private
     method GetLength: Int64;
     method SetLength(value: Int64);
@@ -67,10 +67,6 @@ begin
   {$IF COOPER}
   var lMode: String := if Mode = FileOpenMode.ReadOnly then "r" else "rw";
   exit new java.io.RandomAccessFile(FileName, lMode);
-  {$ELSEIF NETSTANDARD}
-  var lFile: Windows.Storage.StorageFile := Windows.Storage.StorageFile.GetFileFromPathAsync(FileName).Await;
-  var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
-  exit lFile.OpenAsync(lMode).Await.AsStream;
   {$ELSEIF ECHOES OR ISLAND}
   var lAccess: PlatformFileAccess := case Mode of
                                          FileOpenMode.ReadOnly: PlatformFileAccess.Read;
@@ -106,9 +102,6 @@ begin
   {$IF COOPER}
   var lMode: String := if Mode = FileOpenMode.ReadOnly then "r" else "rw";
   exit new java.io.RandomAccessFile(aFile, lMode);
-  {$ELSEIF NETSTANDARD}
-  var lMode: Windows.Storage.FileAccessMode := if Mode = FileOpenMode.ReadOnly then Windows.Storage.FileAccessMode.Read else Windows.Storage.FileAccessMode.ReadWrite;
-  exit Windows.Storage.StorageFile(aFile).OpenAsync(lMode).Await.AsStream;
   {$ELSEIF ECHOES OR ISLAND}
   var lMode: PlatformFileAccess := if Mode = FileOpenMode.ReadOnly then PlatformFileAccess.Read else PlatformFileAccess.ReadWrite;
   exit new PlatformFileStream(PlatformString(aFile), PlatformFileMode.Open, lMode);
@@ -124,8 +117,6 @@ method FileHandle.Close;
 begin
   {$IF COOPER}
   mapped.close;
-  {$ELSEIF NETSTANDARD}
-  mapped.Dispose;
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Close;
   {$ELSEIF TOFFEE}
@@ -137,8 +128,6 @@ method FileHandle.Flush;
 begin
   {$IF COOPER}
   mapped.Channel.force(false);
-  {$ELSEIF NETSTANDARD}
-  mapped.Flush;
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Flush;
   {$ELSEIF TOFFEE}
@@ -181,8 +170,6 @@ begin
 
   {$IF COOPER}
   exit mapped.read(Buffer, Offset, Count);
-  {$ELSEIF NETSTANDARD}
-  exit mapped.Read(Buffer, Offset, Count);
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Read(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
@@ -216,8 +203,6 @@ begin
 
   {$IF COOPER}
   mapped.write(Buffer, Offset, Count);
-  {$ELSEIF NETSTANDARD}
-  mapped.Write(Buffer, Offset, Count);
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
@@ -250,8 +235,6 @@ begin
     SeekOrigin.Current: mapped.seek(Position + Offset);
     SeekOrigin.End: mapped.seek(Length + Offset);
   end;
-  {$ELSEIF NETSTANDARD}
-  mapped.Seek(Offset, System.IO.SeekOrigin(Origin));
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Seek(Offset, PlatformSeekOrigin(Origin));
   {$ELSEIF TOFFEE}
@@ -267,8 +250,6 @@ method FileHandle.GetLength: Int64;
 begin
   {$IF COOPER}
   exit mapped.length;
-  {$ELSEIF NETSTANDARD}
-  exit mapped.Length;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Length;
   {$ELSEIF TOFFEE}
@@ -282,13 +263,6 @@ method FileHandle.SetLength(value: Int64);
 begin
   {$IF COOPER}
   mapped.setLength(Value);
-  {$ELSEIF NETSTANDARD}
-  var Origin := mapped.Position;
-  mapped.SetLength(value);
-  if Origin > value then
-    Seek(0, SeekOrigin.Begin)
-  else
-    Seek(Origin, SeekOrigin.Begin);
   {$ELSEIF ECHOES OR ISLAND}
   mapped.SetLength(value);
   {$ELSEIF TOFFEE}
@@ -305,8 +279,6 @@ method FileHandle.GetPosition: Int64;
 begin
   {$IF COOPER}
   exit mapped.FilePointer;
-  {$ELSEIF NETSTANDARD}
-  exit mapped.Position;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Position;
   {$ELSEIF TOFFEE}
@@ -318,8 +290,6 @@ method FileHandle.SetPosition(value: Int64);
 begin
   {$IF COOPER}
   Seek(value, SeekOrigin.Begin);
-  {$ELSEIF NETSTANDARD}
-  mapped.Position := value;
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Position := value;
   {$ELSEIF TOFFEE}

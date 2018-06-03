@@ -21,7 +21,7 @@ type
       lTimer.Start;
       Thread.Sleep(350);
       lTimer.Stop;
-      Assert.AreEqual(lTest, 3);
+      Assert.IsTrue(lTest > 1);
     end;
 
     method TestNoRepeatTimer;

@@ -45,8 +45,8 @@ type
     class method CharacterIsLetterOrNumber(Value: Char): Boolean;
     class method IsNullOrEmpty(Value: String): Boolean;
     class method IsNullOrWhiteSpace(Value: String): Boolean;
-    class method &Join(Separator: nullable String; Values: not nullable array of String): not nullable String;
-    class method &Join(Separator: nullable String; Values: not nullable ImmutableList<String>): not nullable String;
+    class method &Join(aSeparator: nullable String; Values: not nullable array of String): not nullable String;
+    class method &Join(aSeparator: nullable String; Values: not nullable ImmutableList<String>): not nullable String;
 
     class method Compare(Value1, Value2: String): Integer;
 
@@ -77,8 +77,13 @@ type
     method LastIndexOf(const Value: String; StartIndex: Integer): Integer;
     method Substring(StartIndex: Int32): not nullable String; inline;
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String; inline;
-    method Split(Separator: not nullable String): not nullable ImmutableList<String>;
-    method SplitAtFirstOccurrenceOf(Separator: not nullable String): not nullable ImmutableList<String>;
+    method SubstringToFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
+    method SubstringFromFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
+    method SubstringToLastOccurrenceOf(aSeparator: not nullable String): not nullable String;
+    method SubstringFromLastOccurrenceOf(aSeparator: not nullable String): not nullable String;
+    method Split(aSeparator: not nullable String; aRemoveEmptyEntries: Boolean := false): not nullable ImmutableList<String>;
+    method SplitAtFirstOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
+    method SplitAtLastOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
     method Replace(OldValue, NewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method Replace(aStartIndex: Int32; aLength: Int32; aNewValue: String): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
     method &Remove(aStartIndex: Int32; aLength: Int32): not nullable String; //inline; //76828: Toffee: Internal error: LPUSH->U95 with inline
@@ -124,8 +129,8 @@ var
   // from https://msdn.microsoft.com/en-us/library/system.Char.iswhitespace%28v=vs.110%29.aspx
   WhiteSpaceCharacters: array of Char :=
         [#$0020, #$1680, #$2000, #$2001, #$2002, #$2003, #$2004, #$2005, #$2006, #$2007, #$2008, #$2009, #$200A, #$202F, #$205F, #$3000, //space separators
-         #$2028, //Line Separator
-         #$2029, //Paragraph Separator
+         #$2028, //Line aSeparator
+         #$2029, //Paragraph aSeparator
          #$0009, #$000A, #$000B, #$000C, #$000D,#$0085, #$00A0,  // other special symbols
          #$FFEF]; public;
 
@@ -442,11 +447,7 @@ begin
   {$IF COOPER}
   exit mapped.equalsIgnoreCase(Value); // aready invariant, on Java
   {$ELSEIF ECHOES}
-  {$IF NETSTANDARD}
-  exit mapped.Equals(Value, StringComparison.OrdinalIgnoreCase); {$HINT TODO}
-  {$ELSE}
   exit mapped.Equals(Value, StringComparison.InvariantCultureIgnoreCase);
-  {$ENDIF}
   {$ELSEIF ISLAND}
   exit mapped.EqualsIgnoreCaseInvariant(Value);
   {$ELSEIF TOFFEE}
@@ -478,7 +479,7 @@ end;
 
 method String.Contains(Value: String): Boolean;
 begin
-  if Value.Length = 0 then
+  if RemObjects.Elements.System.length(Value) = 0 then
     exit true;
 
   {$IF COOPER OR ECHOES OR ISLAND}
@@ -670,47 +671,94 @@ begin
   {$ENDIF}
 end;
 
-method String.Split(Separator: not nullable String): not nullable ImmutableList<String>;
+method String.Split(aSeparator: not nullable String; aRemoveEmptyEntries: Boolean := false): not nullable ImmutableList<String>;
 begin
-  if IsNullOrEmpty(Separator) then
+  if IsNullOrEmpty(aSeparator) then
     exit new ImmutableList<String>(self);
+  if IsNullOrEmpty(self) then
+    exit if aRemoveEmptyEntries then new ImmutableList<String>() else new ImmutableList<String>("");
 
   {$IF COOPER}
-  //exit mapped.split(java.util.regex.Pattern.quote(Separator)) as not nullable;
+  //exit mapped.split(java.util.regex.Pattern.quote(aSeparator)) as not nullable;
   //Custom implementation because `mapped.split` strips empty oparts at the end, making it incomopatible with the other three platfroms.
   var lResult := new List<String>;
   var i := 0;
-  var lSeparatorLength := Separator.Length;
+  var lSeparatorLength := aSeparator.Length;
   loop begin
-    var p := IndexOf(Separator, i);
+    var p := IndexOf(aSeparator, i);
     if p > -1 then begin
       var lPart := self.Substring(i, p-i);
-      lResult.Add(lPart);
+      if (not aRemoveEmptyEntries) or (lPart.length > 0) then
+        lResult.Add(lPart);
       i := p+lSeparatorLength;
     end
     else begin
       var lPart := self.Substring(i);
-      lResult.Add(lPart);
+      if (not aRemoveEmptyEntries) or (lPart.length > 0) then
+        lResult.Add(lPart);
       break;
     end;
   end;
   result := lResult as not nullable;
   {$ELSEIF ECHOES}
-  result := mapped.Split([Separator], StringSplitOptions.None).ToList() as not nullable;
+  result := mapped.Split([aSeparator], if aRemoveEmptyEntries then StringSplitOptions.RemoveEmptyEntries else StringSplitOptions.None).ToList() as not nullable;
   {$ELSEIF ISLAND}
-  result := mapped.Split(Separator).ToList() as not nullable;
+  result := mapped.Split(aSeparator, aRemoveEmptyEntries).ToList() as not nullable;
   {$ELSEIF TOFFEE}
-  result := mapped.componentsSeparatedByString(Separator);
+  result := mapped.componentsSeparatedByString(aSeparator);
+  if aRemoveEmptyEntries then
+    result := result.Where(p -> p:Length > 0).ToList();
   {$ENDIF}
 end;
 
-method String.SplitAtFirstOccurrenceOf(Separator: not nullable String): not nullable ImmutableList<String>;
+method String.SplitAtFirstOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
 begin
-  var p := IndexOf(Separator);
+  var p := IndexOf(aSeparator);
   if p > -1 then
-    result := new ImmutableList<String>(Substring(0, p), Substring(p+Separator.Length))
+    result := new ImmutableList<String>(Substring(0, p), Substring(p+aSeparator.Length))
   else
     result := new ImmutableList<String>(self);
+end;
+
+method String.SplitAtLastOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
+begin
+  var p := LastIndexOf(aSeparator);
+  if p > -1 then
+    result := new ImmutableList<String>(Substring(0, p), Substring(p+aSeparator.Length))
+  else
+    result := new ImmutableList<String>(self);
+end;
+
+method String.SubstringToFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
+begin
+  result := self;
+  var p := IndexOf(aSeparator);
+  if p > -1 then
+    result := result.Substring(0, p);
+end;
+
+method String.SubstringFromFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
+begin
+  result := self;
+  var p := IndexOf(aSeparator);
+  if p > -1 then
+    result := result.Substring(p+aSeparator.Length);
+end;
+
+method String.SubstringToLastOccurrenceOf(aSeparator: not nullable String): not nullable String;
+begin
+  result := self;
+  var p := LastIndexOf(aSeparator);
+  if p > -1 then
+    result := result.Substring(0, p);
+end;
+
+method String.SubstringFromLastOccurrenceOf(aSeparator: not nullable String): not nullable String;
+begin
+  result := self;
+  var p := LastIndexOf(aSeparator);
+  if p > -1 then
+    result := result.Substring(p+aSeparator.Length);
 end;
 
 method String.Replace(OldValue: String; NewValue: String): not nullable String;
@@ -743,7 +791,7 @@ end;
 method String.Remove(aStartIndex: Int32; aLength: Int32): not nullable String;
 begin
   {$IF COOPER}
-  exit mapped.substring(0, aStartIndex)+mapped.substring(aStartIndex+aLength) as not nullable;
+  exit (mapped.substring(0, aStartIndex)+mapped.substring(aStartIndex+aLength)) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Remove(aStartIndex, aLength) as not nullable;
   {$ELSEIF TOFFEE}
@@ -844,20 +892,12 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.ToLower(aLocale: Locale): not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toLowerCase(aLocale) as not nullable;
-  {$ELSEIF ECHOES}
-  {$IF NETSTANDARD}
-  exit mapped.ToLower as not nullable; {$HINT TODO}
-  {$ELSE}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToLower(aLocale) as not nullable;
-  {$ENDIF}
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseStringWithLocale(aLocale);
   {$ENDIF}
@@ -887,20 +927,12 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method String.ToUpper(aLocale: Locale): not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toUpperCase(aLocale) as not nullable;
-  {$ELSEIF ECHOES}
-  {$IF NETSTANDARD}
-  exit mapped.ToUpper as not nullable; {$HINT TODO}
-  {$ELSE}
+  {$ELSEIF ECHOES OR ISLAND}
   exit mapped.ToUpper(aLocale) as not nullable;
-  {$ENDIF}
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemeted for Island}
-  raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseStringWithLocale(aLocale);
   {$ENDIF}
@@ -999,7 +1031,7 @@ end;
 
 method String.StartsWith(Value: String; IgnoreCase: Boolean): Boolean;
 begin
-   if Value.Length = 0 then
+  if RemObjects.Elements.System.length(Value) = 0 then
     exit true;
 
   {$IF COOPER}
@@ -1036,7 +1068,7 @@ end;
 
 method String.EndsWith(Value: String; IgnoreCase: Boolean): Boolean;
 begin
-  if Value.Length = 0 then
+  if RemObjects.Elements.System.length(Value) = 0 then
     exit true;
 
   {$IF COOPER}
@@ -1097,41 +1129,41 @@ begin
   result := aEncoding.GetBytes(self);
 end;
 
-class method String.Join(Separator: nullable String; Values: not nullable array of String): not nullable String;
+class method String.Join(aSeparator: nullable String; Values: not nullable array of String): not nullable String;
 begin
   {$IF COOPER}
   var sb := new StringBuilder;
   for i: Integer := 0 to length(Values)-1 do begin
-     if (i ≠ 0) and assigned(Separator) then
-      sb.append(Separator);
+     if (i ≠ 0) and assigned(aSeparator) then
+      sb.append(aSeparator);
     sb.append(Values[i]);
   end;
   result := sb.toString as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := PlatformString.Join(Separator, Values) as not nullable;
+  result := PlatformString.Join(aSeparator, Values) as not nullable;
   {$ELSEIF TOFFEE}
   var lArray := new NSMutableArray withCapacity(Values.length);
   for i: Integer := 0 to Values.length - 1 do
     lArray.addObject(Values[i]);
 
-  result := lArray.componentsJoinedByString(Separator);
+  result := lArray.componentsJoinedByString(aSeparator);
   {$ENDIF}
 end;
 
-class method String.&Join(Separator: nullable String; Values: not nullable ImmutableList<String>): not nullable String;
+class method String.&Join(aSeparator: nullable String; Values: not nullable ImmutableList<String>): not nullable String;
 begin
   {$IF COOPER}
   var sb := new StringBuilder;
   for i: Integer := 0 to Values.Count-1 do begin
-     if (i ≠ 0) and assigned(Separator) then
-      sb.append(Separator);
+     if (i ≠ 0) and assigned(aSeparator) then
+      sb.append(aSeparator);
     sb.append(Values[i]);
   end;
   result := sb.toString as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := PlatformString.Join(Separator, Values.ToArray) as not nullable;
+  result := PlatformString.Join(aSeparator, Values.ToArray) as not nullable;
   {$ELSEIF TOFFEE}
-  result := (Values as NSArray).componentsJoinedByString(Separator);
+  result := (Values as NSArray).componentsJoinedByString(aSeparator);
   {$ENDIF}
 end;
 

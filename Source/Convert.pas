@@ -85,8 +85,10 @@ type
     method ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
     method ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 
-    method HexStringToInt32(aValue: not nullable String): UInt32;
-    method HexStringToInt64(aValue: not nullable String): UInt64;
+    method HexStringToUInt32(aValue: not nullable String): UInt32;
+    method HexStringToUInt64(aValue: not nullable String): UInt64;
+    method TryHexStringToUInt32(aValue: not nullable String): nullable UInt32;
+    method TryHexStringToUInt64(aValue: not nullable String): nullable UInt64;
     method HexStringToByteArray(aData: not nullable String): array of Byte;
 
     method ToBase64String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
@@ -175,11 +177,11 @@ begin
   else
     result := aValue.ToString("0."+new String('0', aDigitsAfterDecimalPoint), aLocale) as not nullable
   {$ELSEIF ISLAND}
+  if aLocale = nil then aLocale := Locale.Current;
   if aDigitsAfterDecimalPoint < 0 then
-    result := aValue.ToString() as not nullable
+    result := aValue.ToString(aLocale) as not nullable
   else
-    result := aValue.ToString(aDigitsAfterDecimalPoint) as not nullable
-  {$HINT Does not use locale for Island yet?}
+    result := aValue.ToString(aDigitsAfterDecimalPoint, aLocale) as not nullable
   {$ELSEIF TOFFEE}
   var numberFormatter := new NSNumberFormatter();
   numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
@@ -202,7 +204,7 @@ end;
 method Convert.ToString(aValue: Object): not nullable String;
 begin
   //74584: Two more bogus nullable warnings
-  result := coalesce(aValue.ToString, '');
+  result := coalesce(aValue:ToString, '');
 end;
 
 method Convert.ToInt32(aValue: Boolean): Int32;
@@ -382,7 +384,7 @@ begin
     result[i] := Byte((HexValue(aData[i shl 1]) shl 4) + HexValue(aData[(i shl 1) + 1]));
 end;
 
-method Convert.HexStringToInt32(aValue: not nullable String): UInt32;
+method Convert.HexStringToUInt32(aValue: not nullable String): UInt32;
 begin
   {$IF COOPER}
   result := Integer.parseInt(aValue, 16);
@@ -391,12 +393,12 @@ begin
   {$ELSEIF ISLAND}
   result := RemObjects.Elements.System.Convert.HexStringToUInt64(aValue) as Int32;
   {$ELSEIF TOFFEE}
-  var scanner: NSScanner := NSScanner.scannerWithString(aValue);
-  scanner.scanHexInt(var result);
+  var lScanner: NSScanner := NSScanner.scannerWithString(aValue);
+  lScanner.scanHexInt(var result);
   {$ENDIF}
 end;
 
-method Convert.HexStringToInt64(aValue: not nullable String): UInt64;
+method Convert.HexStringToUInt64(aValue: not nullable String): UInt64;
 begin
   {$IF COOPER}
   result := Long.parseLong(aValue, 16);
@@ -405,8 +407,52 @@ begin
   {$ELSEIF ISLAND}
   result := RemObjects.Elements.System.Convert.HexStringToUInt64(aValue);
   {$ELSEIF TOFFEE}
-  var scanner: NSScanner := NSScanner.scannerWithString(aValue);
-  scanner.scanHexLongLong(var result);
+  var lScanner: NSScanner := NSScanner.scannerWithString(aValue);
+  lScanner.scanHexLongLong(var result);
+  {$ENDIF}
+end;
+
+method Convert.TryHexStringToUInt32(aValue: not nullable String): nullable UInt32;
+begin
+  {$IF COOPER}
+  try
+    result := Integer.parseInt(aValue, 16);
+  except
+    on E: NumberFormatException do;
+  end;
+  {$ELSEIF ECHOES}
+  if Int32.TryParse(aValue, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var lValue) then
+    result := lValue
+  {$ELSEIF ISLAND}
+  if RemObjects.Elements.System.Convert.TryHexStringToUInt64(aValue, out var lValue) then
+    result := lValue as Int32;
+  {$ELSEIF TOFFEE}
+  var lScanner: NSScanner := NSScanner.scannerWithString(aValue);
+  var lValue: UInt32;
+  if lScanner.scanHexInt(var lValue) then
+    result := lValue;
+  {$ENDIF}
+end;
+
+method Convert.TryHexStringToUInt64(aValue: not nullable String): nullable UInt64;
+begin
+  {$IF COOPER}
+  try
+    result := Long.parseLong(aValue, 16);
+  except
+    on E: NumberFormatException do;
+  end;
+  {$ELSEIF ECHOES}
+    if Int64.TryParse(aValue, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var lValue) then
+    result := lValue
+  {$ELSEIF ISLAND}
+  if RemObjects.Elements.System.Convert.TryHexStringToUInt64(aValue, out var lValue) then
+    result := lValue;
+  {$ELSEIF TOFFEE}
+  var lScanner: NSScanner := NSScanner.scannerWithString(aValue);
+  var lValue: UInt64;
+  if lScanner.scanHexLongLong(var lValue) then
+    result := lValue;
   {$ENDIF}
 end;
 
@@ -433,7 +479,7 @@ begin
     x := b shl (6 - a);
     sb.Append(Codes64[x]);
   end;
-  result := sb.ToString;
+  result := sb.ToString as not nullable;
 end;
 
 method convert.Base64StringToByteArray(S: String): array of Byte;
@@ -578,7 +624,6 @@ begin
     raise new FormatException(String.Format("Invalid double value '{0}' for locale {1}", aValue, aLocale.Identifier));
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.TryToDouble(aValue: nullable String; aLocale: Locale): nullable Double;
 begin
   if String.IsNullOrWhiteSpace(aValue) then
@@ -618,8 +663,9 @@ begin
   if Double.TryParse(aValue, System.Globalization.NumberStyles.Any, aLocale, out lResult) then
     exit valueOrDefault(lResult);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("Convert.TryToDouble() is not implemented for Island yet.");
+  var lResult: Double;
+  if Double.TryParse(aValue, aLocale, out lResult) then
+    exit valueOrDefault(lResult);
   {$ELSEIF TOFFEE}
   var Number := TryParseNumber(aValue, aLocale);
   exit Number:doubleValue;
@@ -666,7 +712,6 @@ begin
   result := ord(aValue);
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 method Convert.ToByte(aValue: not nullable String): Byte;
 begin
   if aValue = nil then
@@ -680,8 +725,10 @@ begin
   {$ELSEIF ECHOES}
   exit System.Convert.ToByte(aValue);
   {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("Convert.ToByte() is not implemented for Island yet.");
+  var lNumber: Int64;
+  if not RemObjects.Elements.System.Convert.TryParseInt64(aValue, out lNumber, true) then
+    raise new FormatException("Unable to convert string '{0}' to byte.", aValue);
+  exit ToByte(lNumber);
   {$ELSEIF TOFFEE}
   var Number: Int32 := ParseInt32(aValue);
   exit ToByte(Number);

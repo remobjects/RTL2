@@ -3,16 +3,17 @@
 interface
 
 type
-  File = public class mapped to {$IF NETSTANDARD}Windows.Storage.StorageFile{$ELSE}PlatformString{$ENDIF}
+  File = public class mapped to PlatformString
   private
     {$IF NOT WEBASSEMBLY}
     method getDateModified: DateTime;
+    method setDateModified(aDateTime: DateTime);
     method getDateCreated: DateTime;
     method getSize: Int64;
     {$ENDIF}
 
     {$IF COOPER}
-    property JavaFile: java.io.File read new java.io.File(mapped);
+    property JavaFile: java.io.File read new java.io.File(mapped); inline;
     {$ELSEIF ISLAND AND NOT WEBASSEMBLY}
     property IslandFile: RemObjects.Elements.System.File read new RemObjects.Elements.System.File(mapped);
     {$ENDIF}
@@ -23,8 +24,7 @@ type
     method CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
     method CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := true): not nullable File;
     method Delete;
-    {$IF NOT COOPER}method Exists: Boolean; inline;{$ENDIF}
-    {$IF COOPER}method Exists: Boolean; {$ENDIF}
+    method Exists: Boolean; inline;
     method Move(NewPathAndName: not nullable File): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
     method Open(Mode: FileOpenMode): not nullable FileHandle;
@@ -41,27 +41,24 @@ type
     method ReadBinary: ImmutableBinary;
 
     class method ReadText(aFileName: String; Encoding: Encoding := nil): String;
+    class method ReadLines(aFileName: String; Encoding: Encoding := nil): ImmutableList<String>;
     class method ReadBytes(aFileName: String): array of Byte;
     class method ReadBinary(aFileName: String): ImmutableBinary;
     class method WriteBytes(aFileName: String; Content: array of Byte);
     class method WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
+    class method WriteLines(aFileName: String; Content: ImmutableList<String>; aEncoding: Encoding := nil);
     class method WriteBinary(aFileName: String; Content: ImmutableBinary);
     class method AppendText(aFileName: String; Content: String);
     class method AppendBytes(aFileName: String; Content: array of Byte);
     class method AppendBinary(aFileName: String; Content: ImmutableBinary);
 
     property DateCreated: DateTime read getDateCreated;
-    property DateModified: DateTime read getDateModified;
+    property DateModified: DateTime read getDateModified write setDateModified;
     property Size: Int64 read getSize;
     {$ENDIF}
 
-    {$IF NETSTANDARD}
-    property FullPath: not nullable String read mapped.Path;
-    property Name: not nullable String read mapped.Name;
-    {$ELSE}
     property FullPath: not nullable String read mapped;
     property Name: not nullable String read Path.GetFileName(mapped);
-    {$ENDIF}
     property &Extension: not nullable String read Path.GetExtension(FullPath);
 
   end;
@@ -70,11 +67,7 @@ implementation
 
 constructor File(aPath: not nullable String);
 begin
-  {$IF NETSTANDARD}
-  exit StorageFile.GetFileFromPathAsync(aPath).Await();
-  {$ELSE}
   exit File(aPath);
-  {$ENDIF}
 end;
 
 {$IF NOT WEBASSEMBLY}
@@ -100,18 +93,14 @@ begin
   source.close;
   dest.close;
   {$ELSEIF ECHOES}
-    {$IF NETSTANDARD}
-    exit mapped.CopyAsync(Destination, NewName, NameCollisionOption.FailIfExists).Await;
-    {$ELSE}
-    if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
-      if lNewFile.Exists then
-        Delete(lNewFile);
-      if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
-        raise new RTLException("Failed to copy file");
-    end
-    else
-      System.IO.File.Copy(mapped, lNewFile, true);
-    {$ENDIF}
+  if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
+    if lNewFile.Exists then
+      Delete(lNewFile);
+    if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
+      raise new RTLException("Failed to copy file");
+  end
+  else
+    System.IO.File.Copy(mapped, lNewFile, true);
   {$ELSEIF ISLAND}
   IslandFile.Copy(lNewFile);
   {$ELSEIF TOFFEE}
@@ -133,8 +122,6 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   JavaFile.delete;
-  {$ELSEIF NETSTANDARD}
-  mapped.DeleteAsync.AsTask.Wait;
   {$ELSEIF ECHOES}
   System.IO.File.Delete(mapped);
   {$ELSEIF ISLAND}
@@ -151,17 +138,15 @@ begin
   aFileName.Delete()
 end;
 
-{$IF NOT COOPER}
 method File.Exists: Boolean;
 begin
-  if length(mapped) = 0 then exit false;
-  {$IF NETSTANDARD}
-  try
-    result := assigned(GetFile(aFileName));
-  except
-    result := false;
-  end;
+  if length(mapped) = 0 then
+    exit false;
+  {$IF COOPER}
+  result := JavaFile.exists;
   {$ELSEIF ECHOES}
+  if mapped.Contains("*") or mapped.Contains("?") then
+    exit false;
   result := System.IO.File.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFile.Exists;
@@ -170,15 +155,6 @@ begin
   result := NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) and not isDirectory;
   {$ENDIF}
 end;
-{$ENDIF}
-
-{$IF COOPER}
-method File.Exists: Boolean;
-begin
-  if length(mapped) = 0 then exit false;
-  result := JavaFile.exists;
-end;
-{$ENDIF}
 
 class method File.Exists(aFileName: nullable File): Boolean;
 begin
@@ -192,8 +168,6 @@ begin
   {$IF COOPER}
   result := CopyTo(NewPathAndName) as not nullable;
   JavaFile.delete;
-  {$ELSEIF NETSTANDARD}
-  exit mapped.CopyAsync(new Folder(NewPathAndName.FullPath), NewPathAndName.Name, NameCollisionOption.FailIfExists).Await();
   {$ELSEIF ECHOES}
   System.IO.File.Move(mapped, NewPathAndName);
   result := NewPathAndName;
@@ -258,8 +232,6 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
-  {$ELSEIF NETSTANDARD}
-  result := mapped.DateCreated.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
   {$ELSEIF ISLAND}
@@ -275,8 +247,6 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified()));
-  {$ELSEIF NETSTANDARD}
-  result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
   {$ELSEIF ISLAND}
@@ -286,14 +256,33 @@ begin
   {$ENDIF}
 end;
 
+{$IF COOPER OR ISLAND}[Warning("Not Implemented for all platforms")]{$ENDIF}
+method File.setDateModified(aDateTime: DateTime);
+begin
+  if not Exists then
+    raise new FileNotFoundException(FullPath);
+  {$IF COOPER}
+  {$WARNING Not implemented}
+  //JavaFile.setLastModified(...)
+  //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  {$ELSEIF ECHOES}
+  System.IO.File.SetLastWriteTimeUtc(mapped, aDateTime);
+  {$ELSEIF ISLAND}
+  {$WARNING Not implemented}
+  //IslandFolder.DateModified := aDateTime;
+  {$ELSEIF TOFFEE}
+  var lError: NSError := nil;
+  if not NSFileManager.defaultManager.setAttributes(NSDictionary.dictionaryWithObject(aDateTime) forKey(NSFileModificationDate)) ofItemAtPath(self.FullPath) error(var lError) then
+    raise new NSErrorException withError(lError);
+  {$ENDIF}
+end;
+
 method File.getSize: Int64;
 begin
   if not Exists then
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := JavaFile.length;
-  {$ELSEIF NETSTANDARD}
-  //result := mapped.GetBasicPropertiesAsync().Await().DateModified.UtcDateTime;
   {$ELSEIF ECHOES}
   result := new System.IO.FileInfo(mapped).Length;
   {$ELSEIF ISLAND}
@@ -310,6 +299,12 @@ end;
 class method File.ReadText(aFileName: String; Encoding: Encoding := nil): String;
 begin
   exit new String(ReadBytes(aFileName), Encoding);
+end;
+
+class method File.ReadLines(aFileName: String; Encoding: Encoding := nil): ImmutableList<String>;
+begin
+  var lText := ReadText(aFileName, Encoding);
+  result := lText.Split(#10).Select(s -> s.Trim([#13])).ToList();
 end;
 
 class method File.ReadBytes(aFileName: String): array of Byte;
@@ -348,6 +343,11 @@ begin
   if not assigned(aEncoding) then
     aEncoding := Encoding.Default;
   WriteBytes(aFileName, Content.ToByteArray(aEncoding));
+end;
+
+class method File.WriteLines(aFileName: String; Content: ImmutableList<String>; aEncoding: Encoding := nil);
+begin
+  WriteText(aFileName, Content.JoinedString(Environment.LineBreak));
 end;
 
 class method File.WriteBinary(aFileName: String; Content: ImmutableBinary);

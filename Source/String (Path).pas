@@ -11,24 +11,23 @@ interface
 
 type
   String = public partial class mapped to PlatformString
-  private
-    method GetLastUnixPathComponent: String;
-    method GetLastWindowsPathComponent: String;
-
   assembly
     method GetLastPathComponentWithSeparatorChar(aSeparator: String): not nullable String;
 
   public
 
     {$IF NOT WEBASSEMBLY}
-    property FileExists: Boolean read File.Exists(self);
-    property FolderExists: Boolean read Folder.Exists(self);
-    property FileOrFolderExists: Boolean read File.Exists(self) or Folder.Exists(self);
+    property FileExists: Boolean read File.Exists(self); inline;
+    property FolderExists: Boolean read Folder.Exists(self); inline;
+    property FileOrFolderExists: Boolean read File.Exists(self) or Folder.Exists(self); inline;
     {$ENDIF}
 
-    property LastPathComponent: String read Path.GetFilename(self);             // uses the platform-specific folder separator
-    property LastUnixPathComponent: String read GetLastUnixPathComponent;       // always uses `/`
-    property LastWindowsPathComponent: String read GetLastWindowsPathComponent; // always uses `\`
+    property LastPathComponent: String read Path.GetFilename(self); inline;                                 // uses the platform-specific folder separator
+    property LastPathComponentWithoutExtension: String read Path.GetFilenameWithoutExtension(self); inline; // uses the platform-specific folder separator
+    property LastUnixPathComponent: String read GetLastPathComponentWithSeparatorChar('/');
+    property LastUnixPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastUnixPathComponent);
+    property LastWindowsPathComponent: String read GetLastPathComponentWithSeparatorChar('\');
+    property LastWindowsPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastWindowsPathComponent);
 
     property PathWithoutExtension: String read Path.GetPathWithoutExtension(self); inline;
     property PathExtension: String read Path.GetExtension(self); inline;
@@ -90,16 +89,6 @@ begin
     exit result.Substring(lIndex+1);
 
   exit result;
-end;
-
-method String.GetLastUnixPathComponent: String;
-begin
-  result := GetLastPathComponentWithSeparatorChar('/');
-end;
-
-method String.GetLastWindowsPathComponent: String;
-begin
-  result := GetLastPathComponentWithSeparatorChar('\');
 end;
 
 end.

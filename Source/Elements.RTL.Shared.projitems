@@ -135,6 +135,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Event.pas">
       <VirtualFolder>Threading</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Functions.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">

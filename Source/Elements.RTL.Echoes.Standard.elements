@@ -2,40 +2,29 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
-    <RootNamespace>RemObjects.Elements.RTL.Tests</RootNamespace>
-    <ProjectGuid>4FE86A5E-1886-47EC-921E-D93AE32079B2</ProjectGuid>
-    <OutputType>exe</OutputType>
-    <AssemblyName>Elements.RTL2.Tests.Echoes</AssemblyName>
+    <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
+    <ProjectGuid>B42BF0FD-E746-4A64-A0DF-AF8FFF55DAE5</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
     <AllowLegacyWith>False</AllowLegacyWith>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
     <AllowLegacyCreate>False</AllowLegacyCreate>
     <AllowUnsafeCode>False</AllowUnsafeCode>
-    <ApplicationIcon>Properties\App.ico</ApplicationIcon>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-    <RequiredFrameworkVersion>4.0</RequiredFrameworkVersion>
-    <DefaultUses>RemObjects.Elements.RTL;System.Linq;System.Xml.Linq</DefaultUses>
+    <CrossPlatform>True</CrossPlatform>
+    <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <KnownConditionalDefines>DEBUG;NETSTANDARD;TRACE</KnownConditionalDefines>
+    <TargetFramework>.NETStandard2.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>false</Optimize>
+    <OutputPath>.\bin\Debug\NETStandard</OutputPath>
+    <DefineConstants>DEBUG;NETSTANDARD;TRACE</DefineConstants>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
-    <CaptureConsoleOutput>False</CaptureConsoleOutput>
-    <StartMode>Project</StartMode>
-    <CpuType>anycpu</CpuType>
-    <RuntimeVersion>v25</RuntimeVersion>
-    <XmlDoc>False</XmlDoc>
-    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <Optimize>true</Optimize>
-    <OutputPath>.\bin\Release</OutputPath>
-    <GeneratePDB>False</GeneratePDB>
-    <GenerateMDB>False</GenerateMDB>
-    <EnableAsserts>False</EnableAsserts>
+    <EnableAsserts>True</EnableAsserts>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <StartMode>Project</StartMode>
@@ -47,33 +36,29 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <OutputPath>.\bin\Release\NETStandard</OutputPath>
+    <GeneratePDB>True</GeneratePDB>
+    <GenerateMDB>True</GenerateMDB>
+    <EnableAsserts>False</EnableAsserts>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <CpuType>anycpu</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <DefineConstants>NETSTANDARD</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="RemObjects.Elements.EUnit">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="Elements">
-      <HintPath>..\Source\bin\Debug\Elements.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <NuGetReference Include="NETStandard.Library:2.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.pas" />
     <Compile Include="Properties\AssemblyInfo.pas" />
-    <Content Include="Properties\App.ico" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
@@ -83,9 +68,6 @@
     </None>
     <Compile Include="Properties\Settings.Designer.pas" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Echoes.targets" />
-  <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared" />
+  <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
 </Project>

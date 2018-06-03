@@ -19,7 +19,7 @@ type
     method VisitInteger(Value: JsonIntegerValue);
     method VisitFloat(Value: JsonFloatValue);
     method VisitBoolean(Value: JsonBooleanValue);
-    method VisitNull(Value: JsonNode);
+    method VisitNull();
     method VisitName(Value: String);
     method Visit(Value: JsonNode);
   public
@@ -103,7 +103,7 @@ begin
   Builder.Append(Value.ToJson);
 end;
 
-method JsonSerializer.VisitNull(Value: JsonNode);
+method JsonSerializer.VisitNull();
 begin
   Builder.Append(JsonConsts.NULL_VALUE);
 end;
@@ -123,12 +123,13 @@ begin
       JsonIntegerValue: VisitInteger(Value as JsonIntegerValue);
       JsonFloatValue: VisitFloat(Value as JsonFloatValue);
       JsonBooleanValue: VisitBoolean(Value as JsonBooleanValue);
+      JsonNullValue: VisitNull();
       JsonArray: VisitArray(Value as JsonArray);
       JsonObject: VisitObject(Value as JsonObject);
     end;
   end
   else
-    VisitNull(Value);
+    VisitNull();
 end;
 
 method JsonSerializer.IncOffset;

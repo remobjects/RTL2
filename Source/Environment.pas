@@ -28,13 +28,15 @@ type
     method GetTempFolder: Folder;
     method GetUserApplicationSupportFolder: Folder;
     method GetUserLibraryFolder: Folder;
-    method GetUserDownloadsFolder: Folder;
+    method GetUserDownloadsFolder: nullable Folder;
 
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport("libc")]
     method uname(buf: IntPtr): Integer; external;
     method unameWrapper: String;
     class var unameResult: String;
+    [System.Runtime.InteropServices.DllImport("shell32.dll")]
+    class method SHGetKnownFolderPath([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStruct)] rfid: System.Guid; dwFlags: Cardinal; hToken: IntPtr; var pszPath: IntPtr): Integer; external;
     {$ENDIF}
   public
     property LineBreak: String read GetNewLine;
@@ -48,7 +50,7 @@ type
     property TempFolder: nullable Folder read GetTempFolder;
     property UserApplicationSupportFolder: nullable Folder read GetUserApplicationSupportFolder; // Mac only
     property UserLibraryFolder: nullable Folder read GetUserLibraryFolder; // Mac only
-    property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder; // Mac only
+    property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder;
 
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
@@ -87,8 +89,6 @@ method Environment.GetEnvironmentVariable(Name: String): String;
 begin
   {$IF COOPER}
   exit System.getenv(Name);
-  {$ELSEIF NETSTANDARD}
-  raise new NotSupportedException("GetEnvironmentVariable not supported on this platfrom");
   {$ELSEIF ECHOES}
   exit System.Environment.GetEnvironmentVariable(Name);
   {$ELSEIF ISLAND}
@@ -126,8 +126,6 @@ begin
   result := Accounts[0].name;
   {$ELSEIF COOPER}
   result := System.getProperty("user.name");
-  {$ELSEIF NETSTANDARD}
-  result := Windows.Networking.Proximity.PeerFinder.DisplayName;
   {$ELSEIF NETFX_CORE}
   result := Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
   {$ELSEIF ECHOES}
@@ -306,7 +304,7 @@ begin
   {$ENDIF}
 end;
 
-method Environment.GetUserDownloadsFolder: Folder;
+method Environment.GetUserDownloadsFolder: nullable Folder;
 begin
   {$IF ECHOES}
   case OS of
@@ -314,11 +312,22 @@ begin
         //result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
         result := Path.Combine(GetUserApplicationSupportFolder, "Downloads");
       end;
-    //OperatingSystem.Windows: begin
-        //result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
-        //result := Path.Combine(GetApplicationSupportFolder, "Downloads");
-      //end;
+    OperatingSystem.Windows: begin
+        var lFolder: IntPtr;
+        if SHGetKnownFolderPath(new System.Guid("374DE290-123F-4565-9164-39C4925E467B"), $00004000, nil, var lFolder) >= 0 then
+          result:= System.Runtime.InteropServices.Marshal.PtrToStringUni(lFolder);
+      end;
   end;
+  {$ELSEIF ISLAND}
+    {$IF WINDOWS}
+    var lGuidString := "{374DE290-123F-4565-9164-39C4925E467B}".ToCharArray(true);
+    var lGuid: rtl.GUID;
+    if rtl.IIDFromString(@lGuidString[0], @lGuid) >= 0 then begin
+      var lFolder: rtl.PWSTR;
+      if rtl.SHGetKnownFolderPath(@lGuid, rtl.DWORD(rtl.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY), nil, @lFolder) >= 0 then
+        result := RemObjects.Elements.System.String.FromPChar(lFolder);
+    end;
+    {$ENDIF}
   {$ELSEIF TOFFEE}
   result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
   {$ENDIF}
@@ -337,8 +346,6 @@ begin
   else if lOSName.Contains("linux") then exit OperatingSystem.Linux
   else if lOSName.Contains("mac") then exit OperatingSystem.macOS
   else exit OperatingSystem.Unknown;
-  {$ELSEIF NETSTANDARD}
-  exit OperatingSystem.WindowsPhone;
   {$ELSEIF NETFX_CORE}
   exit OperatingSystem.Windows
   {$ELSEIF ECHOES}
@@ -407,8 +414,6 @@ method Environment.GetOSName: String;
 begin
   {$IF COOPER}
   exit System.getProperty("os.name");
-  {$ELSEIF NETSTANDARD}
-  exit System.Environment.OSVersion.Platform.ToString();
   {$ELSEIF NETFX_CORE}
   exit "Microsoft Windows NT 6.2";
   {$ELSEIF ECHOES}
@@ -433,9 +438,7 @@ end;
 method Environment.GetOSVersion: String;
 begin
   {$IF COOPER}
-  System.getProperty("os.version");
-  {$ELSEIF NETSTANDARD}
-  exit System.Environment.OSVersion.Version.ToString;
+  exit System.getProperty("os.version");
   {$ELSEIF NETFX_CORE}
   exit "6.2";
   {$ELSEIF ECHOES}
@@ -451,8 +454,6 @@ method Environment.GetOSBitness: Int32;
 begin
   if GetProcessBitness = 64 then exit 64;
   {$IF COOPER}
-  result := 0;
-  {$ELSEIF NETSTANDARD}
   result := 0;
   {$ELSEIF ECHOES}
   result := if System.Environment.Is64BitOperatingSystem then 64 else 32;
@@ -486,10 +487,6 @@ method Environment.GetCurrentDirectory(): String;
 begin
   {$IF COOPER}
   exit System.getProperty("user.dir");
-  {$ELSEIF NETFX_CORE}
-  exit Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-  {$ELSEIF NETSTANDARD}
-  exit System.Environment.CurrentDirectory;
   {$ELSEIF ECHOES}
   exit System.Environment.CurrentDirectory;
   {$ELSEIF ISLAND}

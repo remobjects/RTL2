@@ -5,13 +5,13 @@
 interface
 
 {$IF COOPER}
-type PlatformEvent = java.util.concurrent.locks.ReentrantLock;
+type PlatformEvent = public java.util.concurrent.locks.ReentrantLock;
 {$ELSEIF ECHOES}
-type PlatformEvent = System.Threading.EventWaitHandle;
+type PlatformEvent = public System.Threading.EventWaitHandle;
 {$ELSEIF ISLAND}
-type PlatformEvent = RemObjects.Elements.System.EventWaitHandle;
+type PlatformEvent = public RemObjects.Elements.System.EventWaitHandle;
 {$ELSEIF TOFFEE}
-type PlatformEvent = NSCondition;
+type PlatformEvent = public NSCondition;
 {$ENDIF}
 
 type
@@ -29,7 +29,7 @@ type
     {$ENDIF}
   protected
   public
-    constructor withState(aState: Boolean := false) mode(aMode: EventMode := EventMode.AutoReset);
+    constructor withState(aState: Boolean := false) Mode(aMode: EventMode := EventMode.AutoReset);
 
     method &Set;
     method Reset;
@@ -40,7 +40,7 @@ type
 
 implementation
 
-constructor &Event withState(aState: Boolean := false) mode(aMode: EventMode := EventMode.AutoReset);
+constructor &Event withState(aState: Boolean := false) Mode(aMode: EventMode := EventMode.AutoReset);
 begin
   {$IF ECHOES}
   fPlatformEvent := if aMode = EventMode.AutoReset then new System.Threading.AutoResetEvent(aState) else new System.Threading.ManualResetEvent(aState);

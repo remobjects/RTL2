@@ -1,5 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL.Native;
 
+{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 //
 // For now, XmlDocument is implemented as a simple wraopper around NativeXmlElement (Toffee) and System.Xml (Echoes),
@@ -11,7 +12,6 @@ interface
 
 uses
   RemObjects.Elements.RTL;
-{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 type
   {$IF TOFFEE}
@@ -133,9 +133,8 @@ type
     property Prefix: String;
     property Url: Url;
   end;
-{$ENDIF}
+
 implementation
-{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 { XmlDocument }
 

@@ -7,11 +7,11 @@ uses
 
 type
   {$IF COOPER}
-  PlatformMethod = java.lang.reflect.Method;
+  PlatformMethod = public java.lang.reflect.Method;
   {$ELSEIF ECHOES}
-  PlatformMethod = System.Reflection.MethodInfo;
+  PlatformMethod = public System.Reflection.MethodInfo;
   {$ELSEIF ISLAND}
-  PlatformMethod = RemObjects.Elements.System.MethodInfo;
+  PlatformMethod = public RemObjects.Elements.System.MethodInfo;
   {$ENDIF}
 
   &Method = public class

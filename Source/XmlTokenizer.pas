@@ -88,8 +88,8 @@ begin
     and (fPos < fData.length) and (not(CharIsWhitespace(fData[fPos]))) and (fData[fPos] <> '<') then ParseSymbolData()
   else
     if CharIsNameStart(fData[fPos]) then ParseName
-    else if (fData.Length >= fPos+XmlConsts.TAG_DECL_CLOSE.Length) and (new String(fData,fPos,XmlConsts.TAG_DECL_CLOSE.Length) = XmlConsts.TAG_DECL_CLOSE) then begin
-      fLength := XmlConsts.TAG_DECL_CLOSE.Length;
+    else if (fData.Length >= fPos+2{XmlConsts.TAG_DECL_CLOSE.Length}) and (new String(fData,fPos,2{XmlConsts.TAG_DECL_CLOSE.Length}) = XmlConsts.TAG_DECL_CLOSE) then begin
+      fLength := 2;//XmlConsts.TAG_DECL_CLOSE.Length;
       Value:=nil;
       Token := XmlTokenKind.DeclarationEnd;
     end
@@ -126,10 +126,10 @@ begin
                   Value := "Unknown token";
                 end;
           '?': begin
-            if (fData.Length >= fPos+XmlConsts.TAG_DECL_OPEN.Length) and
-              (new String(fData,fPos,XmlConsts.TAG_DECL_OPEN.Length)  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+XmlConsts.TAG_DECL_OPEN.Length])) then begin
+            if (fData.Length >= fPos+5{XmlConsts.TAG_DECL_OPEN.Length}) and
+              (new String(fData,fPos,5{XmlConsts.TAG_DECL_OPEN.Length})  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+5{XmlConsts.TAG_DECL_OPEN.Length}])) then begin
               if fPos = 0 then begin Token := XmlTokenKind.DeclarationStart;
-                fLength:= XmlConsts.TAG_DECL_OPEN.Length;
+                fLength:= 5;//XmlConsts.TAG_DECL_OPEN.Length;
                 Value := nil;
               end
               else begin
@@ -189,12 +189,14 @@ end;
 
 method XmlTokenizer.Next: Boolean;
 begin
-  if Token = XmlTokenKind.EOF then
-    exit false;
+  //if Token = XmlTokenKind.EOF then
+  //  exit false;
   while true do begin
     fPos := fPos + fLength;
     fLastRow := fRow;
     fLastRowStart := fRowStart;
+    if Token = XmlTokenKind.EOF then
+      exit false;
     if fPos < fData.Length then Parse
     else begin
       Token := XmlTokenKind.EOF;
@@ -244,13 +246,15 @@ begin
     if not CharIsName(ch) then break;
     if ch = ':' then begin
       inc(colonSymbol);
-      if (fData.Length < (lPosition+1)) then begin
+      if (fData.Length <= (lPosition+1)) then begin
         //fPos := lPosition+1;
-        Token := XmlTokenKind.SyntaxError;
+        lPosition := lPosition + 1;
+        break;
+        {Token := XmlTokenKind.SyntaxError;
         Value := new String(fData, fPos, lPosition+1 - fPos);
-        fPos := lPosition+1;
+        fPos := lPosition+1;}
         //Value := "Name expected";
-        exit;
+        //exit;
       end
       else if (CharIsNameStart(fData[lPosition+1]) = false) then begin
         Token := XmlTokenKind.SyntaxError;
@@ -285,6 +289,7 @@ begin
     if (lPosition >= fData.length) then begin
       Value := new String(fData, fPos, lPosition-fPos);
       ErrorMessage := "Attribute value expected but EOF found";
+      fLength := lPosition - fPos+1;
       Token := XmlTokenKind.EOF; exit;
       //break;
     end;
@@ -303,6 +308,7 @@ begin
       '<' : begin
         Token := XmlTokenKind.SyntaxError;
         ErrorMessage := "Syntax error. Symbol '<' is not allowed in attribute value";
+        fLength := lPosition - fPos;
         Value :=  new String(fData, fPos, lPosition-fPos);
         exit;
       end;
@@ -348,11 +354,10 @@ begin
     end;
     inc(lPosition);
   end;
-  Value := new String(fData, lStart, lPosition-lStart);
   while CharIsWhitespace(fData[lPosition-1]) do
     lPosition := lPosition-1;
   fLength := lPosition - fPos;
-  Value := Value.Trim;
+  Value := new String(fData, lStart, lPosition-lStart);
   Token := XmlTokenKind.SymbolData;
 end;
 

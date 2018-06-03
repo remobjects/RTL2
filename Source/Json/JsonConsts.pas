@@ -17,23 +17,22 @@ type
     const NULL_VALUE: String = "null";
   end;
 
-  JsonTokenKind = public enum(
-    BOF,
-    EOF,
-    Whitespace,
-    String,
-    Number,
-    Null,
-    &True,
-    &False,
-    ArrayStart,
-    ArrayEnd,
-    ObjectStart,
-    ObjectEnd,
-    NameSeperator,
-    ValueSeperator,
-    Identifier,
-    SyntaxError);
+  JsonTokenKind = assembly enum(BOF,
+                                EOF,
+                                Whitespace,
+                                String,
+                                Number,
+                                Null,
+                                &True,
+                                &False,
+                                ArrayStart,
+                                ArrayEnd,
+                                ObjectStart,
+                                ObjectEnd,
+                                NameSeperator,
+                                ValueSeperator,
+                                Identifier,
+                                SyntaxError);
 
 implementation
 end.
