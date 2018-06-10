@@ -1332,7 +1332,7 @@ begin
       strSb.Append(XmlAttribute(attr).ToString(aFormatInsideTags, aFormatOptions))
     else
       strSb.Append(XmlNamespace(attr).ToString(aFormatInsideTags, aFormatOptions));
-    if not (aFormatInsideTags) and (lWSright <> nil) then strsb.Append(lWSright);
+    if not (aFormatInsideTags) and (lWSright <> nil) then strSb.Append(lWSright);
     if (aFormatInsideTags and (((aFormatOptions.PreserveLinebreaksForAttributes) and (lWSright <> nil) and lWSright.Contains(lLineBreak))) or (aFormatOptions.PreserveEmptyLines and (lEmptyLinesright <> ""))) then
       if (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveAllWhitespace)  and (indent = nil) then begin
         strSb.Append(lLineBreak);
