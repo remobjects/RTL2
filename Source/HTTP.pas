@@ -316,10 +316,10 @@ begin
     contentCallback(new HttpResponseContent<String>(Content := responseString))
   end;
   {$ELSEIF ISLAND}
-  Task.Run(() -> begin
+  async begin
     var lResponseString := aEncoding.GetString(Data.ToArray);
     contentCallback(new HttpResponseContent<String>(Content := lResponseString));
-  end);
+  end;
   {$ELSEIF TOFFEE}
   var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
   if assigned(s) then
@@ -351,10 +351,10 @@ begin
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
   {$ELSEIF ISLAND}
-  Task.Run(() -> begin
+  async begin
     var allData := new Binary(Data.ToArray);
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
-  end);
+  end;
   {$ELSEIF TOFFEE}
   contentCallback(new HttpResponseContent<ImmutableBinary>(Content := Data.mutableCopy));
   {$ENDIF}
@@ -428,7 +428,7 @@ begin
     end;
   end;
   {$ELSEIF ISLAND}
-  Task.Run(() -> begin
+  async begin
     try
       var lStream := new FileStream(aTargetFile, FileOpenMode.Create or FileOpenMode.ReadWrite);
       Data.CopyTo(lStream);
@@ -438,7 +438,7 @@ begin
       on E: Exception do
         contentCallback(new HttpResponseContent<File>(Exception := E));
     end;
-  end);
+  end;
   {$ELSEIF TOFFEE}
   async begin
     var error: NSError;
@@ -622,7 +622,7 @@ begin
       ResponseCallback(new HttpResponse withException(E));
   end;
   {$ELSEIF ISLAND}
-  Task.Run(() -> begin
+  async begin
     try
       var lResponse := ExecuteRequestSynchronous(aRequest, true);
       ResponseCallback(lResponse);
@@ -630,7 +630,7 @@ begin
       on E: Exception do
         ResponseCallback(new HttpResponse withException(E));
     end;
-  end);
+  end;
   {$ELSEIF TOFFEE}
   try
     var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
