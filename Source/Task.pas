@@ -10,20 +10,20 @@ type
   {$ELSEIF ECHOES}
   PlatformTask = public System.Diagnostics.Process;
   {$ELSEIF ISLAND}
-  //PlatformTask = public RemObjects.Elements.System.Process;
+  //PlatformTask = public RemObjects.Elements.System.Task;
   {$ELSEIF TOFFEE}
   PlatformTask = public Foundation.NSTask;
   {$ENDIF}
 
-  [Obsolete("Use Process instead, this is an alias")]
-  Task = public class(Process)
+  [Obsolete("Use Task instead, this is an alias")]
+  Process = public class(Task)
   end;
 
   {$IF COOPER OR ISLAND}[Warning("is not implemented for all platforms")]{$ENDIF}
-  Process = public class {$IF ECHOES OR TOFFEE}mapped to PlatformTask{$ENDIF}
+  Task = public class {$IF ECHOES OR TOFFEE}mapped to PlatformTask{$ENDIF}
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
-    class method SetUpTask(aCommand: String; aArguments: array of String; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
+    class method SetUpTask(aCommand: String; aArguments: array of String; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Task;
     {$IF TOFFEE}
     class method processStdOutData(rawString: String) lastIncompleteLogLine(out lastIncompleteLogLine: String) callback(callback: block(aLine: String));
     {$ENDIF}
@@ -46,12 +46,12 @@ type
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer;
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer;
-    class method RunAsync(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
+    class method RunAsync(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Task;
   end;
 
 implementation
 
-method Process.WaitFor;
+method Task.WaitFor;
 begin
   {$IF ECHOES}
   mapped.WaitForExit();
@@ -60,7 +60,7 @@ begin
   {$ENDIF}
 end;
 
-method Process.Start;
+method Task.Start;
 begin
   {$IF ECHOES}
   mapped.Start();
@@ -69,7 +69,7 @@ begin
   {$ENDIF}
 end;
 
-method Process.Stop;
+method Task.Stop;
 begin
   {$IF ECHOES}
   mapped.Kill();
@@ -82,7 +82,7 @@ end;
 // Static Methods
 //
 
-class method Process.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
+class method Task.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
 begin
   using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
     lTask.Start();
@@ -91,20 +91,20 @@ begin
   end;
 end;
 
-class method Process.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer;
+class method Task.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer;
 begin
   var lIgnoreStdErr: String;
   result := Run(aCommand, aArguments, aEnvironment, aWorkingDirectory, out aStdOut, out lIgnoreStdErr);
 end;
 
-class method Process.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
+class method Task.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
 begin
   {$IF ECHOES}
   using lDone := new System.Threading.AutoResetEvent(false) do begin
     var lStdOut := new StringBuilder;
     var lStdErr := new StringBuilder;
     var lResult: Integer;
-    Process.RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, method (aLine: String) begin
+    Task.RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, method (aLine: String) begin
       lStdOut.Append(Environment.LineBreak+aLine);
     end, method (aLine: String) begin
       lStdErr.Append(Environment.LineBreak+aLine);
@@ -143,7 +143,7 @@ begin
   {$ENDIF}
 end;
 
-class method Process.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer;
+class method Task.Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer;
 begin
   using lTask := RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, aStdOutCallback, aStdErrCallback) do begin
     lTask.WaitFor();
@@ -151,7 +151,7 @@ begin
   end;
 end;
 
-class method Process.RunAsync(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
+class method Task.RunAsync(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Task;
 begin
   var lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   result := lTask;
@@ -253,7 +253,7 @@ begin
 end;
 
 {$IF TOFFEE}
-class method Process.processStdOutData(rawString: String) lastIncompleteLogLine(out lastIncompleteLogLine: String) callback(callback: block(aLine: string));
+class method Task.processStdOutData(rawString: String) lastIncompleteLogLine(out lastIncompleteLogLine: String) callback(callback: block(aLine: string));
 begin
   if length(rawString) > 0 then begin
     if length(rawString) > 0 then begin
@@ -274,10 +274,10 @@ begin
 end;
 {$ENDIF}
 
-class method Process.SetUpTask(aCommand: String; aArguments: array of String; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
+class method Task.SetUpTask(aCommand: String; aArguments: array of String; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Task;
 begin
   {$IF ECHOES}
-  var lResult := new System.Diagnostics.Process();
+  var lResult := new PlatformTask();
   lResult.StartInfo := new System.Diagnostics.ProcessStartInfo();
   lResult.StartInfo.FileName := aCommand;
   lResult.StartInfo.CreateNoWindow := true;
@@ -291,7 +291,7 @@ begin
   lResult.EnableRaisingEvents := true;
   result := lResult;
   {$ELSEIF TOFFEE}
-  var lResult := new NSTask();
+  var lResult := new PlatformTask();
   lResult.launchPath := aCommand;
   if assigned(aArguments) then
     lResult.arguments := aArguments.ToList();
@@ -303,14 +303,14 @@ begin
   {$ENDIF}
 end;
 
-class method Process.QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
+class method Task.QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
 begin
   result := aArgument;
   if result.Contains(" ") then
     result := '"'+result.Replace('"', '\"')+'"'
 end;
 
-class method Process.SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable array of String;
+class method Task.SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable array of String;
 begin
   var lResult := new List<String>;
   var lCurrent: String := ""; // why is this needed for lCurrent to not become an NSString?
@@ -343,7 +343,7 @@ begin
   result := lResult.ToArray;
 end;
 
-class method Process.JoinAndQuoteArgumentsForCommandLine(aArguments: not nullable array of String): not nullable String;
+class method Task.JoinAndQuoteArgumentsForCommandLine(aArguments: not nullable array of String): not nullable String;
 begin
   result := "";
   for each a in aArguments do begin
@@ -353,7 +353,7 @@ begin
   end;
 end;
 
-class method Process.StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable array of String): not nullable String;
+class method Task.StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable array of String): not nullable String;
 begin
   if aCommand.Contains(" ") then
     aCommand := String.Format('"{0}"', aCommand);
