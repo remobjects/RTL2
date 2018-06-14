@@ -15,10 +15,6 @@ type
   PlatformTask = public Foundation.NSTask;
   {$ENDIF}
 
-  [Obsolete("Use Task instead, this is an alias")]
-  Process = public class(Task)
-  end;
-
   {$IF COOPER OR ISLAND}[Warning("is not implemented for all platforms")]{$ENDIF}
   Task = public class {$IF ECHOES OR TOFFEE}mapped to PlatformTask{$ENDIF}
   private
