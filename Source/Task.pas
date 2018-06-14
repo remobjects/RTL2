@@ -16,7 +16,8 @@ type
   {$ENDIF}
 
   [Obsolete("Use Process instead, this is an alias")]
-  Task = public Process;
+  Task = public class(Process)
+  end;
 
   {$IF COOPER OR ISLAND}[Warning("is not implemented for all platforms")]{$ENDIF}
   Process = public class {$IF ECHOES OR TOFFEE}mapped to PlatformTask{$ENDIF}
