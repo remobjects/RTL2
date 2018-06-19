@@ -372,6 +372,8 @@ begin
     exit OperatingSystem.Windows;
     {$ELSEIF WEBASSEMBLY}
     exit OperatingSystem.Browser;
+    {$ELSEIF DARWIN}
+    exit OperatingSystem.macOS; // for now
     {$ELSE}
     exit OperatingSystem.Windows;
       {$ERROR Unsupported Island platform}

@@ -58,17 +58,22 @@ type
     {$IF COOPER}
     var Connection: java.net.HttpURLConnection;
     constructor(aConnection: java.net.HttpURLConnection);
-    {$ELSEIF ECHOES}
+    {$ENDIF}
+    {$IF ECHOES}
     var Response: HttpWebResponse;
     constructor(aResponse: HttpWebResponse);
-    {$ELSEIF ISLAND AND WINDOWS}
+    {$ENDIF}
+    {$IF ISLAND}
+    var Data: MemoryStream; readonly;
+    {$IF WINDOWS}
     var Request: rtl.HINTERNET;
-    var Data: MemoryStream; readonly;
     constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
-    {$ELSEIF ISLAND AND LINUX}
-    var Data: MemoryStream; readonly;
+    {$ENDIF}
+    {$IF LINUX}
     constructor(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
-    {$ELSEIF TOFFEE}
+    {$ENDIF}
+    {$ENDIF}
+    {$IF TOFFEE}
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
     {$ENDIF}
@@ -241,7 +246,8 @@ begin
     inc(i);
   end;
 end;
-{$ELSEIF ECHOES}
+{$ENDIF}
+{$IF ECHOES}
 constructor HttpResponse(aResponse: HttpWebResponse);
 begin
   Response := aResponse;
@@ -255,7 +261,9 @@ begin
     Headers[k.ToString] := aResponse.Headers[k];
   {$ENDIF}
 end;
-{$ELSEIF ISLAND AND WINDOWS}
+{$ENDIF}
+{$IF ISLAND}
+{$IF WINDOWS}
 constructor HttpResponse(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
 begin
   Request := aRequest;
@@ -284,14 +292,17 @@ begin
     end;
   end;
 end;
-{$ELSEIF ISLAND AND LINUX}
+{$ENDIF}
+{$IF LINUX}
 constructor HttpResponse(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
 begin
   Data := aData;
   Code := aCode;
   Headers := aHeaders;
 end;
-{$ELSEIF TOFFEE}
+{$ENDIF}
+{$ENDIF}
+{$IF TOFFEE}
 constructor HttpResponse(aData: NSData; aResponse: NSHTTPURLResponse);
 begin
   Data := aData;

@@ -54,6 +54,11 @@
     <SubMode>Linux</SubMode>
     <Enabled>True</Enabled>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin' ">
+    <Mode>Island</Mode>
+    <SubMode>Darwin</SubMode>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
     <Mode>Island</Mode>
     <SubMode>Android</SubMode>
