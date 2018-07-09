@@ -63,7 +63,12 @@ type
 
     constructor (aMessage: String; params aParams: array of Object);
     begin
-      result := new Exception(String.Format(aMessage, aParams));
+      result := new Exception(PlatformString(String.Format(aMessage, aParams)));
+    end;
+
+    constructor (aMessage: String);
+    begin
+      result := new Exception(PlatformString(aMessage));
     end;
 
     property CallStack: ImmutableList<String> read _GetCallStack;
