@@ -185,7 +185,7 @@ begin
   else
     result := GetUserName();
   {$ELSEIF TOFFEE}
-    {$IF OSX}
+    {$IF MACOS}
     result := NSHost.currentHost.localizedName;
     if result.EndsWith(".local") then
       result := result.Substring(0, length(result)-6);

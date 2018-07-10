@@ -643,8 +643,8 @@ method XmlDocument.GetCurrentCursorPosition(aRow: Integer; aColumn: Integer): Xm
 begin
   var lPosition: XmlPositionKind;
   var lElement := NearestOpenTag(aRow, aColumn, out lPosition);
-  if lElement = nil then exit nil;
   result := new XmlDocCurrentPosition;
+  if lElement = nil then exit;
   result.CurrentTagIndex := lElement.ChildIndex;
   if lElement.LocalName = "" then  begin
     result.CurrentTag := nil;
