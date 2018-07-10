@@ -52,22 +52,24 @@ begin
   Token := JsonTokenKind.BOF;
 end;
 
-method JsonTokenizer.CharIsIdentifier(C: Char): Boolean;
+method JsonTokenizer.CharIsIdentifier(C: Char): Boolean; inline;
 begin
-  exit (((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or (C = '_'));
+  result := (((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or (C = '_'));
 end;
 
-method JsonTokenizer.CharIsWhitespace(C: Char): Boolean;
+method JsonTokenizer.CharIsWhitespace(C: Char): Boolean; inline;
 begin
-  exit (C = ' ') or (C = #13) or (C = #10) or (C = #9);
+  result := (C = ' ') or (C = #13) or (C = #10) or (C = #9);
 end;
 
 method JsonTokenizer.Parse;
 begin
-  if CharIsIdentifier(fData[fPos]) then
+  var ch := fData[fPos];
+  if CharIsIdentifier(ch) then begin
     ParseIdentifier
+  end
   else begin
-    case fData[fPos] of
+    case ch of
       ' ', #9, #13, #10: ParseWhitespace;
       JsonConsts.VALUE_SEPARATOR: begin
              fLength := 1;
