@@ -436,7 +436,7 @@ begin
   //JavaFile.setLastModified(...)
   //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
   {$ELSEIF ECHOES}
-  System.IO.File.SetLastWriteTimeUtc(mapped, aDateTime);
+  System.IO.Directory.SetLastWriteTimeUtc(mapped, aDateTime);
   {$ELSEIF ISLAND}
   {$WARNING Not implemented}
   //IslandFolder.DateModified := aDateTime;
