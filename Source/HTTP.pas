@@ -566,6 +566,7 @@ begin
     var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
     lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
+    lConnection.ConnectTimeout := aRequest.Timeout*1000;
     for each k in aRequest.Headers.Keys do
       lConnection.setRequestProperty(k, aRequest.Headers[k]);
 
@@ -652,6 +653,7 @@ begin
     //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     nsUrlRequest.allowsCellularAccess := aRequest.AllowCellularAccess;
     nsUrlRequest.HTTPMethod := StringForRequestType(aRequest.Mode);
+    nsUrlRequest.timeoutInterval := aRequest.Timeout;
 
     if assigned(aRequest.Content) then
       nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary();
@@ -698,6 +700,7 @@ begin
   var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
   lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
+  lConnection.ConnectTimeout := aRequest.Timeout*1000;
   for each k in aRequest.Headers.Keys do
     lConnection.setRequestProperty(k, aRequest.Headers[k]);
 
@@ -914,6 +917,7 @@ begin
   //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
   nsUrlRequest.allowsCellularAccess := aRequest.AllowCellularAccess;
   nsUrlRequest.HTTPMethod := StringForRequestType(aRequest.Mode);
+  nsUrlRequest.timeoutInterval := aRequest.Timeout;
 
   if assigned(aRequest.Content) then
     nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary();
