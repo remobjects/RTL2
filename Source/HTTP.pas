@@ -18,7 +18,7 @@ type
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
 
-    property Timeout: Integer := 30; // Seconds
+    property Timeout: Double := 10.0; // Seconds
 
     constructor(aUrl: not nullable Url); // log
     constructor(aUrl: not nullable Url; aMode: HttpRequestMode); // log  := HttpRequestMode.Ge
@@ -566,7 +566,7 @@ begin
     var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
     lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
-    lConnection.ConnectTimeout := aRequest.Timeout*1000;
+    lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
     for each k in aRequest.Headers.Keys do
       lConnection.setRequestProperty(k, aRequest.Headers[k]);
 
@@ -593,7 +593,7 @@ begin
     webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     {$ENDIF}
     webRequest.Method := StringForRequestType(aRequest.Mode);
-    webRequest.Timeout := aRequest.Timeout * 1000;
+    webRequest.Timeout := Integer(aRequest.Timeout*1000);
 
     for each k in aRequest.Headers.Keys do
       webRequest.Headers[k] := aRequest.Headers[k];
@@ -700,7 +700,7 @@ begin
   var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
   lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
-  lConnection.ConnectTimeout := aRequest.Timeout*1000;
+  lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
   for each k in aRequest.Headers.Keys do
     lConnection.setRequestProperty(k, aRequest.Headers[k]);
 
@@ -721,7 +721,7 @@ begin
     webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     {$ENDIF}
     webRequest.Method := StringForRequestType(aRequest.Mode);
-    webRequest.Timeout := aRequest.Timeout * 1000;
+    webRequest.Timeout := Integer(aRequest.Timeout*1000);
 
     for each k in aRequest.Headers.Keys do
       webRequest.Headers[k] := aRequest.Headers[k];
