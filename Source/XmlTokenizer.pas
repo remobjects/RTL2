@@ -128,15 +128,16 @@ begin
           '?': begin
             if (fData.Length >= fPos+5{XmlConsts.TAG_DECL_OPEN.Length}) and
               (new String(fData,fPos,5{XmlConsts.TAG_DECL_OPEN.Length})  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+5{XmlConsts.TAG_DECL_OPEN.Length}])) then begin
-              if fPos = 0 then begin Token := XmlTokenKind.DeclarationStart;
-                fLength:= 5;//XmlConsts.TAG_DECL_OPEN.Length;
-                Value := nil;
-              end
+              //if fPos = 0 then begin 
+              Token := XmlTokenKind.DeclarationStart;
+              fLength:= 5;//XmlConsts.TAG_DECL_OPEN.Length;
+              Value := nil;
+              {end
               else begin
                 Token := XmlTokenKind.SyntaxError;
                 Value := "No information or whitespaces before the declaration are allowed";
                 //raise new Exception('No information or whitespaces before the declaration are allowed');
-              end
+              end}
             end
             else begin
               Token := XmlTokenKind.ProcessingInstruction;
