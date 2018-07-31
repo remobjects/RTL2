@@ -1372,7 +1372,7 @@ begin
   var CloseTagIndent := false;
   var lEmptyLines := "";
   if aSaveFormatted and (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText)  and not PreserveSpace then begin
-    var WSValue := "";
+    var WSValue: String := "";
     var WasText := false;
     var AddNewLine := lFormat;
     for each aNode in fNodes do begin
