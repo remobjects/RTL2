@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT WEBASSEMBLY}
-
 interface
 
 type
@@ -84,7 +82,6 @@ type
     property Length: Int64 read GetLength; override;
     property Position: Int64 read GetPosition write SetPosition; override;
     {$ENDIF}
-    //method ToPlatformStream: PlatformStream;
     method ToArray: array of Byte;
     method Close; override;
     method Flush; override;
@@ -97,6 +94,7 @@ type
     property CanWrite: Boolean read GetCanWrite; override;
   end;
 
+  {$IF NOT WEBASSEMBLY}
   PlatformInternalFileStream = public {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
 
   FileStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
@@ -129,6 +127,7 @@ type
     property CanSeek: Boolean read GetCanSeek; override;
     property CanWrite: Boolean read GetCanWrite; override;
   end;
+  {$ENDIF}
 
   BinaryStream = public class
   private
@@ -465,15 +464,6 @@ begin
 end;
 {$ENDIF}
 
-/*method MemoryStream.ToPlatformStream: PlatformStream;
-begin
-  {$IF TOFFEE OR COOPER}
-  result := fInternalStream;
-  {$ELSE}
-  result := fPlatformStream as PlatformBinary;
-  {$ENDIF}
-end;*/
-
 method MemoryStream.ToArray: array of Byte;
 begin
   result := GetBytes;
@@ -512,6 +502,7 @@ begin
   end;
 end;
 
+{$IF NOT WEBASSEMBLY}
 method FileStream.GetCanRead: Boolean;
 begin
   result := true;
@@ -676,6 +667,7 @@ begin
   fInternalStream.synchronizeFile;
   {$ENDIF}
 end;
+{$ENDIF}
 
 constructor BinaryStream(aStream: Stream);
 begin
@@ -956,7 +948,5 @@ begin
   var lBytes := fEncoding.GetBytes(aString);
   fStream.Write(lBytes, 0, length(lBytes));
 end;
-
-{$ENDIF}
 
 end.

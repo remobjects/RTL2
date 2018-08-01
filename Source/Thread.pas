@@ -19,7 +19,6 @@ type
   private
     method GetPriority: ThreadPriority;
     method SetPriority(Value: ThreadPriority);
-    method GetCallStack: List<String>;
     {$IF TOFFEE}
     method GetThreadID: IntPtr;
     {$ENDIF}
@@ -52,15 +51,46 @@ type
     {$ENDIF}
 
     property Priority: ThreadPriority read GetPriority write SetPriority;
-    property CallStack: List<String> read GetCallStack;
 
     {$IF TOFFEE}class property MainThread: Thread read mapped.mainThread;{$ENDIF}
 
-    {$IF NOT ISLAND}
-    class property CurrentThread: Thread read mapped.currentThread;
-    {$ENDIF}
+    {$IF ISLAND}[Error("Not Implemented for Island")]{$ENDIF}
+    class property CurrentThread: Thread read {$IF NOT ISLAND}mapped.currentThread{$ELSE}nil{$ENDIF};
 
     class method &Async(aBlock: block);
+    begin
+      async aBlock();
+    end;
+
+    {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
+    {$IF ECHOES}[Warning("Not Implemented for Echoes")]{$ENDIF}
+    property CallStack: List<String> read
+    begin
+      {$IF COOPER}
+      result := mapped.getStackTrace().ToList() as not nullable;
+      {$ELSEIF ECHOES}
+      result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
+      {$ELSEIF ISLAND}
+      result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
+      {$ELSEIF TOFFEE}
+      result := mapped.callStackSymbols as List<String>;
+      {$ENDIF}
+    end;
+
+
+    {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
+    class property CurrentCallStack: not nullable ImmutableList<String> read
+    begin
+      {$IF COOPER}
+      result := new Throwable().getStackTrace().ToList() as not nullable;
+      {$ELSEIF ECHOES}
+      result := (System.Environment.StackTrace.Replace(#13, "") as String).Split(#10);
+      {$ELSEIF ISLAND}
+      result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
+      {$ELSEIF TOFFEE}
+      result := NSThread.callStackSymbols;
+      {$ENDIF}
+    end;
   end;
 
   ThreadState = public enum(
@@ -157,21 +187,6 @@ begin
 
 end;
 {$ENDIF}
-
-method Thread.GetCallStack: List<String>;
-begin
-  {$IF COOPER}
-  {$ELSEIF ECHOES}
-  {$ELSEIF TOFFEE}
-  result := mapped.callStackSymbols as List<String>;
-  {$ENDIF}
-end;
-
-
-class method Thread.Async(aBlock: block);
-begin
-  async aBlock();
-end;
 
 {$ENDIF}
 

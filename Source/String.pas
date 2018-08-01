@@ -479,7 +479,7 @@ end;
 
 method String.Contains(Value: String): Boolean;
 begin
-  if Value.Length = 0 then
+  if RemObjects.Elements.System.length(Value) = 0 then
     exit true;
 
   {$IF COOPER OR ECHOES OR ISLAND}
@@ -1031,7 +1031,7 @@ end;
 
 method String.StartsWith(Value: String; IgnoreCase: Boolean): Boolean;
 begin
-   if Value.Length = 0 then
+  if RemObjects.Elements.System.length(Value) = 0 then
     exit true;
 
   {$IF COOPER}
@@ -1068,7 +1068,7 @@ end;
 
 method String.EndsWith(Value: String; IgnoreCase: Boolean): Boolean;
 begin
-  if Value.Length = 0 then
+  if RemObjects.Elements.System.length(Value) = 0 then
     exit true;
 
   {$IF COOPER}
@@ -1170,7 +1170,7 @@ end;
 {$IF COOPER}
 operator String.Implicit(aCharSequence: CharSequence): String;
 begin
-  result := aCharSequence.toString()
+  result := aCharSequence:toString()
 end;
 
 operator String.Implicit(aString: String): CharSequence;

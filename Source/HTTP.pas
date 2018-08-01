@@ -18,6 +18,8 @@ type
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
 
+    property Timeout: Double := 10.0; // Seconds
+
     constructor(aUrl: not nullable Url); // log
     constructor(aUrl: not nullable Url; aMode: HttpRequestMode); // log  := HttpRequestMode.Ge
     operator Implicit(aUrl: not nullable Url): HttpRequest;
@@ -58,17 +60,22 @@ type
     {$IF COOPER}
     var Connection: java.net.HttpURLConnection;
     constructor(aConnection: java.net.HttpURLConnection);
-    {$ELSEIF ECHOES}
+    {$ENDIF}
+    {$IF ECHOES}
     var Response: HttpWebResponse;
     constructor(aResponse: HttpWebResponse);
-    {$ELSEIF ISLAND AND WINDOWS}
+    {$ENDIF}
+    {$IF ISLAND}
+    var Data: MemoryStream; readonly;
+    {$IF WINDOWS}
     var Request: rtl.HINTERNET;
-    var Data: MemoryStream; readonly;
     constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
-    {$ELSEIF ISLAND AND LINUX}
-    var Data: MemoryStream; readonly;
+    {$ENDIF}
+    {$IF LINUX}
     constructor(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
-    {$ELSEIF TOFFEE}
+    {$ENDIF}
+    {$ENDIF}
+    {$IF TOFFEE}
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
     {$ENDIF}
@@ -241,7 +248,8 @@ begin
     inc(i);
   end;
 end;
-{$ELSEIF ECHOES}
+{$ENDIF}
+{$IF ECHOES}
 constructor HttpResponse(aResponse: HttpWebResponse);
 begin
   Response := aResponse;
@@ -255,7 +263,9 @@ begin
     Headers[k.ToString] := aResponse.Headers[k];
   {$ENDIF}
 end;
-{$ELSEIF ISLAND AND WINDOWS}
+{$ENDIF}
+{$IF ISLAND}
+{$IF WINDOWS}
 constructor HttpResponse(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
 begin
   Request := aRequest;
@@ -275,8 +285,8 @@ begin
           var lKey := k.Substring(0, lPos - 1).Trim;
           var lValue := k.Substring(lPos + 1).Trim;
           // Allow multiple Set-Cookie
-          if (lkey = 'Set-Cookie') and Headers.ContainsKey(lkey) then
-              Headers[lkey] := Headers[lkey]+','+lValue
+          if (lKey = 'Set-Cookie') and Headers.ContainsKey(lKey) then
+              Headers[lKey] := Headers[lKey]+','+lValue
           else
               Headers[lKey] := lValue;
         end;
@@ -284,14 +294,17 @@ begin
     end;
   end;
 end;
-{$ELSEIF ISLAND AND LINUX}
+{$ENDIF}
+{$IF LINUX}
 constructor HttpResponse(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
 begin
   Data := aData;
   Code := aCode;
   Headers := aHeaders;
 end;
-{$ELSEIF TOFFEE}
+{$ENDIF}
+{$ENDIF}
+{$IF TOFFEE}
 constructor HttpResponse(aData: NSData; aResponse: NSHTTPURLResponse);
 begin
   Data := aData;
@@ -316,10 +329,10 @@ begin
     contentCallback(new HttpResponseContent<String>(Content := responseString))
   end;
   {$ELSEIF ISLAND}
-  Task.Run(() -> begin
+  async begin
     var lResponseString := aEncoding.GetString(Data.ToArray);
     contentCallback(new HttpResponseContent<String>(Content := lResponseString));
-  end);
+  end;
   {$ELSEIF TOFFEE}
   var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
   if assigned(s) then
@@ -351,10 +364,10 @@ begin
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
   {$ELSEIF ISLAND}
-  Task.Run(() -> begin
+  async begin
     var allData := new Binary(Data.ToArray);
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
-  end);
+  end;
   {$ELSEIF TOFFEE}
   contentCallback(new HttpResponseContent<ImmutableBinary>(Content := Data.mutableCopy));
   {$ENDIF}
@@ -428,7 +441,7 @@ begin
     end;
   end;
   {$ELSEIF ISLAND}
-  Task.Run(() -> begin
+  async begin
     try
       var lStream := new FileStream(aTargetFile, FileOpenMode.Create or FileOpenMode.ReadWrite);
       Data.CopyTo(lStream);
@@ -438,7 +451,7 @@ begin
       on E: Exception do
         contentCallback(new HttpResponseContent<File>(Exception := E));
     end;
-  end);
+  end;
   {$ELSEIF TOFFEE}
   async begin
     var error: NSError;
@@ -553,6 +566,7 @@ begin
     var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
     lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
+    lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
     for each k in aRequest.Headers.Keys do
       lConnection.setRequestProperty(k, aRequest.Headers[k]);
 
@@ -562,7 +576,7 @@ begin
     end;
 
     try
-      var lResponse := if lConnection.ResponseCode >= 300 then new HttpResponse withException(new IOException("Unable to complete request. Error code: {0}", lConnection.responseCode)) else new HttpResponse(lConnection);
+      var lResponse := if lConnection.ResponseCode >= 300 then new HttpResponse withException(new HttpException(lConnection.responseCode)) else new HttpResponse(lConnection);
       responseCallback(lResponse);
     except
       on E: Exception do
@@ -579,6 +593,7 @@ begin
     webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     {$ENDIF}
     webRequest.Method := StringForRequestType(aRequest.Mode);
+    webRequest.Timeout := Integer(aRequest.Timeout*1000);
 
     for each k in aRequest.Headers.Keys do
       webRequest.Headers[k] := aRequest.Headers[k];
@@ -609,7 +624,7 @@ begin
 
       try
         var webResponse := webRequest.EndGetResponse(ar) as HttpWebResponse;
-        var response := if webResponse.StatusCode >= 300 then new HttpResponse withException(new IOException("Unable to complete request. Error code: {0}", webResponse.StatusCode)) else new HttpResponse(webResponse);
+        var response := if webResponse.StatusCode >= 300 then new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer)) else new HttpResponse(webResponse);
         ResponseCallback(response);
       except
         on E: Exception do
@@ -622,7 +637,7 @@ begin
       ResponseCallback(new HttpResponse withException(E));
   end;
   {$ELSEIF ISLAND}
-  Task.Run(() -> begin
+  async begin
     try
       var lResponse := ExecuteRequestSynchronous(aRequest, true);
       ResponseCallback(lResponse);
@@ -630,7 +645,7 @@ begin
       on E: Exception do
         ResponseCallback(new HttpResponse withException(E));
     end;
-  end);
+  end;
   {$ELSEIF TOFFEE}
   try
     var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
@@ -638,6 +653,7 @@ begin
     //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     nsUrlRequest.allowsCellularAccess := aRequest.AllowCellularAccess;
     nsUrlRequest.HTTPMethod := StringForRequestType(aRequest.Mode);
+    nsUrlRequest.timeoutInterval := aRequest.Timeout;
 
     if assigned(aRequest.Content) then
       nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary();
@@ -649,7 +665,7 @@ begin
 
       var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
       if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
-        var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new IOException("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode)) else new HttpResponse(data, nsHttpUrlResponse);
+        var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new HttpException(nsHttpUrlResponse.statusCode)) else new HttpResponse(data, nsHttpUrlResponse);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
       end else if assigned(error) then begin
         var response := new HttpResponse withException(new RTLException withError(error));
@@ -684,6 +700,7 @@ begin
   var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
   lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
+  lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
   for each k in aRequest.Headers.Keys do
     lConnection.setRequestProperty(k, aRequest.Headers[k]);
 
@@ -704,6 +721,7 @@ begin
     webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     {$ENDIF}
     webRequest.Method := StringForRequestType(aRequest.Mode);
+    webRequest.Timeout := Integer(aRequest.Timeout*1000);
 
     for each k in aRequest.Headers.Keys do
       webRequest.Headers[k] := aRequest.Headers[k];
@@ -899,6 +917,7 @@ begin
   //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
   nsUrlRequest.allowsCellularAccess := aRequest.AllowCellularAccess;
   nsUrlRequest.HTTPMethod := StringForRequestType(aRequest.Mode);
+  nsUrlRequest.timeoutInterval := aRequest.Timeout;
 
   if assigned(aRequest.Content) then
     nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary();

@@ -13,7 +13,7 @@ type
     {$ENDIF}
 
     {$IF COOPER}
-    property JavaFile: java.io.File read new java.io.File(mapped);
+    property JavaFile: java.io.File read new java.io.File(mapped); inline;
     {$ELSEIF ISLAND AND NOT WEBASSEMBLY}
     property IslandFile: RemObjects.Elements.System.File read new RemObjects.Elements.System.File(mapped);
     {$ENDIF}
@@ -24,8 +24,7 @@ type
     method CopyTo(NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
     method CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := true): not nullable File;
     method Delete;
-    {$IF NOT COOPER}method Exists: Boolean; inline;{$ENDIF}
-    {$IF COOPER}method Exists: Boolean; {$ENDIF}
+    method Exists: Boolean; inline;
     method Move(NewPathAndName: not nullable File): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
     method Open(Mode: FileOpenMode): not nullable FileHandle;
@@ -139,11 +138,15 @@ begin
   aFileName.Delete()
 end;
 
-{$IF NOT COOPER}
 method File.Exists: Boolean;
 begin
-  if length(mapped) = 0 then exit false;
-  {$IF ECHOES}
+  if length(mapped) = 0 then
+    exit false;
+  {$IF COOPER}
+  result := JavaFile.exists;
+  {$ELSEIF ECHOES}
+  if mapped.Contains("*") or mapped.Contains("?") then
+    exit false;
   result := System.IO.File.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFile.Exists;
@@ -152,15 +155,6 @@ begin
   result := NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) and not isDirectory;
   {$ENDIF}
 end;
-{$ENDIF}
-
-{$IF COOPER}
-method File.Exists: Boolean;
-begin
-  if length(mapped) = 0 then exit false;
-  result := JavaFile.exists;
-end;
-{$ENDIF}
 
 class method File.Exists(aFileName: nullable File): Boolean;
 begin

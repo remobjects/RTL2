@@ -5,8 +5,11 @@ interface
 type
   ImmutableDictionary<T, U> = public class mapped to
   {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary{$ENDIF}
-  {$IFDEF TOFFEE}
+  {$IF TOFFEE}
   where T is class, U is class;
+  {$ENDIF}
+  {$IF ECHOES}
+  where U is class;
   {$ENDIF}
   private
     method GetKeys: not nullable ImmutableList<T>;
@@ -37,8 +40,11 @@ type
   end;
 
   Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary{$ENDIF}
-  {$IFDEF TOFFEE}
+  {$IF TOFFEE}
   where T is class, U is class;
+  {$ENDIF}
+  {$IF ECHOES}
+  where U is class;
   {$ENDIF}
   private
     method SetItem(Key: not nullable T; Value: nullable U); inline;
@@ -217,7 +223,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := UniqueMutableCopy();
   {$ELSEIF TOFFEE}
-  result := mapped.copy;
+  result := mapped.copy as not nullable;
   {$ENDIF}
 end;
 

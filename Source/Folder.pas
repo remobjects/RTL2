@@ -218,6 +218,8 @@ begin
   {$IF COOPER}
   result := JavaFile.exists;
   {$ELSEIF ECHOES}
+  if mapped.Contains("*") or mapped.Contains("?") then
+    exit false;
   result := System.IO.Directory.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFolder.Exists();
@@ -434,7 +436,7 @@ begin
   //JavaFile.setLastModified(...)
   //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
   {$ELSEIF ECHOES}
-  System.IO.File.SetLastWriteTimeUtc(mapped, aDateTime);
+  System.IO.Directory.SetLastWriteTimeUtc(mapped, aDateTime);
   {$ELSEIF ISLAND}
   {$WARNING Not implemented}
   //IslandFolder.DateModified := aDateTime;

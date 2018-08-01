@@ -1,20 +1,22 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT WEBASSEMBLY and (NOT TOFFEE OR MACOS)}
+
 interface
 
-{$IF ECHOES OR (TOFFEE AND MACOS)}
 type
   {$IF JAVA}
-  PlatformTask = {$ERROR Unsupported platform};
+  //PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
   PlatformTask = public System.Diagnostics.Process;
   {$ELSEIF ISLAND}
-  PlatformTask = {$ERROR Unsupported platform};
+  //PlatformTask = public RemObjects.Elements.System.Task;
   {$ELSEIF TOFFEE}
   PlatformTask = public Foundation.NSTask;
   {$ENDIF}
 
-  Task = public class mapped to PlatformTask
+  {$IF COOPER OR ISLAND}[Warning("is not implemented for all platforms")]{$ENDIF}
+  Task = public class {$IF ECHOES OR TOFFEE}mapped to PlatformTask{$ENDIF}
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
     class method SetUpTask(aCommand: String; aArguments: array of String; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Task;
@@ -32,8 +34,9 @@ type
     method WaitFor; inline;
     method Start; inline;
     method Stop; inline;
-    property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ENDIF};
-    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF TOFFEE}mapped.isRunning{$ENDIF};
+
+    property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ELSE}0{$ENDIF};
+    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF TOFFEE}mapped.isRunning{$ELSE}false{$ENDIF};
 
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer;
@@ -41,9 +44,8 @@ type
     class method Run(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer;
     class method RunAsync(aCommand: not nullable String; aArguments: array of String := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Task;
   end;
-{$ENDIF}
+
 implementation
-{$IF ECHOES OR (TOFFEE AND MACOS)}
 
 method Task.WaitFor;
 begin
@@ -111,7 +113,7 @@ begin
     aStdErr := lStdErr.ToString();
     result := lResult;
   end;
-  {$ELSE IF TOFFEE}
+  {$ELSEIF TOFFEE}
   using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
     (lTask as NSTask).standardOutput := NSPipe.pipe();
     (lTask as NSTask).standardError := NSPipe.pipe();
@@ -271,7 +273,7 @@ end;
 class method Task.SetUpTask(aCommand: String; aArguments: array of String; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Task;
 begin
   {$IF ECHOES}
-  var lResult := new System.Diagnostics.Process();
+  var lResult := new PlatformTask();
   lResult.StartInfo := new System.Diagnostics.ProcessStartInfo();
   lResult.StartInfo.FileName := aCommand;
   lResult.StartInfo.CreateNoWindow := true;
@@ -283,8 +285,9 @@ begin
     lResult.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
   lResult.StartInfo.UseShellExecute := false;
   lResult.EnableRaisingEvents := true;
+  result := lResult;
   {$ELSEIF TOFFEE}
-  var lResult := new NSTask();
+  var lResult := new PlatformTask();
   lResult.launchPath := aCommand;
   if assigned(aArguments) then
     lResult.arguments := aArguments.ToList();
@@ -292,8 +295,8 @@ begin
     lResult.environment := aEnvironment;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
     lResult.currentDirectoryPath := aWorkingDirectory;
-  {$ENDIF}
   result := lResult;
+  {$ENDIF}
 end;
 
 class method Task.QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;

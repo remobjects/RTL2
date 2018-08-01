@@ -9,6 +9,8 @@ Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Echoes.Standar
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Android", "Elements.RTL.Island.Android.elements", "{CF39233B-8FEB-470C-9E41-4C1944473C1C}"
 EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Darwin", "Elements.RTL.Island.Darwin.elements", "{731DF15E-9EE5-452A-A74D-BCBC95AFAA23}"
+EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Linux", "Elements.RTL.Island.Linux.elements", "{163F84DC-DC6B-4535-994F-0865D3A84D20}"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.WebAssembly", "Elements.RTL.Island.WebAssembly.elements", "{E663418D-2453-4C69-8362-02CC6ABEAFA7}"
@@ -47,6 +49,10 @@ Global
 		{CF39233B-8FEB-470C-9E41-4C1944473C1C}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{CF39233B-8FEB-470C-9E41-4C1944473C1C}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
 		{CF39233B-8FEB-470C-9E41-4C1944473C1C}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{731DF15E-9EE5-452A-A74D-BCBC95AFAA23}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{731DF15E-9EE5-452A-A74D-BCBC95AFAA23}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{731DF15E-9EE5-452A-A74D-BCBC95AFAA23}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{731DF15E-9EE5-452A-A74D-BCBC95AFAA23}.Release|AnyCPU.Build.0 = Release|AnyCPU
 		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Release|AnyCPU.ActiveCfg = Release|AnyCPU

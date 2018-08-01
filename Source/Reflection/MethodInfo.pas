@@ -52,7 +52,7 @@ type
     property Parameters: array of Parameter read getParameters;
     {$ENDIF}
     {$IF TOFFEE}
-    method initWithClass(aClass: &Type) &method(aMethod: rtl.Method): instancetype;
+    constructor withClass(aClass: &Type) &method(aMethod: rtl.Method);
     property Name: String read NSStringFromSelector(&Selector);
     property &Selector: SEL read method_getName(fMethod);
     property ReturnType: &Type read getReturnType;
@@ -68,14 +68,10 @@ type
 implementation
 
 {$IF TOFFEE}
-method &Method.initWithClass(aClass: &Type) &method(aMethod: rtl.Method): instancetype;
+constructor &Method withClass(aClass: &Type) &method(aMethod: rtl.Method);
 begin
-  self := inherited init;
-  if assigned(self) then begin
-    //fClass := aClass;
-    fMethod := aMethod;
-  end;
-  result := self;
+  //fClass := aClass;
+  fMethod := aMethod;
 end;
 
 method &Method.getReturnType: &Type;

@@ -185,7 +185,7 @@ begin
   else
     result := GetUserName();
   {$ELSEIF TOFFEE}
-    {$IF OSX}
+    {$IF MACOS}
     result := NSHost.currentHost.localizedName;
     if result.EndsWith(".local") then
       result := result.Substring(0, length(result)-6);
@@ -372,6 +372,8 @@ begin
     exit OperatingSystem.Windows;
     {$ELSEIF WEBASSEMBLY}
     exit OperatingSystem.Browser;
+    {$ELSEIF DARWIN}
+    exit OperatingSystem.macOS; // for now
     {$ELSE}
     exit OperatingSystem.Windows;
       {$ERROR Unsupported Island platform}

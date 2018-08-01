@@ -135,12 +135,13 @@ implementation
 constructor XmlParser(aXmlString: String);
 begin
   Tokenizer := new XmlTokenizer(aXmlString);
+  //FormatOptions := new XmlFormattingOptions;
+  //fLineBreak := FormatOptions.NewLineString;
+  //if fLineBreak = nil then
+  if aXmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
+  else if aXmlString.IndexOf(#10) > -1 then fLineBreak := #10
+  else fLineBreak := Environment.LineBreak;
   FormatOptions := new XmlFormattingOptions;
-  fLineBreak := FormatOptions.NewLineString;
-  if fLineBreak = nil then
-    if aXmlString.IndexOf(#13#10) > -1 then fLineBreak := #13#10
-    else if aXmlString.IndexOf(#10) > -1 then fLineBreak := #10
-      else fLineBreak := Environment.LineBreak;
 end;
 
 constructor XmlParser(aXmlString: String; aOptions: XmlFormattingOptions);
@@ -161,15 +162,16 @@ begin
   Tokenizer.Next;
   result := new XmlDocument();
   result.fXmlParser := self;
-  if Tokenizer.Token = XmlTokenKind.Whitespace then begin
-    if (FormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) then
-      result.AddNode(new XmlText(Value := Tokenizer.Value));
-    Tokenizer.Next;
-  end;
-  if not Expected(out lError, XmlTokenKind.DeclarationStart, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType, XmlTokenKind.TagOpen) then begin
+  if not Expected(out lError, XmlTokenKind.DeclarationStart, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType, XmlTokenKind.TagOpen, XmlTokenKind.Comment, XmlTokenKind.Whitespace) then begin
     result.Root := new XmlElement withName('[ERROR]');
     result.ErrorInfo := lError;
     exit;
+  end;
+  if Tokenizer.Token = XmlTokenKind.Comment then begin
+    result.AddNode(new XmlComment(Value := Tokenizer.Value, NodeRange := new XmlRange(StartLine := Tokenizer.Row, StartColumn := Tokenizer.Column)));
+    Tokenizer.Next;
+    result.Nodes[result.Nodes.Count-1].NodeRange.EndLine := Tokenizer.Row;
+    result.Nodes[result.Nodes.Count-1].NodeRange.EndColumn := Tokenizer.Column;
   end;
   {result.Version := "1.0";
   result.Encoding := "utf-8";
@@ -377,7 +379,10 @@ begin
     if not Expected(out lError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd) then exit;
     Tokenizer.Next;
     if (Tokenizer.Token = XmlTokenKind.Whitespace) then Tokenizer.Next;
-    if not Expected(out lError, XmlTokenKind.EOF, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction) then exit;
+    if not Expected(out lError, XmlTokenKind.EOF, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction) then begin 
+      result.ErrorInfo := lError;
+      exit;
+    end;
     case Tokenizer.Token of
       XmlTokenKind.Comment: result.AddNode(new XmlComment(Value := Tokenizer.Value));
       XmlTokenKind.ProcessingInstruction: begin
