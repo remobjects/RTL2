@@ -320,7 +320,7 @@ begin
   end;
   {$ELSEIF ISLAND}
     {$IF WINDOWS}
-    var lGuidString := "{374DE290-123F-4565-9164-39C4925E467B}".ToCharArray(true);
+    var lGuidString := RemObjects.Elements.System.String("{374DE290-123F-4565-9164-39C4925E467B}").ToCharArray(true);
     var lGuid: rtl.GUID;
     if rtl.IIDFromString(@lGuidString[0], @lGuid) >= 0 then begin
       var lFolder: rtl.PWSTR;
