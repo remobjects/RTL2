@@ -162,7 +162,7 @@ type
 
   CurlHelper = public class
   private
-    class const LibCurl = 'libcurl.so';
+    class const LibCurl: RemObjects.Elements.System.String = 'libcurl.so';
     class var fLib: ^Void;
     class method GetSymbol(SymbolName: String): ^Void; inline;
     class constructor;

@@ -261,7 +261,7 @@ begin
   var lLen := rtl.GetTempPath(lMax, @lBuf[0]);
   result := if lLen <> 0 then new String(lBuf, 0, lLen) else '';
   {$ELSEIF POSIX}
-  var lString := 'TMPDIR';
+  var lString: RemObjects.Elements.System.String := 'TMPDIR';
   var lTmp := rtl.getenv(lString.ToAnsiChars);
   var lDir: String := '';
   if lTmp <> nil then
