@@ -1372,12 +1372,13 @@ begin
   var CloseTagIndent := false;
   var lEmptyLines := "";
   if aSaveFormatted and (aFormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText)  and not PreserveSpace then begin
-    //var TextNewLine := "";
-    var WSValue := "";
+    var WSValue: String := "";
     var WasText := false;
+    var AddNewLine := lFormat;
     for each aNode in fNodes do begin
       if (aNode.NodeType = XmlNodeType.Text) then
         if (length(XmlText(aNode).Value:Trim) > 0) then begin
+          AddNewLine := lFormat;
           lEmptyLines := "";
           if (aFormatInsideTags and aFormatOptions.NewLineForAttributes) then begin
             Sb.Append(lLineBreak);
@@ -1389,15 +1390,14 @@ begin
           end
           else begin
             WasText := true;
+            AddNewLine := lFormat;
             Sb.Append(WSValue);
             Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
             WSValue := "";
-            {if TextNewLine <> "" then
-              CloseTagIndent := true;
-            TextNewLine := "";}
           end;
         end
         else begin
+          AddNewLine := lFormat;
           WSValue := XmlText(aNode).Value;
           if aFormatOptions.PreserveEmptyLines and not WasText then begin
             lEmptyLines := GetEmptyLines(WSValue, lLineBreak);
@@ -1407,26 +1407,26 @@ begin
             lEmptyLines := GetEmptyLines(XmlText(aNode).Value);
           end;}
           if not aFormatOptions.NewLineForElements then Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions))
-          else if WasText then
+          else if WasText then begin
             Sb.Append(WSValue);
-          {else if XmlText(aNode).Value:Contains(Document.fLineBreak) then begin
-            result := result + lEmptyLines;
-            TextNewLine := Document.fLineBreak + indent + aFormatOptions.Indentation;
-          end;}
+            if WSValue.IndexOf(lLineBreak) > -1 then AddNewLine := false;
+          end;
         end;
       if (aNode.NodeType <> XmlNodeType.Text) then begin
         WasText := false;
         if lFormat then begin
           CloseTagIndent := true;
           Sb.Append(lEmptyLines);
-          Sb.Append(lLineBreak);
-          Sb.Append(indent);
-          Sb.append(aFormatOptions.Indentation);
+          if AddNewLine then begin
+            Sb.Append(lLineBreak);
+            Sb.Append(indent);
+            Sb.append(aFormatOptions.Indentation);
+          end;
           Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
         end
         else Sb.Append(aNode.tostring(aSaveFormatted, aFormatInsideTags, aFormatOptions));
         lEmptyLines := "";
-        //TextNewLine := "";
+        AddNewLine := lFormat;
       end;
     end;
   end

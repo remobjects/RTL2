@@ -1170,7 +1170,7 @@ end;
 {$IF COOPER}
 operator String.Implicit(aCharSequence: CharSequence): String;
 begin
-  result := aCharSequence.toString()
+  result := aCharSequence:toString()
 end;
 
 operator String.Implicit(aString: String): CharSequence;
