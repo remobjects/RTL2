@@ -6,7 +6,7 @@ type
   PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
   PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
 
-  ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF}
+  ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF}
   {$IFDEF TOFFEE} where T is class;{$ENDIF}
   private
     method GetItem(&Index: Integer): T;
@@ -59,7 +59,7 @@ type
     property Item[i: Integer]: T read GetItem; default;
   end;
 
-  List<T> = public class (ImmutableList<T>, sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF}
+  List<T> = public class (ImmutableList<T>, sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ENDIF}
   {$IFDEF TOFFEE}
    where T is class;
   {$ENDIF}
@@ -263,7 +263,7 @@ begin
   {$IF TOFFEE}
   var lResult := mapped.objectAtIndex(&Index);
   if lResult = NSNull.null then exit nil;
-  result := lResult;
+  result := T(lResult);
   {$ELSE}
   exit mapped[&Index];
   {$ENDIF}
@@ -570,7 +570,7 @@ begin
   //  result.Add(i as U);
   result := self.Select(x -> x as U).ToList(); {$HINT largely inefficient. rewrite}
   {$ELSEIF TOFFEE}
-  result := self as List<U>;
+  result := self as Object as List<U>;
   {$ENDIF}
 end;
 
@@ -811,7 +811,7 @@ begin
     var lValue := aSelf.objectAtIndex(i);
     if lValue = NSNull.null then
       lValue := nil;
-    result[aSelf.count - i - 1] := lValue;
+    result[aSelf.count - i - 1] := T(lValue);
   end;
 end;
 

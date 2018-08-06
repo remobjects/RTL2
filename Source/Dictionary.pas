@@ -4,7 +4,7 @@ interface
 
 type
   ImmutableDictionary<T, U> = public class mapped to
-  {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary{$ENDIF}
+  {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary<T, U>{$ENDIF}
   {$IF TOFFEE}
   where T is class, U is class;
   {$ENDIF}
@@ -39,7 +39,7 @@ type
     {$ENDIF}
   end;
 
-  Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary{$ENDIF}
+  Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary<T, U>{$ENDIF}
   {$IF TOFFEE}
   where T is class, U is class;
   {$ENDIF}
@@ -157,7 +157,7 @@ begin
   if not mapped.TryGetValue(aKey, out result) then
     result := nil; // should be unnecessary?
   {$ELSEIF TOFFEE}
-  result := mapped.objectForKey(aKey);
+  result := U(mapped.objectForKey(aKey));
   {$ENDIF}
 end;
 

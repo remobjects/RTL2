@@ -328,7 +328,7 @@ begin
     exit lResult;
 
   for i: Integer := 0 to Items.count - 1 do begin
-    var item := Combine(mapped, Items.objectAtIndex(i));
+    var item := Combine(mapped, String(Items.objectAtIndex(i)));
     if not FolderHelper.IsDirectory(item) then
       lResult.Add(File(item));
   end;
@@ -351,7 +351,7 @@ begin
     exit;
 
   for i: Integer := 0 to Items.count - 1 do begin
-    var item := Combine(mapped, Items.objectAtIndex(i));
+    var item := Combine(mapped, String(Items.objectAtIndex(i)));
     if FolderHelper.IsDirectory(item) then
       result.Add(Folder(item));
   end;

@@ -56,7 +56,7 @@ begin
   var lResult := mapped.objectAtIndex(0);
   if lResult = NSNull.null then
     lResult := nil;
-  result := lResult;
+  result := T(lResult);
   {$ENDIF}
 end;
 
@@ -126,7 +126,7 @@ begin
   var lResult := mapped.objectAtIndex(0);
   if lResult = NSNull.null then
     lResult := nil;
-  result := lResult;
+  result := T(lResult);
   mapped.removeObjectAtIndex(0);
   {$ENDIF}
 end;

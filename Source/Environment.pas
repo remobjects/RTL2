@@ -94,7 +94,7 @@ begin
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Environment.GetEnvironmentVariable(Name);
   {$ELSEIF TOFFEE}
-  exit Foundation.NSProcessInfo.processInfo:environment:objectForKey(Name);
+  exit string(Foundation.NSProcessInfo.processInfo:environment:objectForKey(Name));
   {$ENDIF}
 end;
 
@@ -244,7 +244,7 @@ begin
   {$ELSEIF ISLAND AND POSIX}
   {$WARNING Not Implemented for Island yet}
   {$ELSEIF TOFFEE}
-  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DesktopDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DesktopDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ENDIF}
 end;
 
@@ -282,7 +282,7 @@ begin
     OperatingSystem.Windows: result := System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
   end;
   {$ELSEIF TOFFEE}
-  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ENDIF}
   {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
@@ -296,7 +296,7 @@ begin
   if OS = OperatingSystem.macOS then
     result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
   {$ELSEIF TOFFEE}
-  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ENDIF}
   {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
@@ -329,7 +329,7 @@ begin
     end;
     {$ENDIF}
   {$ELSEIF TOFFEE}
-  result := NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0);
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ENDIF}
   {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
