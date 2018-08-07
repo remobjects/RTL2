@@ -184,7 +184,7 @@ begin
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.List<T>(Items);
   {$ELSEIF TOFFEE}
-  result := new Foundation.NSMutableArray withArray(Items);
+  result := new Foundation.NSMutableArray<T> withArray(Items);
   {$ENDIF}
 end;
 
