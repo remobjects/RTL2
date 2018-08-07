@@ -3,8 +3,8 @@
 interface
 
 type
-  PlatformImmutableQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
-  PlatformQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
+  PlatformImmutableQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF};
+  PlatformQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ENDIF};
 
   ImmutableQueue<T> = public class mapped to PlatformImmutableQueue<T>
   public
@@ -97,7 +97,7 @@ begin
   result := self;
   {$ELSEIF TOFFEE}
   if self is NSMutableArray then
-    result := self as NSMutableArray
+    result := self as NSMutableArray<T> 
   else
     result := mapped.mutableCopy;
   {$ENDIF}

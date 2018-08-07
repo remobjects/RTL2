@@ -244,7 +244,7 @@ begin
   result := self;
   {$ELSEIF TOFFEE}
   if self is NSMutableDictionary then
-    result := self as NSMutableDictionary
+    result := self as NSMutableDictionary<T,U>
   else
     result := mapped.mutableCopy as not nullable;
   {$ENDIF}
@@ -256,10 +256,10 @@ type
   DictionaryHelpers = static class
   public
     {$IFDEF TOFFEE}
-    method GetSequence<T, U>(aSelf: NSDictionary) : sequence of KeyValuePair<T,U>; iterator;
+    method GetSequence<T, U>(aSelf: NSDictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
     begin
       for each el in aSelf.allKeys do
-       yield new KeyValuePair<T,U>(el, aSelf[el]);
+       yield new KeyValuePair<T,U>(T(el), aSelf[el]);
     end;
     {$ENDIF}
 

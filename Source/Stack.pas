@@ -3,8 +3,8 @@
 interface
 
 type
-  PlatformImmutableStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
-  PlatformStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
+  PlatformImmutableStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF};
+  PlatformStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ENDIF};
 
   ImmutableStack<T> = public class mapped to PlatformImmutableStack<T>
   public
@@ -90,7 +90,7 @@ begin
   result := self;
   {$ELSEIF TOFFEE}
   if self is NSMutableArray then
-    result := self as NSMutableArray
+    result := self as NSMutableArray<T>
   else
     result := mapped.mutableCopy;
   {$ENDIF}

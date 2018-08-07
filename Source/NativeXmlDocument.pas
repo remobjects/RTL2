@@ -531,7 +531,7 @@ begin
   {$IF ECHOES}
   result := (fNativeXmlNode as NativeXmlElement).Elements().Select(c -> new XmlElement(c, self)) as not nullable;
   {$ELSEIF TOFFEE}
-  result := (fNativeXmlNode as NativeXmlElement).children.Where(c -> c is NativeXmlElement).Select(c -> new XmlElement(c, self));
+  result := (fNativeXmlNode as NativeXmlElement).children.Where(c -> c is NativeXmlElement).Select(c -> new XmlElement(NativeXmlNode(c), self));
   {$ENDIF}
 end;
 

@@ -3,8 +3,8 @@
 interface
 
 type
-  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ENDIF};
-  PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
+  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF};
+  PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ENDIF};
 
   ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF}
   {$IFDEF TOFFEE} where T is class;{$ENDIF}
@@ -197,7 +197,7 @@ begin
   {$ELSEIF ISLAND}
   exit new RemObjects.Elements.System.List<T>(anArray);
   {$ELSEIF TOFFEE}
-  result := Foundation.NSMutableArray.arrayWithObjects(^id(@anArray[0])) count(length(anArray));
+  result := Foundation.NSMutableArray<T>.arrayWithObjects(^T(@anArray[0])) count(length(anArray)) as List<T>;
   {$ENDIF}
 end;
 
@@ -615,7 +615,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   result := new ImmutableList<T>(self);
   {$ELSEIF TOFFEE}
-  result := mapped.copy;
+  result := mapped.copy as NSArray<T>;
   {$ENDIF}
 end;
 
@@ -634,7 +634,7 @@ begin
   result := self;
   {$ELSEIF TOFFEE}
   if self is NSMutableArray then
-    result := self as NSMutableArray
+    result := self as NSMutableArray<T>
   else
     result := mapped.mutableCopy as not nullable;
   {$ENDIF}

@@ -230,9 +230,9 @@ begin
   var methodInfos: ^rtl.Method;
   var methodCount: UInt32;
   methodInfos := class_copyMethodList(fClass, var methodCount);
-  result := NSMutableArray.arrayWithCapacity(methodCount);
+  result := NSMutableArray<&Method>.arrayWithCapacity(methodCount);
   for i: Int32 := 0 to methodCount-1 do
-    NSMutableArray(result).addObject(new &Method withClass(fClass) &method(methodInfos[i]));
+    NSMutableArray<&Method>(result).addObject(new &Method withClass(fClass) &method(methodInfos[i]));
 end;
 
 {$ENDIF}
