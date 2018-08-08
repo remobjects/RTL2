@@ -38,7 +38,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Contains(Item);
   {$ELSEIF TOFFEE}
-  exit mapped.containsObject(NullHelper.coalesce(Item, NSNull.null));
+  exit Foundation.NSMutableArray(mapped).containsObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 
@@ -53,7 +53,7 @@ begin
   {$ELSEIF TOFFEE}
   if self.Count = 0 then
     raise new QueueEmptyException;
-  var lResult := mapped.objectAtIndex(0);
+  var lResult := Foundation.NSMutableArray(mapped).objectAtIndex(0);
   if lResult = NSNull.null then
     lResult := nil;
   result := T(lResult);
@@ -123,7 +123,7 @@ begin
   {$ELSEIF TOFFEE}
   if self.Count = 0 then
     raise new QueueEmptyException;
-  var lResult := mapped.objectAtIndex(0);
+  var lResult := Foundation.NSMutableArray(mapped).objectAtIndex(0);
   if lResult = NSNull.null then
     lResult := nil;
   result := T(lResult);
@@ -138,7 +138,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Enqueue(Item);
   {$ELSEIF TOFFEE}
-  mapped.addObject(NullHelper.coalesce(Item, NSNull.null));
+  Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 

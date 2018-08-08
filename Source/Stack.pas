@@ -37,7 +37,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Contains(Item);
   {$ELSE}
-  exit mapped.containsObject(NullHelper.coalesce(Item, NSNull.null));
+  exit Foundation.NSMutableArray(mapped).containsObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 
@@ -46,7 +46,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Peek;
   {$ELSE}
-  var n := mapped.lastObject;
+  var n := Foundation.NSMutableArray(mapped).lastObject;
   if n = nil then raise new StackEmptyException;
   if n = NSNull.null then n := nil;
   result := n;
@@ -110,7 +110,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Pop;
   {$ELSE}
-  var n := mapped.lastObject;
+  var n := Foundation.NSMutableArray(mapped).lastObject;
   if n = nil then raise new StackEmptyException;
   if n = NSNull.null then n := nil;
   mapped.removeLastObject;
@@ -123,7 +123,7 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   mapped.Push(Item);
   {$ELSE}
-  mapped.addObject(NullHelper.coalesce(Item, NSNull.null));
+  Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 

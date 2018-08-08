@@ -234,14 +234,14 @@ begin
   {$IF COOPER OR ECHOES OR ISLAND}
   mapped.Add(aItem);
   {$ELSEIF TOFFEE}
-  mapped.addObject(NullHelper.coalesce(aItem, NSNull.null));
+  Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ENDIF}
 end;
 
 method List<T>.SetItem(&Index: Integer; Value: T);
 begin
   {$IF TOFFEE}
-  mapped[&Index] := NullHelper.coalesce(Value, NSNull.null);
+  Foundation.NSMutableArray(mapped)[&Index] := NullHelper.coalesce(Value, NSNull.null);
   {$ELSE}
   mapped[&Index] := Value;
   {$ENDIF}
@@ -250,7 +250,7 @@ end;
 method ImmutableList<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
-  var lResult := mapped.objectAtIndex(&Index);
+  var lResult := Foundation.NSMutableArray(mapped).objectAtIndex(&Index);
   if lResult = NSNull.null then exit nil;
   result := lResult;
   {$ELSE}
@@ -261,7 +261,7 @@ end;
 method List<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
-  var lResult := mapped.objectAtIndex(&Index);
+  var lResult := Foundation.NSMutableArray(mapped).objectAtIndex(&Index);
   if lResult = NSNull.null then exit nil;
   result := T(lResult);
   {$ELSE}
@@ -321,7 +321,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Contains(aItem);
   {$ELSEIF TOFFEE}
-  exit mapped.ContainsObject(NullHelper.coalesce(aItem, NSNull.null));
+  exit Foundation.NSMutableArray(mapped).ContainsObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ENDIF}
 end;
 
@@ -372,7 +372,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.IndexOf(aItem);
   {$ELSEIF TOFFEE}
-  var lIndex := mapped.indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
+  var lIndex := Foundation.NSMutableArray(mapped).indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
   exit if lIndex = NSNotFound then -1 else Integer(lIndex);
   {$ENDIF}
 end;
@@ -384,7 +384,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Insert(&Index, aItem);
   {$ELSEIF TOFFEE}
-  mapped.insertObject(NullHelper.coalesce(aItem, NSNull.null)) atIndex(&Index);
+  Foundation.NSMutableArray(mapped).insertObject(NullHelper.coalesce(aItem, NSNull.null)) atIndex(&Index);
   {$ENDIF}
 end;
 
@@ -424,7 +424,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Remove(aItem);
   {$ELSEIF TOFFEE}
-  var lIndex := mapped.indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
+  var lIndex := Foundation.NSMutableArray(mapped).indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
   if lIndex = NSNotFound then
     exit false;
   RemoveAt(lIndex);
