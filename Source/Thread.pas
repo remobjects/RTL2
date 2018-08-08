@@ -88,7 +88,7 @@ type
       {$ELSEIF ISLAND}
       result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
       {$ELSEIF TOFFEE}
-      result := NSThread.callStackSymbols;
+      result := NSThread.callStackSymbols as not nullable;
       {$ENDIF}
     end;
   end;

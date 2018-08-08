@@ -13,7 +13,6 @@ type
   protected
   public
 
-
     [ToString]
     method ToString: String; override;
     begin
