@@ -250,7 +250,7 @@ end;
 method ImmutableList<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
-  var lResult := Foundation.NSMutableArray(mapped).objectAtIndex(&Index);
+  var lResult := Foundation.NSArray(mapped).objectAtIndex(&Index);
   if lResult = NSNull.null then exit nil;
   result := lResult;
   {$ELSE}
@@ -261,7 +261,7 @@ end;
 method List<T>.GetItem(&Index: Integer): T;
 begin
   {$IF TOFFEE}
-  var lResult := Foundation.NSMutableArray(mapped).objectAtIndex(&Index);
+  var lResult := Foundation.NSArray(mapped).objectAtIndex(&Index);
   if lResult = NSNull.null then exit nil;
   result := T(lResult);
   {$ELSE}
@@ -321,7 +321,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Contains(aItem);
   {$ELSEIF TOFFEE}
-  exit Foundation.NSMutableArray(mapped).ContainsObject(NullHelper.coalesce(aItem, NSNull.null));
+  exit Foundation.NSArray(mapped).ContainsObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ENDIF}
 end;
 
@@ -372,7 +372,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.IndexOf(aItem);
   {$ELSEIF TOFFEE}
-  var lIndex := Foundation.NSMutableArray(mapped).indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
+  var lIndex := Foundation.NSArray(mapped).indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
   exit if lIndex = NSNotFound then -1 else Integer(lIndex);
   {$ENDIF}
 end;
