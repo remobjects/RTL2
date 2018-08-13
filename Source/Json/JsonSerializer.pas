@@ -20,7 +20,7 @@ type
     method VisitFloat(Value: JsonFloatValue);
     method VisitBoolean(Value: JsonBooleanValue);
     method VisitNull();
-    method VisitName(Value: String);
+    method VisitName(Value: not nullable String);
     method Visit(Value: JsonNode);
   public
     constructor (Value: not nullable JsonNode);
@@ -108,10 +108,10 @@ begin
   Builder.Append(JsonConsts.NULL_VALUE);
 end;
 
-method JsonSerializer.VisitName(Value: String);
+method JsonSerializer.VisitName(Value: not nullable String);
 begin
   AppendOffset;
-  Builder.Append(JsonConsts.STRING_QUOTE).Append(Value).Append(JsonConsts.STRING_QUOTE);
+  VisitString(Value);
   Builder.Append(JsonConsts.NAME_SEPARATOR).Append(" ");
 end;
 
