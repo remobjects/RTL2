@@ -29,6 +29,7 @@ type
     method GetUserApplicationSupportFolder: Folder;
     method GetUserLibraryFolder: Folder;
     method GetUserDownloadsFolder: nullable Folder;
+    method GetSystemApplicationSupportFolder: Folder;
 
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport("libc")]
@@ -51,6 +52,7 @@ type
     property UserApplicationSupportFolder: nullable Folder read GetUserApplicationSupportFolder; // Mac only
     property UserLibraryFolder: nullable Folder read GetUserLibraryFolder; // Mac only
     property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder;
+    property SystemApplicationSupportFolder: nullable Folder read GetSystemApplicationSupportFolder; // Mac only
 
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
@@ -283,6 +285,22 @@ begin
   end;
   {$ELSEIF TOFFEE}
   result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
+  {$ENDIF}
+  {$IF NOT WEBASSEMBLY}
+  if (length(result) > 0) and not Folder.Exists(result) then
+    Folder.Create(result);
+  {$ENDIF}
+end;
+
+method Environment.GetSystemApplicationSupportFolder: Folder;
+begin
+  {$IF ECHOES}
+  case OS of
+    OperatingSystem.macOS: result := MacFolders.GetFolder(MacDomains.kLocalDomain, MacFolderTypes.kApplicationSupportFolderType);
+    //OperatingSystem.Windows: result := System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
+  end;
+  {$ELSEIF TOFFEE}
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.LocalDomainMask, true).objectAtIndex(0));
   {$ENDIF}
   {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
