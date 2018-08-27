@@ -1106,6 +1106,7 @@ end;
 method XmlElement.SetNamespace(aNamespace: XmlNamespace);
 begin
   fNamespace := aNamespace;
+  if assigned(aNamespace) then fAttributesAndNamespaces.Add(aNamespace);
 end;
 
 method XmlElement.GetDefaultNamespace: XmlNamespace;
