@@ -8,9 +8,6 @@ type
   {$IF TOFFEE}
   where T is class, U is class;
   {$ENDIF}
-  {$IF ECHOES}
-  where U is class;
-  {$ENDIF}
   private
     method GetKeys: not nullable ImmutableList<T>;
     method GetValues: not nullable sequence of U;
@@ -43,9 +40,6 @@ type
   {$IF TOFFEE}
   where T is class, U is class;
   {$ENDIF}
-  {$IF ECHOES}
-  where U is class;
-  {$ENDIF}
   private
     method SetItem(Key: not nullable T; Value: nullable U); inline;
     method GetItem(aKey: not nullable T): nullable U; inline; // duped for performance optimization/inlining
@@ -59,7 +53,7 @@ type
     method &Remove(Key: not nullable T): Boolean;
     method RemoveAll;
 
-    property Item[aKey: not nullable T]: nullable U read GetItem write SetItem; default; inline; // will return nil for unknown keys
+    property Item[aKey: not nullable T]: nullable U read GetItem write SetItem; default;  // will return nil for unknown keys
   end;
 
   ObjectDictionary = public Dictionary<String,Object>;
@@ -142,8 +136,11 @@ begin
   {$IF COOPER}
   result := mapped[aKey];
   {$ELSEIF ECHOES OR ISLAND}
-  if not mapped.TryGetValue(aKey, out result) then
-    result := nil; // should be unnecessary?
+  var lRes: U;
+  if not mapped.TryGetValue(aKey, out lRes) then
+    result := nil
+  else 
+    result := lRes;
   {$ELSEIF TOFFEE}
   result := mapped.objectForKey(aKey);
   {$ENDIF}
@@ -154,8 +151,11 @@ begin
   {$IF COOPER}
   result := mapped[aKey];
   {$ELSEIF ECHOES OR ISLAND}
-  if not mapped.TryGetValue(aKey, out result) then
-    result := nil; // should be unnecessary?
+    var lRes: U;
+  if not mapped.TryGetValue(aKey, out lRes) then
+    result := nil
+  else 
+    result := lRes;
   {$ELSEIF TOFFEE}
   result := U(mapped.objectForKey(aKey));
   {$ENDIF}
