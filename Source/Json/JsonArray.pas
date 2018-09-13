@@ -5,21 +5,28 @@ interface
 type
   JsonArray = public class (JsonNode, ISequence<JsonNode>)
   private
-    fItems: List<JsonNode>;
+    fItems: not nullable List<JsonNode>;
     method GetItem(aIndex: Integer): not nullable JsonNode;
     method SetItem(aIndex: Integer; aValue: not nullable JsonNode);
 
   public
     constructor;
-    constructor(aItems: List<JsonNode>);
+    constructor(aItems: not nullable ImmutableList<JsonNode>);
+    constructor(aItems: not nullable ImmutableList<String>);
+    constructor(params aItems: not nullable array of JsonNode);
+    constructor(params aItems: not nullable array of String);
 
     method &Add(aValue: not nullable JsonNode);
+    method &Add(aValues: ImmutableList<JsonNode>);
+    method &Add(params aValues: array of JsonNode);
+    method &Add(aValues: ImmutableList<String>);
+    method &Add(params aValues: array of String);
     method Insert(aIndex: Integer; aValue: not nullable JsonNode);
     method Clear;
     method &RemoveAt(aIndex: Integer);
 
     method ToStrings: not nullable sequence of String;
-    method ToStringList: not nullable List<String>;
+    method ToStringList: not nullable ImmutableList<String>;
 
     method ToJson: String; override;
 
@@ -41,6 +48,17 @@ type
 
     property Count: Integer read fItems.Count; override;
     property Item[aIndex: Integer]: not nullable JsonNode read GetItem write SetItem; default; override;
+    property Items: not nullable ImmutableList<JsonNode> read fItems;
+
+    operator Implicit(aValue: ImmutableList<String>): JsonArray;
+    begin
+      result := new JsonArray(aValue.Select(v -> new JsonStringValue(v) as JsonNode).ToList);
+    end;
+
+    operator Implicit(aValue: array of String): JsonArray;
+    begin
+      result := new JsonArray(aValue.Select(v -> new JsonStringValue(v) as JsonNode).ToList);
+    end;
   end;
 
 implementation
@@ -50,9 +68,24 @@ begin
   fItems := new List<JsonNode>();
 end;
 
-constructor JsonArray(aItems: List<JsonNode>);
+constructor JsonArray(aItems: not nullable ImmutableList<JsonNode>);
 begin
-  fItems := aItems;
+  fItems := aItems.UniqueMutableCopy;
+end;
+
+constructor JsonArray(aItems: not nullable ImmutableList<String>);
+begin
+  fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
+end;
+
+constructor JsonArray(params aItems: not nullable array of JsonNode);
+begin
+  fItems := new List<JsonNode>(aItems);
+end;
+
+constructor JsonArray(params aItems: not nullable array of String);
+begin
+  fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
 end;
 
 method JsonArray.GetItem(aIndex: Integer): not nullable JsonNode;
@@ -68,6 +101,26 @@ end;
 method JsonArray.Add(aValue: not nullable JsonNode);
 begin
   fItems.Add(aValue);
+end;
+
+method JsonArray.Add(aValues: ImmutableList<JsonNode>);
+begin
+  fItems.Add(aValues);
+end;
+
+method JsonArray.Add(params aValues: array of JsonNode);
+begin
+  fItems.Add(aValues);
+end;
+
+method JsonArray.Add(aValues: ImmutableList<String>);
+begin
+  fItems.Add(aValues.Select(s -> new JsonStringValue(s)));
+end;
+
+method JsonArray.Add(params aValues: array of String);
+begin
+  fItems.Add(aValues.Select(s -> new JsonStringValue(s)));
 end;
 
 method JsonArray.Insert(aIndex: Integer; aValue: not nullable JsonNode);
@@ -141,7 +194,7 @@ begin
   result := self.Where(i -> i is JsonStringValue).Select(i -> i.StringValue) as not nullable;
 end;
 
-method JsonArray.ToStringList: not nullable List<String>;
+method JsonArray.ToStringList: not nullable ImmutableList<String>;
 begin
   result := ToStrings().ToList() as not nullable;
 end;
