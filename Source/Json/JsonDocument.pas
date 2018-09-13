@@ -320,7 +320,7 @@ end;
 class method JsonNode.Create(aValue: nullable array of JsonNode): nullable JsonArray;
 begin
   if assigned(aValue) then
-    result := new JsonArray(aValue.ToList());
+    result := new JsonArray(aValue);
 end;
 
 class method JsonNode.Create(aValue: nullable String): nullable JsonStringValue;

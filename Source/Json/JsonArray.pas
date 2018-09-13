@@ -12,15 +12,19 @@ type
   public
     constructor;
     constructor(aItems: not nullable ImmutableList<JsonNode>);
+    {$IF NOT ISLAND}
     constructor(aItems: not nullable ImmutableList<String>);
+    {$ENDIF}
     constructor(params aItems: not nullable array of JsonNode);
     constructor(params aItems: not nullable array of String);
 
     method &Add(aValue: not nullable JsonNode);
     method &Add(aValues: ImmutableList<JsonNode>);
     method &Add(params aValues: array of JsonNode);
+    {$IF NOT ISLAND}
     method &Add(aValues: ImmutableList<String>);
     method &Add(params aValues: array of String);
+    {$ENDIF}
     method Insert(aIndex: Integer; aValue: not nullable JsonNode);
     method Clear;
     method &RemoveAt(aIndex: Integer);
@@ -50,14 +54,16 @@ type
     property Item[aIndex: Integer]: not nullable JsonNode read GetItem write SetItem; default; override;
     property Items: not nullable ImmutableList<JsonNode> read fItems;
 
+    {$IF NOT ISLAND}
     operator Implicit(aValue: ImmutableList<String>): JsonArray;
     begin
-      result := new JsonArray(aValue.Select(v -> new JsonStringValue(v) as JsonNode).ToList);
+      result := new JsonArray(aValue);
     end;
+    {$ENDIF}
 
     operator Implicit(aValue: array of String): JsonArray;
     begin
-      result := new JsonArray(aValue.Select(v -> new JsonStringValue(v) as JsonNode).ToList);
+      result := new JsonArray(aValue);
     end;
   end;
 
@@ -73,10 +79,12 @@ begin
   fItems := aItems.UniqueMutableCopy;
 end;
 
+{$IF NOT ISLAND}
 constructor JsonArray(aItems: not nullable ImmutableList<String>);
 begin
   fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
 end;
+{$ENDIF}
 
 constructor JsonArray(params aItems: not nullable array of JsonNode);
 begin
@@ -113,15 +121,17 @@ begin
   fItems.Add(aValues);
 end;
 
+{$IF NOT ISLAND}
 method JsonArray.Add(aValues: ImmutableList<String>);
 begin
-  fItems.Add(aValues.Select(s -> new JsonStringValue(s)));
+  fItems.Add(aValues.Select(s -> new JsonStringValue(s) as JsonNode));
 end;
 
 method JsonArray.Add(params aValues: array of String);
 begin
-  fItems.Add(aValues.Select(s -> new JsonStringValue(s)));
+  fItems.Add(aValues.Select(s -> new JsonStringValue(s) as JsonNode));
 end;
+{$ENDIF}
 
 method JsonArray.Insert(aIndex: Integer; aValue: not nullable JsonNode);
 begin
