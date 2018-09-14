@@ -26,7 +26,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
     <OutputType>Library</OutputType>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Echoes.Standard' ">
     <Mode>Echoes</Mode>
@@ -34,7 +34,7 @@
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
     <ConditionalDefines>NETSTANDARD</ConditionalDefines>
     <OutputType>Library</OutputType>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Cooper' ">
     <Mode>Cooper</Mode>
@@ -42,52 +42,52 @@
     <DefaultUses>com.remobjects.elements.linq</DefaultUses>
     <BinaryName>elements</BinaryName>
     <OutputType>Library</OutputType>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Windows' ">
     <Mode>Island</Mode>
     <SubMode>Windows</SubMode>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Linux' ">
     <Mode>Island</Mode>
     <SubMode>Linux</SubMode>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.macOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>macOS</SDK>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.iOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>iOS</SDK>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.tvOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>tvOS</SDK>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.watchOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>watchOS</SDK>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
     <Mode>Island</Mode>
     <SubMode>Android</SubMode>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.iOS' ">
     <Mode>Toffee</Mode>
     <SDK>iOS</SDK>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.macOS' ">
     <Mode>Toffee</Mode>
@@ -99,13 +99,13 @@
     <Mode>Toffee</Mode>
     <SDK>tvOS</SDK>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.watchOS' ">
     <Mode>Toffee</Mode>
     <SDK>watchOS</SDK>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-    <Enabled>False</Enabled>
+    <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
