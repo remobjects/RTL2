@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT WEBASSEMBLY and (NOT TOFFEE OR MACOS)}
+{$IF ECHOES OR MACOS}
 
 interface
 
@@ -9,14 +9,14 @@ type
   //PlatformTask = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
   PlatformTask = public System.Diagnostics.Process;
-  {$ELSEIF TOFFEE OR DARWIN}
+  {$ELSEIF MACOS}
   PlatformTask = public Foundation.NSTask;
   {$ELSEIF ISLAND}
   //PlatformTask = public RemObjects.Elements.System.Process;
   {$ENDIF}
 
-  {$IF COOPER OR (ISLAND AND NOT DARWIN)}[Warning("is not implemented for all platforms")]{$ENDIF}
-  Process = public class {$IF ECHOES OR TOFFEE OR DARWIN}mapped to PlatformTask{$ENDIF}
+  {$IF COOPER OR (ISLAND AND MACOS)}[Warning("is not implemented for all platforms")]{$ENDIF}
+  Process = public class {$IF ECHOES OR MACOS}mapped to PlatformTask{$ENDIF}
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
     class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
@@ -37,6 +37,9 @@ type
 
     property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ELSE}0{$ENDIF};
     property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF TOFFEE}mapped.isRunning{$ELSE}false{$ENDIF};
+
+    class method Run(aCommand: not nullable String): Integer; inline;
+    class method RunAsync(aCommand: not nullable String): Process; inline;
 
     class method Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
     class method Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer; inline;
@@ -87,6 +90,17 @@ end;
 //
 // Static Methods
 //
+
+class method Process.Run(aCommand: not nullable String): Integer;
+begin
+  result := Run(aCommand, []);
+end;
+
+class method Process.RunAsync(aCommand: not nullable String): Process;
+begin
+  result := RunAsync(aCommand, [], nil, nil, nil);
+end;
+
 
 class method Process.Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
 begin
