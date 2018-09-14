@@ -54,9 +54,28 @@
     <SubMode>Linux</SubMode>
     <Enabled>True</Enabled>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin' ">
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.macOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
+    <SDK>macOS</SDK>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.iOS' ">
+    <Mode>Island</Mode>
+    <SubMode>Darwin</SubMode>
+    <SDK>iOS</SDK>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.tvOS' ">
+    <Mode>Island</Mode>
+    <SubMode>Darwin</SubMode>
+    <SDK>tvOS</SDK>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.watchOS' ">
+    <Mode>Island</Mode>
+    <SubMode>Darwin</SubMode>
+    <SDK>watchOS</SDK>
     <Enabled>True</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
@@ -224,6 +243,42 @@
     </Reference>
     <Reference Include="gc">
       <Target>Island.Linux</Target>
+    </Reference>
+    <Reference Include="Island">
+      <Target>Island.Darwin.macOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Island.Darwin.macOS</Target>
+    </Reference>
+    <Reference Include="gc">
+      <Target>Island.Darwin.macOS</Target>
+    </Reference>
+    <Reference Include="Island">
+      <Target>Island.Darwin.iOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Island.Darwin.iOS</Target>
+    </Reference>
+    <Reference Include="gc">
+      <Target>Island.Darwin.iOS</Target>
+    </Reference>
+    <Reference Include="Island">
+      <Target>Island.Darwin.tvOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Island.Darwin.tvOS</Target>
+    </Reference>
+    <Reference Include="gc">
+      <Target>Island.Darwin.tvOS</Target>
+    </Reference>
+    <Reference Include="Island">
+      <Target>Island.Darwin.watchOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Island.Darwin.watchOS</Target>
+    </Reference>
+    <Reference Include="gc">
+      <Target>Island.Darwin.watchOS</Target>
     </Reference>
     <Reference Include="Island">
       <Target>Island.Linux</Target>
