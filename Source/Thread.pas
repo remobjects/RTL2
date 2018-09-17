@@ -67,7 +67,7 @@ type
     property CallStack: List<String> read
     begin
       {$IF COOPER}
-      result := mapped.getStackTrace().ToList() as not nullable;
+      result := mapped.getStackTrace().Select(a -> a.toString()).ToList() as not nullable;
       {$ELSEIF ECHOES}
       result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
       {$ELSEIF ISLAND}
@@ -82,7 +82,7 @@ type
     class property CurrentCallStack: not nullable ImmutableList<String> read
     begin
       {$IF COOPER}
-      result := new Throwable().getStackTrace().ToList() as not nullable;
+      result := new Throwable().getStackTrace().Select(a -> a.toString()).ToList() as not nullable;
       {$ELSEIF ECHOES}
       result := (System.Environment.StackTrace.Replace(#13, "") as String).Split(#10);
       {$ELSEIF ISLAND}

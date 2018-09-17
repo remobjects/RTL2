@@ -74,7 +74,7 @@ type
     method _GetCallStack: ImmutableList<String>;
     begin
       {$IF COOPER}
-      result := StackTrace.ToList();
+      result := StackTrace.Select(a -> a.toString()).ToList();
       {$ELSEIF ECHOES}
       result := (StackTrace.Replace(#13, "") as String).Split(#10);
       {$ELSEIF ISLAND}
