@@ -54,13 +54,11 @@ type
     property Item[aIndex: Integer]: not nullable JsonNode read GetItem write SetItem; default; override;
     property Items: not nullable ImmutableList<JsonNode> read fItems;
 
-    {$IF NOT ISLAND}
     operator Implicit(aValue: ImmutableList<String>): JsonArray;
     begin
-      result := new JsonArray(aValue);
+      result := new JsonArray(aValue.ToArray);
     end;
-    {$ENDIF}
-
+    
     operator Implicit(aValue: array of String): JsonArray;
     begin
       result := new JsonArray(aValue);
