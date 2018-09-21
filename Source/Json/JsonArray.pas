@@ -12,7 +12,7 @@ type
   public
     constructor;
     constructor(aItems: not nullable ImmutableList<JsonNode>);
-    {$IF NOT ISLAND}
+    {$IF NOT ISLAND and not COOPER}
     constructor(aItems: not nullable ImmutableList<String>);
     {$ENDIF}
     constructor(params aItems: not nullable array of JsonNode);
@@ -79,7 +79,7 @@ begin
   fItems := aItems.UniqueMutableCopy;
 end;
 
-{$IF NOT ISLAND}
+{$IF NOT ISLAND and not COOPER}
 constructor JsonArray(aItems: not nullable ImmutableList<String>);
 begin
   fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
