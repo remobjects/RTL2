@@ -246,11 +246,11 @@ begin
   {$ELSEIF ECHOES}
   if Format = "" then
     exit "";
-
+  var lDateInTimeZone := if assigned(aTimeZone) then PlatformTimeZone.ConvertTimeFromUtc(fDateTime, aTimeZone) else fDateTime;
   if String.IsNullOrEmpty(Culture) then
-    result := fDateTime.ToString(DateFormatter.Format(Format))
+    result := lDateInTimeZone.ToString(DateFormatter.Format(Format))
   else
-    result := fDateTime.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture));
+    result := lDateInTimeZone.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture));
   {$ELSEIF TOFFEE}
   var lFormatter := new NSDateFormatter();
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
