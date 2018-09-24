@@ -3,7 +3,7 @@
 interface
 
 type
-  Stream = public abstract class
+  Stream = public partial abstract class
   public
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; abstract;
     method Close; abstract;
@@ -26,6 +26,21 @@ type
     property CanSeek: Boolean read; abstract;
     property CanWrite: Boolean read; abstract;
   end;
+  {$IFDEF ECHOES or ISLAND}
+  Stream = public partial class (IDisposable)
+  public
+    method Dispose;
+    begin 
+      close;
+    end;
+  end;
+  {$ENDIF}
+
+  {$IFDEF JAVA}
+  Stream = public partial class (java.io.Closeable)
+  public
+  end;
+  {$ENDIF}
 
   {$IF ECHOES OR ISLAND}
   PlatformStream = public {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
