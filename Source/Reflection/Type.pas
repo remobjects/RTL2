@@ -36,6 +36,7 @@ type
     method GetName: String;
     method Get_Interfaces: ImmutableList<&Type>;
     method Get_Methods: ImmutableList<&Method>;
+    method Get_Properties: ImmutableList<&Property>;
     {$ENDIF}
     {$IF NETFX_CORE}
     method Get_Interfaces: ImmutableList<&Type>;
@@ -59,6 +60,7 @@ type
     {$ELSEIF ECHOES}
     property Interfaces: ImmutableList<&Type> read mapped.GetInterfaces().ToList();
     property Methods: ImmutableList<&Method> read mapped.GetMethods().ToList();
+    property Properties: ImmutableList<&Property> read mapped.GetProperties().ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.BaseType;
@@ -71,6 +73,7 @@ type
     {$IF ISLAND}
     property Interfaces: ImmutableList<&Type> read mapped.Interfaces.ToList();
     property Methods: ImmutableList<&Method> read mapped.Methods.ToList();
+    property Properties: ImmutableList<&Property> read mapped.Properties.ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.BaseType;
@@ -99,9 +102,11 @@ type
     constructor withSimpleType(aTypeEncoding: String);
     property Interfaces: ImmutableList<&Type> read Get_Interfaces();
     property Methods: ImmutableList<&Method> read Get_Methods();
+    property Properties: ImmutableList<&Property> read get_Properties();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     //operator Explicit(aClass: rtl.Class): &Type;
     //operator Explicit(aProtocol: Protocol): &Type;
+    property TypeClass: &Class read fClass;
     property Name: String read getName;
     property BaseType: nullable &Type read if IsClass then new &Type withClass(class_getSuperclass(fClass));
     property IsClass: Boolean read assigned(fClass) or fIsID;
@@ -235,6 +240,15 @@ begin
     NSMutableArray<&Method>(result).addObject(new &Method withClass(fClass) &method(methodInfos[i]));
 end;
 
+method &Type.Get_Properties: ImmutableList<&Property>;
+begin
+  var propInfos: ^rtl.Method;
+  var propCount: UInt32;
+  propInfos := class_copyPropertyList(fClass, var propCount);
+  result := NSMutableArray<&Property>.arrayWithCapacity(propCount);
+  for i: Int32 := 0 to propCount-1 do
+    NSMutableArray<&Property>(result).addObject(new &Property withClass(fClass) &property(propInfos[i]));
+end;
 {$ENDIF}
 
 {$IF NETFX_CORE}

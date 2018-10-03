@@ -53,6 +53,7 @@ type
     {$ENDIF}
     {$IF TOFFEE}
     constructor withClass(aClass: &Type) &method(aMethod: rtl.Method);
+    method Invoke(aInstance: Object; aArgs: array of Object): Object;
     property Name: String read NSStringFromSelector(&Selector);
     property &Selector: SEL read method_getName(fMethod);
     property ReturnType: &Type read getReturnType;
@@ -88,6 +89,11 @@ begin
     method_getArgumentType(fMethod, i, lDestination, MAX_CHAR);
   end;
 
+end;
+
+method &Method.Invoke(aInstance: Object; aArgs: array of Object): Object;
+begin
+  result := rtl.objc_msgSend(aInstance, Selector, [aArgs]);
 end;
 {$ENDIF}
 

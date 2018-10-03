@@ -136,6 +136,7 @@
       <VirtualFolder>Threading</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Functions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\PropertyInfo.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
