@@ -1,16 +1,18 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES}
+{$IF ECHOES OR ISLAND}
 type
-  List_Extensions<T> = public extension class(System.Collections.Generic.List<T>)
+  List_Extensions<T> = public extension class(PlatformList<T>)
   private
   protected
   public
 
+    {$IF NOT ISLAND}
     method ToSortedList: ImmutableList<T>;
     begin
       result := (self as ImmutableList<T>).ToSortedList();
     end;
+    {$ENDIF}
 
     method ToSortedList(aComparison: Comparison<T>): ImmutableList<T>;
     begin

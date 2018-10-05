@@ -168,9 +168,9 @@ type
 
   IOException = public class(RTLException);
 
+  {$IF NOT WEBASSEMBLY}
   HttpException = public class(RTLException)
   assembly
-  {$IF NOT ISLAND}
 
     constructor(aMessage: String; aResponse: nullable HttpResponse := nil);
     begin
@@ -190,8 +190,8 @@ type
   public
     property Response: nullable HttpResponse; readonly;
     property Code: Integer read coalesce(Response:Code, fCode);
-  {$ENDIF}
   end;
+  {$ENDIF}
 
   FileNotFoundException = public class (RTLException)
   public

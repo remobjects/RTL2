@@ -536,6 +536,7 @@ begin
   result := self.OrderBy(n -> n).ToList();
 end;
 {$ENDIF}
+
 {$IFDEF COOPER}
 method ImmutableList<T>.ToArray: not nullable array of T;
 begin
