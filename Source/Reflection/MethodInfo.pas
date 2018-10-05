@@ -55,6 +55,7 @@ type
     constructor withClass(aClass: &Type) &method(aMethod: rtl.Method);
     method Invoke(aInstance: Object; aArgs: array of Object): Object;
     property Name: String read NSStringFromSelector(&Selector);
+    property Pointer: rtl.Method read fMethod;
     property &Selector: SEL read method_getName(fMethod);
     property ReturnType: &Type read getReturnType;
     property IsStatic: Boolean read false; // todo?

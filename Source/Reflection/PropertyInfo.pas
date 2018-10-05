@@ -19,6 +19,8 @@ type
   private
   {$IF TOFFEE}
     fProperty: ^Void;
+    fType: &Type;
+    method get_Type: &Type;
   {$ENDIF}
   public
   {$IF TOFFEE}
@@ -26,6 +28,8 @@ type
     method GetValue(aInst: Object; aArgs: array of Object): Object;
     method SetValue(aInst: Object; aArgs: array of Object; aValue: Object);
     property Name: String read NSString.stringWithUTF8String(rtl.property_getName(fProperty));
+    property PropertyClass: ^Void read fProperty;
+    property &Type: &Type read get_Type;
   {$ENDIF}
   end;
 
@@ -45,6 +49,24 @@ end;
 method &Property.SetValue(aInst: Object; aArgs: array of Object; aValue: Object);
 begin
   aInst.setValue(aValue) forKey(Name);
+end;
+
+method &Property.get_Type: &Type;
+begin
+  if fType = nil then begin
+    var lStringType: String := NSString.stringWithUTF8String(property_getAttributes(fProperty));
+    lStringType := lStringType.Substring(1);
+    var lPos := lStringType.IndexOf(',');
+    if lPos ≥ 0 then
+      lStringType := lStringType.SubString(0, lPos);
+    if (lStringType ≠ '^?') and (lStringType.length > 1) then begin
+      var lClass := NSClassFromString(lStringType);
+      fType := new &Type withclass(lClass);
+    end
+    else
+      fType := new &Type withSimpleType(lStringType);
+  end;
+  result := fType;
 end;
 {$ENDIF}
 

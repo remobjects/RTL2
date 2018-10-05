@@ -114,6 +114,7 @@ type
     property IsArray: Boolean read false;
     property IsEnum: Boolean read false;
     property IsValueType: Boolean read false;
+    property IsDelegate: Boolean read fSimpleType = '^?';
     {$ENDIF}
   end;
 
