@@ -108,7 +108,7 @@ type
     {$ENDIF}
   end;
 
-  {$IF ECHOES}
+  {$IF ECHOES OR ISLAND}
   DateTime = public partial class(IComparable<DateTime>)
   end;
   {$ENDIF}
