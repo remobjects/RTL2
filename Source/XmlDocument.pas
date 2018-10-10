@@ -1105,8 +1105,21 @@ end;
 
 method XmlElement.SetNamespace(aNamespace: XmlNamespace);
 begin
+  if assigned(fNamespace) then fAttributesAndNamespaces.Remove(fNamespace);
+  if assigned(aNamespace) then begin
+    var elem := self;
+    var lAdd := true;
+    while assigned(elem) do begin
+      if elem.fAttributesAndNamespaces.Contains(aNamespace) then begin
+        lAdd := false;
+        break;
+      end;
+      elem := elem.Parent;
+    end;
+    //aNamespace.Parent := self;
+    if lAdd then  fAttributesAndNamespaces.Add(aNamespace);
+  end;
   fNamespace := aNamespace;
-  if assigned(aNamespace) then fAttributesAndNamespaces.Add(aNamespace);
 end;
 
 method XmlElement.GetDefaultNamespace: XmlNamespace;
