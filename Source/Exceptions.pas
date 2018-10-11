@@ -34,12 +34,24 @@ type
     end;
 
     {$IF TOFFEE}
-    constructor withError(aError: NSError);
+    constructor withError(aError: Foundation.NSError);
     begin
       result := initWithName('Exception') reason(aError.description) userInfo(nil);
     end;
 
     property Message: String read reason;
+    {$ENDIF}
+
+    {$IF ISLAND AND DARWIN}
+    constructor withError(aError: Foundation.NSError);
+    begin
+      inherited constructor(aError.description);
+    end;
+
+    constructor withNSException(aException: Foundation.NSException);
+    begin
+      inherited constructor(aException.description);
+    end;
     {$ENDIF}
 
   end;
@@ -66,13 +78,8 @@ type
       result := new Exception(PlatformString(String.Format(aMessage, aParams)));
     end;
 
-    property CallStack: ImmutableList<String> read _GetCallStack;
-
-  private
-
     {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
-    method _GetCallStack: ImmutableList<String>;
-    begin
+    property CallStack: ImmutableList<String> read begin
       {$IF COOPER}
       result := StackTrace.Select(a -> a.toString()).ToList();
       {$ELSEIF ECHOES}

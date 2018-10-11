@@ -37,6 +37,7 @@ type
       if not assigned(Value1) then exit not assigned(Value2);
       exit Value1.ToString = Value2:ToString;
     end;
+
     class operator NotEqual(Value1, Value2: Uri): Boolean;
     begin
       if not assigned(Value1) then exit not assigned(Value2);

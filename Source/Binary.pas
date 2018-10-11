@@ -3,7 +3,10 @@
 interface
 
 type
-  {$IF ECHOES}
+  {$IF COOPER}
+  ImmutablePlatformBinary = public java.io.ByteArrayOutputStream;
+  PlatformBinary = public java.io.ByteArrayOutputStream;
+  {$ELSEIF ECHOES}
   ImmutablePlatformBinary = public System.IO.MemoryStream;
   PlatformBinary = public System.IO.MemoryStream;
   {$ELSEIF ISLAND}
@@ -38,7 +41,10 @@ type
 
     method ToArray: not nullable array of Byte;
     {$IF COOPER}
-    method ToPlatformMemoryStream: PlatformMemoryStream;
+    method ToPlatformBinary: ImmutablePlatformBinary;
+    {$ENDIF}
+    {$IF ISLAND AND DARWIN}
+    method ToNSData: Foundation.NSData;
     {$ENDIF}
     property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
   end;
@@ -285,9 +291,17 @@ begin
 end;
 
 {$IF COOPER}
-method ImmutableBinary.ToPlatformMemoryStream: PlatformMemoryStream;
+method ImmutableBinary.ToPlatformBinary: ImmutablePlatformBinary;
 begin
   result := fData;
+end;
+{$ENDIF}
+
+{$IF ISLAND AND DARWIN}
+method ImmutableBinary.ToNSData: Foundation.NSData;
+begin
+  var lArray := mapped.ToArray();
+  result := new Foundation.NSData withBytes(@lArray[0]) length(RemObjects.Elements.System.length(lArray));
 end;
 {$ENDIF}
 
