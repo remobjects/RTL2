@@ -3,12 +3,18 @@
 interface
 
 type
-  Encoding = public class {$IF COOPER}mapped to java.nio.charset.Charset{$ELSEIF ECHOES}mapped to System.Text.Encoding{$ELSEIF TOFFEE}mapped to Foundation.NSNumber{$ENDIF}
+  {$IF COOPER}
+  PlatformEncoding = public java.nio.charset.Charset;
+  {$ELSEIF ECHOES}
+  PlatformEncoding = public System.Text.Encoding;
+  {$ELSEIF ISLAND}
+  PlatformEncoding = public RemObjects.Elements.System.Encoding;
+  {$ELSEIF TOFFEE}
+  PlatformEncoding = public Foundation.NSNumber;
+  {$ENDIF}
+
+  Encoding = public class mapped to PlatformEncoding
   private
-    {$IF ISLAND}
-    var fName: not nullable String;
-    constructor (aName: not nullable String);
-    {$ENDIF}
     method GetName: not nullable String;
     method GetIsUTF8: Boolean;
   public
@@ -17,6 +23,11 @@ type
 
     method GetString(aValue: not nullable array of Byte): String;
     method GetString(aValue: not nullable array of Byte; aOffset: Integer; aCount: Integer): String;
+
+    method GetString(aValue: not nullable ImmutableBinary): String;
+    {$IF ISLAND AND DARWIN}
+    method GetString(aValue: not nullable Foundation.NSData): String;
+    {$ENDIF}
 
     class method GetEncoding(aName: not nullable String): nullable Encoding;
     property Name: not nullable String read GetName;
@@ -58,16 +69,7 @@ begin
     result := lPreamble.ToArray();
   end;
   {$ELSEIF ISLAND}
-  result := case fName.ToUpper.Replace("-", "") of
-              "UTF8": TextConvert.StringToUTF8(aValue, aIncludeBOM);
-              "UTF16": TextConvert.StringToUTF16(aValue, aIncludeBOM);
-              "UTF16BE": TextConvert.StringToUTF16BE(aValue, aIncludeBOM);
-              "UTF16LE": TextConvert.StringToUTF16LE(aValue, aIncludeBOM);
-              "UTF32": TextConvert.StringToUTF32(aValue, aIncludeBOM);
-              "UTF32BE": TextConvert.StringToUTF32BE(aValue, aIncludeBOM);
-              "UTF32LE": TextConvert.StringToUTF32LE(aValue, aIncludeBOM);
-              //"ASCII","USASCII","UTFASCII": TextConvert.StringToASCII(aValue);
-            end;
+  result := mapped.GetBytes(aValue, aIncludeBOM);
   {$ELSEIF TOFFEE}
   var lResult := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as ImmutableBinary);
   if not assigned(lResult) then
@@ -105,22 +107,33 @@ begin
   end;
   result := mapped.GetString(aValue, aOffset, aCount);
   {$ELSEIF ISLAND}
-  result := case fName.ToUpper.Replace("-","") of
-              "UTF8": TextConvert.UTF8ToString(aValue, aOffset, aCount);
-              "UTF16": TextConvert.UTF16ToString(aValue, aOffset, aCount);
-              "UTF16BE": TextConvert.UTF16BEToString(aValue, aOffset, aCount);
-              "UTF16LE": TextConvert.UTF16LEToString(aValue, aOffset, aCount);
-              "UTF32": TextConvert.UTF32ToString(aValue, aOffset, aCount);
-              "UTF32BE": TextConvert.UTF32BEToString(aValue, aOffset, aCount);
-              "UTF32LE": TextConvert.UTF32LEToString(aValue, aOffset, aCount);
-              "ASCII","USASCII","UTFASCII": TextConvert.ASCIIToString(aValue, aOffset, aCount);
-            end;
+  result := mapped.GetString(aValue, aOffset, aCount);
   {$ELSEIF TOFFEE}
   result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(self.AsNSStringEncoding);
   if not assigned(result) then
     raise new FormatException("Unable to convert input data");
   {$ENDIF}
 end;
+
+method Encoding.GetString(aValue: not nullable ImmutableBinary): String;
+begin
+  {$IF NOT TOFFEE}
+  result := GetString(aValue.ToArray());
+  {$ELSE}
+  result := new NSString withData(aValue) encoding(self.AsNSStringEncoding);
+  if not assigned(result) then
+    raise new FormatException("Unable to convert input data");
+  {$ENDIF}
+end;
+
+{$IF ISLAND AND DARWIN}
+method Encoding.GetString(aValue: not nullable Foundation.NSData): String;
+begin
+  var lArray := new byte[aValue.length];
+  aValue.getBytes(@lArray[0]);
+  result := GetString(lArray);
+end;
+{$ENDIF}
 
 method Encoding.GetString(aValue: not nullable array of Byte): String;
 begin
@@ -137,9 +150,17 @@ begin
     {$ELSEIF ECHOES}
     result := System.Text.Encoding.GetEncoding(aName);
     {$ELSEIF ISLAND}
-    if aName.ToUpper() not in ['US-ASCII', 'ASCII','UTF-ASCII','UTF8','UTF-8','UTF16','UTF-16','UTF32','UTF-32','UTF16LE','UTF-16LE','UTF32LE','UTF-32LE','UTF16BE','UTF-16BE','UTF32BE','UTF-32BE'] then
-      raise new Exception(String.Format('Unknown Encoding "{0}"', aName));
-    result := new Encoding(aName.ToUpper);
+    case aName of
+      'UTF8','UTF-8': result := PlatformEncoding.UTF8;
+      'UTF16','UTF-16': result := PlatformEncoding.UTF16LE; //?
+      'UTF32','UTF-32': result := PlatformEncoding.UTF32LE; //?
+      'UTF16LE','UTF-16LE': result := PlatformEncoding.UTF16LE;
+      'UTF16BE','UTF-16BE': result := PlatformEncoding.UTF16BE;
+      'UTF32LE','UTF-32LE': result := PlatformEncoding.UTF32LE;
+      'UTF32BE','UTF-32BE': result := PlatformEncoding.UTF32BE;
+      'US-ASCII', 'ASCII','UTF-ASCII': result := PlatformEncoding.ASCII;
+      else raise new Exception(String.Format('Unknown Encoding "{0}"', aName));
+    end;
     {$ELSEIF TOFFEE}
     var lEncoding := NSStringEncoding.UTF8StringEncoding;
     case aName of
@@ -172,7 +193,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.WebName as not nullable;
   {$ELSEIF ISLAND}
-  exit fName as not nullable;
+  exit mapped.Name;
   {$ELSEIF TOFFEE}
   var lName := CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(mapped.unsignedIntValue));
   if not assigned(lName) then
@@ -188,7 +209,7 @@ begin
   {$ELSEIF ECHOES}
   result := mapped.WebName.ToLower = "utf-8";
   {$ELSEIF ISLAND}
-  result := fName.ToUpper.Replace("-", "") = "UTF8";
+  result := mapped.Name.ToUpper.Replace("-", "") = "UTF8";
   {$ELSEIF TOFFEE}
   result := AsNSStringEncoding = NSStringEncoding.UTF8StringEncoding;
   {$ENDIF}
@@ -205,13 +226,6 @@ begin
   result := NSNumber.numberWithUnsignedInteger(aEncoding);
 end;
 
-{$ENDIF}
-
-{$IF ISLAND}
-constructor Encoding(aName: not nullable String);
-begin
-  fName := aName;
-end;
 {$ENDIF}
 
 end.
