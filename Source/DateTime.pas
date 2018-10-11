@@ -106,6 +106,10 @@ type
     operator Implicit(aDateTime: PlatformDateTime): DateTime;
     operator Implicit(aDateTime: DateTime): PlatformDateTime;
     {$ENDIF}
+    {$IF ISLAND AND DARWIN}
+    operator Implicit(aDateTime: Foundation.NSDate): DateTime;
+    operator Implicit(aDateTime: DateTime): Foundation.NSDate;
+    {$ENDIF}
   end;
 
   {$IF ECHOES OR ISLAND}
@@ -582,6 +586,18 @@ begin
   if not assigned(aDateTime) then
     raise new InvalidCastException("Cannot cast null DateTime to platform DateTime type.");
   result := aDateTime.fDateTime;
+end;
+{$ENDIF}
+
+{$IF ISLAND AND DARWIN}
+operator DateTime.Implicit(aDateTime: Foundation.NSDate): DateTime;
+begin
+  result := aDateTime as PlatformDateTime;
+end;
+
+operator DateTime.Implicit(aDateTime: DateTime): Foundation.NSDate;
+begin
+  result := PlatformDateTime(aDateTime) as Foundation.NSDate;
 end;
 {$ENDIF}
 
