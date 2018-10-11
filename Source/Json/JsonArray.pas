@@ -12,7 +12,7 @@ type
   public
     constructor;
     constructor(aItems: not nullable ImmutableList<JsonNode>);
-    {$IF NOT ISLAND and not COOPER}
+    {$IF NOT COOPER}
     constructor(aItems: not nullable ImmutableList<String>);
     {$ENDIF}
     constructor(params aItems: not nullable array of JsonNode);
@@ -21,10 +21,8 @@ type
     method &Add(aValue: not nullable JsonNode);
     method &Add(aValues: ImmutableList<JsonNode>);
     method &Add(params aValues: array of JsonNode);
-    {$IF NOT ISLAND}
     method &Add(aValues: ImmutableList<String>);
     method &Add(params aValues: array of String);
-    {$ENDIF}
     method Insert(aIndex: Integer; aValue: not nullable JsonNode);
     method Clear;
     method &RemoveAt(aIndex: Integer);
@@ -58,7 +56,7 @@ type
     begin
       result := new JsonArray(aValue.ToArray);
     end;
-    
+
     operator Implicit(aValue: array of String): JsonArray;
     begin
       result := new JsonArray(aValue);
@@ -77,7 +75,7 @@ begin
   fItems := aItems.UniqueMutableCopy;
 end;
 
-{$IF NOT ISLAND and not COOPER}
+{$IF NOT COOPER}
 constructor JsonArray(aItems: not nullable ImmutableList<String>);
 begin
   fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
@@ -119,7 +117,6 @@ begin
   fItems.Add(aValues);
 end;
 
-{$IF NOT ISLAND}
 method JsonArray.Add(aValues: ImmutableList<String>);
 begin
   fItems.Add(aValues.Select(s -> new JsonStringValue(s) as JsonNode));
@@ -129,7 +126,6 @@ method JsonArray.Add(params aValues: array of String);
 begin
   fItems.Add(aValues.Select(s -> new JsonStringValue(s) as JsonNode));
 end;
-{$ENDIF}
 
 method JsonArray.Insert(aIndex: Integer; aValue: not nullable JsonNode);
 begin

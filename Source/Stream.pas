@@ -30,7 +30,7 @@ type
   Stream = public partial class (IDisposable)
   public
     method Dispose;
-    begin 
+    begin
       close;
     end;
   end;
@@ -403,7 +403,7 @@ end;
 constructor MemoryStream(aValue: ImmutableBinary);
 begin
   {$IF COOPER}
-  fInternalStream := aValue.ToPlatformMemoryStream;
+  fInternalStream := aValue.ToPlatformBinary;
   {$ELSEIF ECHOES OR ISLAND}
   fPlatformStream := aValue;
   {$ELSEIF TOFFEE}
