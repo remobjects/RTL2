@@ -31,7 +31,7 @@ type
 
     method GetNetworkServerName(aFileName: not nullable String): nullable String;
 
-    {$IF TOFFEE}
+    {$IF TOFFEE OR (ISLAND AND DARWIN)}
     method ExpandTildeInPath(aPath: not nullable String): not nullable String;
     {$ENDIF}
 
@@ -218,10 +218,10 @@ begin
 end;
 
 
-{$IF TOFFEE}
+{$IF TOFFEE OR (ISLAND AND DARWIN)}
 method Path.ExpandTildeInPath(aPath: not nullable String): not nullable String;
 begin
-  result := (aPath as PlatformString).stringByExpandingTildeInPath;
+  result := (aPath as Foundation.NSString).stringByExpandingTildeInPath;
 end;
 {$ENDIF}
 
