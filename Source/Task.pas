@@ -1,22 +1,22 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES OR MACOS}
+{$IF ECHOES OR MACOS OR WINDOWS}
 
 interface
 
 type
   {$IF JAVA}
-  //PlatformTask = {$ERROR Unsupported platform};
+  //PlatformProcess = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
-  PlatformTask = public System.Diagnostics.Process;
+  PlatformProcess = public System.Diagnostics.Process;
   {$ELSEIF MACOS}
-  PlatformTask = public Foundation.NSTask;
+  PlatformProcess = public Foundation.NSTask;
   {$ELSEIF ISLAND}
-  //PlatformTask = public RemObjects.Elements.System.Process;
+  //PlatformProcess = public RemObjects.Elements.System.Process;
   {$ENDIF}
 
   {$IF COOPER OR (ISLAND AND MACOS)}[Warning("is not implemented for all platforms")]{$ENDIF}
-  Process = public class {$IF ECHOES OR MACOS}mapped to PlatformTask{$ENDIF}
+  Process = public class {$IF ECHOES OR MACOS}mapped to PlatformProcess{$ENDIF}
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
     class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
@@ -180,27 +180,27 @@ begin
   var lOutputWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
   var lErrorWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
   if assigned(aStdOutCallback) then begin
-    (lTask as PlatformTask).StartInfo.RedirectStandardOutput := true;
-    (lTask as PlatformTask).OutputDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
+    (lTask as PlatformProcess).StartInfo.RedirectStandardOutput := true;
+    (lTask as PlatformProcess).OutputDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
       if assigned(e.Data) then
         aStdOutCallback(e.Data)
       else
         lOutputWaitHandle:&Set();
     end;
-    //(lTask as PlatformTask).BeginOutputReadLine();
+    //(lTask as PlatformProcess).BeginOutputReadLine();
   end;
   if assigned(aStdErrCallback) then begin
-    (lTask as PlatformTask).StartInfo.RedirectStandardError := true;
-    (lTask as PlatformTask).ErrorDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
+    (lTask as PlatformProcess).StartInfo.RedirectStandardError := true;
+    (lTask as PlatformProcess).ErrorDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
       if assigned(e.Data) then
         aStdErrCallback(e.Data)
       else
         lErrorWaitHandle:&Set();
     end;
-    //(lTask as PlatformTask).BeginErrorReadLine();
+    //(lTask as PlatformProcess).BeginErrorReadLine();
   end;
   if assigned(aFinishedCallback) then begin
-    (lTask as PlatformTask).Exited += method (sender: Object; e: System.EventArgs) begin
+    (lTask as PlatformProcess).Exited += method (sender: Object; e: System.EventArgs) begin
       lOutputWaitHandle.WaitOne();
       lOutputWaitHandle:Dispose();
       lErrorWaitHandle.WaitOne();
@@ -211,21 +211,21 @@ begin
   lTask.Start();
 
   if assigned(aStdOutCallback) then
-    (lTask as PlatformTask).BeginOutputReadLine();
+    (lTask as PlatformProcess).BeginOutputReadLine();
   if assigned(aStdErrCallback) then
-    (lTask as PlatformTask).BeginErrorReadLine();
+    (lTask as PlatformProcess).BeginErrorReadLine();
 
   {$ELSEIF TOFFEE}
   if assigned(aStdOutCallback) then
-    (lTask as PlatformTask).standardOutput := NSPipe.pipe();
+    (lTask as PlatformProcess).standardOutput := NSPipe.pipe();
   if assigned(aStdErrCallback) then
-    (lTask as PlatformTask).standardError := NSPipe.pipe();
+    (lTask as PlatformProcess).standardError := NSPipe.pipe();
 
   if assigned(aStdOutCallback) then
     dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
       var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
       var lastIncompleteLogLine: String;
-      while (lTask as PlatformTask).isRunning do begin
+      while (lTask as PlatformProcess).isRunning do begin
         using autoreleasepool do begin
           var d := stdOut.availableData;
           if (d ≠ nil) and (d.length > 0) then
@@ -246,7 +246,7 @@ begin
     dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
       var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
       var lastIncompleteLogLine: String;
-      while (lTask as PlatformTask).isRunning do begin
+      while (lTask as PlatformProcess).isRunning do begin
         using autoreleasepool do begin
           var d := stdErr.availableData;
           if (d ≠ nil) and (d.length > 0) then
@@ -322,7 +322,7 @@ end;
 class method Process.SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
 begin
   {$IF ECHOES}
-  var lResult := new PlatformTask();
+  var lResult := new PlatformProcess();
   lResult.StartInfo := new System.Diagnostics.ProcessStartInfo();
   lResult.StartInfo.FileName := aCommand;
   lResult.StartInfo.CreateNoWindow := true;
@@ -336,7 +336,7 @@ begin
   lResult.EnableRaisingEvents := true;
   result := lResult;
   {$ELSEIF TOFFEE}
-  var lResult := new PlatformTask();
+  var lResult := new PlatformProcess();
   lResult.launchPath := aCommand;
   if assigned(aArguments) then
     lResult.arguments := aArguments.ToList();
