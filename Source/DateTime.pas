@@ -12,7 +12,15 @@ uses
   RemObjects.Elements.RTL;
 
 type
-  PlatformDateTime = public {$IF COOPER}java.util.Calendar{$ELSEIF ECHOES}System.DateTime{$ELSEIF ISLAND}RemObjects.Elements.System.DateTime{$ELSEIF TOFFEE}NSDate{$ENDIF};
+  {$IF COOPER}
+  PlatformDateTime = public java.util.Calendar;
+  {$ELSEIF ECHOES}
+  PlatformDateTime = public System.DateTime;
+  {$ELSEIF ISLAND}
+  PlatformDateTime = public RemObjects.Elements.System.DateTime;
+  {$ELSEIF TOFFEE}
+  PlatformDateTime = public NSDate;
+  {$ENDIF}
 
   DateTime = public partial class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
   private
