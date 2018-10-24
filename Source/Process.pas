@@ -55,9 +55,6 @@ type
 
   end;
 
-  [Obsolete("Class was renamed, use Process")]
-  Task = public Process;
-
 implementation
 
 method Process.WaitFor;
