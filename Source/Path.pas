@@ -221,7 +221,7 @@ end;
 {$IF TOFFEE OR (ISLAND AND DARWIN)}
 method Path.ExpandTildeInPath(aPath: not nullable String): not nullable String;
 begin
-  result := (aPath as Foundation.NSString).stringByExpandingTildeInPath as not nullable String;
+  result := (aPath as Foundation.NSString).stringByExpandingTildeInPath as not nullable;
 end;
 {$ENDIF}
 

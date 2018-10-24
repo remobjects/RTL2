@@ -137,6 +137,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Functions.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\PropertyInfo.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String.Island.Darwin.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
