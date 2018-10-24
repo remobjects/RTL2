@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES OR MACOS OR WINDOWS}
+{$IF ECHOES OR COOPER OR MACOS OR WINDOWS} // OR LINUX
 
 interface
 
@@ -12,11 +12,11 @@ type
   {$ELSEIF MACOS}
   PlatformProcess = public Foundation.NSTask;
   {$ELSEIF ISLAND}
-  //PlatformProcess = public RemObjects.Elements.System.Process;
+  PlatformProcess = public RemObjects.Elements.System.Process;
   {$ENDIF}
 
-  {$IF COOPER OR (ISLAND AND MACOS)}[Warning("is not implemented for all platforms")]{$ENDIF}
-  Process = public class {$IF ECHOES OR MACOS}mapped to PlatformProcess{$ENDIF}
+  {$IF COOPER OR (ISLAND AND (LINUX OR ANDROID))}[Warning("is not implemented for all platforms")]{$ENDIF}
+  Process = public class {$IF ECHOES OR COCOA OR ISLAND}mapped to PlatformProcess{$ENDIF}
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
     class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
@@ -35,8 +35,8 @@ type
     method Start; inline;
     method Stop; inline;
 
-    property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ELSE}0{$ENDIF};
-    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF TOFFEE}mapped.isRunning{$ELSE}false{$ENDIF};
+    property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF ISLAND}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ELSE}0{$ENDIF};
+    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF ISLAND}mapped.IsRunning{$ELSEIF TOFFEE}mapped.isRunning{$ELSE}false{$ENDIF};
 
     class method Run(aCommand: not nullable String): Integer; inline;
     class method RunAsync(aCommand: not nullable String): Process; inline;
@@ -61,6 +61,8 @@ method Process.WaitFor;
 begin
   {$IF ECHOES}
   mapped.WaitForExit();
+  {$ELSEIF ISLAND}
+  mapped.WaitFor();
   {$ELSEIF TOFFEE}
   mapped.waitUntilExit();
   {$ENDIF}
@@ -69,6 +71,8 @@ end;
 method Process.Start;
 begin
   {$IF ECHOES}
+  mapped.Start();
+  {$ELSEIF ISLAND}
   mapped.Start();
   {$ELSEIF TOFFEE}
   mapped.launch();
@@ -79,6 +83,8 @@ method Process.Stop;
 begin
   {$IF ECHOES}
   mapped.Kill();
+  {$ELSEIF ISLAND}
+  mapped.Stop();
   {$ELSEIF TOFFEE}
   mapped.terminate();
   {$ENDIF}
@@ -134,6 +140,8 @@ begin
     aStdErr := lStdErr.ToString();
     result := lResult;
   end;
+  {$ELSEIF ISLAND}
+  result := PlatformProcess.Run(aCommand, aArguments, aEnvironment, aWorkingDirectory, out aStdOut, out aStdErr);
   {$ELSEIF TOFFEE}
   using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
     (lTask as NSTask).standardOutput := NSPipe.pipe();
@@ -211,7 +219,8 @@ begin
     (lTask as PlatformProcess).BeginOutputReadLine();
   if assigned(aStdErrCallback) then
     (lTask as PlatformProcess).BeginErrorReadLine();
-
+  {$ELSEIF ISLAND}
+  result := PlatformProcess.RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, aStdOutCallback, aStdErrCallback, aFinishedCallback);
   {$ELSEIF TOFFEE}
   if assigned(aStdOutCallback) then
     (lTask as PlatformProcess).standardOutput := NSPipe.pipe();
@@ -319,29 +328,29 @@ end;
 class method Process.SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
 begin
   {$IF ECHOES}
-  var lResult := new PlatformProcess();
-  lResult.StartInfo := new System.Diagnostics.ProcessStartInfo();
-  lResult.StartInfo.FileName := aCommand;
-  lResult.StartInfo.CreateNoWindow := true;
+  result := new PlatformProcess();
+  result.StartInfo := new System.Diagnostics.ProcessStartInfo();
+  result.StartInfo.FileName := aCommand;
+  result.StartInfo.CreateNoWindow := true;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
-    lResult.StartInfo.WorkingDirectory := aWorkingDirectory;
+    result.StartInfo.WorkingDirectory := aWorkingDirectory;
   if length(aArguments) > 0 then
-    lResult.StartInfo.Arguments := JoinAndQuoteArgumentsForCommandLine(aArguments);
+    result.StartInfo.Arguments := JoinAndQuoteArgumentsForCommandLine(aArguments);
   for each k in aEnvironment:Keys do
-    lResult.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
-  lResult.StartInfo.UseShellExecute := false;
-  lResult.EnableRaisingEvents := true;
-  result := lResult;
+    result.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
+  result.StartInfo.UseShellExecute := false;
+  result.EnableRaisingEvents := true;
+  {$ELSEIF ISLAND}
+  result := new PlatformProcess(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   {$ELSEIF TOFFEE}
-  var lResult := new PlatformProcess();
-  lResult.launchPath := aCommand;
+  result := new PlatformProcess();
+  result.launchPath := aCommand;
   if assigned(aArguments) then
-    lResult.arguments := aArguments.ToList();
+    result.arguments := aArguments.ToList();
   if assigned(aEnvironment) then
-    lResult.environment := aEnvironment;
+    result.environment := aEnvironment;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
-    lResult.currentDirectoryPath := aWorkingDirectory;
-  result := lResult;
+    result.currentDirectoryPath := aWorkingDirectory;
   {$ENDIF}
 end;
 
