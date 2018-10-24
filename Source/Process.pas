@@ -328,29 +328,31 @@ end;
 class method Process.SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
 begin
   {$IF ECHOES}
-  result := new PlatformProcess();
-  result.StartInfo := new System.Diagnostics.ProcessStartInfo();
-  result.StartInfo.FileName := aCommand;
-  result.StartInfo.CreateNoWindow := true;
+  var lResult := new PlatformProcess();
+  lResult.StartInfo := new System.Diagnostics.ProcessStartInfo();
+  lResult.StartInfo.FileName := aCommand;
+  lResult.StartInfo.CreateNoWindow := true;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
-    result.StartInfo.WorkingDirectory := aWorkingDirectory;
+    lResult.StartInfo.WorkingDirectory := aWorkingDirectory;
   if length(aArguments) > 0 then
-    result.StartInfo.Arguments := JoinAndQuoteArgumentsForCommandLine(aArguments);
+    lResult.StartInfo.Arguments := JoinAndQuoteArgumentsForCommandLine(aArguments);
   for each k in aEnvironment:Keys do
-    result.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
-  result.StartInfo.UseShellExecute := false;
-  result.EnableRaisingEvents := true;
+    lResult.StartInfo.EnvironmentVariables[k] := aEnvironment[k];
+  lResult.StartInfo.UseShellExecute := false;
+  lResult.EnableRaisingEvents := true;
+  result := lResult;
   {$ELSEIF ISLAND}
   result := new PlatformProcess(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   {$ELSEIF TOFFEE}
-  result := new PlatformProcess();
-  result.launchPath := aCommand;
+  var lResult := new PlatformProcess();
+  lResult.launchPath := aCommand;
   if assigned(aArguments) then
-    result.arguments := aArguments.ToList();
+    lResult.arguments := aArguments.ToList();
   if assigned(aEnvironment) then
-    result.environment := aEnvironment;
+    lResult.environment := aEnvironment;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
-    result.currentDirectoryPath := aWorkingDirectory;
+    lResult.currentDirectoryPath := aWorkingDirectory;
+  result := lResult;
   {$ENDIF}
 end;
 
