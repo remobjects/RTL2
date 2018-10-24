@@ -55,7 +55,7 @@ type
 
     class operator Equal(aValue1: NSString; aValue2: String): Boolean;
     begin
-      result := aValue2 = PlatformString(aValue1);
+      result := aValue1 = PlatformString(aValue2);
     end;
 
     //
@@ -69,7 +69,7 @@ type
 
     class operator NotEqual(aValue1: NSString; aValue2: String): Boolean;
     begin
-      result := aValue2 ≠ PlatformString(aValue1);
+      result := aValue1 ≠ PlatformString(aValue2);
     end;
 
     //
@@ -83,7 +83,7 @@ type
 
     class operator Greater(aValue1: NSString; aValue2: String): Boolean;
     begin
-      result := aValue2 > PlatformString(aValue1);
+      result := aValue1 > PlatformString(aValue2);
     end;
 
     class operator Less(aValue1: String; aValue2: NSString): Boolean;
@@ -93,7 +93,7 @@ type
 
     class operator Less(aValue1: NSString; aValue2: String): Boolean;
     begin
-      result := aValue2 < PlatformString(aValue1);
+      result := aValue1 < PlatformString(aValue2);
     end;
 
     class operator GreaterOrEqual(aValue1: String; aValue2: NSString): Boolean;
@@ -103,7 +103,7 @@ type
 
     class operator GreaterOrEqual(aValue1: NSString; aValue2: String): Boolean;
     begin
-      result := aValue2 ≥ PlatformString(aValue1);
+      result := aValue1 ≥ PlatformString(aValue2);
     end;
 
     class operator LessOrEqual(aValue1: String; aValue2: NSString): Boolean;
@@ -113,7 +113,7 @@ type
 
     class operator LessOrEqual(aValue1: NSString; aValue2: String): Boolean;
     begin
-      result := aValue2 ≤ PlatformString(aValue1);
+      result := aValue1 ≤ PlatformString(aValue2);
     end;
 
   end;
