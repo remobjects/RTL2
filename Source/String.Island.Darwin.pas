@@ -93,7 +93,7 @@ type
 
     class operator Less(aValue1: NSString; aValue2: String): Boolean;
     begin
-      result := aValue < PlatformString(aValue1);
+      result := aValue2 < PlatformString(aValue1);
     end;
 
     class operator GreaterOrEqual(aValue1: String; aValue2: NSString): Boolean;
