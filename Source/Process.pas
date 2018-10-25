@@ -9,10 +9,10 @@ type
   //PlatformProcess = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
   PlatformProcess = public System.Diagnostics.Process;
-  {$ELSEIF MACOS}
-  PlatformProcess = public Foundation.NSTask;
   {$ELSEIF ISLAND}
   PlatformProcess = public RemObjects.Elements.System.Process;
+  {$ELSEIF MACOS}
+  PlatformProcess = public Foundation.NSTask;
   {$ENDIF}
 
   {$IF COOPER OR (ISLAND AND (LINUX OR ANDROID))}[Warning("is not implemented for all platforms")]{$ENDIF}
