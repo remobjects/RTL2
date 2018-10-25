@@ -100,6 +100,7 @@ type
     constructor withClass(aClass: &Class);
     constructor withProtocol(aProtocol: id);
     constructor withSimpleType(aTypeEncoding: String);
+    method IsSubclassOf(aType: &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read Get_Interfaces();
     property Methods: ImmutableList<&Method> read Get_Methods();
     property Properties: ImmutableList<&Property> read get_Properties();
@@ -249,6 +250,11 @@ begin
   result := NSMutableArray<&Property>.arrayWithCapacity(propCount);
   for i: Int32 := 0 to propCount-1 do
     NSMutableArray<&Property>(result).addObject(new &Property withClass(fClass) &property(propInfos[i]));
+end;
+
+method &Type.IsSubclassOf(aType: &Type): Boolean;
+begin
+  result := fClass.isSubclassOfClass(aType.fClass);
 end;
 {$ENDIF}
 
