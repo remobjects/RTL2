@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES OR COOPER OR MACOS OR WINDOWS} // OR LINUX
+{$IF ECHOES OR MACOS OR WINDOWS} // OR LINUX
 
 interface
 
@@ -9,13 +9,12 @@ type
   //PlatformProcess = {$ERROR Unsupported platform};
   {$ELSEIF ECHOES}
   PlatformProcess = public System.Diagnostics.Process;
-  {$ELSEIF MACOS}
-  PlatformProcess = public Foundation.NSTask;
   {$ELSEIF ISLAND}
   PlatformProcess = public RemObjects.Elements.System.Process;
+  {$ELSEIF COCOA}
+  PlatformProcess = public Foundation.NSTask;
   {$ENDIF}
 
-  {$IF COOPER OR (ISLAND AND (LINUX OR ANDROID))}[Warning("is not implemented for all platforms")]{$ENDIF}
   Process = public class {$IF ECHOES OR COCOA OR ISLAND}mapped to PlatformProcess{$ENDIF}
   private
     class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
@@ -35,8 +34,8 @@ type
     method Start; inline;
     method Stop; inline;
 
-    property ExitCode: Integer read {$IF ECHOES}mapped.ExitCode{$ELSEIF ISLAND}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ELSE}0{$ENDIF};
-    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF ISLAND}mapped.IsRunning{$ELSEIF TOFFEE}mapped.isRunning{$ELSE}false{$ENDIF};
+    property ExitCode: Integer read {$IF ECHOES OR ISLAND}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ENDIF};
+    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF ISLAND}mapped.IsRunning{$ELSEIF TOFFEE}mapped.isRunning{$ENDIF};
 
     class method Run(aCommand: not nullable String): Integer; inline;
     class method RunAsync(aCommand: not nullable String): Process; inline;
