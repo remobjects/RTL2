@@ -31,7 +31,7 @@ type
     begin
       {$IF ECHOES}
       var lKey := aRootKey.OpenSubKey(aKeyName);
-      result := coalesce(lKey.GetValue(aValueName), aDefaultValue);
+      result := coalesce(lKey:GetValue(aValueName), aDefaultValue);
       {$ELSEIF ISLAND}
       result := RemObjects.Elements.System.Registry.GetValue(aRootKey+"\"+aKeyName, aValueName, aDefaultValue);
       {$ENDIF}
@@ -41,7 +41,7 @@ type
     begin
       {$IF ECHOES}
       var lKey := Microsoft.Win32.RegistryKey(typeOf(Microsoft.Win32.RegistryKey).GetMethod('OpenBaseKey'):Invoke(nil, [aRootKey, 256]));
-      result := coalesce(lKey.GetValue(aValueName), aDefaultValue);
+      result := coalesce(lKey:GetValue(aValueName), aDefaultValue);
       {$ELSEIF ISLAND}
       raise new NotImplementedException("Registry GetValue64 is not implemented for Island.");
       {$ENDIF}
