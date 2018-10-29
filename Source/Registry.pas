@@ -3,19 +3,19 @@
 {$IF (ECHOES AND NOT NETSTANDARD) OR WINDOWS}
 
 type
-  RegistryKey = public {$IF ECHOES}Microsoft.Win32.RegistryHive{$ELSE}String{$ENDIF};
+  RegistryHive = public {$IF ECHOES}Microsoft.Win32.RegistryHive{$ELSE}String{$ENDIF};
 
   Registry = public static class
   private
   protected
   public
 
-    property CurrentUser: RegistryKey read {$IF ECHOES}Microsoft.Win32.RegistryHive.CurrentUser{$ELSE}"HKEY_CURRENT_USER"{$ENDIF};
-    property LocalMachine: RegistryKey read {$IF ECHOES}Microsoft.Win32.RegistryHive.LocalMachine{$ELSE}"HKEY_LOCAL_MACHINE"{$ENDIF};
-    property ClassesRoot: RegistryKey read {$IF ECHOES}Microsoft.Win32.RegistryHive.ClassesRoot{$ELSE}"HKEY_CLASSES_ROOT"{$ENDIF};
-    property Users: RegistryKey read {$IF ECHOES}Microsoft.Win32.RegistryHive.Users{$ELSE}"HKEY_USERS"{$ENDIF};
-    property PerformanceData: RegistryKey read {$IF ECHOES}Microsoft.Win32.RegistryHive.PerformanceData{$ELSE}"HKEY_PERFORMANCE_DATA"{$ENDIF};
-    property CurrentConfig: RegistryKey read {$IF ECHOES}Microsoft.Win32.RegistryHive.CurrentConfig{$ELSE}"HKEY_CURRENT_CONFIG"{$ENDIF};
+    property CurrentUser: RegistryHive read {$IF ECHOES}Microsoft.Win32.RegistryHive.CurrentUser{$ELSE}"HKEY_CURRENT_USER"{$ENDIF};
+    property LocalMachine: RegistryHive read {$IF ECHOES}Microsoft.Win32.RegistryHive.LocalMachine{$ELSE}"HKEY_LOCAL_MACHINE"{$ENDIF};
+    property ClassesRoot: RegistryHive read {$IF ECHOES}Microsoft.Win32.RegistryHive.ClassesRoot{$ELSE}"HKEY_CLASSES_ROOT"{$ENDIF};
+    property Users: RegistryHive read {$IF ECHOES}Microsoft.Win32.RegistryHive.Users{$ELSE}"HKEY_USERS"{$ENDIF};
+    property PerformanceData: RegistryHive read {$IF ECHOES}Microsoft.Win32.RegistryHive.PerformanceData{$ELSE}"HKEY_PERFORMANCE_DATA"{$ENDIF};
+    property CurrentConfig: RegistryHive read {$IF ECHOES}Microsoft.Win32.RegistryHive.CurrentConfig{$ELSE}"HKEY_CURRENT_CONFIG"{$ENDIF};
 
     method GetSubKeyNames(aRootKey: not nullable RegistryKey; aKeyName: not nullable String): nullable ImmutableList<String>;
     begin
