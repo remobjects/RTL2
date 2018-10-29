@@ -46,7 +46,7 @@ type
         using lKey := lBaseKey.OpenSubKey(aKeyName) do
           result := coalesce(lKey:GetValue(aValueName), aDefaultValue);
       {$ELSEIF ISLAND}
-      raise new NotImplementedException("Registry GetValue32 is not implemented for Island.");
+      result := RemObjects.Elements.System.Registry.GetValue32(aRootKey+'\'+aKeyName, aValueName, aDefaultValue);
       {$ENDIF}
     end;
 
