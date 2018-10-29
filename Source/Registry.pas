@@ -24,7 +24,7 @@ type
         using lKey := lBaseKey.OpenSubKey(aKeyName) do
           result := lKey:GetSubKeyNames().ToList;
       {$ELSEIF ISLAND}
-      raise new NotImplementedException("Registry GetValue64 is not implemented for Island.");
+      result := RemObjects.Elements.System.Registry.GetSubKeyNames(aRootKey+"\"+aKeyName);
       {$ENDIF}
     end;
 
@@ -57,7 +57,7 @@ type
         using lKey := lBaseKey.OpenSubKey(aKeyName) do
           result := coalesce(lKey:GetValue(aValueName), aDefaultValue);
       {$ELSEIF ISLAND}
-      raise new NotImplementedException("Registry GetValue64 is not implemented for Island.");
+      result := RemObjects.Elements.System.Registry.GetValue64(aRootKey+'\'+aKeyName, aValueName, aDefaultValue);
       {$ENDIF}
     end;
 
