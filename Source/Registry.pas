@@ -17,7 +17,7 @@ type
     property PerformanceData: RegistryHive read {$IF ECHOES}Microsoft.Win32.RegistryHive.PerformanceData{$ELSE}"HKEY_PERFORMANCE_DATA"{$ENDIF};
     property CurrentConfig: RegistryHive read {$IF ECHOES}Microsoft.Win32.RegistryHive.CurrentConfig{$ELSE}"HKEY_CURRENT_CONFIG"{$ENDIF};
 
-    method GetSubKeyNames(aRootKey: not nullable RegistryKey; aKeyName: not nullable String): nullable ImmutableList<String>;
+    method GetSubKeyNames(aRootKey: not nullable RegistryHive; aKeyName: not nullable String): nullable ImmutableList<String>;
     begin
       {$IF ECHOES}
       using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Default) do
@@ -28,7 +28,7 @@ type
       {$ENDIF}
     end;
 
-    method GetValue(aRootKey: not nullable RegistryKey; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable Object;
+    method GetValue(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable Object;
     begin
       {$IF ECHOES}
       using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Default) do
@@ -39,7 +39,7 @@ type
       {$ENDIF}
     end;
 
-    method GetValue32(aRootKey: not nullable RegistryKey; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable Object;
+    method GetValue32(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable Object;
     begin
       {$IF ECHOES}
       using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Registry32) do
@@ -50,7 +50,7 @@ type
       {$ENDIF}
     end;
 
-    method GetValue64(aRootKey: not nullable RegistryKey; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable Object;
+    method GetValue64(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable Object;
     begin
       {$IF ECHOES}
       using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Registry64) do
@@ -61,17 +61,17 @@ type
       {$ENDIF}
     end;
 
-    method GetStringValue(aRootKey: not nullable RegistryKey; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable String;
+    method GetStringValue(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable String;
     begin
       result := String(GetValue(aRootKey, aKeyName, aValueName, aDefaultValue));
     end;
 
-    method GetStringValue64(aRootKey: not nullable RegistryKey; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable String;
+    method GetStringValue64(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable String;
     begin
       result := String(GetValue64(aRootKey, aKeyName, aValueName, aDefaultValue));
     end;
 
-    method SetValue(aRootKey: not nullable RegistryKey; aKeyName: not nullable String; aValueName: not nullable String; aValue: Object);
+    method SetValue(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aValue: Object);
     begin
       {$IF ECHOES}
       using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Registry64) do begin
