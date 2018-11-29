@@ -141,6 +141,8 @@
       <VirtualFolder>Files and Paths</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Registry.pas" />
+    <None Include="$(MSBuildThisFileDirectory)Resources.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)SimpleCommandLineParser.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
