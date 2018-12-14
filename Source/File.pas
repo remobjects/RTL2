@@ -163,8 +163,6 @@ end;
 
 method File.Move(NewPathAndName: not nullable File): not nullable File;
 begin
-  if NewPathAndName.Exists then
-    raise new IOException(RTLErrorMessages.FILE_EXISTS, NewPathAndName);
   {$IF COOPER}
   result := CopyTo(NewPathAndName) as not nullable;
   JavaFile.delete;
