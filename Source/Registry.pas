@@ -75,7 +75,7 @@ type
     begin
       {$IF ECHOES}
       using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Registry64) do begin
-        var lKey := lBaseKey.OpenSubKey(aKeyName);
+        var lKey := lBaseKey.OpenSubKey(aKeyName, true);
         if not assigned(lKey) then
           lKey := lBaseKey.CreateSubKey(aKeyName);//, true);
         if assigned(aValue) then
