@@ -74,10 +74,10 @@ type
     method SetValue(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aValue: Object);
     begin
       {$IF ECHOES}
-      using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Registry64) do begin
-        var lKey := lBaseKey.OpenSubKey(aKeyName);
+      using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Default) do begin
+        var lKey := lBaseKey.OpenSubKey(aKeyName, true);
         if not assigned(lKey) then
-          lKey := lBaseKey.CreateSubKey(aKeyName);//, true);
+          lKey := lBaseKey.CreateSubKey(aKeyName);
         if assigned(aValue) then
           lKey.SetValue(aValueName, aValue)
         else
