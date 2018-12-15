@@ -66,6 +66,11 @@ type
       result := String(GetValue(aRootKey, aKeyName, aValueName, aDefaultValue));
     end;
 
+    method GetStringValue32(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable String;
+    begin
+      result := String(GetValue32(aRootKey, aKeyName, aValueName, aDefaultValue));
+    end;
+
     method GetStringValue64(aRootKey: not nullable RegistryHive; aKeyName: not nullable String; aValueName: not nullable String; aDefaultValue: nullable Object := nil): nullable String;
     begin
       result := String(GetValue64(aRootKey, aKeyName, aValueName, aDefaultValue));
