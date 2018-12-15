@@ -75,7 +75,7 @@ type
     constructor withCapacity(aCapacity: Integer);
     constructor withRepeatedValue(aValue: T; aCount: Integer);
 
-    method &Add(aItem: T); inline;
+    method &Add(aItem: T): T; inline;
     method &Add(Items: nullable ImmutableList<T>); inline;
     method &Add(params Items: nullable array of T);
     method &Add(Items: nullable sequence of T); inline;
@@ -229,13 +229,14 @@ begin
     result.Add(aValue);
 end;
 
-method List<T>.Add(aItem: T);
+method List<T>.Add(aItem: T): T;
 begin
   {$IF COOPER OR ECHOES OR ISLAND}
   mapped.Add(aItem);
   {$ELSEIF TOFFEE}
   Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ENDIF}
+  result := aItem;
 end;
 
 method List<T>.SetItem(&Index: Integer; Value: T);

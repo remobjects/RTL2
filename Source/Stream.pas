@@ -26,12 +26,13 @@ type
     property CanSeek: Boolean read; abstract;
     property CanWrite: Boolean read; abstract;
   end;
+
   {$IFDEF ECHOES or ISLAND}
   Stream = public partial class (IDisposable)
   public
     method Dispose;
     begin
-      close;
+      Close;
     end;
   end;
   {$ENDIF}
@@ -43,7 +44,13 @@ type
   {$ENDIF}
 
   {$IF ECHOES OR ISLAND}
-  PlatformStream = public {$IF ECHOES}System.IO.Stream{$ELSEIF ISLAND}RemObjects.Elements.System.Stream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+
+  {$IF ECHOES}
+  PlatformStream = public System.IO.Stream;
+  {$ELSEIF ISLAND}
+  PlatformStream = public RemObjects.Elements.System.Stream;
+  {$ENDIF}
+
   WrappedPlatformStream = public abstract class(Stream)
   protected
     fPlatformStream: PlatformStream;
@@ -63,7 +70,15 @@ type
   end;
   {$ENDIF}
 
-  PlatformMemoryStream = public {$IF ECHOES}System.IO.MemoryStream{$ELSEIF COOPER}java.io.ByteArrayOutputStream{$ELSEIF TOFFEE}NSMutableData{$ELSEIF ISLAND}RemObjects.Elements.System.MemoryStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+  {$IF COOPER}
+  PlatformMemoryStream = public java.io.ByteArrayOutputStream;
+  {$ELSEIF ECHOES}
+  PlatformMemoryStream = public System.IO.MemoryStream;
+  {$ELSEIF ISLAND}
+  PlatformMemoryStream = public RemObjects.Elements.System.MemoryStream;
+  {$ELSEIF TOFFEE}
+  PlatformMemoryStream = public Foundation.NSMutableData;
+  {$ENDIF}
 
   MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
@@ -110,7 +125,16 @@ type
   end;
 
   {$IF NOT WEBASSEMBLY}
-  PlatformInternalFileStream = public {$IF ECHOES}System.IO.FileStream{$ELSEIF COOPER}java.io.RandomAccessFile{$ELSEIF TOFFEE}NSFileHandle{$ELSEIF ISLAND}RemObjects.Elements.System.FileStream{$ELSE}{$ERROR Unsupported Platform}{$ENDIF};
+
+  {$IF COOPER}
+  PlatformInternalFileStream = public java.io.RandomAccessFile;
+  {$ELSEIF ECHOES}
+  PlatformInternalFileStream = public System.IO.FileStream;
+  {$ELSEIF ISLAND}
+  PlatformInternalFileStream = public RemObjects.Elements.System.FileStream;
+  {$ELSEIF TOFFEE}
+  PlatformInternalFileStream = public Foundation.NSFileHandle;
+  {$ENDIF}
 
   FileStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   {$IF COOPER OR TOFFEE}

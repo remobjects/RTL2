@@ -11,6 +11,7 @@ type
     method SetItem(aKey: not nullable String; aValue: nullable String);
     method SetItem(aKey: not nullable String; aValue: Boolean);
     method SetItem(aKey: not nullable String; aValue: Int32);
+    method SetItem(aKey: not nullable String; aValue: Double);
     method GetKeys: not nullable sequence of String;
     method GetProperties: sequence of KeyValuePair<String, JsonNode>; iterator;
 
@@ -47,6 +48,7 @@ type
     property Item[aKey: not nullable String]: nullable String write SetItem; default; override;
     property Item[aKey: not nullable String]: Boolean write SetItem; default; override;
     property Item[aKey: not nullable String]: Int32 write SetItem; default; override;
+    property Item[aKey: not nullable String]: Double write SetItem; default; override;
     property Keys: not nullable sequence of String read GetKeys; override;
     property Properties: sequence of KeyValuePair<String, JsonNode> read GetProperties;
   end;
@@ -90,6 +92,11 @@ end;
 method JsonObject.SetItem(aKey: not nullable String; aValue: Int32);
 begin
   fItems[aKey] := new JsonIntegerValue(aValue);
+end;
+
+method JsonObject.SetItem(aKey: not nullable String; aValue: Double);
+begin
+  fItems[aKey] := new JsonFloatValue(aValue);
 end;
 
 method JsonObject.Add(aKey: not nullable String; aValue: not nullable JsonNode);

@@ -49,6 +49,7 @@ type
     method CantSetItem(Key: String; Value: String);
     method CantSetItem(Key: String; Value: Boolean);
     method CantSetItem(Key: String; Value: Int32);
+    method CantSetItem(Key: String; Value: Double);
     method CantGetItem(aIndex: Integer): not nullable JsonNode;
     method CantSetItem(aIndex: Integer; Value: not nullable JsonNode);
     method CantGetKeys: not nullable sequence of String;
@@ -71,6 +72,7 @@ type
     property Item[aKey: not nullable String]: nullable String write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: Boolean write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: Int32 write CantSetItem; default; virtual;
+    property Item[aKey: not nullable String]: Double write CantSetItem; default; virtual;
     property Item[&Index: Integer]: not nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
     property Keys: not nullable sequence of String read CantGetKeys; virtual;
     property IntegerValue: Int64 read GetIntegerValue write SetIntegerValue; virtual;
@@ -210,6 +212,11 @@ begin
 end;
 
 method JsonNode.CantSetItem(Key: String; Value: Int32);
+begin
+  raise new JsonNodeTypeException("JSON Node is not a dictionary.")
+end;
+
+method JsonNode.CantSetItem(Key: String; Value: Double);
 begin
   raise new JsonNodeTypeException("JSON Node is not a dictionary.")
 end;

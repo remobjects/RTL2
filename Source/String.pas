@@ -991,7 +991,7 @@ begin
   result := self;
   if len > 0 then begin
     var i: Integer := 0;
-    while (i < len-1) and CharIsAnyOf(self[i], TrimChars) do
+    while (i < len) and CharIsAnyOf(self[i], TrimChars) do
       inc(i);
     if i > 0 then
       result := Substring(i) as not nullable;
