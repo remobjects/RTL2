@@ -257,18 +257,8 @@ begin
   {$ELSEIF ECHOES}
   result := System.IO.Path.GetTempPath;
   {$ELSEIF ISLAND}
-  {$IF WINDOWS}
-  var lMax := rtl.MAX_PATH;
-  var lBuf := new Char[lMax + 1];
-  var lLen := rtl.GetTempPath(lMax, @lBuf[0]);
-  result := if lLen <> 0 then new String(lBuf, 0, lLen) else '';
-  {$ELSEIF POSIX}
-  var lString: RemObjects.Elements.System.String := 'TMPDIR';
-  var lTmp := rtl.getenv(lString.ToAnsiChars);
-  var lDir: String := '';
-  if lTmp <> nil then
-    lDir := RemObjects.Elements.System.String.FromPAnsiChars(lTmp);
-  result := if lDir <> '' then lDir else rtl.P_tmpdir;
+  {$IFNDEF WEBASSEMBLY}
+  result := RemObjects.Elements.System.Environment.TempFolder.FullName;
   {$ENDIF}
   {$ELSEIF TOFFEE}
   var lTemp := NSTemporaryDirectory();
