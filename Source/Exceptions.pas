@@ -64,12 +64,6 @@ type
   Exception_Helpers = public extension class(Exception)
   public
     {$IF TOFFEE}
-    constructor withError(aError: NSError);
-    begin
-      result := new Exception withName('Exception') reason(aError.description) userInfo(nil);
-    end;
-
-    property Message: String read reason;
     property StackTrace: String read (callStackSymbols as ImmutableList<String>).JoinedString(Environment.LineBreak);
     {$ENDIF}
 
