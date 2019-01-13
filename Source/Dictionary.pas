@@ -3,11 +3,10 @@
 interface
 
 type
-  ImmutableDictionary<T, U> = public class mapped to
-  {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary<T, U>{$ENDIF}
-  {$IF TOFFEE}
-  where T is class, U is class;
-  {$ENDIF}
+  PlatformImmutableDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ENDIF};
+  PlatformDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ENDIF};
+
+  ImmutableDictionary<T, U> = public class mapped to PlatformImmutableDictionary<T,U>  {$IF TOFFEE} where T is class, U is class; {$ENDIF}
   private
     method GetKeys: not nullable ImmutableList<T>;
     method GetValues: not nullable sequence of U;
@@ -36,7 +35,7 @@ type
     {$ENDIF}
   end;
 
-  Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary<T, U>{$ENDIF}
+  Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to PlatformDictionary<T,U>
   {$IF TOFFEE}
   where T is class, U is class;
   {$ENDIF}
@@ -75,12 +74,12 @@ constructor Dictionary<T,U>(aCapacity: Integer);
 begin
   {$IF COOPER}
   result := new java.util.HashMap<T,U>(aCapacity);
+  {$ELSEIF TOFFEE}
+  result := new Foundation.NSMutableDictionary withCapacity(aCapacity);
   {$ELSEIF ECHOES}
   result := new System.Collections.Generic.Dictionary<T,U>(aCapacity);
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.Dictionary<T,U>(aCapacity);
-  {$ELSEIF TOFFEE}
-  result := new Foundation.NSMutableDictionary withCapacity(aCapacity);
   {$ENDIF}
 end;
 
@@ -101,27 +100,27 @@ end;
 
 method Dictionary<T, U>.RemoveAll;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   mapped.Clear;
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   mapped.removeAllObjects;
   {$ENDIF}
 end;
 
 method ImmutableDictionary<T, U>.ContainsKey(Key: not nullable T): Boolean;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.ContainsKey(Key);
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   exit mapped.objectForKey(Key) <> nil;
   {$ENDIF}
 end;
 
 method ImmutableDictionary<T, U>.ContainsValue(Value: not nullable U): Boolean;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.ContainsValue(Value);
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   exit mapped.allValues.containsObject(Value);
   {$ENDIF}
 end;
@@ -135,14 +134,14 @@ method ImmutableDictionary<T, U>.GetItem(aKey: not nullable T): nullable U;
 begin
   {$IF COOPER}
   result := mapped[aKey];
+  {$ELSEIF TOFFEE}
+  result := mapped.objectForKey(aKey);
   {$ELSEIF ECHOES OR ISLAND}
   var lRes: U;
   if not mapped.TryGetValue(aKey, out lRes) then
     result := nil
-  else 
+  else
     result := lRes;
-  {$ELSEIF TOFFEE}
-  result := mapped.objectForKey(aKey);
   {$ENDIF}
 end;
 
@@ -150,14 +149,14 @@ method Dictionary<T, U>.GetItem(aKey: not nullable T): nullable U;
 begin
   {$IF COOPER}
   result := mapped[aKey];
+  {$ELSEIF TOFFEE}
+  result := U(mapped.objectForKey(aKey));
   {$ELSEIF ECHOES OR ISLAND}
     var lRes: U;
   if not mapped.TryGetValue(aKey, out lRes) then
     result := nil
-  else 
+  else
     result := lRes;
-  {$ELSEIF TOFFEE}
-  result := U(mapped.objectForKey(aKey));
   {$ENDIF}
 end;
 
@@ -165,10 +164,10 @@ method ImmutableDictionary<T, U>.GetKeys: not nullable ImmutableList<T>;
 begin
   {$IF COOPER}
   exit mapped.keySet.ToList() as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Keys.ToList() as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.allKeys;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Keys.ToList() as not nullable;
   {$ENDIF}
 end;
 
@@ -176,10 +175,10 @@ method ImmutableDictionary<T, U>.GetValues: not nullable sequence of U;
 begin
   {$IF COOPER}
   exit mapped.values as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Values as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.allValues;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Values as not nullable;
   {$ENDIF}
 end;
 
@@ -187,12 +186,12 @@ method Dictionary<T, U>.Remove(Key: not nullable T): Boolean;
 begin
   {$IF COOPER}
   exit mapped.remove(Key) <> nil;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Remove(Key);
   {$ELSEIF TOFFEE}
   result := ContainsKey(Key);
   if result then
     mapped.removeObjectForKey(Key);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Remove(Key);
   {$ENDIF}
 end;
 
@@ -240,9 +239,9 @@ end;
 
 method ImmutableDictionary<T,U>.MutableVersion: not nullable Dictionary<T,U>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := self;
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   if self is NSMutableDictionary then
     result := self as NSMutableDictionary<T,U>
   else
@@ -255,27 +254,23 @@ end;
 type
   DictionaryHelpers = static class
   public
-    {$IFDEF TOFFEE}
+    {$IF COOPER}
+    method GetSequence<T, U>(aSelf: java.util.HashMap<T,U>) : sequence of KeyValuePair<T,U>; iterator;
+    begin
+      for each el in aSelf.entrySet do
+        yield new KeyValuePair<T,U>(el.Key, el.Value);
+    end;
+    {$ELSEIF TOFFEE}
     method GetSequence<T, U>(aSelf: NSDictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
     begin
       for each el in aSelf.allKeys do
        yield new KeyValuePair<T,U>(T(el), aSelf[el]);
     end;
-    {$ENDIF}
-
-    {$IFDEF ISLAND}
+    {$ELSEIF ISLAND}
     method GetSequence<T, U>(aSelf: RemObjects.Elements.System.Dictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
     begin
       for each el in aSelf.Keys do
         yield new KeyValuePair<T,U>(el, aSelf[el]);
-    end;
-    {$ENDIF}
-
-    {$IFDEF COOPER}
-    method GetSequence<T, U>(aSelf: java.util.HashMap<T,U>) : sequence of KeyValuePair<T,U>; iterator;
-    begin
-      for each el in aSelf.entrySet do
-        yield new KeyValuePair<T,U>(el.Key, el.Value);
     end;
     {$ENDIF}
 

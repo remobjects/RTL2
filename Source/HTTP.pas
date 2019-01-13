@@ -60,24 +60,20 @@ type
     {$IF COOPER}
     var Connection: java.net.HttpURLConnection;
     constructor(aConnection: java.net.HttpURLConnection);
-    {$ENDIF}
-    {$IF ECHOES}
-    var Response: HttpWebResponse;
-    constructor(aResponse: HttpWebResponse);
-    {$ENDIF}
-    {$IF ISLAND}
-    var Data: MemoryStream; readonly;
-    {$IF WINDOWS}
-    var Request: rtl.HINTERNET;
-    constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
-    {$ENDIF}
-    {$IF LINUX}
-    constructor(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
-    {$ENDIF}
-    {$ENDIF}
-    {$IF TOFFEE}
+    {$ELSEIF TOFFEE}
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
+    {$ELSEIF ECHOES}
+    var Response: HttpWebResponse;
+    constructor(aResponse: HttpWebResponse);
+    {$ELSEIF ISLAND}
+      var Data: MemoryStream; readonly;
+      {$IF WINDOWS}
+      var Request: rtl.HINTERNET;
+      constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
+      {$ELSEIF LINUX}
+      constructor(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
+      {$ENDIF}
     {$ENDIF}
 
   public
@@ -248,8 +244,14 @@ begin
     inc(i);
   end;
 end;
-{$ENDIF}
-{$IF ECHOES}
+{$ELSEIF TOFFEE}
+constructor HttpResponse(aData: NSData; aResponse: NSHTTPURLResponse);
+begin
+  Data := aData;
+  Code := aResponse.statusCode;
+  Headers := aResponse.allHeaderFields as not nullable Dictionary<String,String>; // why is this cast needed?
+end;
+{$ELSEIF ECHOES}
 constructor HttpResponse(aResponse: HttpWebResponse);
 begin
   Response := aResponse;
@@ -263,8 +265,7 @@ begin
     Headers[k.ToString] := aResponse.Headers[k];
   {$ENDIF}
 end;
-{$ENDIF}
-{$IF ISLAND}
+{$ELSEIF ISLAND}
 {$IF WINDOWS}
 constructor HttpResponse(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
 begin
@@ -294,8 +295,7 @@ begin
     end;
   end;
 end;
-{$ENDIF}
-{$IF LINUX}
+{$ELSEIF LINUX}
 constructor HttpResponse(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
 begin
   Data := aData;
@@ -303,14 +303,6 @@ begin
   Headers := aHeaders;
 end;
 {$ENDIF}
-{$ENDIF}
-{$IF TOFFEE}
-constructor HttpResponse(aData: NSData; aResponse: NSHTTPURLResponse);
-begin
-  Data := aData;
-  Code := aResponse.statusCode;
-  Headers := aResponse.allHeaderFields as not nullable Dictionary<String,String>; // why is this cast needed?
-end;
 {$ENDIF}
 
 method HttpResponse.GetContentAsString(aEncoding: Encoding := nil; contentCallback: not nullable HttpContentResponseBlock<String>);

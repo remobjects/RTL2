@@ -91,12 +91,12 @@ method Environment.GetEnvironmentVariable(Name: String): String;
 begin
   {$IF COOPER}
   exit System.getenv(Name);
+  {$ELSEIF TOFFEE}
+  exit string(Foundation.NSProcessInfo.processInfo:environment:objectForKey(Name));
   {$ELSEIF ECHOES}
   exit System.Environment.GetEnvironmentVariable(Name);
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Environment.GetEnvironmentVariable(Name);
-  {$ELSEIF TOFFEE}
-  exit string(Foundation.NSProcessInfo.processInfo:environment:objectForKey(Name));
   {$ENDIF}
 end;
 
@@ -104,12 +104,12 @@ method Environment.GetNewLine: String;
 begin
   {$IF COOPER}
   exit System.getProperty("line.separator");
+  {$ELSEIF TOFFEE}
+  exit String(#10);
   {$ELSEIF ECHOES}
   exit System.Environment.NewLine;
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Environment.NewLine;
-  {$ELSEIF TOFFEE}
-  exit String(#10);
   {$ENDIF}
 end;
 
@@ -128,12 +128,6 @@ begin
   result := Accounts[0].name;
   {$ELSEIF COOPER}
   result := System.getProperty("user.name");
-  {$ELSEIF NETFX_CORE}
-  result := Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
-  {$ELSEIF ECHOES}
-  result := System.Environment.UserName;
-  {$ELSEIF ISLAND}
-  result := RemObjects.Elements.System.Environment.UserName;
   {$ELSEIF TOFFEE}
     {$IF OSX}
     result := Foundation.NSUserName;
@@ -144,6 +138,12 @@ begin
     {$ELSEIF TVOS}
     exit "Apple TV User";
     {$ENDIF}
+  {$ELSEIF NETFX_CORE}
+  result := Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
+  {$ELSEIF ECHOES}
+  result := System.Environment.UserName;
+  {$ELSEIF ISLAND}
+  result := RemObjects.Elements.System.Environment.UserName;
   {$ENDIF}
 end;
 
@@ -169,6 +169,16 @@ begin
   except
     result := getUserName();
   end;
+  {$ELSEIF TOFFEE}
+    {$IF MACOS}
+    result := NSHost.currentHost.localizedName;
+    if result.EndsWith(".local") then
+      result := result.Substring(0, length(result)-6);
+    {$ELSEIF IOS OR TVOS}
+    result := UIKit.UIDevice.currentDevice.name;
+    {$ELSE}
+    result := WatchKit.WKInterfaceDevice.currentDevice.name;
+    {$ENDIF}
   {$ELSEIF ECHOES}
   result := System.Environment.MachineName;
   {$ELSEIF ISLAND AND WINDOWS}
@@ -186,36 +196,26 @@ begin
     result := RemObjects.Elements.System.String.FromPAnsiChars(@lName[0])
   else
     result := GetUserName();
-  {$ELSEIF TOFFEE}
-    {$IF MACOS}
-    result := NSHost.currentHost.localizedName;
-    if result.EndsWith(".local") then
-      result := result.Substring(0, length(result)-6);
-    {$ELSEIF IOS OR TVOS}
-    result := UIKit.UIDevice.currentDevice.name;
-    {$ELSE}
-    result := WatchKit.WKInterfaceDevice.currentDevice.name;
-    {$ENDIF}
   {$ENDIF}
 end;
 
 method Environment.GetUserHomeFolder: Folder;
 begin
   {$IF COOPER}
-  {$IF ANDROID}
-  AppContextMissingException.RaiseIfMissing;
-  exit Environment.ApplicationContext.FilesDir.AbsolutePath;
-  {$ELSE}
-  exit System.getProperty("user.home");
-  {$ENDIF}
+    {$IF ANDROID}
+    AppContextMissingException.RaiseIfMissing;
+    exit Environment.ApplicationContext.FilesDir.AbsolutePath;
+    {$ELSE}
+    exit System.getProperty("user.home");
+    {$ENDIF}
+  {$ELSEIF TOFFEE}
+  result := NSFileManager.defaultManager.homeDirectoryForCurrentUser.path;
   {$ELSEIF ECHOES}
   exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
   {$ELSEIF ISLAND}
     {$IFNDEF WEBASSEMBLY}
     result := RemObjects.Elements.System.Environment.UserHomeFolder.FullName;
     {$ENDIF}
-  {$ELSEIF TOFFEE}
-  result := NSFileManager.defaultManager.homeDirectoryForCurrentUser.path;
   {$ENDIF}
 end;
 
@@ -223,11 +223,13 @@ end;
 method Environment.GetDesktopFolder: Folder;
 begin
   {$IF COOPER}
-  {$IF ANDROID}
-  result := nil;
-  {$ELSE}
-  result := nil;
-  {$ENDIF}
+    {$IF ANDROID}
+    result := nil;
+    {$ELSE}
+    result := nil;
+    {$ENDIF}
+  {$ELSEIF TOFFEE}
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DesktopDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ELSEIF ECHOES}
   exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.DesktopDirectory));
   {$ELSEIF ISLAND AND WINDOWS}
@@ -245,8 +247,6 @@ begin
     result := '';
   {$ELSEIF ISLAND AND POSIX}
   {$WARNING Not Implemented for Island yet}
-  {$ELSEIF TOFFEE}
-  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DesktopDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ENDIF}
 end;
 
@@ -254,15 +254,15 @@ method Environment.GetTempFolder: Folder;
 begin
   {$IF COOPER}
   result := System.getProperty('java.io.tmpdir');
+  {$ELSEIF TOFFEE}
+  var lTemp := NSTemporaryDirectory();
+  result := if lTemp = nil then '/tmp' else lTemp;
   {$ELSEIF ECHOES}
   result := System.IO.Path.GetTempPath;
   {$ELSEIF ISLAND}
   {$IFNDEF WEBASSEMBLY}
   result := RemObjects.Elements.System.Environment.TempFolder.FullName;
   {$ENDIF}
-  {$ELSEIF TOFFEE}
-  var lTemp := NSTemporaryDirectory();
-  result := if lTemp = nil then '/tmp' else lTemp;
   {$ENDIF}
 end;
 
@@ -314,7 +314,9 @@ end;
 
 method Environment.GetUserDownloadsFolder: nullable Folder;
 begin
-  {$IF ECHOES}
+  {$IF TOFFEE}
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
+  {$ELSEIF ECHOES}
   case OS of
     OperatingSystem.macOS: begin
         //result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
@@ -336,8 +338,6 @@ begin
         result := RemObjects.Elements.System.String.FromPChar(lFolder);
     end;
     {$ENDIF}
-  {$ELSEIF TOFFEE}
-  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DownloadsDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ENDIF}
   {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
@@ -354,6 +354,18 @@ begin
   else if lOSName.Contains("linux") then exit OperatingSystem.Linux
   else if lOSName.Contains("mac") then exit OperatingSystem.macOS
   else exit OperatingSystem.Unknown;
+  {$ELSEIF TOFFEE}
+    {$IF OSX}
+    exit OperatingSystem.macOS;
+    {$ELSEIF IOS}
+    exit OperatingSystem.iOS;
+    {$ELSEIF WATCHOS}
+    exit OperatingSystem.watchOS;
+    {$ELSEIF TVOS}
+    exit OperatingSystem.tvOS;
+    {$ELSE}
+      {$ERROR Unsupported Cocoa platform}
+    {$ENDIF}
   {$ELSEIF NETFX_CORE}
   exit OperatingSystem.Windows
   {$ELSEIF ECHOES}
@@ -386,18 +398,6 @@ begin
     exit OperatingSystem.Windows;
       {$ERROR Unsupported Island platform}
     {$ENDIF}
-  {$ELSEIF TOFFEE}
-    {$IF OSX}
-    exit OperatingSystem.macOS;
-    {$ELSEIF IOS}
-    exit OperatingSystem.iOS;
-    {$ELSEIF WATCHOS}
-    exit OperatingSystem.watchOS;
-    {$ELSEIF TVOS}
-    exit OperatingSystem.tvOS;
-    {$ELSE}
-      {$ERROR Unsupported Island platform}
-    {$ENDIF}
   {$ENDIF}
 end;
 
@@ -424,12 +424,6 @@ method Environment.GetOSName: String;
 begin
   {$IF COOPER}
   exit System.getProperty("os.name");
-  {$ELSEIF NETFX_CORE}
-  exit "Microsoft Windows NT 6.2";
-  {$ELSEIF ECHOES}
-  exit System.Environment.OSVersion.Platform.ToString();
-  {$ELSEIF ISLAND}
-  exit RemObjects.Elements.System.Environment.OSName;
   {$ELSEIF TOFFEE}
     {$IF OSX}
     exit "macOS";
@@ -440,8 +434,14 @@ begin
     {$ELSEIF TVOS}
     exit "tvOS";
     {$ELSE}
-      {$ERROR Unsupported Toffee platform}
+      {$ERROR Unsupported Cocoa platform}
     {$ENDIF}
+  {$ELSEIF NETFX_CORE}
+  exit "Microsoft Windows NT 6.2";
+  {$ELSEIF ECHOES}
+  exit System.Environment.OSVersion.Platform.ToString();
+  {$ELSEIF ISLAND}
+  exit RemObjects.Elements.System.Environment.OSName;
   {$ENDIF}
 end;
 
@@ -449,14 +449,14 @@ method Environment.GetOSVersion: String;
 begin
   {$IF COOPER}
   exit System.getProperty("os.version");
+  {$ELSEIF TOFFEE}
+  exit NSProcessInfo.processInfo.operatingSystemVersionString;
   {$ELSEIF NETFX_CORE}
   exit "6.2";
   {$ELSEIF ECHOES}
   exit System.Environment.OSVersion.Version.ToString;
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Environment.OSVersion;
-  {$ELSEIF TOFFEE}
-  exit NSProcessInfo.processInfo.operatingSystemVersionString;
   {$ENDIF}
 end;
 
@@ -464,10 +464,6 @@ method Environment.GetOSBitness: Int32;
 begin
   if GetProcessBitness = 64 then exit 64;
   {$IF COOPER}
-  result := 0;
-  {$ELSEIF ECHOES}
-  result := if System.Environment.Is64BitOperatingSystem then 64 else 32;
-  {$ELSEIF ISLAND}
   result := 0;
   {$ELSEIF TOFFEE}
     {$IF OSX}
@@ -481,6 +477,10 @@ begin
     {$ELSE}
       {$ERROR Unsupported Toffee platform}
     {$ENDIF}
+  {$ELSEIF ECHOES}
+  result := if System.Environment.Is64BitOperatingSystem then 64 else 32;
+  {$ELSEIF ISLAND}
+  result := 0;
   {$ENDIF}
 end;
 
@@ -497,12 +497,12 @@ method Environment.GetCurrentDirectory(): String;
 begin
   {$IF COOPER}
   exit System.getProperty("user.dir");
+  {$ELSEIF TOFFEE}
+  exit Foundation.NSFileManager.defaultManager().currentDirectoryPath;
   {$ELSEIF ECHOES}
   exit System.Environment.CurrentDirectory;
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Environment.CurrentDirectory;
-  {$ELSEIF TOFFEE}
-  exit Foundation.NSFileManager.defaultManager().currentDirectoryPath;
   {$ENDIF}
 end;
 

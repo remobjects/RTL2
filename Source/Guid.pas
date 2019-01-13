@@ -15,10 +15,9 @@ type
   PlatformGuid = public Foundation.NSUUID;
   {$ENDIF}
 
-  Guid = public class
-  {$IF COOPER OR TOFFEE}mapped to PlatformGuid{$ENDIF}
+  Guid = public class {$IF COOPER OR TOFFEE} mapped to PlatformGuid {$ENDIF}
   private
-    {$IF ECHOES OR ISLAND}
+    {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     fGuid: PlatformGuid;
     {$ENDIF}
 

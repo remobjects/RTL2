@@ -14,10 +14,7 @@ type
   PlatformMethod = public RemObjects.Elements.System.MethodInfo;
   {$ENDIF}
 
-  &Method = public class
-  {$IF COOPER OR ECHOES OR ISLAND}
-    mapped to PlatformMethod
-    {$ENDIF}
+  &Method = public class {$IF COOPER OR ECHOES OR (ISLAND AND NOT TOFFEE)} mapped to PlatformMethod {$ENDIF}
   private
     {$IF TOFFEE}
     const MAX_CHAR = 256;

@@ -170,6 +170,16 @@ begin
   var FloatPattern := if aDigitsAfterDecimalPoint < 0 then "#.###############" else if aDigitsAfterDecimalPoint = 0 then "0" else "0."+new String('0', aDigitsAfterDecimalPoint);
   DecFormat.applyPattern(FloatPattern);
   result := DecFormat.format(aValue) as not nullable;
+  {$ELSEIF TOFFEE}
+  var numberFormatter := new NSNumberFormatter();
+  numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
+  numberFormatter.locale := coalesce(aLocale, Locale.Current);
+  if aLocale = Locale.Invariant then numberFormatter.usesGroupingSeparator := false;
+  if aDigitsAfterDecimalPoint ≥ 0 then begin
+    numberFormatter.maximumFractionDigits := aDigitsAfterDecimalPoint;
+    numberFormatter.minimumFractionDigits := aDigitsAfterDecimalPoint;
+  end;
+  result := numberFormatter.stringFromNumber(aValue) as not nullable;
   {$ELSEIF ECHOES}
   if aLocale = nil then aLocale := Locale.Current;
   if aDigitsAfterDecimalPoint < 0 then
@@ -182,16 +192,6 @@ begin
     result := aValue.ToString(aLocale) as not nullable
   else
     result := aValue.ToString(aDigitsAfterDecimalPoint, aLocale) as not nullable
-  {$ELSEIF TOFFEE}
-  var numberFormatter := new NSNumberFormatter();
-  numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
-  numberFormatter.locale := coalesce(aLocale, Locale.Current);
-  if aLocale = Locale.Invariant then numberFormatter.usesGroupingSeparator := false;
-  if aDigitsAfterDecimalPoint ≥ 0 then begin
-    numberFormatter.maximumFractionDigits := aDigitsAfterDecimalPoint;
-    numberFormatter.minimumFractionDigits := aDigitsAfterDecimalPoint;
-  end;
-  result := numberFormatter.stringFromNumber(aValue) as not nullable;
   {$ENDIF}
 end;
 
@@ -244,13 +244,13 @@ method Convert.ToInt32(aValue: not nullable String): Int32;
 begin
   {$IF COOPER}
   exit Integer.parseInt(aValue);
+  {$ELSEIF TOFFEE}
+  exit ParseInt32(aValue);
   {$ELSEIF ECHOES OR ISLAND}
   for i: Int32 := 0 to length(aValue)-1 do
     if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
       raise new FormatException("Unable to convert string '{0}' to Int32.", aValue);
   exit Int32.Parse(aValue);
-  {$ELSEIF TOFFEE}
-  exit ParseInt32(aValue);
   {$ENDIF}
 end;
 
@@ -266,6 +266,8 @@ begin
     on E: NumberFormatException do
       exit nil;
   end;
+  {$ELSEIF TOFFEE}
+  exit TryParseInt32(aValue);
   {$ELSEIF ECHOES OR ISLAND}
   for i: Int32 := 0 to length(aValue)-1 do
     if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
@@ -275,8 +277,6 @@ begin
     exit lResult
   else
     exit nil;
-  {$ELSEIF TOFFEE}
-  exit TryParseInt32(aValue);
   {$ENDIF}
 end;
 
@@ -658,6 +658,9 @@ begin
 
   if Consts.IsInfinity(result) or Consts.IsNaN(result) then
     exit nil;
+  {$ELSEIF TOFFEE}
+  var Number := TryParseNumber(aValue, aLocale);
+  exit Number:doubleValue;
   {$ELSEIF ECHOES}
   var lResult: Double;
   if Double.TryParse(aValue, System.Globalization.NumberStyles.Any, aLocale, out lResult) then
@@ -666,9 +669,6 @@ begin
   var lResult: Double;
   if Double.TryParse(aValue, aLocale, out lResult) then
     exit valueOrDefault(lResult);
-  {$ELSEIF TOFFEE}
-  var Number := TryParseNumber(aValue, aLocale);
-  exit Number:doubleValue;
   {$ENDIF}
 end;
 

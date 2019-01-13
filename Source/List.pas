@@ -3,10 +3,10 @@
 interface
 
 type
-  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF};
-  PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ENDIF};
+  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ENDIF};
+  PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ENDIF};
 
-  ImmutableList<T> = public class (sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF}
+  ImmutableList<T> = public class (sequence of T) mapped to PlatformImmutableList<T>
   {$IFDEF TOFFEE} where T is class;{$ENDIF}
   private
     method GetItem(&Index: Integer): T;
@@ -59,7 +59,7 @@ type
     property Item[i: Integer]: T read GetItem; default;
   end;
 
-  List<T> = public class (ImmutableList<T>, sequence of T) mapped to {$IF COOPER}java.util.ArrayList<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ENDIF}
+  List<T> = public class (ImmutableList<T>, sequence of T) mapped to PlatformList<T>
   {$IFDEF TOFFEE}
    where T is class;
   {$ENDIF}
@@ -153,12 +153,12 @@ constructor ImmutableList<T>(Items: ImmutableList<T>);
 begin
   {$IF COOPER}
   result := new java.util.ArrayList<T>(Items);
+  {$ELSEIF TOFFEE}
+  result := new Foundation.NSArray withArray(Items);
   {$ELSEIF ECHOES}
   result := new System.Collections.Generic.List<T>(Items);
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.List<T>(Items);
-  {$ELSEIF TOFFEE}
-  result := new Foundation.NSArray withArray(Items);
   {$ENDIF}
 end;
 
@@ -166,12 +166,12 @@ constructor ImmutableList<T>(params anArray: array of T);
 begin
   {$IF COOPER}
   result := new PlatformImmutableList<T>(java.util.Arrays.asList(anArray));
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSArray.arrayWithObjects(^id(@anArray[0])) count(length(anArray));
   {$ELSEIF ECHOES}
   result := new System.Collections.Generic.List<T>(anArray);
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.List<T>(anArray);
-  {$ELSEIF TOFFEE}
-  result := Foundation.NSArray.arrayWithObjects(^id(@anArray[0])) count(length(anArray));
   {$ENDIF}
 end;
 
@@ -179,12 +179,12 @@ constructor List<T>(Items: ImmutableList<T>);
 begin
   {$IF COOPER}
   result := new PlatformImmutableList<T>(Items);
+  {$ELSEIF TOFFEE}
+  result := new Foundation.NSMutableArray<T> withArray(Items);
   {$ELSEIF ECHOES}
   result := new System.Collections.Generic.List<T>(Items);
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.List<T>(Items);
-  {$ELSEIF TOFFEE}
-  result := new Foundation.NSMutableArray<T> withArray(Items);
   {$ENDIF}
 end;
 
@@ -192,12 +192,12 @@ constructor List<T>(params anArray: array of T);
 begin
   {$IF COOPER}
   result := new java.util.ArrayList<T>(java.util.Arrays.asList(anArray));
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSMutableArray<T>.arrayWithObjects(^T(@anArray[0])) count(length(anArray)) as List<T>;
   {$ELSEIF ECHOES}
   exit new System.Collections.Generic.List<T>(anArray);
   {$ELSEIF ISLAND}
   exit new RemObjects.Elements.System.List<T>(anArray);
-  {$ELSEIF TOFFEE}
-  result := Foundation.NSMutableArray<T>.arrayWithObjects(^T(@anArray[0])) count(length(anArray)) as List<T>;
   {$ENDIF}
 end;
 
@@ -205,12 +205,12 @@ constructor List<T> withCapacity(aCapacity: Integer);
 begin
   {$IF COOPER}
   result := new java.util.ArrayList<T>(aCapacity);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSMutableArray.arrayWithCapacity(aCapacity)
   {$ELSEIF ECHOES}
   exit new System.Collections.Generic.List<T>(aCapacity);
   {$ELSEIF ISLAND}
   exit new RemObjects.Elements.System.List<T>(aCapacity);
-  {$ELSEIF TOFFEE}
-  result := Foundation.NSMutableArray.arrayWithCapacity(aCapacity)
   {$ENDIF}
 end;
 
@@ -218,12 +218,12 @@ constructor List<T> withRepeatedValue(aValue: T; aCount: Integer);
 begin
   {$IF COOPER}
   result := new java.util.ArrayList<T>(aCount);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSMutableArray.arrayWithCapacity(aCount);
   {$ELSEIF ECHOES}
   result := new System.Collections.Generic.List<T>(aCount);
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.List<T>(aCount);
-  {$ELSEIF TOFFEE}
-  result := Foundation.NSMutableArray.arrayWithCapacity(aCount);
   {$ENDIF}
   for i: Integer := 0 to aCount-1 do
     result.Add(aValue);
@@ -231,9 +231,9 @@ end;
 
 method List<T>.Add(aItem: T): T;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   mapped.Add(aItem);
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ENDIF}
   result := aItem;
@@ -275,10 +275,10 @@ begin
   if assigned(Items) then begin
     {$IF COOPER}
     mapped.AddAll(Items);
-    {$ELSEIF ECHOES OR ISLAND}
-    mapped.AddRange(Items);
     {$ELSEIF TOFFEE}
     mapped.addObjectsFromArray(Items);
+    {$ELSEIF ECHOES OR ISLAND}
+    mapped.AddRange(Items);
     {$ENDIF}
   end;
 end;
@@ -288,12 +288,12 @@ begin
   if assigned(Items) then begin
     {$IF COOPER}
     mapped.AddAll(Items.ToList());
+    {$ELSEIF TOFFEE}
+    mapped.addObjectsFromArray(Items.array());
     {$ELSEIF ECHOES}
     mapped.AddRange(Items);
     {$ELSEIF ISLAND}
     mapped.AddRange(Items.ToList());
-    {$ELSEIF TOFFEE}
-    mapped.addObjectsFromArray(Items.array());
     {$ENDIF}
   end;
 end;
@@ -308,10 +308,10 @@ method List<T>.RemoveAll;
 begin
   {$IF COOPER}
   mapped.Clear;
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Clear;
   {$ELSEIF TOFFEE}
   mapped.RemoveAllObjects;
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Clear;
   {$ENDIF}
 end;
 
@@ -319,10 +319,10 @@ method ImmutableList<T>.Contains(aItem: T): Boolean;
 begin
   {$IF COOPER}
   exit mapped.Contains(aItem);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Contains(aItem);
   {$ELSEIF TOFFEE}
   exit Foundation.NSArray(mapped).ContainsObject(NullHelper.coalesce(aItem, NSNull.null));
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Contains(aItem);
   {$ENDIF}
 end;
 
@@ -370,11 +370,11 @@ method ImmutableList<T>.IndexOf(aItem: T): Integer;
 begin
   {$IF COOPER}
   exit mapped.IndexOf(aItem);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.IndexOf(aItem);
   {$ELSEIF TOFFEE}
   var lIndex := Foundation.NSArray(mapped).indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
   exit if lIndex = NSNotFound then -1 else Integer(lIndex);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.IndexOf(aItem);
   {$ENDIF}
 end;
 
@@ -382,10 +382,10 @@ method List<T>.Insert(&Index: Integer; aItem: T);
 begin
   {$IF COOPER}
   mapped.Add(&Index, aItem);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Insert(&Index, aItem);
   {$ELSEIF TOFFEE}
   Foundation.NSMutableArray(mapped).insertObject(NullHelper.coalesce(aItem, NSNull.null)) atIndex(&Index);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Insert(&Index, aItem);
   {$ENDIF}
 end;
 
@@ -393,10 +393,10 @@ method List<T>.InsertRange(&Index: Integer; Items: List<T>);
 begin
   {$IF COOPER}
   mapped.AddAll(&Index, Items);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.InsertRange(&Index, Items);
   {$ELSEIF TOFFEE}
   mapped.insertObjects(Items) atIndexes(new NSIndexSet withIndexesInRange(NSMakeRange(&Index, Items.Count)));
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.InsertRange(&Index, Items);
   {$ENDIF}
 end;
 
@@ -409,10 +409,10 @@ method ImmutableList<T>.LastIndexOf(aItem: T): Integer;
 begin
   {$IF COOPER}
   exit mapped.LastIndexOf(aItem);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.LastIndexOf(aItem);
   {$ELSEIF TOFFEE}
   exit ListHelpers.LastIndexOf(self, aItem);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.LastIndexOf(aItem);
   {$ENDIF}
 end;
 
@@ -422,14 +422,14 @@ begin
     exit false;
   {$IF COOPER}
   exit mapped.Remove(Object(aItem));
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Remove(aItem);
   {$ELSEIF TOFFEE}
   var lIndex := Foundation.NSMutableArray(mapped).indexOfObject(NullHelper.coalesce(aItem, NSNull.null));
   if lIndex = NSNotFound then
     exit false;
   RemoveAt(lIndex);
   exit true;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Remove(aItem);
   {$ENDIF}
 end;
 
@@ -437,19 +437,19 @@ method List<T>.RemoveAt(aIndex: Integer);
 begin
   {$IF COOPER}
   mapped.remove(aIndex);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.RemoveAt(aIndex);
   {$ELSEIF TOFFEE}
   mapped.removeObjectAtIndex(aIndex);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.RemoveAt(aIndex);
   {$ENDIF}
 end;
 
 method List<T>.Remove(aItems: List<T>);
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   for each i in aItems do
     &Remove(i);
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   mapped.removeObjectsInArray(aItems);
   {$ENDIF}
 end;
@@ -464,10 +464,10 @@ method List<T>.RemoveRange(aIndex: Integer; aCount: Integer);
 begin
   {$IF COOPER}
   mapped.subList(aIndex, aIndex+aCount).clear;
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.RemoveRange(aIndex, aCount);
   {$ELSEIF TOFFEE}
   mapped.removeObjectsInRange(Foundation.NSMakeRange(aIndex, aCount));
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.RemoveRange(aIndex, aCount);
   {$ENDIF}
 end;
 
@@ -482,12 +482,12 @@ begin
   {$IF COOPER}
   mapped.subList(aIndex, aIndex+aCount).clear();
   mapped.addAll(aIndex, aNewObjects);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.RemoveRange(aIndex, aCount);
-  mapped.InsertRange(aIndex, aNewObjects);
   {$ELSEIF TOFFEE}
   var range := NSMakeRange(aIndex, aCount);
   mapped.replaceObjectsInRange(range) withObjectsFromArray(aNewObjects);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.RemoveRange(aIndex, aCount);
+  mapped.InsertRange(aIndex, aNewObjects);
   {$ENDIF}
 end;
 
@@ -495,8 +495,6 @@ method List<T>.Sort(Comparison: Comparison<T>);
 begin
   {$IF COOPER}
   java.util.Collections.sort(mapped, new class java.util.Comparator<T>(compare := (x, y) -> Comparison(x, y)));
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Sort((x, y) -> Comparison(x, y));
   {$ELSEIF TOFFEE}
   mapped.sortUsingComparator((x, y) -> begin
     var lResult := Comparison(x, y);
@@ -507,6 +505,8 @@ begin
          else
            NSComparisonResult.NSOrderedDescending;
   end);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Sort((x, y) -> Comparison(x, y));
   {$ENDIF}
 end;
 
@@ -515,9 +515,6 @@ begin
   {$IF COOPER}
   result := self.ToList();
   java.util.Collections.sort(result, new class java.util.Comparator<T>(compare := (x, y) -> Comparison(x, y)));
-  {$ELSEIF ECHOES OR ISLAND}
-  result := self.ToList();
-  (result as PlatformList<T>).Sort((x, y) -> Comparison(x, y));
   {$ELSEIF TOFFEE}
   result := mapped.sortedArrayUsingComparator((x, y) -> begin
     var lResult := Comparison(x, y);
@@ -528,6 +525,9 @@ begin
          else
            NSComparisonResult.NSOrderedDescending;
   end);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := self.ToList();
+  (result as PlatformList<T>).Sort((x, y) -> Comparison(x, y));
   {$ENDIF}
 end;
 
@@ -546,7 +546,7 @@ end;
 {$ELSE}
 method ImmutableList<T>.ToArray: not nullable array of T;
 begin
-  {$IF ECHOES OR ISLAND}
+  {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
   exit mapped.ToArray as not nullable;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArray<T>(self);
@@ -556,22 +556,22 @@ end;
 
 method ImmutableList<T>.ToList<U>: not nullable ImmutableList<U>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := self.Select(x -> x as U).ToList() as not nullable;
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   result :=  self as ImmutableList<U>;
   {$ENDIF}
 end;
 
 method List<T>.ToList<U>: List<U>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   //77062: Cannot call named .ctor on mapped class
   //result := new List<U> withCapacity(Count); // E407 No overloaded constructor with these parameters for type "List<T>", best matching overload is "constructor (Items: List<T>): List<T>"
   //for each i in self do
   //  result.Add(i as U);
   result := self.Select(x -> x as U).ToList(); {$HINT largely inefficient. rewrite}
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   result := self as Object as List<U>;
   {$ENDIF}
 end;
@@ -585,12 +585,12 @@ method ImmutableList<T>.SubList(aStartIndex: Int32; aLength: Int32): ImmutableLi
 begin
   {$IF COOPER}
   result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
+  {$ELSEIF TOFFEE}
+  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength));
   {$ELSEIF ECHOES OR ISLAND}
   var lArray := new T[aLength];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
   result := new List<T>(lArray);
-  {$ELSEIF TOFFEE}
-  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength));
   {$ENDIF}
 end;
 
@@ -603,38 +603,38 @@ method List<T>.SubList(aStartIndex: Int32; aLength: Int32): List<T>;
 begin
   {$IF COOPER}
   result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
+  {$ELSEIF TOFFEE}
+  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength)).mutableCopy;
   {$ELSEIF ECHOES OR ISLAND}
   var lArray := new T[aLength];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
   result := new List<T>(lArray);
-  {$ELSEIF TOFFEE}
-  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength)).mutableCopy;
   {$ENDIF}
 end;
 
 method ImmutableList<T>.UniqueCopy: not nullable ImmutableList<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := new ImmutableList<T>(self);
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   result := mapped.copy as NSArray<T>;
   {$ENDIF}
 end;
 
 method ImmutableList<T>.UniqueMutableCopy: not nullable List<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := new List<T>(self);
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   result := mapped.mutableCopy as not nullable;
   {$ENDIF}
 end;
 
 method ImmutableList<T>.MutableVersion: not nullable List<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := self;
-  {$ELSEIF TOFFEE}
+  {$ELSE}
   if self is NSMutableArray then
     result := self as NSMutableArray<T>
   else
@@ -644,7 +644,7 @@ end;
 
 method ImmutableList<T>.JoinedString(aSeparator: nullable String := nil): not nullable String;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   var lResult := new StringBuilder();
   for each e in self index i do begin
     if (i ≠ 0) and assigned(aSeparator) then

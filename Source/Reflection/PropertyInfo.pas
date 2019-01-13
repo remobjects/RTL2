@@ -12,10 +12,7 @@ type
   PlatformProperty = public RemObjects.Elements.System.PropertyInfo;
   {$ENDIF}
 
-  &Property = public class
-  {$IF ECHOES OR ISLAND}
-    mapped to PlatformProperty
-  {$ENDIF}
+  &Property = public class {$IF ECHOES OR (ISLAND AND NOT TOFFEE)} mapped to PlatformProperty {$ENDIF}
   private
   {$IF TOFFEE}
     fProperty: ^Void;

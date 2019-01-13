@@ -6,15 +6,15 @@ type
   {$IF COOPER}
   ImmutablePlatformBinary = public java.io.ByteArrayOutputStream;
   PlatformBinary = public java.io.ByteArrayOutputStream;
+  {$ELSEIF TOFFEE}
+  ImmutablePlatformBinary = public Foundation.NSData;
+  PlatformBinary = public Foundation.NSMutableData;
   {$ELSEIF ECHOES}
   ImmutablePlatformBinary = public System.IO.MemoryStream;
   PlatformBinary = public System.IO.MemoryStream;
   {$ELSEIF ISLAND}
   ImmutablePlatformBinary = public RemObjects.Elements.System.MemoryStream;
   PlatformBinary = public RemObjects.Elements.System.MemoryStream;
-  {$ELSEIF TOFFEE}
-  ImmutablePlatformBinary = public Foundation.NSData;
-  PlatformBinary = public Foundation.NSMutableData;
   {$ENDIF}
 
   ImmutableBinary = public class {$IF ECHOES OR ISLAND OR TOFFEE}mapped to ImmutablePlatformBinary{$ENDIF}
@@ -24,7 +24,7 @@ type
   {$ENDIF}
   public
     {$IF TOFFEE OR ECHOES}constructor; mapped to constructor();{$ENDIF}
-    {$IF NOT(TOFFEE OR ECHOES)}constructor; empty;{$ENDIF}
+    {$IF NOT (TOFFEE OR ECHOES)}constructor; empty;{$ENDIF}
     constructor(anArray: array of Byte);
     constructor(Bin: ImmutableBinary);
 
@@ -43,7 +43,7 @@ type
     {$IF COOPER}
     method ToPlatformBinary: ImmutablePlatformBinary;
     {$ENDIF}
-    {$IF ISLAND AND DARWIN}
+    {$IF ISLAND AND DARWIN AND NOT TOFFEE}
     method ToNSData: Foundation.NSData;
     {$ENDIF}
     property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
@@ -79,6 +79,8 @@ begin
 
   {$IF COOPER}
   fData.Write(anArray, 0, anArray.Length);
+  {$ELSEIF TOFFEE}
+  exit NSData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
   {$ELSEIF ECHOES}
   var ms := new ImmutablePlatformBinary();
   ms.Write(anArray, 0, anArray.Length);
@@ -87,8 +89,6 @@ begin
   var ms := new ImmutablePlatformBinary();
   ms.Write(anArray, anArray.Length);
   exit ms;
-  {$ELSEIF TOFFEE}
-  exit NSData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
   {$ENDIF}
 end;
 
@@ -98,22 +98,22 @@ begin
   {$IF COOPER}
   if Bin <> nil then
     fData.Write(Bin.ToArray, 0, Bin.Length);
+  {$ELSEIF TOFFEE}
+  exit NSData.dataWithData(Bin);
   {$ELSEIF ECHOES OR ISLAND}
   var ms := new ImmutablePlatformBinary();
   ImmutablePlatformBinary(Bin).WriteTo(ms);
   exit ms;
-  {$ELSEIF TOFFEE}
-  exit NSData.dataWithData(Bin);
   {$ENDIF}
 end;
 
 constructor Binary;
 begin
   {$IF COOPER}
-  {$ELSEIF ECHOES OR ISLAND}
-  result := new ImmutablePlatformBinary();
   {$ELSEIF TOFFEE}
   result :=  NSData.data;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := new ImmutablePlatformBinary();
   {$ENDIF}
 end;
 
@@ -124,6 +124,8 @@ begin
 
   {$IF COOPER}
   inherited constructor(anArray);
+  {$ELSEIF TOFFEE}
+  exit NSMutableData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
   {$ELSEIF ECHOES}
   var ms := new PlatformBinary();
   ms.Write(anArray, 0, anArray.Length);
@@ -133,8 +135,6 @@ begin
   if RemObjects.Oxygene.System.length(anArray) > 0 then
     ms.Write(anArray, 0, RemObjects.Oxygene.System.length(anArray));
   exit ms;
-  {$ELSEIF TOFFEE}
-  exit NSMutableData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
   {$ENDIF}
 end;
 
@@ -143,12 +143,12 @@ begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
   {$IF COOPER}
   Assign(Bin);
+  {$ELSEIF TOFFEE}
+  exit NSMutableData.dataWithData(Bin);
   {$ELSEIF ECHOES OR ISLAND}
   var ms := new PlatformBinary();
   PlatformBinary(Bin).WriteTo(ms);
   exit ms;
-  {$ELSEIF TOFFEE}
-  exit NSMutableData.dataWithData(Bin);
   {$ENDIF}
 end;
 
@@ -158,12 +158,12 @@ begin
   Clear;
   if Bin <> nil then
     fData.Write(Bin.ToArray, 0, Bin.Length);
+  {$ELSEIF TOFFEE}
+  mapped.setData(Bin);
   {$ELSEIF ECHOES OR ISLAND}
   Clear;
   if assigned(Bin) then
     PlatformBinary(Bin).WriteTo(mapped);
-  {$ELSEIF TOFFEE}
-  mapped.setData(Bin);
   {$ENDIF}
 end;
 
@@ -177,11 +177,11 @@ begin
   result := new Byte[Range.Length];
   {$IF COOPER}
   System.arraycopy(fData.toByteArray, Range.Location, result, 0, Range.Length);
+  {$ELSEIF TOFFEE}
+  mapped.getBytes(result) range(Range);
   {$ELSEIF ECHOES}
   mapped.Position := Range.Location;
   mapped.Read(result, 0, Range.Length);
-  {$ELSEIF TOFFEE}
-  mapped.getBytes(result) range(Range);
   {$ENDIF}
 end;
 
@@ -218,11 +218,11 @@ begin
   RangeHelper.Validate(new Range(Offset, Count), Buffer.Length);
   {$IF COOPER}
   fData.write(Buffer, Offset, Count);
+  {$ELSEIF TOFFEE}
+  mapped.appendBytes(@Buffer[Offset]) length(Count);
   {$ELSEIF ECHOES OR ISLAND}
   mapped.Seek(0, PlatformSeekOrigin.End);
   mapped.Write(Buffer, Offset, Count);
-  {$ELSEIF TOFFEE}
-  mapped.appendBytes(@Buffer[Offset]) length(Count);
   {$ENDIF}
 end;
 
@@ -282,11 +282,11 @@ method ImmutableBinary.ToArray: not nullable array of Byte;
 begin
   {$IF COOPER}
   result := fData.toByteArray as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped.ToArray as not nullable;
   {$ELSEIF TOFFEE}
   result := new Byte[mapped.length];
   mapped.getBytes(result) length(mapped.length);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.ToArray as not nullable;
   {$ENDIF}
 end;
 
@@ -297,7 +297,7 @@ begin
 end;
 {$ENDIF}
 
-{$IF ISLAND AND DARWIN}
+{$IF ISLAND AND DARWIN AND NOT TOFFEE}
 method ImmutableBinary.ToNSData: Foundation.NSData;
 begin
   var lArray := mapped.ToArray();
@@ -309,11 +309,11 @@ method Binary.Clear;
 begin
   {$IF COOPER}
   fData.reset;
+  {$ELSEIF TOFFEE}
+  mapped.setLength(0);
   {$ELSEIF ECHOES OR ISLAND}
   mapped.SetLength(0);
   mapped.Position := 0;
-  {$ELSEIF TOFFEE}
-  mapped.setLength(0);
   {$ENDIF}
 end;
 

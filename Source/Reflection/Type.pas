@@ -10,25 +10,20 @@ type Protocol = id;
 {$ENDIF}
 
 type
-  {$IF ECHOES}
-  PlatformType = public System.Type;
-  {$ENDIF}
   {$IF COOPER}
   PlatformType = public java.lang.Class;
-  {$ENDIF}
-  {$IF ISLAND}
+  {$ELSEIF TOFFEE}
+  PlatformType = public &Class;
+  {$ELSEIF ECHOES}
+  PlatformType = public System.Type;
+  {$ELSEIF ISLAND}
   PlatformType = public RemObjects.Elements.System.Type;
   {$ENDIF}
-  {$IF TOFFEE}
-  PlatformType = public &Class;
-  {$ENDIF}
 
-  &Type = public class
-  {$IF ECHOES OR COOPER OR ISLAND}
-  mapped to PlatformType
-  {$ENDIF}
+  &Type = public class {$IF NOT TOFFEE} mapped to PlatformType {$ENDIF}
   private
-    {$IF TOFFEE}
+    {$IF COOPER}
+    {$ELSEIF TOFFEE}
     fIsID: Boolean;
     fClass: &Class;
     fProtocol: Protocol;
@@ -47,7 +42,39 @@ type
   public
     class property AllTypes: ImmutableList<&Type> read GetAllTypes;
     class method GetType(aName: not nullable String): nullable &Type;
-    {$IFDEF NETFX_CORE}
+    {$IF COOPER}
+    property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
+    property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
+    //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
+    property Name: String read mapped.Name;
+    property BaseType: nullable &Type read mapped.getSuperclass();
+    property IsClass: Boolean read (not mapped.isInterface()) and (not mapped.isPrimitive());
+    property IsInterface: Boolean read mapped.isInterface();
+    property IsArray: Boolean read mapped.isArray();
+    property IsEnum: Boolean read mapped.isEnum();
+    property IsValueType: Boolean read mapped.isPrimitive();
+    {$ELSEIF TOFFEE}
+    constructor withID;
+    constructor withClass(aClass: &Class);
+    constructor withProtocol(aProtocol: id);
+    constructor withSimpleType(aTypeEncoding: String);
+    method IsSubclassOf(aType: &Type): Boolean;
+    property Interfaces: ImmutableList<&Type> read Get_Interfaces();
+    property Methods: ImmutableList<&Method> read Get_Methods();
+    property Properties: ImmutableList<&Property> read get_Properties();
+    //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
+    //operator Explicit(aClass: rtl.Class): &Type;
+    //operator Explicit(aProtocol: Protocol): &Type;
+    property TypeClass: &Class read fClass;
+    property Name: String read getName;
+    property BaseType: nullable &Type read if IsClass then new &Type withClass(class_getSuperclass(fClass));
+    property IsClass: Boolean read assigned(fClass) or fIsID;
+    property IsInterface: Boolean read assigned(fProtocol);
+    property IsArray: Boolean read false;
+    property IsEnum: Boolean read false;
+    property IsValueType: Boolean read false;
+    property IsDelegate: Boolean read fSimpleType = '^?';
+    {$ELSEIF NETFX_CORE}
     property Interfaces: ImmutableList<&Type> read Get_Interfaces;
     property Methods: ImmutableList<&Method> read Get_Methods;
     property Name: String read mapped.Name;
@@ -69,8 +96,7 @@ type
     property IsArray: Boolean read mapped.IsArray;
     property IsEnum: Boolean read mapped.IsEnum;
     property IsValueType: Boolean read mapped.IsValueType;
-    {$ENDIF}
-    {$IF ISLAND}
+    {$ELSEIF ISLAND}
     property Interfaces: ImmutableList<&Type> read mapped.Interfaces.ToList();
     property Methods: ImmutableList<&Method> read mapped.Methods.ToList();
     property Properties: ImmutableList<&Property> read mapped.Properties.ToList();
@@ -82,40 +108,6 @@ type
     property IsArray: Boolean read mapped.Flags = IslandTypeFlags.Array;
     property IsEnum: Boolean read mapped.Flags = IslandTypeFlags.Enum;
     property IsValueType: Boolean read mapped.IsValueType;
-    {$ENDIF}
-    {$IF COOPER}
-    property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
-    property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
-    //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
-    property Name: String read mapped.Name;
-    property BaseType: nullable &Type read mapped.getSuperclass();
-    property IsClass: Boolean read (not mapped.isInterface()) and (not mapped.isPrimitive());
-    property IsInterface: Boolean read mapped.isInterface();
-    property IsArray: Boolean read mapped.isArray();
-    property IsEnum: Boolean read mapped.isEnum();
-    property IsValueType: Boolean read mapped.isPrimitive();
-    {$ENDIF}
-    {$IF TOFFEE}
-    constructor withID;
-    constructor withClass(aClass: &Class);
-    constructor withProtocol(aProtocol: id);
-    constructor withSimpleType(aTypeEncoding: String);
-    method IsSubclassOf(aType: &Type): Boolean;
-    property Interfaces: ImmutableList<&Type> read Get_Interfaces();
-    property Methods: ImmutableList<&Method> read Get_Methods();
-    property Properties: ImmutableList<&Property> read get_Properties();
-    //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
-    //operator Explicit(aClass: rtl.Class): &Type;
-    //operator Explicit(aProtocol: Protocol): &Type;
-    property TypeClass: &Class read fClass;
-    property Name: String read getName;
-    property BaseType: nullable &Type read if IsClass then new &Type withClass(class_getSuperclass(fClass));
-    property IsClass: Boolean read assigned(fClass) or fIsID;
-    property IsInterface: Boolean read assigned(fProtocol);
-    property IsArray: Boolean read false;
-    property IsEnum: Boolean read false;
-    property IsValueType: Boolean read false;
-    property IsDelegate: Boolean read fSimpleType = '^?';
     {$ENDIF}
   end;
 
@@ -159,7 +151,8 @@ begin
   {$ENDIF}
 end;
 
-{$IF TOFFEE}
+{$IF COOPER}
+{$ELSEIF TOFFEE}
 constructor &Type withID;
 begin
   self := inherited init;

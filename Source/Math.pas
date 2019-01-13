@@ -45,9 +45,42 @@ type
     class method Tanh(d: Double): Double; mapped to tanh(d);
     class method Truncate(d: Double): Double;
   end;
-  {$ENDIF}
-
-  {$IF ECHOES OR ISLAND}
+  {$ELSEIF TOFFEE}
+  Math = public class
+  public
+    {$WARNING Not implemented for Island yet}
+    class method Abs(value: Double): Double;
+    class method Abs(i: Int64): Int64;
+    class method Abs(i: Integer): Integer;
+    class method Acos(d: Double): Double;
+    class method Asin(d: Double): Double;
+    class method Atan(d: Double): Double;
+    class method Atan2(x,y: Double): Double;
+    class method Ceiling(d: Double): Double;
+    class method Cos(d: Double): Double;
+    class method Cosh(d: Double): Double;
+    class method Exp(d: Double): Double;
+    class method Floor(d: Double): Double;
+    class method IEEERemainder(x, y: Double): Double;
+    class method Log(a: Double): Double;
+    class method Log10(a: Double): Double;
+    class method Max(a,b: Double): Double;
+    class method Max(a,b: Integer): Integer;
+    class method Max(a,b: Int64): Int64;
+    class method Min(a,b: Double): Double;
+    class method Min(a,b: Integer): Integer;
+    class method Min(a,b: Int64): Int64;
+    class method Pow(x, y: Double): Double;
+    class method Round(a: Double): Int64;
+    class method Sign(d: Double): Integer;
+    class method Sin(x: Double): Double;
+    class method Sinh(x: Double): Double;
+    class method Sqrt(d: Double): Double;
+    class method Tan(d: Double): Double;
+    class method Tanh(d: Double): Double;
+    class method Truncate(d: Double): Double;
+  end;
+  {$ELSEIF ECHOES OR ISLAND}
   Math = public class mapped to PlatformMath
   public
     class method Abs(d: Double): Double; mapped to Abs(d);
@@ -83,42 +116,6 @@ type
   end;
   {$ENDIF}
 
-  {$IF TOFFEE}
-  Math = public class
-  public
-    {$WARNING Not implemented for Island yet}
-    class method Abs(value: Double): Double;
-    class method Abs(i: Int64): Int64;
-    class method Abs(i: Integer): Integer;
-    class method Acos(d: Double): Double;
-    class method Asin(d: Double): Double;
-    class method Atan(d: Double): Double;
-    class method Atan2(x,y: Double): Double;
-    class method Ceiling(d: Double): Double;
-    class method Cos(d: Double): Double;
-    class method Cosh(d: Double): Double;
-    class method Exp(d: Double): Double;
-    class method Floor(d: Double): Double;
-    class method IEEERemainder(x, y: Double): Double;
-    class method Log(a: Double): Double;
-    class method Log10(a: Double): Double;
-    class method Max(a,b: Double): Double;
-    class method Max(a,b: Integer): Integer;
-    class method Max(a,b: Int64): Int64;
-    class method Min(a,b: Double): Double;
-    class method Min(a,b: Integer): Integer;
-    class method Min(a,b: Int64): Int64;
-    class method Pow(x, y: Double): Double;
-    class method Round(a: Double): Int64;
-    class method Sign(d: Double): Integer;
-    class method Sin(x: Double): Double;
-    class method Sinh(x: Double): Double;
-    class method Sqrt(d: Double): Double;
-    class method Tan(d: Double): Double;
-    class method Tanh(d: Double): Double;
-    class method Truncate(d: Double): Double;
-  end;
-  {$ENDIF}
 
   Consts = public static class
   public
@@ -233,9 +230,7 @@ begin
   exit mapped.pow(x, y);
   {$ENDIF}
 end;
-{$ENDIF}
 
-{$IFDEF COOPER}
 class method Math.Round(a: Double): Int64;
 begin
   if Consts.IsNaN(a) or Consts.IsInfinity(a) then
@@ -243,8 +238,7 @@ begin
 
   exit Int64(Floor(a + 0.499999999999999999));
 end;
-{$ENDIF}
-{$IFDEF TOFFEE}
+{$ELSEIF TOFFEE}
 class method Math.Round(a: Double): Int64;
 begin
   if Consts.IsNaN(a) or Consts.IsInfinity(a) then
@@ -252,9 +246,7 @@ begin
 
   exit Int64(Floor(a + 0.499999999999999999));
 end;
-{$ENDIF}
-
-{$IFDEF ECHOES or ISLAND}
+{$ELSEIF ECHOES or ISLAND}
 class method Math.Round(a: Double): Int64;
 begin
   if Consts.IsNaN(a) or Consts.IsInfinity(a) then
@@ -274,9 +266,7 @@ begin
   if d < 0 then exit -1;
   exit 0;
 end;
-{$ENDIF}
-
-{$IF TOFFEE}
+{$ELSEIF TOFFEE}
 class method Math.Sign(d: Double): Integer;
 begin
   if Consts.IsNaN(d) then
@@ -286,9 +276,7 @@ begin
   if d < 0 then exit -1;
   exit 0;
 end;
-{$ENDIF}
 
-{$IF TOFFEE}
 class method Math.Pow(x, y: Double): Double;
 begin
   if (x = -1) and Consts.IsInfinity(y) then

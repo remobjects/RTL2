@@ -9,14 +9,20 @@ type
   PlatformParameter = public RemObjects.Elements.System.ArgumentInfo;
   {$ENDIF}
 
-  Parameter = public class
-  {$IF ECHOES OR ISLAND}
-  mapped to PlatformParameter
-  {$ENDIF}
-  private
-  protected
+  Parameter = public class {$IF ECHOES OR (ISLAND AND NOT TOFFEE)} mapped to PlatformParameter {$ENDIF}
   public
-    {$IF ECHOES}
+    {$IF COOPER}
+    property Name: String;
+    property Position: Integer;
+    property ParameterType: &Type;
+    property CustomAttributes: array of Object;
+    {$ELSEIF TOFFEE}
+    constructor withIndex(aPosition: Int32) &type(aType: &Type);
+    property Name: String read nil;
+    property Position: Integer; readonly;
+    property ParameterType: &Type; readonly;
+    property CustomAttributes: array of Object read [];
+    {$ELSEIF ECHOES}
     property Name: String read mapped.Name;
     property Position: Integer read mapped.Position;
     property ParameterType: &Type read mapped.ParameterType;
@@ -26,24 +32,12 @@ type
     property CustomAttributes: array of Object read mapped.GetCustomAttributes(false);
     {$ENDIF}
     {$ENDIF}
-    {$IF COOPER}
-    property Name: String;
-    property Position: Integer;
-    property ParameterType: &Type;
-    property CustomAttributes: array of Object;
-    {$ENDIF}
-    {$IF TOFFEE}
-    constructor withIndex(aPosition: Int32) &type(aType: &Type);
-    property Name: String read nil;
-    property Position: Integer; readonly;
-    property ParameterType: &Type; readonly;
-    property CustomAttributes: array of Object read [];
-    {$ENDIF}
   end;
 
 implementation
 
-{$IF TOFFEE}
+{$IF COOPER}
+{$ELSEIF TOFFEE}
 constructor Parameter withIndex(aPosition: Int32) &type(aType: &Type);
 begin
   Position := aPosition;

@@ -5,12 +5,12 @@ interface
 type
   {$IF COOPER}
   PlatformEncoding = public java.nio.charset.Charset;
+  {$ELSEIF TOFFEE}
+  PlatformEncoding = public Foundation.NSNumber;
   {$ELSEIF ECHOES}
   PlatformEncoding = public System.Text.Encoding;
   {$ELSEIF ISLAND}
   PlatformEncoding = public RemObjects.Elements.System.Encoding;
-  {$ELSEIF TOFFEE}
-  PlatformEncoding = public Foundation.NSNumber;
   {$ENDIF}
 
   Encoding = public class mapped to PlatformEncoding
@@ -25,7 +25,7 @@ type
     method GetString(aValue: not nullable array of Byte; aOffset: Integer; aCount: Integer): String;
 
     method GetString(aValue: not nullable ImmutableBinary): String;
-    {$IF ISLAND AND DARWIN}
+    {$IF ISLAND AND DARWIN AND NOT TOFFEE}
     method GetString(aValue: not nullable Foundation.NSData): String;
     {$ENDIF}
 
@@ -61,15 +61,6 @@ begin
   var Buffer := java.nio.charset.Charset(self).encode(aValue);
   result := new Byte[Buffer.remaining];
   Buffer.get(result);
-  {$ELSEIF ECHOES}
-  result := mapped.GetBytes(aValue) as not nullable;
-  if isUTF8 and aIncludeBOM then begin
-    var lPreamble := new Binary(mapped.GetPreamble());
-    lPreamble.Write(result);
-    result := lPreamble.ToArray();
-  end;
-  {$ELSEIF ISLAND}
-  result := mapped.GetBytes(aValue, aIncludeBOM);
   {$ELSEIF TOFFEE}
   var lResult := ((aValue as NSString).dataUsingEncoding(self.AsNSStringEncoding) allowLossyConversion(true) as ImmutableBinary);
   if not assigned(lResult) then
@@ -82,6 +73,15 @@ begin
     lResult := lResult2;
   end;
   result := lResult.ToArray();
+  {$ELSEIF ECHOES}
+  result := mapped.GetBytes(aValue) as not nullable;
+  if isUTF8 and aIncludeBOM then begin
+    var lPreamble := new Binary(mapped.GetPreamble());
+    lPreamble.Write(result);
+    result := lPreamble.ToArray();
+  end;
+  {$ELSEIF ISLAND}
+  result := mapped.GetBytes(aValue, aIncludeBOM);
   {$ENDIF}
 end;
 
@@ -100,6 +100,10 @@ begin
     replaceWith("?").
     decode(java.nio.ByteBuffer.wrap(aValue, aOffset, aCount));
   result := Buffer.toString;
+  {$ELSEIF TOFFEE}
+  result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(self.AsNSStringEncoding);
+  if not assigned(result) then
+    raise new FormatException("Unable to convert input data");
   {$ELSEIF ECHOES}
   if isUTF8 and (length(aValue) >= aOffset+3) and (aValue[aOffset] = $EF) and (aValue[aOffset+1] = $BB) and (aValue[aOffset+2] = $BF) then begin
     inc(aOffset, 3);
@@ -108,10 +112,6 @@ begin
   result := mapped.GetString(aValue, aOffset, aCount);
   {$ELSEIF ISLAND}
   result := mapped.GetString(aValue, aOffset, aCount);
-  {$ELSEIF TOFFEE}
-  result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(self.AsNSStringEncoding);
-  if not assigned(result) then
-    raise new FormatException("Unable to convert input data");
   {$ENDIF}
 end;
 
@@ -126,7 +126,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND AND DARWIN}
+{$IF ISLAND AND DARWIN AND NOT TOFFEE}
 method Encoding.GetString(aValue: not nullable Foundation.NSData): String;
 begin
   var lArray := new byte[aValue.length];
@@ -147,20 +147,6 @@ begin
   try
     {$IF COOPER}
     exit java.nio.charset.Charset.forName(aName);
-    {$ELSEIF ECHOES}
-    result := System.Text.Encoding.GetEncoding(aName);
-    {$ELSEIF ISLAND}
-    case aName of
-      'UTF8','UTF-8': result := PlatformEncoding.UTF8;
-      'UTF16','UTF-16': result := PlatformEncoding.UTF16LE; //?
-      'UTF32','UTF-32': result := PlatformEncoding.UTF32LE; //?
-      'UTF16LE','UTF-16LE': result := PlatformEncoding.UTF16LE;
-      'UTF16BE','UTF-16BE': result := PlatformEncoding.UTF16BE;
-      'UTF32LE','UTF-32LE': result := PlatformEncoding.UTF32LE;
-      'UTF32BE','UTF-32BE': result := PlatformEncoding.UTF32BE;
-      'US-ASCII', 'ASCII','UTF-ASCII': result := PlatformEncoding.ASCII;
-      else raise new Exception(String.Format('Unknown Encoding "{0}"', aName));
-    end;
     {$ELSEIF TOFFEE}
     var lEncoding := NSStringEncoding.UTF8StringEncoding;
     case aName of
@@ -179,7 +165,21 @@ begin
         lEncoding := CFStringConvertEncodingToNSStringEncoding(lH) as NSStringEncoding;
       end;
     end;
-    result := NSNumber.numberWithUnsignedInt(lEncoding);
+    result := NSNumber.numberWithUnsignedInt(lEncoding as UInt32);
+    {$ELSEIF ECHOES}
+    result := System.Text.Encoding.GetEncoding(aName);
+    {$ELSEIF ISLAND}
+    case aName of
+      'UTF8','UTF-8': result := PlatformEncoding.UTF8;
+      'UTF16','UTF-16': result := PlatformEncoding.UTF16LE; //?
+      'UTF32','UTF-32': result := PlatformEncoding.UTF32LE; //?
+      'UTF16LE','UTF-16LE': result := PlatformEncoding.UTF16LE;
+      'UTF16BE','UTF-16BE': result := PlatformEncoding.UTF16BE;
+      'UTF32LE','UTF-32LE': result := PlatformEncoding.UTF32LE;
+      'UTF32BE','UTF-32BE': result := PlatformEncoding.UTF32BE;
+      'US-ASCII', 'ASCII','UTF-ASCII': result := PlatformEncoding.ASCII;
+      else raise new Exception(String.Format('Unknown Encoding "{0}"', aName));
+    end;
     {$ENDIF}
   except
     result := nil;
@@ -190,15 +190,15 @@ method Encoding.GetName: not nullable String;
 begin
   {$IF COOPER}
   exit mapped.name as not nullable;
-  {$ELSEIF ECHOES}
-  exit mapped.WebName as not nullable;
-  {$ELSEIF ISLAND}
-  exit mapped.Name;
   {$ELSEIF TOFFEE}
   var lName := CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(mapped.unsignedIntValue));
   if not assigned(lName) then
     raise new Exception("Invalid encoding.");
   result := bridge<NSString>(lName, BridgeMode.Transfer) as not nullable;
+  {$ELSEIF ECHOES}
+  exit mapped.WebName as not nullable;
+  {$ELSEIF ISLAND}
+  exit mapped.Name;
   {$ENDIF}
 end;
 
@@ -206,12 +206,12 @@ method Encoding.GetIsUTF8: Boolean;
 begin
   {$IF COOPER}
   //exit mapped.name;
+  {$ELSEIF TOFFEE}
+  result := AsNSStringEncoding = NSStringEncoding.UTF8StringEncoding;
   {$ELSEIF ECHOES}
   result := mapped.WebName.ToLower = "utf-8";
   {$ELSEIF ISLAND}
   result := mapped.Name.ToUpper.Replace("-", "") = "UTF8";
-  {$ELSEIF TOFFEE}
-  result := AsNSStringEncoding = NSStringEncoding.UTF8StringEncoding;
   {$ENDIF}
 end;
 

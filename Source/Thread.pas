@@ -54,7 +54,7 @@ type
 
     {$IF TOFFEE}class property MainThread: Thread read mapped.mainThread;{$ENDIF}
 
-    {$IF ISLAND}[Error("Not Implemented for Island")]{$ENDIF}
+    {$IF ISLAND AND NOT TOFFEE}[Error("Not Implemented for Island")]{$ENDIF}
     class property CurrentThread: Thread read {$IF NOT ISLAND}mapped.currentThread{$ELSE}nil{$ENDIF};
 
     class method &Async(aBlock: block);

@@ -40,9 +40,7 @@ type
     end;
 
     property Message: String read reason;
-    {$ENDIF}
-
-    {$IF ISLAND AND DARWIN}
+    {$ELSEIF ISLAND AND DARWIN}
     constructor withError(aError: Foundation.NSError);
     begin
       inherited constructor(aError.description);
@@ -87,20 +85,23 @@ type
 
   end;
 
-  {$IF COOPER}NotImplementedException = public class(RTLException);{$ENDIF}
-  {$IF ECHOES}NotImplementedException = public System.NotImplementedException;{$ENDIF}
-  {$IF ISLAND}NotImplementedException = public RemObjects.Elements.System.NotImplementedException;{$ENDIF}
-  {$IF TOFFEE}NotImplementedException = public class(RTLException);{$ENDIF}
+  {$IF COOPER}NotImplementedException = public class(RTLException);
+  {$ELSEIF TOFFEE}NotImplementedException = public class(RTLException);
+  {$ELSEIF ECHOES}NotImplementedException = public System.NotImplementedException;
+  {$ELSEIF ISLAND}NotImplementedException = public RemObjects.Elements.System.NotImplementedException;
+  {$ENDIF}
 
-  {$IF COOPER}NotSupportedException = public java.lang.UnsupportedOperationException;{$ENDIF}
-  {$IF ECHOES}NotSupportedException = public System.NotSupportedException;{$ENDIF}
-  {$IF ISLAND}NotSupportedException = public RemObjects.Elements.System.NotSupportedException;{$ENDIF}
-  {$IF TOFFEE}NotSupportedException = public class(RTLException);{$ENDIF}
+  {$IF COOPER}NotSupportedException = public java.lang.UnsupportedOperationException;
+  {$ELSEIF TOFFEE}NotSupportedException = public class(RTLException);
+  {$ELSEIF ECHOES}NotSupportedException = public System.NotSupportedException;
+  {$ELSEIF ISLAND}NotSupportedException = public RemObjects.Elements.System.NotSupportedException;
+  {$ENDIF}
 
-  {$IF COOPER}ArgumentException = public java.lang.IllegalArgumentException;{$ENDIF}
-  {$IF ECHOES}ArgumentException = public System.ArgumentException;{$ENDIF}
-  {$IF ISLAND}ArgumentException = public RemObjects.Elements.System.ArgumentException;{$ENDIF}
-  {$IF TOFFEE}ArgumentException = public class(RTLException);{$ENDIF}
+  {$IF COOPER}ArgumentException = public java.lang.IllegalArgumentException;
+  {$ELSEIF TOFFEE}ArgumentException = public class(RTLException);
+  {$ELSEIF ECHOES}ArgumentException = public System.ArgumentException;
+  {$ELSEIF ISLAND}ArgumentException = public RemObjects.Elements.System.ArgumentException;
+  {$ENDIF}
 
   UrlException = public class (RTLException);
   UrlParserException = public class(UrlException);
