@@ -122,6 +122,18 @@ type
     operator Implicit(aCharSequence: CharSequence): String;
     operator Implicit(aString: String): CharSequence;
     {$ENDIF}
+
+    {$IF TOFFEEV2}
+    operator Implicit(aString: System.String): String;
+    begin
+      result := aString as Foundation.NSString;
+    end;
+
+    operator Implicit(aString: String): System.String;
+    begin
+      result := aString as Foundation.NSString;
+    end;
+    {$ENDIF}
   end;
 
 {$GLOBALS ON}

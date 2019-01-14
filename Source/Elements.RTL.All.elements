@@ -88,7 +88,7 @@
     <SDK>macOS</SDK>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
-    <DefineConstants>TOFFEE</DefineConstants>
+    <DefineConstants>TOFFEE;TOFFEEV2</DefineConstants>
     <Enabled>False</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.tvOS' ">

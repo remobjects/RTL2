@@ -120,7 +120,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\MethodInfo.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\ParameterInfo.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
-    <Compile Include="$(MSBuildThisFileDirectory)List (Extensions).pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)List (Extensions).pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Sequence (Extensions).pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.Foundation.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Uri.pas">
