@@ -3,15 +3,25 @@
 interface
 
 type
-  StringBuilder = public class mapped to {$IF COOPER}java.lang.StringBuilder{$ELSEIF ECHOES}System.Text.StringBuilder{$ELSEIF ISLAND}RemObjects.Elements.System.StringBuilder{$ELSEIF TOFFEE}Foundation.NSMutableString{$ENDIF}
+  {$IF COOPER}
+  PlatformStringBuilder = public java.lang.StringBuilder;
+  {$ELSEIF TOFFEE}
+  PlatformStringBuilder = public Foundation.NSMutableString;
+  {$ELSEIF ECHOES}
+  PlatformStringBuilder = public System.Text.StringBuilder;
+  {$ELSEIF ISLAND}
+  PlatformStringBuilder = public RemObjects.Elements.System.StringBuilder;
+  {$ENDIF}
+
+  StringBuilder = public class mapped to PlatformStringBuilder
   private
     method get_Chars(&Index : Integer): Char;
     method set_Chars(&Index : Integer; Value: Char);
     method set_Length(Value: Integer);
   public
     constructor; mapped to constructor();
-    constructor(Capacity: Integer); mapped to {$IF COOPER OR ECHOES OR ISLAND}constructor(Capacity){$ELSEIF TOFFEE}stringWithCapacity(Capacity){$ENDIF};
-    constructor(Data: String); mapped to {$IF COOPER OR ECHOES OR ISLAND}constructor(Data){$ELSEIF TOFFEE}stringWithString(Data){$ENDIF};
+    constructor(Capacity: Integer); mapped to {$IF NOT TOFFEE}constructor(Capacity){$ELSE}stringWithCapacity(Capacity){$ENDIF};
+    constructor(Data: String); mapped to {$IF NOT TOFFEE}constructor(Data){$ELSE}stringWithString(Data){$ENDIF};
 
     method Append(Value: nullable String): StringBuilder; inline;
     method Append(Value: nullable String; StartIndex, Count: Integer): StringBuilder; inline;
