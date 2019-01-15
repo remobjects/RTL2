@@ -7,12 +7,12 @@ interface
 type
   {$IF JAVA}
   //PlatformProcess = {$ERROR Unsupported platform};
+  {$ELSEIF TOFFEE}
+  PlatformProcess = public Foundation.NSTask;
   {$ELSEIF ECHOES}
   PlatformProcess = public System.Diagnostics.Process;
   {$ELSEIF ISLAND}
   PlatformProcess = public RemObjects.Elements.System.Process;
-  {$ELSEIF COCOA}
-  PlatformProcess = public Foundation.NSTask;
   {$ENDIF}
 
   Process = public class {$IF ECHOES OR COCOA OR ISLAND}mapped to PlatformProcess{$ENDIF}
@@ -34,8 +34,8 @@ type
     method Start; inline;
     method Stop; inline;
 
-    property ExitCode: Integer read {$IF ECHOES OR ISLAND}mapped.ExitCode{$ELSEIF TOFFEE}mapped.terminationStatus{$ENDIF};
-    property IsRunning: Boolean read {$IF ECHOES}not mapped.HasExited{$ELSEIF ISLAND}mapped.IsRunning{$ELSEIF TOFFEE}mapped.isRunning{$ENDIF};
+    property ExitCode: Integer read {$IF TOFFEE}mapped.terminationStatus{$ELSEIF ECHOES OR ISLAND}mapped.ExitCode{$ENDIF};
+    property IsRunning: Boolean read {$IF TOFFEE}mapped.isRunning{$ELSEIF ECHOES}not mapped.HasExited{$ELSEIF ISLAND}mapped.IsRunning{$ENDIF};
 
     class method Run(aCommand: not nullable String): Integer; inline;
     class method RunAsync(aCommand: not nullable String): Process; inline;
@@ -58,34 +58,34 @@ implementation
 
 method Process.WaitFor;
 begin
-  {$IF ECHOES}
+  {$IF TOFFEE}
+  mapped.waitUntilExit();
+  {$ELSEIF ECHOES}
   mapped.WaitForExit();
   {$ELSEIF ISLAND}
   mapped.WaitFor();
-  {$ELSEIF TOFFEE}
-  mapped.waitUntilExit();
   {$ENDIF}
 end;
 
 method Process.Start;
 begin
-  {$IF ECHOES}
+  {$IF TOFFEE}
+  mapped.launch();
+  {$ELSEIF ECHOES}
   mapped.Start();
   {$ELSEIF ISLAND}
   mapped.Start();
-  {$ELSEIF TOFFEE}
-  mapped.launch();
   {$ENDIF}
 end;
 
 method Process.Stop;
 begin
-  {$IF ECHOES}
+  {$IF TOFFEE}
+  mapped.terminate();
+  {$ELSEIF ECHOES}
   mapped.Kill();
   {$ELSEIF ISLAND}
   mapped.Stop();
-  {$ELSEIF TOFFEE}
-  mapped.terminate();
   {$ENDIF}
 end;
 
@@ -121,27 +121,7 @@ end;
 
 class method Process.Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
 begin
-  {$IF ECHOES}
-  using lDone := new System.Threading.AutoResetEvent(false) do begin
-    var lStdOut := new StringBuilder;
-    var lStdErr := new StringBuilder;
-    var lResult: Integer;
-    Process.RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, method (aLine: String) begin
-      lStdOut.Append(Environment.LineBreak+aLine);
-    end, method (aLine: String) begin
-      lStdErr.Append(Environment.LineBreak+aLine);
-    end, method(aExitCode: Integer) begin
-      lResult := aExitCode;
-      lDone.Set();
-    end);
-    lDone.WaitOne();
-    aStdOut := lStdOut.ToString();
-    aStdErr := lStdErr.ToString();
-    result := lResult;
-  end;
-  {$ELSEIF ISLAND}
-  result := PlatformProcess.Run(aCommand, aArguments, aEnvironment, aWorkingDirectory, out aStdOut, out aStdErr);
-  {$ELSEIF TOFFEE}
+  {$IF TOFFEE}
   using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
     (lTask as NSTask).standardOutput := NSPipe.pipe();
     (lTask as NSTask).standardError := NSPipe.pipe();
@@ -164,6 +144,26 @@ begin
     end;
     stdErr.closeFile();
   end;
+  {$ELSEIF ECHOES}
+  using lDone := new System.Threading.AutoResetEvent(false) do begin
+    var lStdOut := new StringBuilder;
+    var lStdErr := new StringBuilder;
+    var lResult: Integer;
+    Process.RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, method (aLine: String) begin
+      lStdOut.Append(Environment.LineBreak+aLine);
+    end, method (aLine: String) begin
+      lStdErr.Append(Environment.LineBreak+aLine);
+    end, method(aExitCode: Integer) begin
+      lResult := aExitCode;
+      lDone.Set();
+    end);
+    lDone.WaitOne();
+    aStdOut := lStdOut.ToString();
+    aStdErr := lStdErr.ToString();
+    result := lResult;
+  end;
+  {$ELSEIF ISLAND}
+  result := PlatformProcess.Run(aCommand, aArguments, aEnvironment, aWorkingDirectory, out aStdOut, out aStdErr);
   {$ENDIF}
 end;
 
@@ -180,47 +180,7 @@ begin
   var lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   result := lTask;
 
-  {$IF ECHOES}
-  var lOutputWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
-  var lErrorWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
-  if assigned(aStdOutCallback) then begin
-    (lTask as PlatformProcess).StartInfo.RedirectStandardOutput := true;
-    (lTask as PlatformProcess).OutputDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
-      if assigned(e.Data) then
-        aStdOutCallback(e.Data)
-      else
-        lOutputWaitHandle:&Set();
-    end;
-    //(lTask as PlatformProcess).BeginOutputReadLine();
-  end;
-  if assigned(aStdErrCallback) then begin
-    (lTask as PlatformProcess).StartInfo.RedirectStandardError := true;
-    (lTask as PlatformProcess).ErrorDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
-      if assigned(e.Data) then
-        aStdErrCallback(e.Data)
-      else
-        lErrorWaitHandle:&Set();
-    end;
-    //(lTask as PlatformProcess).BeginErrorReadLine();
-  end;
-  if assigned(aFinishedCallback) then begin
-    (lTask as PlatformProcess).Exited += method (sender: Object; e: System.EventArgs) begin
-      lOutputWaitHandle.WaitOne();
-      lOutputWaitHandle:Dispose();
-      lErrorWaitHandle.WaitOne();
-      lErrorWaitHandle:Dispose();
-      aFinishedCallback(lTask.ExitCode);
-    end;
-  end;
-  lTask.Start();
-
-  if assigned(aStdOutCallback) then
-    (lTask as PlatformProcess).BeginOutputReadLine();
-  if assigned(aStdErrCallback) then
-    (lTask as PlatformProcess).BeginErrorReadLine();
-  {$ELSEIF ISLAND}
-  result := PlatformProcess.RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, aStdOutCallback, aStdErrCallback, aFinishedCallback);
-  {$ELSEIF TOFFEE}
+  {$IF TOFFEE}
   if assigned(aStdOutCallback) then
     (lTask as PlatformProcess).standardOutput := NSPipe.pipe();
   if assigned(aStdErrCallback) then
@@ -274,6 +234,46 @@ begin
     lTask.WaitFor();
     aFinishedCallback(lTask.ExitCode);
   end;
+  {$ELSEIF ECHOES}
+  var lOutputWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
+  var lErrorWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
+  if assigned(aStdOutCallback) then begin
+    (lTask as PlatformProcess).StartInfo.RedirectStandardOutput := true;
+    (lTask as PlatformProcess).OutputDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
+      if assigned(e.Data) then
+        aStdOutCallback(e.Data)
+      else
+        lOutputWaitHandle:&Set();
+    end;
+    //(lTask as PlatformProcess).BeginOutputReadLine();
+  end;
+  if assigned(aStdErrCallback) then begin
+    (lTask as PlatformProcess).StartInfo.RedirectStandardError := true;
+    (lTask as PlatformProcess).ErrorDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
+      if assigned(e.Data) then
+        aStdErrCallback(e.Data)
+      else
+        lErrorWaitHandle:&Set();
+    end;
+    //(lTask as PlatformProcess).BeginErrorReadLine();
+  end;
+  if assigned(aFinishedCallback) then begin
+    (lTask as PlatformProcess).Exited += method (sender: Object; e: System.EventArgs) begin
+      lOutputWaitHandle.WaitOne();
+      lOutputWaitHandle:Dispose();
+      lErrorWaitHandle.WaitOne();
+      lErrorWaitHandle:Dispose();
+      aFinishedCallback(lTask.ExitCode);
+    end;
+  end;
+  lTask.Start();
+
+  if assigned(aStdOutCallback) then
+    (lTask as PlatformProcess).BeginOutputReadLine();
+  if assigned(aStdErrCallback) then
+    (lTask as PlatformProcess).BeginErrorReadLine();
+  {$ELSEIF ISLAND}
+  result := PlatformProcess.RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, aStdOutCallback, aStdErrCallback, aFinishedCallback);
   {$ENDIF}
 end;
 
@@ -326,7 +326,17 @@ end;
 
 class method Process.SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
 begin
-  {$IF ECHOES}
+  {$IF TOFFEE}
+  var lResult := new PlatformProcess();
+  lResult.launchPath := aCommand;
+  if assigned(aArguments) then
+    lResult.arguments := aArguments.ToList();
+  if assigned(aEnvironment) then
+    lResult.environment := aEnvironment;
+  if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
+    lResult.currentDirectoryPath := aWorkingDirectory;
+  result := lResult;
+  {$ELSEIF ECHOES}
   var lResult := new PlatformProcess();
   lResult.StartInfo := new System.Diagnostics.ProcessStartInfo();
   lResult.StartInfo.FileName := aCommand;
@@ -342,16 +352,6 @@ begin
   result := lResult;
   {$ELSEIF ISLAND}
   result := new PlatformProcess(aCommand, aArguments, aEnvironment, aWorkingDirectory);
-  {$ELSEIF TOFFEE}
-  var lResult := new PlatformProcess();
-  lResult.launchPath := aCommand;
-  if assigned(aArguments) then
-    lResult.arguments := aArguments.ToList();
-  if assigned(aEnvironment) then
-    lResult.environment := aEnvironment;
-  if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
-    lResult.currentDirectoryPath := aWorkingDirectory;
-  result := lResult;
   {$ENDIF}
 end;
 

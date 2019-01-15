@@ -116,12 +116,6 @@ implementation
 class method &Type.GetAllTypes: ImmutableList<&Type>;
 begin
   {$IF COOPER}
-  {$ELSEIF ECHOES}
-  result := new List<&Type>();
-  for each a in AppDomain.CurrentDomain.GetAssemblies do
-    (result as List<&Type>).Add(a.GetTypes());
-  {$ELSEIF ISLAND}
-  result := mapped.AllTypes.ToList();
   {$ELSEIF TOFFEE}
 
   var lCount := objc_getClassList(nil, 0);
@@ -134,20 +128,26 @@ begin
     var lClass: unretained &Class := lClasses[i];
     (result as List<&Type>).Add(new &Type withClass(lClass));
   end;
+  {$ELSEIF ECHOES}
+  result := new List<&Type>();
+  for each a in AppDomain.CurrentDomain.GetAssemblies do
+    (result as List<&Type>).Add(a.GetTypes());
+  {$ELSEIF ISLAND}
+  result := mapped.AllTypes.ToList();
   {$ENDIF}
 end;
 
 class method &Type.GetType(aName: not nullable String): nullable &Type;
 begin
   {$IF COOPER}
-  {$ELSEIF ECHOES}
-  result := PlatformType.GetType(aName);
-  {$ELSEIF ISLAND}
-  //result := mapped.AllTypes.ToList();
   {$ELSEIF TOFFEE}
   var lClass := NSClassFromString(aName);
   if assigned(lClass) then
     result := new &Type withClass(lClass);
+  {$ELSEIF ECHOES}
+  result := PlatformType.GetType(aName);
+  {$ELSEIF ISLAND}
+  //result := mapped.AllTypes.ToList();
   {$ENDIF}
 end;
 

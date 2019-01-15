@@ -7,12 +7,12 @@ interface
 type
   {$IF COOPER}
   PlatformThread = public java.lang.Thread;
+  {$ELSEIF TOFFEE}
+  PlatformThread = public Foundation.NSThread;
   {$ELSEIF ECHOES}
   PlatformThread = public System.Threading.Thread;
   {$ELSEIF ISLAND}
   PlatformThread = public RemObjects.Elements.System.Thread;
-  {$ELSEIF TOFFEE}
-  PlatformThread = public Foundation.NSThread;
   {$ENDIF}
 
   Thread = public class mapped to PlatformThread
@@ -68,12 +68,12 @@ type
     begin
       {$IF COOPER}
       result := mapped.getStackTrace().Select(a -> a.toString()).ToList() as not nullable;
+      {$ELSEIF TOFFEE}
+      result := mapped.callStackSymbols as List<String>;
       {$ELSEIF ECHOES}
       result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
       {$ELSEIF ISLAND}
       result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
-      {$ELSEIF TOFFEE}
-      result := mapped.callStackSymbols as List<String>;
       {$ENDIF}
     end;
 
@@ -83,12 +83,12 @@ type
     begin
       {$IF COOPER}
       result := new Throwable().getStackTrace().Select(a -> a.toString()).ToList() as not nullable;
+      {$ELSEIF TOFFEE}
+      result := NSThread.callStackSymbols as not nullable;
       {$ELSEIF ECHOES}
       result := (System.Environment.StackTrace.Replace(#13, "") as String).Split(#10);
       {$ELSEIF ISLAND}
       result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
-      {$ELSEIF TOFFEE}
-      result := NSThread.callStackSymbols as not nullable;
       {$ENDIF}
     end;
   end;
@@ -130,12 +130,12 @@ constructor Thread(aEntrypoint: not nullable block);
 begin
   {$IF COOPER}
   result := new PlatformThread(new BlockRunnable(aEntrypoint));
+  {$ELSEIF TOFFEE}
+  result := new PlatformThread withBlock(aEntrypoint);
   {$ELSEIF ECHOES}
   result := new PlatformThread(a -> aEntrypoint());
   {$ELSEIF ISLAND}
   result := new PlatformThread(a -> aEntrypoint());
-  {$ELSEIF TOFFEE}
-  result := new PlatformThread withBlock(aEntrypoint);
   {$ENDIF}
 end;
 

@@ -22,7 +22,7 @@ type
     constructor(aMessage: String);
     begin
       {$IF TOFFEE}
-      result := initWithName('Exception') reason(aMessage) userInfo(nil);
+      result := inherited constructor withName('Exception') reason(aMessage) userInfo(nil);
       {$ELSE}
       inherited constructor(aMessage);
       {$ENDIF}
@@ -36,7 +36,7 @@ type
     {$IF TOFFEE}
     constructor withError(aError: Foundation.NSError);
     begin
-      result := initWithName('Exception') reason(aError.description) userInfo(nil);
+      result := inherited constructor withName('Exception') reason(aError.description) userInfo(nil);
     end;
 
     property Message: String read reason;

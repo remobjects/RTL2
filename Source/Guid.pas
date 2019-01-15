@@ -7,12 +7,12 @@ type
 
   {$IF JAVA}
   PlatformGuid = public java.util.UUID;
+  {$ELSEIF TOFFEE}
+  PlatformGuid = public Foundation.NSUUID;
   {$ELSEIF ECHOES}
   PlatformGuid = public System.Guid;
   {$ELSEIF ISLAND}
   PlatformGuid = public RemObjects.Elements.System.Guid;
-  {$ELSEIF TOFFEE}
-  PlatformGuid = public Foundation.NSUUID;
   {$ENDIF}
 
   Guid = public class {$IF COOPER OR TOFFEE} mapped to PlatformGuid {$ENDIF}
@@ -22,13 +22,13 @@ type
     {$ENDIF}
 
     class method CreateEmptyGuid: not nullable Guid;
-    {$IF ECHOES OR ISLAND}
+    {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     class method Exchange(Value: array of Byte; Index1, Index2: Integer);
     {$ENDIF}
   public
     constructor(aValue: not nullable array of Byte);
     constructor(aValue: not nullable String);
-    {$IF ECHOES OR ISLAND}
+    {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     constructor (aGuid: PlatformGuid);
     {$ENDIF}
 
@@ -51,17 +51,14 @@ type
     method ToByteArray: array of Byte;
     method ToString(Format: GuidFormat): String;
 
-    {$IF COOPER OR ECHOES OR ISLAND}
+    [ToString]
     method ToString: PlatformString; override;
-    {$ELSEIF TOFFEE}
-    method description: PlatformString;
-    {$ENDIF}
   end;
 
 
 implementation
 
-{$IF ECHOES OR ISLAND}
+{$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
 constructor Guid(aGuid: PlatformGuid);
 begin
   fGuid := aGuid;
@@ -75,6 +72,10 @@ begin
   {$IF COOPER}
   var bb := java.nio.ByteBuffer.wrap(aValue);
   result := new java.util.UUID(bb.getLong, bb.getLong);
+  {$ELSEIF TOFFEE}
+  var lBytes: uuid_t;
+  memcpy(lBytes, aValue, sizeOf(uuid_t));
+  result := new NSUUID withUUIDBytes(var lBytes);
   {$ELSEIF ECHOES}
   //reverse byte order to normal (.NET reverse first 4 bytes and next two 2 bytes groups)
   var aFixedValue := new Byte[16];
@@ -93,10 +94,6 @@ begin
   Exchange(aFixedValue, 4, 5);
   Exchange(aFixedValue, 6, 7);
   fGuid := New PlatformGuid(aFixedValue);
-  {$ELSEIF TOFFEE}
-  var lBytes: uuid_t;
-  memcpy(lBytes, aValue, sizeOf(uuid_t));
-  result := new NSUUID withUUIDBytes(var lBytes);
   {$ENDIF}
 end;
 
@@ -106,12 +103,12 @@ begin
   result := TryParse(aValue);
   if not assigned(result) then
     raise new FormatException();
-  {$ELSEIF ECHOES OR ISLAND}
-  fGuid := new PlatformGuid(aValue);
   {$ELSEIF TOFFEE}
   result := TryParse(aValue);
   if not assigned(result) then
     raise new FormatException();
+  {$ELSEIF ECHOES OR ISLAND}
+  fGuid := new PlatformGuid(aValue);
   {$ENDIF}
 end;
 
@@ -160,14 +157,14 @@ class method Guid.NewGuid: Guid;
 begin
   {$IF COOPER}
   exit mapped.randomUUID;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit new Guid(PlatformGuid.NewGuid);
   {$ELSEIF TOFFEE}
   result := NSUUID.UUID;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit new Guid(PlatformGuid.NewGuid);
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
+{$IF ISLAND AND NOT TOFFEE}[Warning("Not Implemented for Island")]{$ENDIF}
 class method Guid.TryParse(aValue: String): nullable Guid;
 begin
   if length(aValue) not in [36, 38] then
@@ -185,6 +182,10 @@ begin
   {$IF COOPER}
   aValue := java.lang.String(aValue.ToUpper).replaceAll("[{}()]", "");
   exit mapped.fromString(aValue);
+  {$ELSEIF TOFFEE}
+  if aValue.StartsWith("{") and aValue.EndsWith("}") then
+    aValue := aValue.Substring(1,length(aValue)-2);
+  result := new NSUUID withUUIDString(aValue);
   {$ELSEIF ECHOES}// OR ISLAND}
   var lGuid: PlatformGuid;
   if not PlatformGuid.TryParse(aValue, out lGuid) then
@@ -193,10 +194,6 @@ begin
   {$ELSEIF ISLAND}
   {$WARNING Not Implemented for Island yet}
   raise new NotImplementedException("Guid.TryParse() is not implemented for Island yet.");
-  {$ELSEIF TOFFEE}
-  if aValue.StartsWith("{") and aValue.EndsWith("}") then
-    aValue := aValue.Substring(1,length(aValue)-2);
-  result := new NSUUID withUUIDString(aValue);
   {$ENDIF}
 end;
 
@@ -204,12 +201,12 @@ class method Guid.CreateEmptyGuid: not nullable Guid;
 begin
   {$IF COOPER}
   exit new java.util.UUID(0, 0);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit new Guid(PlatformGuid.Empty);
   {$ELSEIF TOFFEE}
   var lBytes: uuid_t;
   memset(lBytes, 0, sizeOf(uuid_t));
   exit new NSUUID withUUIDBytes(var lBytes);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit new Guid(PlatformGuid.Empty);
   {$ENDIF}
 end;
 
@@ -220,6 +217,11 @@ begin
   buffer.putLong(mapped.MostSignificantBits);
   buffer.putLong(mapped.LeastSignificantBits);
   exit buffer.array;
+  {$ELSEIF TOFFEE}
+  result := new Byte[sizeOf(uuid_t)];
+  var lBytes: uuid_t;
+  mapped.getUUIDBytes(var lBytes);
+  memcpy(result, lBytes, sizeOf(uuid_t));
   {$ELSEIF ECHOES}
   var Value := fGuid.ToByteArray;
   //reverse byte order to normal (.NET reverse first 4 bytes and next two 2 bytes groups)
@@ -236,11 +238,6 @@ begin
   Exchange(Value, 4, 5);
   Exchange(Value, 6, 7);
   exit Value;
-  {$ELSEIF TOFFEE}
-  result := new Byte[sizeOf(uuid_t)];
-  var lBytes: uuid_t;
-  mapped.getUUIDBytes(var lBytes);
-  memcpy(result, lBytes, sizeOf(uuid_t));
   {$ENDIF}
 end;
 
@@ -252,6 +249,13 @@ begin
     Format.Braces: result := "{"+mapped.toString+"}";
     Format.Parentheses: result := "("+mapped.toString+")";
     else result := mapped.toString;
+  end;
+  {$ELSEIF TOFFEE}
+  result := mapped.UUIDString;
+  case Format of
+    Format.Default: ;
+    Format.Braces: result := "{"+result+"}";
+    Format.Parentheses: result := "("+result+")";
   end;
   {$ELSEIF ECHOES}
   case Format of
@@ -266,30 +270,16 @@ begin
     Format.Braces: result := "{"+result+"}";
     Format.Parentheses: result := "("+result+")";
   end;
-  {$ELSEIF TOFFEE}
-  result := mapped.UUIDString;
-  case Format of
-    Format.Default: ;
-    Format.Braces: result := "{"+result+"}";
-    Format.Parentheses: result := "("+result+")";
-  end;
   {$ENDIF}
   result := result.ToUpper();
 end;
 
-{$IF COOPER OR ECHOES OR ISLAND}
 method Guid.ToString: PlatformString;
 begin
   result := self.ToString(GuidFormat.Default);
 end;
-{$ELSEIF TOFFEE}
-method Guid.description: PlatformString;
-begin
-  result := self.ToString(GuidFormat.Default);
-end;
-{$ENDIF}
 
-{$IF ECHOES OR ISLAND}
+{$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
 class method Guid.Exchange(Value: array of Byte; Index1: Integer; Index2: Integer);
 begin
   var Temp := Value[Index1];

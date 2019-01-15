@@ -43,7 +43,7 @@ type
   end;
   {$ENDIF}
 
-  {$IF ECHOES OR ISLAND}
+  {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
 
   {$IF ECHOES}
   PlatformStream = public System.IO.Stream;
@@ -72,15 +72,15 @@ type
 
   {$IF COOPER}
   PlatformMemoryStream = public java.io.ByteArrayOutputStream;
+  {$ELSEIF TOFFEE}
+  PlatformMemoryStream = public Foundation.NSMutableData;
   {$ELSEIF ECHOES}
   PlatformMemoryStream = public System.IO.MemoryStream;
   {$ELSEIF ISLAND}
   PlatformMemoryStream = public RemObjects.Elements.System.MemoryStream;
-  {$ELSEIF TOFFEE}
-  PlatformMemoryStream = public Foundation.NSMutableData;
   {$ENDIF}
 
-  MemoryStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
+  MemoryStream = public class({$IF ECHOES OR (ISLAND AND NOT TOFFEE)}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   private
     fCanWrite: Boolean := true;
     {$IF COOPER OR TOFFEE}
@@ -128,15 +128,15 @@ type
 
   {$IF COOPER}
   PlatformInternalFileStream = public java.io.RandomAccessFile;
+  {$ELSEIF TOFFEE}
+  PlatformInternalFileStream = public Foundation.NSFileHandle;
   {$ELSEIF ECHOES}
   PlatformInternalFileStream = public System.IO.FileStream;
   {$ELSEIF ISLAND}
   PlatformInternalFileStream = public RemObjects.Elements.System.FileStream;
-  {$ELSEIF TOFFEE}
-  PlatformInternalFileStream = public Foundation.NSFileHandle;
   {$ENDIF}
 
-  FileStream = public class({$IF ECHOES OR ISLAND}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
+  FileStream = public class({$IF ECHOES OR (ISLAND AND NOT TOFFEE)}WrappedPlatformStream{$ELSE}Stream{$ENDIF})
   {$IF COOPER OR TOFFEE}
   private
     fInternalStream: PlatformInternalFileStream;
@@ -270,7 +270,7 @@ begin
   Seek(Value, SeekOrigin.Begin);
 end;
 
-{$IF ECHOES OR ISLAND}
+{$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
 method WrappedPlatformStream.GetLength: Int64;
 begin
   result := fPlatformStream.Length;
@@ -333,13 +333,13 @@ method MemoryStream.GetBytes: array of Byte;
 begin
   {$IF COOPER}
   result := fInternalStream.toByteArray;
+  {$ELSEIF TOFFEE}
+  result := new Byte[GetLength];
+  fInternalStream.getBytes(result) range(NSMakeRange(0, result.length));
   {$ELSEIF ECHOES}
   result := System.IO.MemoryStream(fPlatformStream).ToArray;
   {$ELSEIF ISLAND}
   result := RemObjects.Elements.System.MemoryStream(fPlatformStream).ToArray;
-  {$ELSEIF TOFFEE}
-  result := new Byte[GetLength];
-  fInternalStream.getBytes(result) range(NSMakeRange(0, result.length));
   {$ENDIF}
 end;
 
@@ -400,13 +400,13 @@ constructor MemoryStream;
 begin
   {$IF COOPER}
   fInternalStream := new java.io.ByteArrayOutputStream();
+  {$ELSEIF TOFFEE}
+  fInternalStream := new NSMutableData();
+  fPosition := 0;
   {$ELSEIF ECHOES}
   fPlatformStream := new System.IO.MemoryStream()
   {$ELSEIF ISLAND}
   fPlatformStream := new RemObjects.Elements.System.MemoryStream();
-  {$ELSEIF TOFFEE}
-  fInternalStream := new NSMutableData();
-  fPosition := 0;
   {$ENDIF}
 end;
 
@@ -414,13 +414,13 @@ constructor MemoryStream(aCapacity: Integer);
 begin
   {$IF COOPER}
   fInternalStream := new java.io.ByteArrayOutputStream(aCapacity);
+  {$ELSEIF TOFFEE}
+  fInternalStream := NSMutableData.dataWithCapacity(aCapacity);
+  fPosition := 0;
   {$ELSEIF ECHOES}
   fPlatformStream := new System.IO.MemoryStream(aCapacity)
   {$ELSEIF ISLAND}
   fPlatformStream := new RemObjects.Elements.System.MemoryStream(aCapacity);
-  {$ELSEIF TOFFEE}
-  fInternalStream := NSMutableData.dataWithCapacity(aCapacity);
-  fPosition := 0;
   {$ENDIF}
 end;
 
@@ -428,10 +428,10 @@ constructor MemoryStream(aValue: ImmutableBinary);
 begin
   {$IF COOPER}
   fInternalStream := aValue.ToPlatformBinary;
-  {$ELSEIF ECHOES OR ISLAND}
-  fPlatformStream := aValue;
   {$ELSEIF TOFFEE}
   fInternalStream := aValue.UniqueMutableCopy;
+  {$ELSEIF ECHOES OR ISLAND}
+  fPlatformStream := aValue;
   {$ENDIF}
 end;
 
@@ -522,11 +522,11 @@ method MemoryStream.Clear;
 begin
   {$IF COOPER}
   fInternalStream.reset;
+  {$ELSEIF TOFFEE}
+  fInternalStream.setLength(0);
   {$ELSEIF ECHOES OR ISLAND}
   fPlatformStream.SetLength(0);
   fPlatformStream.Position := 0;
-  {$ELSEIF TOFFEE}
-  fInternalStream.setLength(0);
   {$ENDIF}
 end;
 
@@ -607,6 +607,21 @@ begin
   {$IF COOPER}
   var lMode: String := if Mode = FileOpenMode.ReadOnly then "r" else "rw";
   fInternalStream := new java.io.RandomAccessFile(FileName, lMode);
+  {$ELSEIF TOFFEE}
+  case Mode of
+    FileOpenMode.ReadOnly: fInternalStream := NSFileHandle.fileHandleForReadingAtPath(FileName);
+    FileOpenMode.ReadWrite: fInternalStream := NSFileHandle.fileHandleForUpdatingAtPath(FileName);
+    FileOpenMode.Create: begin
+        fInternalStream := NSFileHandle.fileHandleForWritingAtPath(FileName);
+        if not assigned(fInternalStream) then begin
+          NSFileManager.defaultManager.createFileAtPath(FileName) contents(nil) attributes(nil);
+          fInternalStream := NSFileHandle.fileHandleForWritingAtPath(FileName);
+        end;
+    end;
+    else raise new NotImplementedException;
+  end;
+  if fInternalStream = nil then
+    raise new Exception('Could not obtain file handle for file ' + FileName);
   {$ELSEIF ECHOES OR ISLAND}
   var lAccess: PlatformFileAccess := case Mode of
                                          FileOpenMode.ReadOnly: PlatformFileAccess.Read;
@@ -619,21 +634,6 @@ begin
                                          else PlatformFileMode.OpenOrCreate;
                                        end;
   fPlatformStream := new PlatformFileStream(FileName, lMode, lAccess, PlatformFileShare.Read);
-  {$ELSEIF TOFFEE}
-  case Mode of
-    FileOpenMode.ReadOnly: fInternalStream := NSFileHandle.fileHandleForReadingAtPath(FileName);
-    FileOpenMode.ReadWrite: fInternalStream := NSFileHandle.fileHandleForUpdatingAtPath(FileName);
-    FileOpenMode.Create: begin
-        fInternalStream := NSFileHandle.fileHandleForWritingAtPath(FileName);
-        if not assigned(fInternalStream) then begin
-          NSFileManager.defaultManager.createFileAtPath(FileName) contents(nil) attributes(nil);
-          fInternalStream := NSFileHandle.fileHandleForWritingAtPath(FileName);
-        end;
-      end;
-    else raise new NotImplementedException;
-  end;
-  if fInternalStream = nil then
-    raise new Exception('Could not obtain file handle for file ' + FileName);
   {$ENDIF}
 end;
 
@@ -689,10 +689,10 @@ method FileStream.Close;
 begin
   {$IF COOPER}
   fInternalStream.close;
-  {$ELSEIF ECHOES OR ISLAND}
-  PlatformInternalFileStream(fPlatformStream).Close;
   {$ELSEIF TOFFEE}
   fInternalStream.closeFile;
+  {$ELSEIF ECHOES OR ISLAND}
+  PlatformInternalFileStream(fPlatformStream).Close;
   {$ENDIF}
 end;
 
@@ -700,10 +700,10 @@ method FileStream.Flush;
 begin
   {$IF COOPER}
   fInternalStream.Channel.force(false);
-  {$ELSEIF ECHOES OR ISLAND}
-  PlatformInternalFileStream(fPlatformStream).Flush;
   {$ELSEIF TOFFEE}
   fInternalStream.synchronizeFile;
+  {$ELSEIF ECHOES OR ISLAND}
+  PlatformInternalFileStream(fPlatformStream).Flush;
   {$ENDIF}
 end;
 {$ENDIF}
@@ -726,19 +726,19 @@ end;
 method BinaryStream.ReadRaw(Buffer: ^void; Count: LongInt);
 begin
   fStream.&Read(fBuffer, 0, Count);
-  {$IF ISLAND}
-  {$IFDEF WINDOWS}ExternalCalls.memcpy(Buffer, @fBuffer[0], Count){$ELSEIF POSIX}rtl.memcpy(Buffer, @fBuffer[0], Count){$ENDIF};
-  {$ELSEIF TOFFEE}
+  {$IF TOFFEE}
   memcpy(Buffer, @fBuffer[0], Count);
+  {$ELSEIF ISLAND}
+  {$IFDEF WINDOWS}ExternalCalls.memcpy(Buffer, @fBuffer[0], Count){$ELSEIF POSIX}rtl.memcpy(Buffer, @fBuffer[0], Count){$ENDIF};
   {$ENDIF}
 end;
 
 method BinaryStream.WriteRaw(Buffer: ^void; Count: LongInt);
 begin
-  {$IF ISLAND}
-  {$IFDEF WINDOWS}ExternalCalls.memcpy(@fBuffer[0], Buffer, Count){$ELSEIF POSIX}rtl.memcpy(@fBuffer[0], Buffer, Count){$ENDIF};
-  {$ELSEIF TOFFEE}
+  {$IF TOFFEE}
   memcpy(@fBuffer[0], Buffer, Count);
+  {$ELSEIF ISLAND}
+  {$IFDEF WINDOWS}ExternalCalls.memcpy(@fBuffer[0], Buffer, Count){$ELSEIF POSIX}rtl.memcpy(@fBuffer[0], Buffer, Count){$ENDIF};
   {$ENDIF}
   &Write(fBuffer, 0, Count);
 end;

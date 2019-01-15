@@ -58,7 +58,7 @@ begin
       lStringType := lStringType.SubString(0, lPos);
     if (lStringType ≠ '^?') and (lStringType.length > 1) then begin
       var lClass := NSClassFromString(lStringType);
-      fType := new &Type withclass(lClass);
+      fType := new &Type withClass(lClass);
     end
     else
       fType := new &Type withSimpleType(lStringType);

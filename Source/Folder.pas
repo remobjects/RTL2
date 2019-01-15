@@ -93,13 +93,13 @@ class method Folder.GetSeparator: Char;
 begin
   {$IF COOPER}
   exit java.io.File.separatorChar;
+  {$ELSEIF TOFFEE}
+  exit '/';
   {$ELSEIF ECHOES}
   exit System.IO.Path.DirectorySeparatorChar;
   {$ELSEIF ISLAND}
   {$IF WEBASSEMBLY}exit '/';{$ELSE}exit RemObjects.Elements.System.Path.DirectorySeparatorChar;{$ENDIF}
   //exit if defined("WEBASSEMBLY") then '/' else RemObjects.Elements.System.Path.DirectorySeparatorChar;
-  {$ELSEIF TOFFEE}
-  exit '/';
   {$ENDIF}
 end;
 
@@ -183,6 +183,18 @@ begin
     lNewFile.createNewFile;
   end;
   result := lNewFile.path;
+  {$ELSEIF TOFFEE}
+  var NewFileName := Combine(mapped, FileName);
+  var Manager := NSFileManager.defaultManager;
+  if Manager.fileExistsAtPath(NewFileName) then begin
+    if FailIfExists then
+      raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
+
+    exit File(NewFileName);
+  end;
+
+  Manager.createFileAtPath(NewFileName) contents(nil) attributes(nil);
+  exit File(NewFileName);
   {$ELSEIF ECHOES}
   var NewFileName := System.IO.Path.Combine(mapped, FileName);
 
@@ -198,18 +210,6 @@ begin
   exit NewFileName;
   {$ELSEIF ISLAND}
   result := IslandFolder.CreateFile(FileName).FullName;
-  {$ELSEIF TOFFEE}
-  var NewFileName := Combine(mapped, FileName);
-  var Manager := NSFileManager.defaultManager;
-  if Manager.fileExistsAtPath(NewFileName) then begin
-    if FailIfExists then
-      raise new IOException(RTLErrorMessages.FILE_EXISTS, FileName);
-
-    exit File(NewFileName);
-  end;
-
-  Manager.createFileAtPath(NewFileName) contents(nil) attributes(nil);
-  exit File(NewFileName);
   {$ENDIF}
 end;
 
@@ -217,15 +217,15 @@ method Folder.Exists: Boolean;
 begin
   {$IF COOPER}
   result := JavaFile.exists;
+  {$ELSEIF TOFFEE}
+  var isDirectory := false;
+  result := NSFileManager.defaultManager.fileExistsAtPath(self) isDirectory(var isDirectory) and isDirectory;
   {$ELSEIF ECHOES}
   if mapped.Contains("*") or mapped.Contains("?") then
     exit false;
   result := System.IO.Directory.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFolder.Exists();
-  {$ELSEIF TOFFEE}
-  var isDirectory := false;
-  result := NSFileManager.defaultManager.fileExistsAtPath(self) isDirectory(var isDirectory) and isDirectory;
   {$ENDIF}
 end;
 
@@ -242,16 +242,6 @@ begin
     if not lFile.mkdir then
       raise new IOException(RTLErrorMessages.FOLDER_CREATE_ERROR, mapped);
   end;
-  {$ELSEIF ECHOES}
-  if System.IO.Directory.Exists(mapped) then begin
-    if FailIfExists then
-      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
-  end
-  else begin
-    System.IO.Directory.CreateDirectory(mapped);
-  end;
-  {$ELSEIF ISLAND}
-  RemObjects.Elements.System.Folder.CreateFolder(mapped, FailIfExists);
   {$ELSEIF TOFFEE}
   var isDirectory := false;
   if NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) then begin
@@ -265,6 +255,16 @@ begin
     if not NSFileManager.defaultManager.createDirectoryAtPath(mapped) withIntermediateDirectories(true) attributes(nil) error(var lError) then
       raise new NSErrorException(lError);
   end;
+  {$ELSEIF ECHOES}
+  if System.IO.Directory.Exists(mapped) then begin
+    if FailIfExists then
+      raise new IOException(RTLErrorMessages.FOLDER_EXISTS, mapped);
+  end
+  else begin
+    System.IO.Directory.CreateDirectory(mapped);
+  end;
+  {$ELSEIF ISLAND}
+  RemObjects.Elements.System.Folder.CreateFolder(mapped, FailIfExists);
   {$ENDIF}
 end;
 
@@ -276,14 +276,14 @@ begin
     raise new IOException(RTLErrorMessages.FOLDER_NOTFOUND, mapped);
 
   FolderHelper.DeleteFolder(lFile);
-  {$ELSEIF ECHOES}
-  System.IO.Directory.Delete(mapped, true);
-  {$ELSEIF ISLAND}
-  IslandFolder.Delete();
   {$ELSEIF TOFFEE}
   var lError: NSError := nil;
   if not NSFileManager.defaultManager.removeItemAtPath(mapped) error(var lError) then
     raise new NSErrorException(lError);
+  {$ELSEIF ECHOES}
+  System.IO.Directory.Delete(mapped, true);
+  {$ELSEIF ISLAND}
+  IslandFolder.Delete();
   {$ENDIF}
 end;
 
@@ -295,6 +295,13 @@ begin
     exit nil;
 
   exit ExistingFile.path;
+  {$ELSEIF TOFFEE}
+  ArgumentNullException.RaiseIfNil(FileName, "FileName");
+  var ExistingFileName := Combine(mapped, FileName);
+  if not NSFileManager.defaultManager.fileExistsAtPath(ExistingFileName) then
+    exit nil;
+
+  exit File(ExistingFileName);
   {$ELSEIF ECHOES}
   var ExistingFileName := System.IO.Path.Combine(mapped, FileName);
   if System.IO.File.Exists(ExistingFileName) then
@@ -303,13 +310,6 @@ begin
   exit nil;
   {$ELSEIF ISLAND}
   IslandFolder.GetFile(FileName);
-  {$ELSEIF TOFFEE}
-  ArgumentNullException.RaiseIfNil(FileName, "FileName");
-  var ExistingFileName := Combine(mapped, FileName);
-  if not NSFileManager.defaultManager.fileExistsAtPath(ExistingFileName) then
-    exit nil;
-
-  exit File(ExistingFileName);
   {$ENDIF}
 end;
 
@@ -317,10 +317,6 @@ method Folder.GetFiles: not nullable ImmutableList<String>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles((f,n)->new java.io.File(f, n).isFile).Select(f->f.path).ToList() as not nullable;
-  {$ELSEIF ECHOES}
-  result := new ImmutableList<File>(System.IO.Directory.GetFiles(mapped));
-  {$ELSEIF ISLAND}
-  result := IslandFolder.GetFiles().Select(f -> f.FullName).ToList() as not nullable;
   {$ELSEIF TOFFEE}
   var lResult := new List<String> as not nullable;
   var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
@@ -333,6 +329,10 @@ begin
       lResult.Add(File(item));
   end;
   result := lResult;
+  {$ELSEIF ECHOES}
+  result := new ImmutableList<File>(System.IO.Directory.GetFiles(mapped));
+  {$ELSEIF ISLAND}
+  result := IslandFolder.GetFiles().Select(f -> f.FullName).ToList() as not nullable;
   {$ENDIF}
 end;
 
@@ -340,10 +340,6 @@ method Folder.GetSubfolders: not nullable List<String>;
 begin
   {$IF COOPER}
   result := JavaFile.listFiles( (f,n) -> new java.io.File(f, n).isDirectory).Select(f -> f.Path).ToList() as not nullable;
-  {$ELSEIF ECHOES}
-  result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
-  {$ELSEIF ISLAND}
-  result := IslandFolder.GetSubFolders().Select(f -> f.FullName).ToList() as not nullable;
   {$ELSEIF TOFFEE}
   result := new List<Folder>();
   var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
@@ -355,6 +351,10 @@ begin
     if FolderHelper.IsDirectory(item) then
       result.Add(Folder(item));
   end;
+  {$ELSEIF ECHOES}
+  result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
+  {$ELSEIF ISLAND}
+  result := IslandFolder.GetSubFolders().Select(f -> f.FullName).ToList() as not nullable;
   {$ENDIF}
 end;
 
@@ -370,16 +370,6 @@ begin
     raise new IOException(RTLErrorMessages.IO_RENAME_ERROR, mapped, NewName);
 
   result := NewName;
-  {$ELSEIF ECHOES}
-  var TopLevel := System.IO.Path.GetDirectoryName(mapped);
-  var FolderName := System.IO.Path.Combine(TopLevel, NewName);
-  if System.IO.Directory.Exists(FolderName) then
-    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
-
-  System.IO.Directory.Move(mapped, FolderName);
-  result := FolderName;
-  {$ELSEIF ISLAND}
-  IslandFolder.Rename(NewName);
   {$ELSEIF TOFFEE}
   var RootFolder := mapped.stringByDeletingLastPathComponent;
   var NewFolderName := Combine(RootFolder, NewName);
@@ -393,6 +383,16 @@ begin
     raise new NSErrorException(lError);
 
   result := NewFolderName;
+  {$ELSEIF ECHOES}
+  var TopLevel := System.IO.Path.GetDirectoryName(mapped);
+  var FolderName := System.IO.Path.Combine(TopLevel, NewName);
+  if System.IO.Directory.Exists(FolderName) then
+    raise new IOException(RTLErrorMessages.FOLDER_EXISTS, NewName);
+
+  System.IO.Directory.Move(mapped, FolderName);
+  result := FolderName;
+  {$ELSEIF ISLAND}
+  IslandFolder.Rename(NewName);
   {$ENDIF}
 end;
 
@@ -402,12 +402,12 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
+  {$ELSEIF TOFFEE}
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
   {$ELSEIF ISLAND}
   result := new DateTime(IslandFolder.DateCreated);
-  {$ELSEIF TOFFEE}
-  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
   {$ENDIF}
 end;
 
@@ -417,12 +417,12 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  {$ELSEIF TOFFEE}
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
   {$ELSEIF ISLAND}
   result := new DateTime(IslandFolder.DateModified);
-  {$ELSEIF TOFFEE}
-  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
   {$ENDIF}
 end;
 
@@ -435,15 +435,15 @@ begin
   {$WARNING Not implemented}
   //JavaFile.setLastModified(...)
   //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  {$ELSEIF TOFFEE}
+  var lError: NSError := nil;
+  if not NSFileManager.defaultManager.setAttributes(NSDictionary.dictionaryWithObject(aDateTime) forKey(NSFileModificationDate)) ofItemAtPath(self.FullPath) error(var lError) then
+    raise new NSErrorException withError(lError);
   {$ELSEIF ECHOES}
   System.IO.Directory.SetLastWriteTimeUtc(mapped, aDateTime);
   {$ELSEIF ISLAND}
   {$WARNING Not implemented}
   //IslandFolder.DateModified := aDateTime;
-  {$ELSEIF TOFFEE}
-  var lError: NSError := nil;
-  if not NSFileManager.defaultManager.setAttributes(NSDictionary.dictionaryWithObject(aDateTime) forKey(NSFileModificationDate)) ofItemAtPath(self.FullPath) error(var lError) then
-    raise new NSErrorException withError(lError);
   {$ENDIF}
 end;
 
