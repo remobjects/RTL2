@@ -51,8 +51,14 @@ type
     method ToByteArray: array of Byte;
     method ToString(Format: GuidFormat): String;
 
-    [ToString]
+    //[ToString]
+    //method ToString: String; override;
+    //81747: `[ToString]` conflicts with overload
+    {$IF COOPER OR ECHOES OR ISLAND}
     method ToString: PlatformString; override;
+    {$ELSEIF TOFFEE}
+    method description: PlatformString;
+    {$ENDIF}
   end;
 
 
@@ -274,10 +280,22 @@ begin
   result := result.ToUpper();
 end;
 
+//81747: `[ToString]` conflicts with overload
+//method Guid.ToString: String;
+//begin
+  //result := self.ToString(GuidFormat.Default);
+//end;
+{$IF COOPER OR ECHOES OR ISLAND}
 method Guid.ToString: PlatformString;
 begin
   result := self.ToString(GuidFormat.Default);
 end;
+{$ELSEIF TOFFEE}
+method Guid.description: PlatformString;
+begin
+  result := self.ToString(GuidFormat.Default);
+end;
+{$ENDIF}
 
 {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
 class method Guid.Exchange(Value: array of Byte; Index1: Integer; Index2: Integer);
