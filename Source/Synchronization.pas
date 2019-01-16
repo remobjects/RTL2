@@ -3,7 +3,15 @@
 interface
 
 type
-  PlatformMonitor = public {$IF COOPER}java.util.concurrent.locks.ReentrantLock{$ELSEIF ECHOES}System.Threading.ManualResetEvent{$ELSEIF ISLAND}RemObjects.Elements.System.Monitor{$ELSEIF TOFFEE}Foundation.NSRecursiveLock{$ENDIF};
+  {$IF COOPER}
+  PlatformMonitor = public java.util.concurrent.locks.ReentrantLock;
+  {$ELSEIF TOFFEE}
+  PlatformMonitor = public Foundation.NSRecursiveLock;
+  {$ELSEIF ECHOES}
+  PlatformMonitor = public System.Threading.ManualResetEvent;
+  {$ELSEIF ISLAND}
+  PlatformMonitor = public RemObjects.Elements.System.Monitor;
+  {$ENDIF};
 
   Monitor = public class mapped to PlatformMonitor
   public
@@ -18,12 +26,12 @@ constructor Monitor;
 begin
   {$IF COOPER}
   result := new java.util.concurrent.locks.ReentrantLock();
+  {$ELSEIF TOFFEE}
+  result := new Foundation.NSRecursiveLock();
   {$ELSEIF ECHOES}
   result := new System.Threading.ManualResetEvent(true);
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.Monitor();
-  {$ELSEIF TOFFEE}
-  result := new Foundation.NSRecursiveLock();
   {$ENDIF}
 end;
 

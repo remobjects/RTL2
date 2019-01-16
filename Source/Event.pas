@@ -6,12 +6,12 @@ interface
 
 {$IF COOPER}
 type PlatformEvent = public java.util.concurrent.locks.ReentrantLock;
+{$ELSEIF TOFFEE}
+type PlatformEvent = public NSCondition;
 {$ELSEIF ECHOES}
 type PlatformEvent = public System.Threading.EventWaitHandle;
 {$ELSEIF ISLAND}
 type PlatformEvent = public RemObjects.Elements.System.EventWaitHandle;
-{$ELSEIF TOFFEE}
-type PlatformEvent = public NSCondition;
 {$ENDIF}
 
 type
@@ -63,24 +63,24 @@ begin
   fState := true;
   fCond.signal();
   fPlatformEvent.unlock();
-  {$ELSEIF ECHOES OR ISLAND}
-  fPlatformEvent.Set();
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
   fState := true;
   fPlatformEvent.signal();
   fPlatformEvent.unlock();
+  {$ELSEIF ECHOES OR ISLAND}
+  fPlatformEvent.Set();
   {$ENDIF}
 end;
 
 method &Event.Reset;
 begin
-  {$IF ECHOES OR ISLAND}
-  fPlatformEvent.Reset();
-  {$ELSEIF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE}
   fPlatformEvent.lock();
   fState := false;
   fPlatformEvent.unlock();
+  {$ELSEIF ECHOES OR ISLAND}
+  fPlatformEvent.Reset();
   {$ENDIF}
 end;
 
@@ -113,12 +113,12 @@ begin
   if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
+  {$ELSEIF TOFFEE}
+  WaitFor(TimeSpan.FromMilliseconds(aTimeoutInMilliseconds));
   {$ELSEIF ECHOES}
   fPlatformEvent.WaitOne(aTimeoutInMilliseconds);
   {$ELSEIF ISLAND}
   fPlatformEvent.Wait(aTimeoutInMilliseconds);
-  {$ELSEIF TOFFEE}
-  WaitFor(TimeSpan.FromMilliseconds(aTimeoutInMilliseconds));
   {$ENDIF}
 end;
 
@@ -126,10 +126,6 @@ method &Event.WaitFor(aTimeout: Timespan);
 begin
   {$IF COOPER}
   WaitFor(Int32(aTimeout.TotalMilliSeconds));
-  {$ELSEIF ECHOES}
-  fPlatformEvent.WaitOne(aTimeout);
-  {$ELSEIF ISLAND}
-  fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds));
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
   var lWaitTime := DateTime.UtcNow.Add(aTimeout);
@@ -138,6 +134,10 @@ begin
   if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
+  {$ELSEIF ECHOES}
+  fPlatformEvent.WaitOne(aTimeout);
+  {$ELSEIF ISLAND}
+  fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds));
   {$ENDIF}
 end;
 

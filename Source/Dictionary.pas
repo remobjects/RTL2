@@ -90,7 +90,7 @@ end;
 
 method Dictionary<T, U>.Add(aDictionary: nullable ImmutableDictionary<T, U>);
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   for each item in aDictionary do
     self[item.Key] := item.Value;
   {$ELSEIF TOFFEE}
@@ -165,7 +165,7 @@ begin
   {$IF COOPER}
   exit mapped.keySet.ToList() as not nullable;
   {$ELSEIF TOFFEE}
-  exit mapped.allKeys;
+  exit mapped.allKeys as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Keys.ToList() as not nullable;
   {$ENDIF}
@@ -176,7 +176,7 @@ begin
   {$IF COOPER}
   exit mapped.values as not nullable;
   {$ELSEIF TOFFEE}
-  exit mapped.allValues;
+  exit mapped.allValues as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Values as not nullable;
   {$ENDIF}
@@ -219,7 +219,7 @@ end;
 
 method ImmutableDictionary<T,U>.UniqueCopy: not nullable ImmutableDictionary<T,U>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := UniqueMutableCopy();
   {$ELSEIF TOFFEE}
   result := mapped.copy as not nullable;
@@ -228,7 +228,7 @@ end;
 
 method ImmutableDictionary<T,U>.UniqueMutableCopy: not nullable Dictionary<T,U>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := new Dictionary<T,U>();
   for each k in Keys do
     result[k] := self[k];

@@ -30,7 +30,7 @@ end;
 
 constructor Random;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   constructor(DateTime.UtcNow.Ticks);
   {$ELSEIF TOFFEE}
   var interval: rtl.__struct_timeval;

@@ -14,14 +14,13 @@ type
     {$ELSE}
     method &Equals(Obj: Object): Boolean; override;
     {$ENDIF}
+
     {$IF COOPER}
     method hashCode: Integer; override;
-    {$ENDIF}
-    {$IF ECHOES OR ISLAND}
-    method GetHashCode: Integer; override;
-    {$ENDIF}
-    {$IF TOFFEE}
+    {$ELSEIF TOFFEE}
     method hash: Foundation.NSUInteger; override;
+    {$ELSEIF ECHOES OR ISLAND}
+    method GetHashCode: Integer; override;
     {$ENDIF}
 
     property Value: not nullable T;
@@ -114,19 +113,17 @@ begin
   exit self.Value.Equals(JsonValue<T>(Obj).Value);
 end;
 {$ENDIF}
-{$IF TOFFEE}
-method JsonValue<T>.hash: Foundation.NSUInteger;
-begin
-  exit if self.Value = nil then -1 else self.Value.GetHashCode;
-end;
-{$ENDIF}
 {$IF COOPER}
 method JsonValue<T>.hashCode: Integer;
 begin
   exit if self.Value = nil then -1 else self.Value.GetHashCode;
 end;
-{$ENDIF}
-{$IF ECHOES OR ISLAND}
+{$ELSEIF TOFFEE}
+method JsonValue<T>.hash: Foundation.NSUInteger;
+begin
+  exit if self.Value = nil then -1 else self.Value.GetHashCode;
+end;
+{$ELSEIF ECHOES OR ISLAND}
 method JsonValue<T>.GetHashCode: Integer;
 begin
   exit if self.Value = nil then -1 else self.Value.GetHashCode;

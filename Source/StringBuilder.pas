@@ -55,11 +55,11 @@ begin
     mapped.append(Value);
 
   result := mapped;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped.Append(Value, RepeatCount);
   {$ELSEIF TOFFEE}
   mapped.appendString(new String(Value, RepeatCount));
   result := mapped;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.Append(Value, RepeatCount);
   {$ENDIF}
 end;
 
@@ -68,11 +68,11 @@ begin
   {$IF COOPER}
   mapped.append(Value);
   result := mapped;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped.Append(Value);
   {$ELSEIF TOFFEE}
   mapped.appendString(NSString.stringWithCharacters(@Value) length(1));
   result := mapped;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.Append(Value);
   {$ENDIF}
 end;
 
@@ -81,7 +81,7 @@ begin
   if Value = nil then
     exit;
 
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Append(Value);
   {$ELSEIF TOFFEE}
   mapped.appendString(Value);
@@ -102,11 +102,11 @@ begin
 
   {$IF COOPER}
   exit mapped.append(Value, startIndex, startIndex + count);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Append(Value, StartIndex, Count);
   {$ELSEIF TOFFEE}
   mapped.appendString(Value.Substring(StartIndex, Count));
   exit mapped;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Append(Value, StartIndex, Count);
   {$ENDIF}
 end;
 
@@ -117,17 +117,17 @@ begin
     mapped.append(Value);
   mapped.append(Environment.LineBreak);
   exit mapped;
+  {$ELSEIF TOFFEE}
+  if assigned(Value) then
+    mapped.appendString(Value);
+  mapped.appendString(Environment.LineBreak);
+  exit mapped;
   {$ELSEIF ECHOES OR ISLAND}
   if assigned(Value) then
     mapped.AppendLine(Value)
   else
     mapped.AppendLine();
   exit mapped
-  {$ELSEIF TOFFEE}
-  if assigned(Value) then
-    mapped.appendString(Value);
-  mapped.appendString(Environment.LineBreak);
-  exit mapped;
   {$ENDIF}
 end;
 
@@ -146,11 +146,11 @@ begin
   {$IF COOPER}
   mapped.append(Environment.LineBreak);
   exit mapped;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.AppendLine;
   {$ELSEIF TOFFEE}
   mapped.appendString(Environment.LineBreak);
   exit mapped;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.AppendLine;
   {$ENDIF}
 end;
 
@@ -158,10 +158,10 @@ method StringBuilder.Clear;
 begin
   {$IF COOPER}
   mapped.SetLength(0);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Length := 0;
   {$ELSEIF TOFFEE}
   mapped.SetString("");
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Length := 0;
   {$ENDIF}
 end;
 
@@ -172,11 +172,11 @@ begin
 
   {$IF COOPER}
   exit mapped.delete(StartIndex, StartIndex + Count);
-  {$ELSEIF ECHOES OR ISLAND}
-   exit mapped.Remove(StartIndex, Count);
   {$ELSEIF TOFFEE}
   mapped.deleteCharactersInRange(NSMakeRange(StartIndex, Count));
   exit mapped;
+  {$ELSEIF ECHOES OR ISLAND}
+   exit mapped.Remove(StartIndex, Count);
   {$ENDIF}
 end;
 
@@ -187,10 +187,10 @@ begin
 
   {$IF COOPER}
   exit mapped.charAt(&Index);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Chars[&Index];
   {$ELSEIF TOFFEE}
   result := mapped.characterAtIndex(&Index);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Chars[&Index];
   {$ENDIF}
 end;
 
@@ -199,7 +199,7 @@ begin
   if Value = nil then
     raise new ArgumentNullException("Value");
 
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Insert(Offset, Value);
   {$ELSEIF TOFFEE}
   mapped.insertString(Value) atIndex(Offset);

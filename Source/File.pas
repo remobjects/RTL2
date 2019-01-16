@@ -92,6 +92,10 @@ begin
 
   source.close;
   dest.close;
+  {$ELSEIF TOFFEE}
+  var lError: Foundation.NSError := nil;
+  if not NSFileManager.defaultManager.copyItemAtPath(mapped) toPath(lNewFile) error(var lError) then
+    raise new NSErrorException(lError);
   {$ELSEIF ECHOES}
   if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
     if lNewFile.Exists then
@@ -103,10 +107,6 @@ begin
     System.IO.File.Copy(mapped, lNewFile, true);
   {$ELSEIF ISLAND}
   IslandFile.Copy(lNewFile);
-  {$ELSEIF TOFFEE}
-  var lError: Foundation.NSError := nil;
-  if not NSFileManager.defaultManager.copyItemAtPath(mapped) toPath(lNewFile) error(var lError) then
-    raise new NSErrorException(lError);
   {$ENDIF}
   result := lNewFile as not nullable;
 end;
@@ -122,14 +122,14 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   JavaFile.delete;
-  {$ELSEIF ECHOES}
-  System.IO.File.Delete(mapped);
-  {$ELSEIF ISLAND}
-  IslandFile.Delete();
   {$ELSEIF TOFFEE}
   var lError: NSError := nil;
   if not NSFileManager.defaultManager.removeItemAtPath(mapped) error(var lError) then
     raise new NSErrorException(lError);
+  {$ELSEIF ECHOES}
+  System.IO.File.Delete(mapped);
+  {$ELSEIF ISLAND}
+  IslandFile.Delete();
   {$ENDIF}
 end;
 
@@ -144,15 +144,15 @@ begin
     exit false;
   {$IF COOPER}
   result := JavaFile.exists;
+  {$ELSEIF TOFFEE}
+  var isDirectory := false;
+  result := NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) and not isDirectory;
   {$ELSEIF ECHOES}
   if mapped.Contains("*") or mapped.Contains("?") then
     exit false;
   result := System.IO.File.Exists(mapped);
   {$ELSEIF ISLAND}
   result := IslandFile.Exists;
-  {$ELSEIF TOFFEE}
-  var isDirectory := false;
-  result := NSFileManager.defaultManager.fileExistsAtPath(mapped) isDirectory(var isDirectory) and not isDirectory;
   {$ENDIF}
 end;
 
@@ -166,17 +166,17 @@ begin
   {$IF COOPER}
   result := CopyTo(NewPathAndName) as not nullable;
   JavaFile.delete;
+  {$ELSEIF TOFFEE}
+  var lError: Foundation.NSError := nil;
+  if not NSFileManager.defaultManager.moveItemAtPath(mapped) toPath(NewPathAndName) error(var lError) then
+    raise new NSErrorException(lError);
+  result := NewPathAndName
   {$ELSEIF ECHOES}
   System.IO.File.Move(mapped, NewPathAndName);
   result := NewPathAndName;
   {$ELSEIF ISLAND}
   IslandFile.Move(NewPathAndName);
   result := NewPathAndName;
-  {$ELSEIF TOFFEE}
-  var lError: Foundation.NSError := nil;
-  if not NSFileManager.defaultManager.moveItemAtPath(mapped) toPath(NewPathAndName) error(var lError) then
-    raise new NSErrorException(lError);
-  result := NewPathAndName
   {$ENDIF}
 end;
 
@@ -230,12 +230,12 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified())); // Java doesn't seem to have access to the creation date separately?
+  {$ELSEIF TOFFEE}
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetCreationTimeUtc(mapped));
   {$ELSEIF ISLAND}
   result := new DateTime(IslandFile.DateCreated);
-  {$ELSEIF TOFFEE}
-  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileCreationDate)
   {$ENDIF}
 end;
 
@@ -245,12 +245,12 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  {$ELSEIF TOFFEE}
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
   {$ELSEIF ECHOES}
   result := new DateTime(System.IO.File.GetLastWriteTimeUtc(mapped));
   {$ELSEIF ISLAND}
   result := new DateTime(IslandFile.DateModified);
-  {$ELSEIF TOFFEE}
-  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):valueForKey(NSFileModificationDate);
   {$ENDIF}
 end;
 
@@ -263,15 +263,15 @@ begin
   {$WARNING Not implemented}
   //JavaFile.setLastModified(...)
   //result := new DateTime(new java.util.Date(JavaFile.lastModified()));
+  {$ELSEIF TOFFEE}
+  var lError: NSError := nil;
+  if not NSFileManager.defaultManager.setAttributes(NSDictionary.dictionaryWithObject(aDateTime) forKey(NSFileModificationDate)) ofItemAtPath(self.FullPath) error(var lError) then
+    raise new NSErrorException withError(lError);
   {$ELSEIF ECHOES}
   System.IO.File.SetLastWriteTimeUtc(mapped, aDateTime);
   {$ELSEIF ISLAND}
   {$WARNING Not implemented}
   //IslandFolder.DateModified := aDateTime;
-  {$ELSEIF TOFFEE}
-  var lError: NSError := nil;
-  if not NSFileManager.defaultManager.setAttributes(NSDictionary.dictionaryWithObject(aDateTime) forKey(NSFileModificationDate)) ofItemAtPath(self.FullPath) error(var lError) then
-    raise new NSErrorException withError(lError);
   {$ENDIF}
 end;
 
@@ -281,12 +281,12 @@ begin
     raise new FileNotFoundException(FullPath);
   {$IF COOPER}
   result := JavaFile.length;
+  {$ELSEIF TOFFEE}
+  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):fileSize;
   {$ELSEIF ECHOES}
   result := new System.IO.FileInfo(mapped).Length;
   {$ELSEIF ISLAND}
   result := IslandFile.Length;
-  {$ELSEIF TOFFEE}
-  result := NSFileManager.defaultManager.attributesOfItemAtPath(self.FullPath) error(nil):fileSize;
   {$ENDIF}
 end;
 

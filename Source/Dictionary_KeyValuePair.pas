@@ -14,11 +14,11 @@ type
     [ToString] method ToString: PlatformString; override;
     {$IF COOPER}
     method hashCode: Integer; override;
+    {$ELSEIF TOFFEE}
+    method hash: Foundation.NSUInteger; override;
     {$ELSEIF ECHOES OR ISLAND}
     method GetHashCode: Integer; override;
-    {$ELSEIF TOFFEE}
-    method hash: Foundation.NSUInteger; override
-    ;{$ENDIF}
+    {$ENDIF}
 
     property Key: T read write; readonly;
     property Value: U read write; readonly;
@@ -61,17 +61,16 @@ method KeyValuePair<T, U>.hashCode: Integer;
 begin
   result := Key.GetHashCode + Value:GetHashCode;
 end;
-{$ELSEIF ECHOES OR ISLAND}
-method KeyValuePair<T, U>.GetHashCode: Integer;
-begin
-  result := Key.GetHashCode + Value:GetHashCode;
-end;
 {$ELSEIF TOFFEE}
 method KeyValuePair<T, U>.hash: Foundation.NSUInteger;
 begin
   result := Key.GetHashCode + Value:GetHashCode;
 end;
-
+{$ELSEIF ECHOES OR ISLAND}
+method KeyValuePair<T, U>.GetHashCode: Integer;
+begin
+  result := Key.GetHashCode + Value:GetHashCode;
+end;
 {$ENDIF}
 
 method KeyValuePair<T, U>.ToString: PlatformString;

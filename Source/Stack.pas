@@ -34,7 +34,7 @@ implementation
 
 method ImmutableStack<T>.Contains(Item: T): Boolean;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Contains(Item);
   {$ELSE}
   exit Foundation.NSMutableArray(mapped).containsObject(NullHelper.coalesce(Item, NSNull.null));
@@ -43,7 +43,7 @@ end;
 
 method ImmutableStack<T>.Peek: T;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Peek;
   {$ELSE}
   var n := Foundation.NSMutableArray(mapped).lastObject;
@@ -57,16 +57,16 @@ method ImmutableStack<T>.ToArray: array of T;
 begin
   {$IF COOPER}
   exit ListHelpers.ToArrayReverse<T>(mapped, new T[Count]);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToArray;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArrayReverse<T>(self);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToArray;
   {$ENDIF}
 end;
 
 method ImmutableStack<T>.UniqueCopy: ImmutableStack<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := UniqueMutableCopy();
   {$ELSEIF TOFFEE}
   result := mapped.copy;
@@ -75,7 +75,7 @@ end;
 
 method ImmutableStack<T>.UniqueMutableCopy: Stack<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := new Stack<T>();
   for each k in mapped do
     result.Push(k);
@@ -86,7 +86,7 @@ end;
 
 method ImmutableStack<T>.MutableVersion: Stack<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := self;
   {$ELSEIF TOFFEE}
   if self is NSMutableArray then
@@ -98,7 +98,7 @@ end;
 
 method Stack<T>.Clear;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   mapped.Clear;
   {$ELSE}
   mapped.removeAllObjects;
@@ -107,7 +107,7 @@ end;
 
 method Stack<T>.Pop: T;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Pop;
   {$ELSE}
   var n := Foundation.NSMutableArray(mapped).lastObject;
@@ -120,7 +120,7 @@ end;
 
 method Stack<T>.Push(Item: T);
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   mapped.Push(Item);
   {$ELSE}
   Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(Item, NSNull.null));

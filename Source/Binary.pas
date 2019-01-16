@@ -239,7 +239,7 @@ end;
 method Binary.Write(Bin: Binary);
 begin
   ArgumentNullException.RaiseIfNil(Bin, "Bin");
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   &Write(Bin.ToArray, Bin.Length);
   {$ELSEIF TOFFEE}
   mapped.appendData(Bin);
@@ -248,16 +248,16 @@ end;
 
 method ImmutableBinary.UniqueCopy: not nullable ImmutableBinary;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := new ImmutableBinary(self);
   {$ELSEIF TOFFEE}
-  result := mapped.copy;
+  result := mapped.copy as not nullable;
   {$ENDIF}
 end;
 
 method ImmutableBinary.UniqueMutableCopy: not nullable Binary;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := new Binary(self);
   {$ELSEIF TOFFEE}
   result := mapped.mutableCopy as not nullable;

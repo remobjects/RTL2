@@ -494,7 +494,7 @@ begin
   if RemObjects.Elements.System.length(Value) = 0 then
     exit true;
 
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Contains(Value);
   {$ELSEIF TOFFEE}
   exit mapped.rangeOfString(Value).location <> NSNotFound;
@@ -523,7 +523,7 @@ end;
 
 method String.IndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
@@ -552,7 +552,7 @@ begin
   if Value.Length = 0 then
     exit 0;
 
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := mapped.IndexOf(Value, StartIndex);
   {$ELSEIF TOFFEE}
   var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.LiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
@@ -611,7 +611,7 @@ end;
 
 method String.LastIndexOf(Value: Char): Integer;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := mapped.LastIndexOf(Value);
   {$ELSEIF TOFFEE}
   result := LastIndexOf(NSString.stringWithFormat("%c", Value));
@@ -626,7 +626,7 @@ begin
   if Value.Length = 0 then
     exit mapped.length - 1;
 
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.LastIndexOf(Value);
   {$ELSEIF TOFFEE}
   var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSBackwardsSearch);
@@ -647,7 +647,7 @@ end;
 
 method String.LastIndexOf(const Value: String; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := mapped.LastIndexOf(Value, StartIndex);
   if (result = StartIndex) and (Value.Length > 1) then
     result := -1;
@@ -662,7 +662,7 @@ begin
   if (StartIndex < 0) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.NEGATIVE_VALUE_ERROR, "StartIndex");
 
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Substring(StartIndex) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.substringFromIndex(StartIndex) as not nullable;
@@ -780,7 +780,7 @@ begin
 
   if NewValue = nil then
     NewValue := "";
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Replace(OldValue, NewValue) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingOccurrencesOfString(OldValue) withString(NewValue);

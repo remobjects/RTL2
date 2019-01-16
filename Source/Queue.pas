@@ -35,7 +35,7 @@ implementation
 
 method ImmutableQueue<T>.Contains(Item: T): Boolean;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Contains(Item);
   {$ELSEIF TOFFEE}
   exit Foundation.NSMutableArray(mapped).containsObject(NullHelper.coalesce(Item, NSNull.null));
@@ -44,7 +44,7 @@ end;
 
 method ImmutableQueue<T>.Peek: T;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   {$IFDEF COOPER}
   if self.Count = 0 then
     raise new QueueEmptyException;
@@ -73,7 +73,7 @@ end;
 
 method ImmutableQueue<T>.UniqueCopy: ImmutableQueue<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := UniqueMutableCopy();
   {$ELSEIF TOFFEE}
   result := mapped.copy;
@@ -82,7 +82,7 @@ end;
 
 method ImmutableQueue<T>.UniqueMutableCopy: Queue<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := new Queue<T>();
   for each k in mapped do
     result.Enqueue(k);
@@ -93,11 +93,11 @@ end;
 
 method ImmutableQueue<T>.MutableVersion: Queue<T>;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   result := self;
   {$ELSEIF TOFFEE}
   if self is NSMutableArray then
-    result := self as NSMutableArray<T> 
+    result := self as NSMutableArray<T>
   else
     result := mapped.mutableCopy;
   {$ENDIF}
@@ -105,7 +105,7 @@ end;
 
 method Queue<T>.Clear;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   mapped.Clear;
   {$ELSEIF TOFFEE}
   mapped.removeAllObjects;

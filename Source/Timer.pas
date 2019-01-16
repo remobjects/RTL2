@@ -4,7 +4,7 @@ interface
 
 type
 TimerElapsedBlock = public block (aData: Object);
-PlatformTimer = public {$IF COOPER}java.util.Timer{$ELSEIF ECHOES}System.Timers.Timer{$ELSEIF ISLAND}RemObjects.Elements.System.Timer{$ELSEIF TOFFEE}NSTimer{$ENDIF};
+PlatformTimer = public {$IF COOPER}java.util.Timer{$ELSEIF TOFFEE}NSTimer{$ELSEIF ECHOES}System.Timers.Timer{$ELSEIF ISLAND}RemObjects.Elements.System.Timer{$ENDIF};
 
 Timer = public class
 private
@@ -38,13 +38,13 @@ implementation
 
 method Timer.Initialize;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   fTimer := new PlatformTimer();
   {$ENDIF}
   {$IF ECHOES}
   fTimer.Elapsed += ElapsedEventHandler;
   {$ENDIF}
-  {$IF ISLAND}
+  {$IF ISLAND AND NOT TOFFEE}
   fTimer.Elapsed := () -> begin
     Elapsed(Data);
     end;
@@ -97,6 +97,8 @@ begin
     fTimer.scheduleAtFixedRate(new FixedTimerTask(self), fInterval, fInterval)
   else
     fTimer.schedule(new FixedTimerTask(self), fInterval);
+  {$ELSEIF TOFFEE}
+  fTimer := PlatformTimer.scheduledTimerWithTimeInterval(fInterval / 1000) repeats(fRepeat) &block(() -> begin Elapsed(Data); end);
   {$ELSEIF ECHOES}
   fTimer.AutoReset := fRepeat;
   fTimer.Interval := fInterval;
@@ -105,8 +107,6 @@ begin
   fTimer.Interval := fInterval;
   fTimer.Repeat := fRepeat;
   fTimer.Start;
-  {$ELSEIF TOFFEE}
-  fTimer := PlatformTimer.scheduledTimerWithTimeInterval(fInterval / 1000) repeats(fRepeat) &block(() -> begin Elapsed(Data); end);
   {$ENDIF}
   fEnabled := true;
 end;
@@ -116,12 +116,12 @@ begin
   if not fEnabled then exit;
   {$IF COOPER}
   fTimer.cancel;
+  {$ELSEIF TOFFEE}
+  fTimer.invalidate;
   {$ELSEIF ECHOES}
   fTimer.Stop;
   {$ELSEIF ISLAND}
   fTimer.Stop;
-  {$ELSEIF TOFFEE}
-  fTimer.invalidate;
   {$ENDIF}
   fEnabled := false;
 end;

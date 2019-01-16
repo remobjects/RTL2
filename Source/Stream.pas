@@ -27,7 +27,7 @@ type
     property CanWrite: Boolean read; abstract;
   end;
 
-  {$IFDEF ECHOES or ISLAND}
+  {$IFDEF ECHOES or (ISLAND AND NOT TOFFEE)}
   Stream = public partial class (IDisposable)
   public
     method Dispose;

@@ -36,13 +36,13 @@ type
     {$ENDIF}
 
     {$HIDE W28}
-    method Abort; mapped to {$IF ECHOES OR ISLAND}Abort{$ELSEIF COOPER}stop{$ELSEIF TOFFEE}cancel{$ENDIF};
+    method Abort; mapped to {$IF COOPER}stop{$ELSEIF TOFFEE}cancel{$ELSEIF ECHOES OR ISLAND}Abort{$ENDIF};
     {$SHOW W28}
-    class method Sleep(aTimeout: Integer); mapped to {$IF COOPER OR ECHOES OR ISLAND}Sleep(aTimeout){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeout / 1000){$ENDIF};
+    class method Sleep(aTimeout: Integer); mapped to {$IF NOT TOFFEE}Sleep(aTimeout){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeout / 1000){$ENDIF};
 
     //property State: ThreadState read GetState write SetState;
-    property IsAlive: Boolean read {$IF COOPER OR ECHOES OR ISLAND}mapped.IsAlive{$ELSEIF TOFFEE}mapped.isExecuting{$ENDIF};
-    property Name: String read mapped.Name write {$IF COOPER OR ECHOES OR ISLAND}mapped.Name{$ELSEIF TOFFEE}mapped.setName{$ENDIF};
+    property IsAlive: Boolean read {$IF NOT TOFFEE}mapped.IsAlive{$ELSEIF TOFFEE}mapped.isExecuting{$ENDIF};
+    property Name: String read mapped.Name write {$IF NOT TOFFEE}mapped.Name{$ELSEIF TOFFEE}mapped.setName{$ENDIF};
 
     {$IF COOPER OR ECHOES}
     property ThreadId: Int64 read {$IF COOPER}mapped.Id{$ELSEIF ECHOES}mapped.ManagedThreadId{$ENDIF};

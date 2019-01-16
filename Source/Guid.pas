@@ -54,7 +54,7 @@ type
     //[ToString]
     //method ToString: String; override;
     //81747: `[ToString]` conflicts with overload
-    {$IF COOPER OR ECHOES OR ISLAND}
+    {$IF NOT TOFFEE}
     method ToString: PlatformString; override;
     {$ELSEIF TOFFEE}
     method description: PlatformString;
@@ -285,7 +285,7 @@ end;
 //begin
   //result := self.ToString(GuidFormat.Default);
 //end;
-{$IF COOPER OR ECHOES OR ISLAND}
+{$IF NOT TOFFEE}
 method Guid.ToString: PlatformString;
 begin
   result := self.ToString(GuidFormat.Default);

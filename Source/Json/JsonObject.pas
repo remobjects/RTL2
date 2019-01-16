@@ -29,16 +29,16 @@ type
 
     {$IF COOPER}
     method &iterator: java.util.&Iterator<KeyValuePair<String, JsonNode>>;
+    {$ELSEIF TOFFEE}
+    {$HIDE CPW8}
+    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
+    {$SHOW CPW8}
     {$ELSEIF ECHOES}
     method GetNonGenericEnumerator: System.Collections.IEnumerator; implements System.Collections.IEnumerable.GetEnumerator;
     method GetEnumerator: System.Collections.Generic.IEnumerator<KeyValuePair<String, JsonNode>>;
     {$ELSEIF ISLAND}
     method GetNonGenericEnumerator(): IEnumerator; implements IEnumerable.GetEnumerator;
     method GetEnumerator(): IEnumerator<KeyValuePair<String,JsonNode>>;
-    {$ELSEIF TOFFEE}
-    {$HIDE CPW8}
-    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
-    {$SHOW CPW8}
     {$ENDIF}
 
     class method Load(JsonString: String): JsonObject;
@@ -158,6 +158,14 @@ method JsonObject.iterator: java.util.&Iterator<KeyValuePair<String, JsonNode>>;
 begin
   exit Properties.iterator;
 end;
+{$ELSEIF TOFFEE}
+method JsonObject.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
+begin
+  if aState^.state <> 0 then
+    exit 0;
+
+  exit GetProperties.countByEnumeratingWithState(aState) objects(stackbuf) count(len);
+end;
 {$ELSEIF ECHOES}
 method JsonObject.GetNonGenericEnumerator: System.Collections.IEnumerator;
 begin
@@ -179,14 +187,6 @@ method JsonObject.GetEnumerator: IEnumerator<KeyValuePair<String, JsonNode>>;
 begin
   var props := GetProperties;
   exit props.GetEnumerator;
-end;
-{$ELSEIF TOFFEE}
-method JsonObject.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
-begin
-  if aState^.state <> 0 then
-    exit 0;
-
-  exit GetProperties.countByEnumeratingWithState(aState) objects(stackbuf) count(len);
 end;
 {$ENDIF}
 

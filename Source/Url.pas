@@ -179,7 +179,7 @@ type
     {$ENDIF}
     {$IF TOFFEE}
     method isEqual(obj: id): Boolean; override;
-    method copyWithZone(aZone: ^NSZone): instancetype;
+    method copyWithZone(aZone: ^NSZone): instanceType;
     method hash: NSUInteger; override;
     {$ENDIF}
   end;
@@ -937,6 +937,8 @@ class method Url.UrlEncodeString(aString: String): String;
 begin
   {$IF COOPER}
   exit java.net.URLEncoder.Encode(aString, 'utf-8');
+  {$ELSEIF TOFFEE}
+  result := PlatformString(aString).stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.alphanumericCharacterSet);
   {$ELSEIF ECHOES}
     {$IF NETFX_CORE}
     result := System.Net.WebUtility.UrlEncode(aString);
@@ -945,8 +947,6 @@ begin
     {$ENDIF}
   {$ELSEIF ISLAND}
   {$WARNING Not Implemented}
-  {$ELSEIF TOFFEE}
-  result := PlatformString(aString).stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.alphanumericCharacterSet);
   {$ENDIF}
 end;
 
