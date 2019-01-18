@@ -34,7 +34,7 @@ implementation
 
 method ImmutableStack<T>.Contains(Item: T): Boolean;
 begin
-  {$IF COOPER OR ECHOES OR ISLAND}
+  {$IF NOT TOFFEE}
   exit mapped.Contains(Item);
   {$ELSE}
   exit mapped.containsObject(NullHelper.coalesce(Item, NSNull.null));
