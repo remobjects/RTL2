@@ -3,8 +3,8 @@
 interface
 
 type
-  PlatformImmutableStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF};
-  PlatformStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ENDIF};
+  PlatformImmutableStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF TOFFEE}Foundation.NSArray{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ENDIF};
+  PlatformStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ENDIF};
 
   ImmutableStack<T> = public class mapped to PlatformImmutableStack<T>
   public
@@ -34,10 +34,10 @@ implementation
 
 method ImmutableStack<T>.Contains(Item: T): Boolean;
 begin
-  {$IF NOT TOFFEE}
+  {$IF COOPER OR ECHOES OR ISLAND}
   exit mapped.Contains(Item);
   {$ELSE}
-  exit Foundation.NSMutableArray(mapped).containsObject(NullHelper.coalesce(Item, NSNull.null));
+  exit mapped.containsObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 
@@ -46,7 +46,7 @@ begin
   {$IF NOT TOFFEE}
   exit mapped.Peek;
   {$ELSE}
-  var n := Foundation.NSMutableArray(mapped).lastObject;
+  var n := mapped.lastObject;
   if n = nil then raise new StackEmptyException;
   if n = NSNull.null then n := nil;
   result := n;
@@ -90,7 +90,7 @@ begin
   result := self;
   {$ELSEIF TOFFEE}
   if self is NSMutableArray then
-    result := self as NSMutableArray<T>
+    result := self as NSMutableArray
   else
     result := mapped.mutableCopy;
   {$ENDIF}
@@ -110,7 +110,7 @@ begin
   {$IF NOT TOFFEE}
   exit mapped.Pop;
   {$ELSE}
-  var n := Foundation.NSMutableArray(mapped).lastObject;
+  var n := mapped.lastObject;
   if n = nil then raise new StackEmptyException;
   if n = NSNull.null then n := nil;
   mapped.removeLastObject;
@@ -123,7 +123,7 @@ begin
   {$IF NOT TOFFEE}
   mapped.Push(Item);
   {$ELSE}
-  Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(Item, NSNull.null));
+  mapped.addObject(NullHelper.coalesce(Item, NSNull.null));
   {$ENDIF}
 end;
 
