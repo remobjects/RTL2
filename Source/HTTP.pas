@@ -53,7 +53,7 @@ type
     constructor(aString: not nullable String; aEncoding: Encoding);
   end;
 
-  HttpResponse = public class
+  HttpResponse = public class({$IF ECHOES OR ISLAND}IDisposable{$ENDIF})
   unit
     constructor withException(anException: Exception);
 
@@ -95,6 +95,20 @@ type
     {$IF JSON}method GetContentAsJsonSynchronous: not nullable JsonDocument;{$ENDIF}
     {$IF JSON}method TryGetContentAsJsonSynchronous: nullable JsonDocument;{$ENDIF}
     method SaveContentAsFileSynchronous(aTargetFile: File);
+
+    {$IF ECHOES OR ISLAND}
+    method Dispose;
+    begin
+      {$IF ECHOES}
+      (Response as IDisposable):Dispose;
+      {$ENDIF}
+    end;
+
+    finalizer;
+    begin
+      Dispose();
+    end;
+    {$ENDIF}
   end;
 
   HttpResponseContent<T> = public class
@@ -1026,39 +1040,47 @@ end;
 {$IF NOT NETFX_CORE}
 method Http.GetString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest): not nullable String;
 begin
-  result := ExecuteRequestSynchronous(aRequest).GetContentAsStringSynchronous(aEncoding);
+  using lResponse := ExecuteRequestSynchronous(aRequest) do begin
+    result := lResponse.GetContentAsStringSynchronous(aEncoding);
+  end;
 end;
 
 method Http.GetBinary(aRequest: not nullable HttpRequest): not nullable ImmutableBinary;
 begin
-  result := ExecuteRequestSynchronous(aRequest).GetContentAsBinarySynchronous;
+  using lResponse := ExecuteRequestSynchronous(aRequest) do begin
+    result := lResponse.GetContentAsBinarySynchronous;
+  end;
 end;
 
 {$IF XML}
 method Http.GetXml(aRequest: not nullable HttpRequest): not nullable XmlDocument;
 begin
-  result := ExecuteRequestSynchronous(aRequest).GetContentAsXmlSynchronous;
+  using lResponse := ExecuteRequestSynchronous(aRequest) do begin
+    result := lResponse.GetContentAsXmlSynchronous;
+  end;
 end;
 
 method Http.TryGetXml(aRequest: not nullable HttpRequest): nullable XmlDocument;
 begin
-  var lRequest := TryExecuteRequestSynchronous(aRequest);
-  if assigned(lRequest) then
-    result := lRequest.TryGetContentAsXmlSynchronous;
+  using lResponse := TryExecuteRequestSynchronous(aRequest) do begin
+    result := lResponse:TryGetContentAsXmlSynchronous;
+  end;
 end;
 {$ENDIF}
 
 {$IF JSON}
 method Http.GetJson(aRequest: not nullable HttpRequest): not nullable JsonDocument;
 begin
-  result := ExecuteRequestSynchronous(aRequest).GetContentAsJsonSynchronous;
+  using lResponse := ExecuteRequestSynchronous(aRequest) do begin
+    result := lResponse.GetContentAsJsonSynchronous;
+  end;
 end;
 
 method Http.TryGetJson(aRequest: not nullable HttpRequest): nullable JsonDocument;
 begin
-  var lRequest := TryExecuteRequestSynchronous(aRequest);
-  if assigned(lRequest) then
-    result := lRequest.TryGetContentAsJsonSynchronous;
+  using lResponse := TryExecuteRequestSynchronous(aRequest) do begin
+    result := lResponse.TryGetContentAsJsonSynchronous;
+  end;
 end;
 {$ENDIF}
 {$ENDIF}
