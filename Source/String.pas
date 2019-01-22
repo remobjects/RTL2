@@ -110,7 +110,7 @@ type
     method EndsWith(Value: String): Boolean; inline;
     method EndsWith(Value: String; IgnoreCase: Boolean): Boolean;
     method ToByteArray: not nullable array of Byte;
-    method ToByteArray(aEncoding: {not nullable} Encoding): not nullable array of Byte;
+    method ToByteArray(aEncoding: not nullable Encoding): not nullable array of Byte;
     method ToCharArray: not nullable array of Char;
 
     property Length: Int32 read mapped.Length;
@@ -177,12 +177,12 @@ begin
 
   {$IF COOPER}
   result := new PlatformString(Value);
+  {$ELSEIF TOFFEE}
+  result := new PlatformString withCharacters(Value) length(RemObjects.Oxygene.System.length(Value));
   {$ELSEIF ECHOES}
   result := new PlatformString(Value);
   {$ELSEIF ISLAND}
   result := PlatformString.FromCharArray(Value);
-  {$ELSEIF TOFFEE}
-  result := new PlatformString withCharacters(Value) length(RemObjects.Oxygene.System.length(Value));
   {$ENDIF}
 end;
 
@@ -198,12 +198,12 @@ begin
 
   {$IF COOPER}
   result := new PlatformString(Value, Offset, Count);
+  {$ELSEIF TOFFEE}
+  result := new PlatformString withCharacters(@Value[Offset]) length(Count);
   {$ELSEIF ECHOES}
   result := new PlatformString(Value, Offset, Count);
   {$ELSEIF ISLAND}
   result := PlatformString.FromPChar((@Value)+Offset/*sizeOf(Char)*/, Count);
-  {$ELSEIF TOFFEE}
-  result := new PlatformString withCharacters(@Value[Offset]) length(Count);
   {$ENDIF}
 end;
 
@@ -214,12 +214,12 @@ begin
   for i: Integer := 0 to aCount-1 do
     chars[i] := aChar;
   result := new PlatformString(chars);
+  {$ELSEIF TOFFEE}
+  result := PlatformString("").stringByPaddingToLength(aCount) withString(PlatformString.stringWithFormat("%c", aChar)) startingAtIndex(0);
   {$ELSEIF ECHOES}
   result := new PlatformString(aChar, aCount);
   {$ELSEIF ISLAND}
   result := PlatformString.FromRepeatedChar(aChar, aCount);
-  {$ELSEIF TOFFEE}
-  result := PlatformString("").stringByPaddingToLength(aCount) withString(PlatformString.stringWithFormat("%c", aChar)) startingAtIndex(0);
   {$ENDIF}
 end;
 
@@ -227,10 +227,10 @@ method String.get_Chars(aIndex: Int32): Char;
 begin
   {$IF COOPER}
   result := mapped.charAt(aIndex);
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped[aIndex];
   {$ELSEIF TOFFEE}
   result := mapped.characterAtIndex(aIndex);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped[aIndex];
   {$ENDIF}
 end;
 
@@ -263,15 +263,14 @@ class operator String.Implicit(Value: Char): String;
 begin
   {$IF COOPER}
   exit new PlatformString(Value);
+  {$ELSEIF TOFFEE}
+  if Value = #0 then
+    exit NSString.stringWithFormat(#0) as not nullable;
+  exit NSString.stringWithFormat("%c", Value) as not nullable;
   {$ELSEIF ECHOES}
   exit new PlatformString(Value, 1);
   {$ELSEIF ISLAND}
   exit PlatformString.FromChar(Value);
-  {$ELSEIF TOFFEE}
-  if Value = #0 then
-    exit NSString.stringWithFormat(#0) as not nullable;
-
-  exit NSString.stringWithFormat("%c", Value) as not nullable;
   {$ENDIF}
 end;
 
@@ -334,10 +333,10 @@ class method String.CharacterIsWhiteSpace(Value: Char): Boolean;
 begin
   {$IF COOPER}
   result := java.lang.Character.isWhitespace(Value);
-  {$ELSEIF ECHOES OR ISLAND}
-  result := Char.IsWhiteSpace(Value);
   {$ELSEIF TOFFEE}
   result := Foundation.NSCharacterSet.whitespaceAndNewlineCharacterSet.characterIsMember(Value);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := Char.IsWhiteSpace(Value);
   {$ENDIF}
 end;
 
@@ -346,13 +345,13 @@ class method String.CharacterIsLetter(Value: Char): Boolean;
 begin
   {$IF COOPER}
   result := java.lang.Character.isLetter(Value);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSCharacterSet.letterCharacterSet.characterIsMember(Value);
   {$ELSEIF ECHOES}
   result := Char.IsLetter(Value);
   {$ELSEIF ISLAND}
   {$WARNING Not Implemeted for Island}
   raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
-  {$ELSEIF TOFFEE}
-  result := Foundation.NSCharacterSet.letterCharacterSet.characterIsMember(Value);
   {$ENDIF}
 end;
 
@@ -360,10 +359,10 @@ class method String.CharacterIsNumber(Value: Char): Boolean;
 begin
   {$IF COOPER}
   result := java.lang.Character.isDigit(Value);
-  {$ELSEIF ECHOES OR ISLAND}
-  result := Char.IsNumber(Value);
   {$ELSEIF TOFFEE}
   result := Foundation.NSCharacterSet.decimalDigitCharacterSet.characterIsMember(Value);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := Char.IsNumber(Value);
   {$ENDIF}
 end;
 
@@ -372,13 +371,13 @@ class method String.CharacterIsLetterOrNumber(Value: Char): Boolean;
 begin
   {$IF COOPER}
   result := java.lang.Character.isLetterOrDigit(Value);
+  {$ELSEIF TOFFEE}
+  result := Foundation.NSCharacterSet.alphanumericCharacterSet.characterIsMember(Value);
   {$ELSEIF ECHOES}
   result := Char.IsLetter(Value) or Char.IsNumber(Value);
   {$ELSEIF ISLAND}
   {$WARNING Not Implemeted for Island}
   raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
-  {$ELSEIF TOFFEE}
-  result := Foundation.NSCharacterSet.alphanumericCharacterSet.characterIsMember(Value);
   {$ENDIF}
 end;
 
@@ -406,12 +405,12 @@ begin
 
   {$IF COOPER}
   exit mapped.compareTo(Value);
+  {$ELSEIF TOFFEE}
+  exit mapped.compare(Value);
   {$ELSEIF ECHOES}
   exit mapped.Compare(mapped, Value, StringComparison.Ordinal);
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.String.Compare(mapped, Value);
-  {$ELSEIF TOFFEE}
-  exit mapped.compare(Value);
   {$ENDIF}
 end;
 
@@ -419,12 +418,12 @@ method String.CompareToIgnoreCase(Value: String): Integer;
 begin
   {$IF COOPER}
   exit mapped.compareToIgnoreCase(Value);
+  {$ELSEIF TOFFEE}
+  exit mapped.caseInsensitiveCompare(Value);
   {$ELSEIF ECHOES}
   exit mapped.Compare(mapped, Value, StringComparison.OrdinalIgnoreCase);
   {$ELSEIF ISLAND}
   exit mapped.CompareToIgnoreCase(Value);
-  {$ELSEIF TOFFEE}
-  exit mapped.caseInsensitiveCompare(Value);
   {$ENDIF}
 end;
 
@@ -432,12 +431,12 @@ method String.Equals(Value: String): Boolean;
 begin
   {$IF COOPER}
   exit mapped.equals(Value); {$HINT needs to take locale into account!}
+  {$ELSEIF TOFFEE}
+  exit mapped.compare(Value) = 0;
   {$ELSEIF ECHOES}
   exit mapped.Equals(Value, StringComparison.Ordinal);
   {$ELSEIF ISLAND}
   exit mapped.Equals(Value);
-  {$ELSEIF TOFFEE}
-  exit mapped.compare(Value) = 0;
   {$ENDIF}
 end;
 
@@ -445,12 +444,12 @@ method String.EqualsIgnoringCase(Value: String): Boolean;
 begin
   {$IF COOPER}
   exit mapped.equalsIgnoreCase(Value); {$HINT needs to take locale into account!}
+  {$ELSEIF TOFFEE}
+  exit mapped.caseInsensitiveCompare(Value) = 0;
   {$ELSEIF ECHOES}
   exit mapped.Equals(Value, StringComparison.OrdinalIgnoreCase);
   {$ELSEIF ISLAND}
   exit mapped.EqualsIgnoreCase(Value);
-  {$ELSEIF TOFFEE}
-  exit mapped.caseInsensitiveCompare(Value) = 0;
   {$ENDIF}
 end;
 
@@ -458,13 +457,13 @@ method String.EqualsIgnoringCaseInvariant(Value: String): Boolean;
 begin
   {$IF COOPER}
   exit mapped.equalsIgnoreCase(Value); // aready invariant, on Java
+  {$ELSEIF TOFFEE}
+  // RemObjects.Elements.System.length as workaround for issue in 8.3; not needed in 8.4
+  exit mapped.compare(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(0, RemObjects.Elements.System.length(self))) locale(Locale.Invariant) = 0;
   {$ELSEIF ECHOES}
   exit mapped.Equals(Value, StringComparison.InvariantCultureIgnoreCase);
   {$ELSEIF ISLAND}
   exit mapped.EqualsIgnoreCaseInvariant(Value);
-  {$ELSEIF TOFFEE}
-  // RemObjects.Elements.System.length as workaround for issue in 8.3; not needed in 8.4
-  exit mapped.compare(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(0, RemObjects.Elements.System.length(self))) locale(Locale.Invariant) = 0;
   {$ENDIF}
 end;
 
@@ -535,12 +534,12 @@ method String.IndexOfIgnoringCase(Value: Char; StartIndex: Integer): Integer;
 begin
   {$IF COOPER}
   result := self.ToLower().IndexOf(Character.toLowerCase(Value), StartIndex);
+  {$ELSEIF TOFFEE}
+  result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
   {$ELSEIF ECHOES}
   result := mapped.IndexOf(Value, StartIndex, StringComparison.OrdinalIgnoreCase);
   {$ELSEIF ISLAND}
   result := mapped.ToLower.IndexOf(Value.ToLOwer(), StartIndex);
-  {$ELSEIF TOFFEE}
-  result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
   {$ENDIF}
 end;
 
@@ -571,13 +570,13 @@ begin
 
   {$IF COOPER}
   result := self.ToLower().IndexOf(Value.ToLower(), StartIndex);
+  {$ELSEIF TOFFEE}
+  var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
+  result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ELSEIF ECHOES}
   result := mapped.IndexOf(Value, StartIndex, StringComparison.OrdinalIgnoreCase);
   {$ELSEIF ISLAND}
   result := mapped.ToLower().IndexOf(Value.ToLower(), StartIndex);
-  {$ELSEIF TOFFEE}
-  var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
-  result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;
 
@@ -592,7 +591,7 @@ end;
 
 method String.IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR ISLAND}
+  {$IF COOPER OR (ISLAND AND NOT TOFFEE)}
   for i: Integer := StartIndex to Length - 1 do begin
      for each c: Char in AnyOf do begin
        if Chars[i] = c then
@@ -638,10 +637,10 @@ method String.LastIndexOf(Value: Char; StartIndex: Integer): Integer;
 begin
   {$IF COOPER OR ECHOES}
   result := mapped.LastIndexOf(Value, StartIndex);
-  {$ELSEIF ISLAND}
-  result := mapped.LastIndexOf(String(Value), StartIndex);
   {$ELSEIF TOFFEE}
   result := LastIndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
+  {$ELSEIF ISLAND}
+  result := mapped.LastIndexOf(String(Value), StartIndex);
   {$ENDIF}
 end;
 
@@ -676,10 +675,10 @@ begin
 
   {$IF COOPER}
   exit mapped.substring(StartIndex, StartIndex + aLength) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Substring(StartIndex, aLength) as not nullable;
   {$ELSEIF TOFFEE}
   result := mapped.substringWithRange(Foundation.NSMakeRange(StartIndex, aLength));
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Substring(StartIndex, aLength) as not nullable;
   {$ENDIF}
 end;
 
@@ -712,14 +711,14 @@ begin
     end;
   end;
   result := lResult as not nullable;
-  {$ELSEIF ECHOES}
-  result := mapped.Split([aSeparator], if aRemoveEmptyEntries then StringSplitOptions.RemoveEmptyEntries else StringSplitOptions.None).ToList() as not nullable;
-  {$ELSEIF ISLAND}
-  result := mapped.Split(aSeparator, aRemoveEmptyEntries).ToList() as not nullable;
   {$ELSEIF TOFFEE}
   result := mapped.componentsSeparatedByString(aSeparator);
   if aRemoveEmptyEntries then
     result := result.Where(p -> p:Length > 0).ToList();
+  {$ELSEIF ECHOES}
+  result := mapped.Split([aSeparator], if aRemoveEmptyEntries then StringSplitOptions.RemoveEmptyEntries else StringSplitOptions.None).ToList() as not nullable;
+  {$ELSEIF ISLAND}
+  result := mapped.Split(aSeparator, aRemoveEmptyEntries).ToList() as not nullable;
   {$ENDIF}
 end;
 
@@ -793,10 +792,10 @@ begin
     aNewValue := "";
   {$IF COOPER}
   exit mapped.substring(0, aStartIndex)+aNewValue+mapped.substring(aStartIndex+aLength) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Remove(aStartIndex, aLength).Insert(aStartIndex, aNewValue) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Remove(aStartIndex, aLength).Insert(aStartIndex, aNewValue) as not nullable;
   {$ENDIF}
 end;
 
@@ -804,10 +803,10 @@ method String.Remove(aStartIndex: Int32; aLength: Int32): not nullable String;
 begin
   {$IF COOPER}
   exit (mapped.substring(0, aStartIndex)+mapped.substring(aStartIndex+aLength)) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Remove(aStartIndex, aLength) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString("");
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Remove(aStartIndex, aLength) as not nullable;
   {$ENDIF}
 end;
 
@@ -840,19 +839,18 @@ begin
     result := self
   else
     result := StringOfChar(PaddingChar, lTotal) + self;
-  {$ELSEIF ECHOES}
-  result := mapped.PadLeft(TotalWidth, PaddingChar);
-  {$ELSEIF ISLAND}
-  result := mapped.PadStart(TotalWidth, PaddingChar);
   {$ELSEIF TOFFEE}
   var lTotal: Integer := TotalWidth - mapped.length;
   if lTotal > 0 then begin
     var lChars := NSString.stringWithFormat("%c", PaddingChar);
     lChars := lChars.stringByPaddingToLength(lTotal) withString(PaddingChar) startingAtIndex(0);
-    result := lChars + self;
-  end
-  else
-    result := self;
+    exit lChars + self;
+  end;
+  result := self;
+  {$ELSEIF ECHOES}
+  result := mapped.PadLeft(TotalWidth, PaddingChar);
+  {$ELSEIF ISLAND}
+  result := mapped.PadStart(TotalWidth, PaddingChar);
   {$ENDIF}
 end;
 
@@ -869,14 +867,14 @@ begin
     result := self
   else
     result := self + StringOfChar(PaddingChar, lTotal);
-  {$ELSEIF ECHOES}
-  result := mapped.PadRight(TotalWidth, PaddingChar);
-  {$ELSEIF ISLAND}
-  result := mapped.PadEnd(TotalWidth, PaddingChar);
   {$ELSEIF TOFFEE}
   result := mapped;
   if result.Length < TotalWidth then
     result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0);
+  {$ELSEIF ECHOES}
+  result := mapped.PadRight(TotalWidth, PaddingChar);
+  {$ELSEIF ISLAND}
+  result := mapped.PadEnd(TotalWidth, PaddingChar);
   {$ENDIF}
 end;
 
@@ -884,10 +882,10 @@ method String.ToLower: not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toLowerCase(Locale.Current) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToLower as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseString;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToLower as not nullable;
   {$ENDIF}
 end;
 
@@ -895,12 +893,12 @@ method String.ToLowerInvariant: not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toLowerCase(Locale.Invariant) as not nullable;
+  {$ELSEIF TOFFEE}
+  exit mapped.lowercaseStringWithLocale(Locale.Invariant);
   {$ELSEIF ECHOES}
   exit mapped.ToLowerInvariant as not nullable;
   {$ELSEIF ISLAND}
   exit mapped.ToLower(true) as not nullable;
-  {$ELSEIF TOFFEE}
-  exit mapped.lowercaseStringWithLocale(Locale.Invariant);
   {$ENDIF}
 end;
 
@@ -919,10 +917,10 @@ method String.ToUpper: not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toUpperCase(Locale.Current) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToUpper as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseString;
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToUpper as not nullable;
   {$ENDIF}
 end;
 
@@ -930,12 +928,12 @@ method String.ToUpperInvariant: not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toUpperCase(Locale.Invariant) as not nullable;
+  {$ELSEIF TOFFEE}
+  exit mapped.uppercaseStringWithLocale(Locale.Invariant);
   {$ELSEIF ECHOES}
   exit mapped.ToUpperInvariant as not nullable;
   {$ELSEIF ISLAND}
   exit mapped.ToUpper(true) as not nullable;
-  {$ELSEIF TOFFEE}
-  exit mapped.uppercaseStringWithLocale(Locale.Invariant);
   {$ENDIF}
 end;
 
@@ -943,10 +941,10 @@ method String.ToUpper(aLocale: Locale): not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toUpperCase(aLocale) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToUpper(aLocale) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.uppercaseStringWithLocale(aLocale);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToUpper(aLocale) as not nullable;
   {$ENDIF}
 end;
 
@@ -958,10 +956,10 @@ method String.Trim: not nullable String;
 begin
   {$IF COOPER}
   result := Trim(WhiteSpaceCharacters);
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped.Trim() as not nullable; // .NET Trim() does include CR/LF and Unicode whitespace
   {$ELSEIF TOFFEE}
   result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.Trim() as not nullable; // .NET Trim() does include CR/LF and Unicode whitespace
   {$ENDIF}
 end;
 
@@ -988,11 +986,11 @@ begin
   {$IF COOPER}
   var lStr := TrimStart(TrimChars);
   result := lStr.TrimEnd(TrimChars);
-  {$ELSEIF ECHOES OR ISLAND}
-  result := mapped.Trim(TrimChars) as not nullable;
   {$ELSEIF TOFFEE}
   var lCharset := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
   result := mapped.stringByTrimmingCharactersInSet(lCharset);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := mapped.Trim(TrimChars) as not nullable;
   {$ENDIF}
 end;
 
@@ -1051,6 +1049,16 @@ begin
     result := mapped.regionMatches(IgnoreCase, 0, Value, 0, Value.length)
   else
     result := mapped.StartsWith(Value);
+  {$ELSEIF TOFFEE}
+  if Value.Length > mapped.length then begin
+    result := false;
+  end
+  else begin
+    if IgnoreCase then
+      result := (mapped.compare(Value) options(NSStringCompareOptions.NSCaseInsensitiveSearch) range(NSMakeRange(0, Value.length)) = NSComparisonResult.NSOrderedSame)
+    else
+      result := mapped.hasPrefix(Value);
+  end;
   {$ELSEIF ECHOES}
   if IgnoreCase then
     result := mapped.StartsWith(Value, StringComparison.OrdinalIgnoreCase)
@@ -1061,15 +1069,6 @@ begin
     result := mapped.ToLower().StartsWith(Value.ToLower(), false)
   else
     result := mapped.StartsWith(Value, false);
-  {$ELSEIF TOFFEE}
-  if Value.Length > mapped.length then
-    result := false
-  else begin
-    if IgnoreCase then
-      result := (mapped.compare(Value) options(NSStringCompareOptions.NSCaseInsensitiveSearch) range(NSMakeRange(0, Value.length)) = NSComparisonResult.NSOrderedSame)
-    else
-      result := mapped.hasPrefix(Value);
-  end;
   {$ENDIF}
 end;
 
@@ -1088,6 +1087,16 @@ begin
     result := mapped.toUpperCase.endsWith(PlatformString(Value).toUpperCase)
   else
     result := mapped.endsWith(Value);
+  {$ELSEIF TOFFEE}
+  if Value.Length > mapped.length then begin
+    result := false;
+  end
+  else begin
+    if IgnoreCase then
+      result := (mapped.compare(Value) options(NSStringCompareOptions.NSCaseInsensitiveSearch) range(NSMakeRange(mapped.length - Value.length, Value.length)) = NSComparisonResult.NSOrderedSame)
+    else
+      result := mapped.hasSuffix(Value);
+  end;
   {$ELSEIF ECHOES}
   if IgnoreCase then
     result := mapped.EndsWith(Value, StringComparison.OrdinalIgnoreCase)
@@ -1098,15 +1107,6 @@ begin
     result := mapped.ToLower().EndsWith(Value.ToLower(), false)
   else
     result := mapped.EndsWith(Value, false);
-  {$ELSEIF TOFFEE}
-  if Value.Length > mapped.length then
-    result := false
-  else begin
-    if IgnoreCase then
-      result := (mapped.compare(Value) options(NSStringCompareOptions.NSCaseInsensitiveSearch) range(NSMakeRange(mapped.length - Value.length, Value.length)) = NSComparisonResult.NSOrderedSame)
-    else
-      result := mapped.hasSuffix(Value);
-  end;
   {$ENDIF}
 end;
 
@@ -1114,29 +1114,20 @@ method String.ToCharArray: not nullable array of Char;
 begin
   {$IF COOPER}
   exit mapped.ToCharArray as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToCharArray as not nullable;
   {$ELSEIF TOFFEE}
   result := new Char[mapped.length];
   mapped.getCharacters(result) range(NSMakeRange(0, mapped.length));
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToCharArray as not nullable;
   {$ENDIF}
 end;
 
 method String.ToByteArray: not nullable array of Byte;
 begin
-  {$IF COOPER}
-  exit mapped.getBytes("UTF-8") as not nullable;
-  {$ELSEIF ECHOES}
-  exit System.Text.Encoding.UTF8.GetBytes(mapped) as not nullable;
-  {$ELSEIF ISLAND}
-  exit TextConvert.StringToUTF8(mapped) as not nullable;
-  {$ELSEIF TOFFEE}
-  var Data := Binary(mapped.dataUsingEncoding(NSStringEncoding.NSUTF8StringEncoding));
-  exit Data.ToArray as not nullable;
-  {$ENDIF}
+  result := Encoding.UTF8.GetBytes(self) includeBOM(false);
 end;
 
-method String.ToByteArray(aEncoding: {not nullable} Encoding): not nullable array of Byte;
+method String.ToByteArray(aEncoding: not nullable Encoding): not nullable array of Byte;
 begin
   result := aEncoding.GetBytes(self);
 end;
@@ -1151,14 +1142,14 @@ begin
     sb.append(Values[i]);
   end;
   result := sb.toString as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := PlatformString.Join(aSeparator, Values) as not nullable;
   {$ELSEIF TOFFEE}
   var lArray := new NSMutableArray withCapacity(Values.length);
   for i: Integer := 0 to Values.length - 1 do
     lArray.addObject(Values[i]);
 
   result := lArray.componentsJoinedByString(aSeparator);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := PlatformString.Join(aSeparator, Values) as not nullable;
   {$ENDIF}
 end;
 
@@ -1172,10 +1163,10 @@ begin
     sb.append(Values[i]);
   end;
   result := sb.toString as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  result := PlatformString.Join(aSeparator, Values.ToArray) as not nullable;
   {$ELSEIF TOFFEE}
   result := (Values as NSArray).componentsJoinedByString(aSeparator);
+  {$ELSEIF ECHOES OR ISLAND}
+  result := PlatformString.Join(aSeparator, Values.ToArray) as not nullable;
   {$ENDIF}
 end;
 

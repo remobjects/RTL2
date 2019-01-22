@@ -6,6 +6,13 @@ uses
   Foundation;
 
 type
+  {$IF TOFFEE}
+  OtherString = unit PlatformString;
+  {$ELSE}
+  OtherString = unit Foundation.NSString;
+  {$ENDIF}
+
+type
   String = public partial class
   private
   public
@@ -14,27 +21,27 @@ type
     // Casts
     //
 
-    class operator Implicit(aValue: nullable String): nullable Foundation.NSString;
+    class operator Implicit(aValue: nullable String): nullable OtherString;
     begin
-      result := aValue as PlatformString as NSString;
+      result := aValue as PlatformString as OtherString;
     end;
 
-    class operator Implicit(aValue: nullable Foundation.NSString): nullable String;
+    class operator Implicit(aValue: nullable OtherString): nullable String;
     begin
       result := aValue as PlatformString /*as String*/;
     end;
 
     class operator Implicit(aValue: nullable id): nullable String;
     begin
-      result := aValue as NSString as PlatformString /*as String*/;
+      result := aValue as OtherString as PlatformString /*as String*/;
     end;
 
-    class operator Explicit(aValue: nullable String): nullable NSString;
+    class operator Explicit(aValue: nullable String): nullable OtherString;
     begin
       result := aValue;
     end;
 
-    class operator Explicit(aValue: nullable NSString): nullable String;
+    class operator Explicit(aValue: nullable OtherString): nullable String;
     begin
       result := aValue;
     end;
@@ -48,12 +55,12 @@ type
     // Equality
     //
 
-    class operator Equal(aValue1: String; aValue2: NSString): Boolean;
+    class operator Equal(aValue1: String; aValue2: OtherString): Boolean;
     begin
       result := PlatformString(aValue1) = aValue2;
     end;
 
-    class operator Equal(aValue1: NSString; aValue2: String): Boolean;
+    class operator Equal(aValue1: OtherString; aValue2: String): Boolean;
     begin
       result := aValue1 = PlatformString(aValue2);
     end;
@@ -62,12 +69,12 @@ type
     // Inequality
     //
 
-    class operator NotEqual(aValue1: String; aValue2: NSString): Boolean;
+    class operator NotEqual(aValue1: String; aValue2: OtherString): Boolean;
     begin
       result := PlatformString(aValue1) ≠ aValue2;
     end;
 
-    class operator NotEqual(aValue1: NSString; aValue2: String): Boolean;
+    class operator NotEqual(aValue1: OtherString; aValue2: String): Boolean;
     begin
       result := aValue1 ≠ PlatformString(aValue2);
     end;
@@ -76,42 +83,42 @@ type
     // Comparisons
     //
 
-    class operator Greater(aValue1: String; aValue2: NSString): Boolean;
+    class operator Greater(aValue1: String; aValue2: OtherString): Boolean;
     begin
       result := PlatformString(aValue1) > String(aValue2);
     end;
 
-    class operator Greater(aValue1: NSString; aValue2: String): Boolean;
+    class operator Greater(aValue1: OtherString; aValue2: String): Boolean;
     begin
       result := aValue1 > PlatformString(aValue2);
     end;
 
-    class operator Less(aValue1: String; aValue2: NSString): Boolean;
+    class operator Less(aValue1: String; aValue2: OtherString): Boolean;
     begin
         result := PlatformString(aValue1) < aValue2;
     end;
 
-    class operator Less(aValue1: NSString; aValue2: String): Boolean;
+    class operator Less(aValue1: OtherString; aValue2: String): Boolean;
     begin
       result := aValue1 < PlatformString(aValue2);
     end;
 
-    class operator GreaterOrEqual(aValue1: String; aValue2: NSString): Boolean;
+    class operator GreaterOrEqual(aValue1: String; aValue2: OtherString): Boolean;
     begin
       result := PlatformString(aValue1) ≥ aValue2;
     end;
 
-    class operator GreaterOrEqual(aValue1: NSString; aValue2: String): Boolean;
+    class operator GreaterOrEqual(aValue1: OtherString; aValue2: String): Boolean;
     begin
       result := aValue1 ≥ PlatformString(aValue2);
     end;
 
-    class operator LessOrEqual(aValue1: String; aValue2: NSString): Boolean;
+    class operator LessOrEqual(aValue1: String; aValue2: OtherString): Boolean;
     begin
       result := PlatformString(aValue1) ≤ aValue2;
     end;
 
-    class operator LessOrEqual(aValue1: NSString; aValue2: String): Boolean;
+    class operator LessOrEqual(aValue1: OtherString; aValue2: String): Boolean;
     begin
       result := aValue1 ≤ PlatformString(aValue2);
     end;

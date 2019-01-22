@@ -29,7 +29,7 @@ type
 
     {$IF COOPER}
     method &iterator: java.util.&Iterator<KeyValuePair<String, JsonNode>>;
-    {$ELSEIF TOFFEE}
+    {$ELSEIF TOFFEE AND NOT TOFFEEV2}
     {$HIDE CPW8}
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
     {$SHOW CPW8}
@@ -158,7 +158,7 @@ method JsonObject.iterator: java.util.&Iterator<KeyValuePair<String, JsonNode>>;
 begin
   exit Properties.iterator;
 end;
-{$ELSEIF TOFFEE}
+{$ELSEIF TOFFEE AND NOT TOFFEEV2}
 method JsonObject.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
 begin
   if aState^.state <> 0 then

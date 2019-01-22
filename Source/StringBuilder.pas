@@ -217,12 +217,12 @@ begin
 
   {$IF COOPER}
   exit  mapped.replace(StartIndex, StartIndex + Count, Value);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Remove(StartIndex, Count);
-  exit mapped.Insert(StartIndex, Value);
   {$ELSEIF TOFFEE}
   mapped.replaceCharactersInRange(NSMakeRange(StartIndex, Count)) withString(Value);
   exit mapped;
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Remove(StartIndex, Count);
+  exit mapped.Insert(StartIndex, Value);
   {$ENDIF}
 end;
 
@@ -233,10 +233,10 @@ begin
 
   {$IF COOPER}
   mapped.setCharAt(&Index,Value);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Chars[&Index] := Value;
   {$ELSEIF TOFFEE}
   mapped.replaceCharactersInRange(NSMakeRange(&Index, 1)) withString(Value);
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Chars[&Index] := Value;
   {$ENDIF}
 end;
 
@@ -244,13 +244,13 @@ method StringBuilder.set_Length(Value: Integer);
 begin
   {$IF COOPER}
   mapped.setLength(Value);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Length := Value;
   {$ELSEIF TOFFEE}
   if Value > mapped.length then
     Append(#0, Value - mapped.length)
   else
     mapped.deleteCharactersInRange(NSMakeRange(Value, mapped.length - Value));
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Length := Value;
   {$ENDIF}
 end;
 
@@ -258,10 +258,10 @@ method StringBuilder.Substring(StartIndex: Integer): String;
 begin
   {$IF COOPER}
   exit mapped.substring(StartIndex);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToString(StartIndex, Length - StartIndex);
   {$ELSEIF TOFFEE}
   exit mapped.substringFromIndex(StartIndex);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToString(StartIndex, Length - StartIndex);
   {$ENDIF}
 end;
 
@@ -272,10 +272,10 @@ begin
 
   {$IF COOPER}
   exit mapped.substring(StartIndex, StartIndex + Count);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToString(StartIndex, Count);
   {$ELSEIF TOFFEE}
   exit mapped.substringWithRange(NSMakeRange(StartIndex, Count));
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToString(StartIndex, Count);
   {$ENDIF}
 end;
 

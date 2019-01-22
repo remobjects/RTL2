@@ -30,6 +30,13 @@ type
     method IndexOf(aItem: T): Integer;
     method LastIndexOf(aItem: T): Integer;
 
+    {$IF TOFFEEV2}
+    method GetSequence: sequence of T;
+    begin
+      exit INSFastEnumeration(mapped).GetSequence;
+    end;
+    {$ENDIF}
+
     {$IF NOT COOPER AND NOT ISLAND}
     method ToSortedList: ImmutableList<T>;
     {$ENDIF}

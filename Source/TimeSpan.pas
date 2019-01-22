@@ -75,10 +75,10 @@ constructor TimeSpan(aTicks: Int64);
 begin
   {$IFDEF ECHOES}
   exit new System.TimeSpan(aTicks);
-  {$ELSEIF COOPER OR ISLAND}
-  exit aTicks / 1000;
   {$ELSEIF TOFFEE}
   exit aTicks / Double(TicksPerSecond);
+  {$ELSEIF COOPER OR ISLAND}
+  exit aTicks / 1000;
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -123,10 +123,10 @@ method TimeSpan.get_Ticks: Int64;
 begin
   {$IFDEF ECHOES}
   exit mapped.Ticks;
-  {$ELSEIF COOPER OR ISLAND}
-  exit mapped * 1000;
   {$ELSEIF TOFFEE}
   exit Int64(mapped * TicksPerSecond);
+  {$ELSEIF COOPER OR ISLAND}
+  exit mapped * 1000;
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -161,10 +161,10 @@ method TimeSpan.Add(ts: TimeSpan): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit mapped + System.TimeSpan(ts);
-  {$ELSEIF COOPER OR ISLAND}
-  exit mapped + Int64(ts);
   {$ELSEIF TOFFEE}
   exit mapped + NSTimeInterval(ts);
+  {$ELSEIF COOPER OR ISLAND}
+  exit mapped + Int64(ts);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -174,10 +174,10 @@ method TimeSpan.Subtract(ts: TimeSpan): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit mapped - System.TimeSpan(ts);
-  {$ELSEIF COOPER OR ISLAND}
-  exit mapped - Int64(ts);
   {$ELSEIF TOFFEE}
   exit mapped - NSTimeInterval(ts);
+  {$ELSEIF COOPER OR ISLAND}
+  exit mapped - Int64(ts);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -187,9 +187,9 @@ method TimeSpan.Negate: TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit - mapped;
-  {$ELSEIF COOPER OR ISLAND}
-  exit - mapped;
   {$ELSEIF TOFFEE}
+  exit - mapped;
+  {$ELSEIF COOPER OR ISLAND}
   exit - mapped;
   {$ELSE}
   {$ERROR Unknown platform}
@@ -225,10 +225,10 @@ class method TimeSpan.FromTicks(d: Int64): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan.FromTicks(d);
-  {$ELSEIF COOPER OR ISLAND}
-  exit d / 1000;
   {$ELSEIF TOFFEE}
   exit double(d) / TicksPerSecond;
+  {$ELSEIF COOPER OR ISLAND}
+  exit d / 1000;
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -238,10 +238,10 @@ operator TimeSpan.Equal(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) = System.TimeSpan(b);
-  {$ELSEIF COOPER OR ISLAND}
-  exit Int64(a) = Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) = NSTimeInterval(b);
+  {$ELSEIF COOPER OR ISLAND}
+  exit Int64(a) = Int64(b);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -251,10 +251,10 @@ operator TimeSpan.NotEqual(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) <> System.TimeSpan(b);
-  {$ELSEIF COOPER OR ISLAND}
-  exit Int64(a) <> Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) <> NSTimeInterval(b);
+  {$ELSEIF COOPER OR ISLAND}
+  exit Int64(a) <> Int64(b);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -262,12 +262,12 @@ end;
 
 operator TimeSpan.Add(a: TimeSpan; b: TimeSpan): TimeSpan;
 begin
-{$IFDEF ECHOES}
+  {$IFDEF ECHOES}
   exit System.TimeSpan(a) + System.TimeSpan(b);
-  {$ELSEIF COOPER OR ISLAND}
-  exit Int64(a) + Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) + NSTimeInterval(b);
+  {$ELSEIF COOPER OR ISLAND}
+  exit Int64(a) + Int64(b);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -277,10 +277,10 @@ operator TimeSpan.Subtract(a: TimeSpan; b: TimeSpan): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) - System.TimeSpan(b);
-  {$ELSEIF COOPER OR ISLAND}
-  exit Int64(a) - Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) - NSTimeInterval(b);
+  {$ELSEIF COOPER OR ISLAND}
+  exit Int64(a) - Int64(b);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -295,10 +295,10 @@ operator TimeSpan.Minus(a: TimeSpan): TimeSpan;
 begin
   {$IFDEF ECHOES}
   exit -System.TimeSpan(a);
-  {$ELSEIF COOPER OR ISLAND}
-  exit -Int64(a);
   {$ELSEIF TOFFEE}
   exit -NSTimeInterval(a);
+  {$ELSEIF COOPER OR ISLAND}
+  exit -Int64(a);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -308,10 +308,10 @@ operator TimeSpan.Less(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) < System.TimeSpan(b);
-  {$ELSEIF COOPER OR ISLAND}
-  exit Int64(a) < Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) < NSTimeInterval(b);
+  {$ELSEIF COOPER OR ISLAND}
+  exit Int64(a) < Int64(b);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -321,10 +321,10 @@ operator TimeSpan.LessOrEqual(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) <= System.TimeSpan(b);
-  {$ELSEIF COOPER OR ISLAND}
-  exit Int64(a) <= Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) <= NSTimeInterval(b);
+  {$ELSEIF COOPER OR ISLAND}
+  exit Int64(a) <= Int64(b);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -334,10 +334,10 @@ operator TimeSpan.Greater(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) > System.TimeSpan(b);
-  {$ELSEIF COOPER OR ISLAND}
-  exit Int64(a) > Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) > NSTimeInterval(b);
+  {$ELSEIF COOPER OR ISLAND}
+  exit Int64(a) > Int64(b);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}
@@ -347,10 +347,10 @@ operator TimeSpan.GreaterOrEqual(a: TimeSpan; b: TimeSpan): Boolean;
 begin
   {$IFDEF ECHOES}
   exit System.TimeSpan(a) >= System.TimeSpan(b);
-  {$ELSEIF COOPER OR ISLAND}
-  exit Int64(a) >= Int64(b);
   {$ELSEIF TOFFEE}
   exit NSTimeInterval(a) >= NSTimeInterval(b);
+  {$ELSEIF COOPER OR ISLAND}
+  exit Int64(a) >= Int64(b);
   {$ELSE}
   {$ERROR Unknown platform}
   {$ENDIF}

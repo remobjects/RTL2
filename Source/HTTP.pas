@@ -315,6 +315,12 @@ begin
     else
       contentCallback(new HttpResponseContent<String>(Exception := content.Exception))
   end);
+  {$ELSEIF TOFFEE}
+  var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
+  if assigned(s) then
+    contentCallback(new HttpResponseContent<String>(Content := s))
+  else
+    contentCallback(new HttpResponseContent<String>(Exception := new RTLException("Invalid Encoding")));
   {$ELSEIF ECHOES}
   async begin
     var responseString := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd();
@@ -325,12 +331,6 @@ begin
     var lResponseString := aEncoding.GetString(Data.ToArray);
     contentCallback(new HttpResponseContent<String>(Content := lResponseString));
   end;
-  {$ELSEIF TOFFEE}
-  var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
-  if assigned(s) then
-    contentCallback(new HttpResponseContent<String>(Content := s))
-  else
-    contentCallback(new HttpResponseContent<String>(Exception := new RTLException("Invalid Encoding")));
   {$ENDIF}
 end;
 
@@ -349,6 +349,8 @@ begin
     end;
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
+  {$ELSEIF TOFFEE}
+  contentCallback(new HttpResponseContent<ImmutableBinary>(Content := Data.mutableCopy));
   {$ELSEIF ECHOES}
   async begin
     var allData := new System.IO.MemoryStream();
@@ -360,8 +362,6 @@ begin
     var allData := new Binary(Data.ToArray);
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
-  {$ELSEIF TOFFEE}
-  contentCallback(new HttpResponseContent<ImmutableBinary>(Content := Data.mutableCopy));
   {$ENDIF}
 end;
 
@@ -420,6 +420,14 @@ begin
     end;
     contentCallback(new HttpResponseContent<File>(Content := aTargetFile));
   end;
+  {$ELSEIF TOFFEE}
+  async begin
+    var error: NSError;
+    if Data.writeToFile(aTargetFile) options(NSDataWritingOptions.NSDataWritingAtomic) error(var error) then
+      contentCallback(new HttpResponseContent<File>(Content := aTargetFile))
+    else
+      contentCallback(new HttpResponseContent<File>(Exception := new RTLException withError(error)));
+  end;
   {$ELSEIF ECHOES}
   async begin
     try
@@ -444,14 +452,6 @@ begin
         contentCallback(new HttpResponseContent<File>(Exception := E));
     end;
   end;
-  {$ELSEIF TOFFEE}
-  async begin
-    var error: NSError;
-    if Data.writeToFile(aTargetFile) options(NSDataWritingOptions.NSDataWritingAtomic) error(var error) then
-      contentCallback(new HttpResponseContent<File>(Content := aTargetFile))
-    else
-      contentCallback(new HttpResponseContent<File>(Exception := new RTLException withError(error)));
-  end;
   {$ENDIF}
 end;
 
@@ -460,16 +460,16 @@ begin
   if aEncoding = nil then aEncoding := Encoding.Default;
   {$IF COOPER}
   result := new String(GetContentAsBinarySynchronous().ToArray, aEncoding);
-  {$ELSEIF ECHOES}
-  result := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd() as not nullable;
-  {$ELSEIF ISLAND}
-  result := aEncoding.GetString(Data.ToArray) as not nullable;
   {$ELSEIF TOFFEE}
   var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
   if assigned(s) then
     exit s as not nullable
   else
     raise new RTLException("Invalid Encoding");
+  {$ELSEIF ECHOES}
+  result := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd() as not nullable;
+  {$ELSEIF ISLAND}
+  result := aEncoding.GetString(Data.ToArray) as not nullable;
   {$ENDIF}
 end;
 
@@ -485,14 +485,14 @@ begin
     len := stream.read(data);
   end;
   result := allData as not nullable;
+  {$ELSEIF TOFFEE}
+  result := Data.mutableCopy as not nullable;
   {$ELSEIF ECHOES}
   var allData := new System.IO.MemoryStream();
   Response.GetResponseStream().CopyTo(allData);
   result := allData as not nullable;
   {$ELSEIF ISLAND}
   result := new Binary(Data.ToArray);
-  {$ELSEIF TOFFEE}
-  result := Data.mutableCopy as not nullable;
   {$ENDIF}
 end;
 

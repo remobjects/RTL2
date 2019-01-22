@@ -51,8 +51,8 @@ type
     method ToByteArray: array of Byte;
     method ToString(Format: GuidFormat): String;
 
-    [ToString]
-    method ToString: String; override;
+    //[ToString]
+    //method ToString: String; override;
   end;
 
 
@@ -274,10 +274,10 @@ begin
   result := result.ToUpper();
 end;
 
-method Guid.ToString: String;
-begin
-  result := self.ToString(GuidFormat.Default);
-end;
+//method Guid.ToString: String;
+//begin
+  //result := self.ToString(GuidFormat.Default);
+//end;
 
 {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
 class method Guid.Exchange(Value: array of Byte; Index1: Integer; Index2: Integer);
