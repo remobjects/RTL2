@@ -630,8 +630,13 @@ begin
 
       try
         var webResponse := webRequest.EndGetResponse(ar) as HttpWebResponse;
-        var response := if webResponse.StatusCode >= 300 then new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer)) else new HttpResponse(webResponse);
-        ResponseCallback(response);
+        if webResponse.StatusCode >= 300 then begin
+          ResponseCallback(new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer)));
+          (webResponse as IDisposable).Dispose;
+        end
+        else begin
+          ResponseCallback(new HttpResponse(webResponse));
+        end;
       except
         on E: Exception do
           ResponseCallback(new HttpResponse withException(E));
@@ -742,10 +747,14 @@ begin
 
     try
       var webResponse := webRequest.GetResponse() as HttpWebResponse;
-      result := new HttpResponse(webResponse);
       if webResponse.StatusCode >= 300 then begin
         if not aThrowOnError then exit nil;
-        raise new HttpException(String.Format("Unable to complete request. Error code: {0}", webResponse.StatusCode), result)
+        var lException := new HttpException(String.Format("Unable to complete request. Error code: {0}", webResponse.StatusCode), result);
+        (webResponse as IDisposable).Dispose;
+        raise lException;
+      end
+      else begin
+        result := new HttpResponse(webResponse);
       end;
     except
       on E: System.Net.WebException do begin
