@@ -234,13 +234,12 @@ begin
   exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.DesktopDirectory));
   {$ELSEIF ISLAND AND WINDOWS}
   var lAllocator: rtl.IMalloc;
-  var lMalloc: ^rtl.IMalloc := @lAllocator;
   var lDir: rtl.LPCITEMIDLIST;
   var lTmp := new Char[rtl.MAX_PATH + 1];
-  if rtl.SHGetMalloc(@lMalloc) = rtl.NOERROR then begin
+  if rtl.SHGetMalloc(@lAllocator) = rtl.NOERROR then begin
     rtl.SHGetSpecialFolderLocation(nil, rtl.CSIDL_DESKTOPDIRECTORY, @lDir);
     rtl.SHGetPathFromIDList(lDir, @lTmp[0]);
-    lMalloc^.lpVtbl^.Free(lMalloc, lDir);
+    lMalloc.Free(lDir);
     result := new String(lTmp).TrimEnd([Chr(0)]);
   end
   else
