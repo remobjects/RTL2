@@ -239,7 +239,7 @@ begin
   if rtl.SHGetMalloc(@lAllocator) = rtl.NOERROR then begin
     rtl.SHGetSpecialFolderLocation(nil, rtl.CSIDL_DESKTOPDIRECTORY, @lDir);
     rtl.SHGetPathFromIDList(lDir, @lTmp[0]);
-    lMalloc.Free(lDir);
+    lAllocator.Free(lDir);
     result := new String(lTmp).TrimEnd([Chr(0)]);
   end
   else
