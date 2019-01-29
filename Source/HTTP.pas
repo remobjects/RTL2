@@ -1088,7 +1088,7 @@ end;
 method Http.TryGetJson(aRequest: not nullable HttpRequest): nullable JsonDocument;
 begin
   using lResponse := TryExecuteRequestSynchronous(aRequest) do begin
-    result := lResponse.TryGetContentAsJsonSynchronous;
+    result := lResponse:TryGetContentAsJsonSynchronous;
   end;
 end;
 {$ENDIF}
