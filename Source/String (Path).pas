@@ -67,7 +67,7 @@ type
     {$ENDIF}
 
     property ToPathWithLocalFolderPrefixIfRelative: String read if not StartsWith(".") and not StartsWith(Path.DirectorySeparatorChar) then "."+Path.DirectorySeparatorChar+self else self;
-    property QuotedIfNeeded: String read if IndexOf(" ") > -1 then '"'+self+'"' else self;
+    property QuotedIfNeeded: String read if IndexOf(" ") > -1 then String('"'+self+'"') else self;
 
   end;
 

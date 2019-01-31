@@ -175,7 +175,7 @@ end;
 {$IF TOFFEE}
 method Thread.GetThreadID: IntPtr;
 begin
-  result := valueForKeyPath("private.seqNum").integerValue;
+  result := (valueForKeyPath("private.seqNum") as NSNumber).integerValue;
 end;
 
 method Thread.&Join;

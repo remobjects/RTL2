@@ -384,7 +384,7 @@ end;
 method Url.GetHostNameAndPort: nullable String;
 begin
   if length(fHost) > 0 then
-    result := if fHost.Contains(':') then '['+fHost+']' else fHost;
+    result := if fHost.Contains(':') then String('['+fHost+']') else fHost;
   if assigned(fPort) then
     result := result+':'+fPort.ToString();
 end;
