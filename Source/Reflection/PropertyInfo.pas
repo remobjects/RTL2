@@ -14,13 +14,13 @@ type
 
   &Property = public class {$IF ECHOES OR (ISLAND AND NOT TOFFEE)} mapped to PlatformProperty {$ENDIF}
   private
-  {$IF TOFFEE}
+  {$IF TOFFEE AND NOT ISLAND}
     fProperty: ^Void;
     fType: &Type;
     method get_Type: &Type;
   {$ENDIF}
   public
-  {$IF TOFFEE}
+  {$IF TOFFEE AND NOT ISLAND}
     constructor withClass(aClass: &Type) &property(aProperty: ^Void);
     method GetValue(aInst: Object; aArgs: array of Object): Object;
     method SetValue(aInst: Object; aArgs: array of Object; aValue: Object);
@@ -32,7 +32,7 @@ type
 
 implementation
 
-{$IF TOFFEE}
+{$IF TOFFEE AND NOT ISLAND}
 constructor &Property withClass(aClass: &Type) &property(aProperty: ^Void);
 begin
   fProperty := aProperty;

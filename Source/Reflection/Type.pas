@@ -5,14 +5,14 @@ interface
 uses
   RemObjects.Elements.RTL;
 
-{$IF TOFFEE AND (TARGET_OS_IPHONE OR TARGET_IPHONESIMULATOR)}
+{$IF TOFFEE AND (TARGET_OS_IPHONE OR TARGET_IPHONESIMULATOR) AND NOT ISLAND}
 type Protocol = id;
 {$ENDIF}
 
 type
   {$IF COOPER}
   PlatformType = public java.lang.Class;
-  {$ELSEIF TOFFEE}
+  {$ELSEIF TOFFEE AND NOT ISLAND}
   PlatformType = public &Class;
   {$ELSEIF ECHOES}
   PlatformType = public System.Type;
@@ -20,10 +20,10 @@ type
   PlatformType = public RemObjects.Elements.System.Type;
   {$ENDIF}
 
-  &Type = public class {$IF NOT TOFFEE} mapped to PlatformType {$ENDIF}
+  &Type = public class {$IF NOT TOFFEE OR ISLAND} mapped to PlatformType {$ENDIF}
   private
     {$IF COOPER}
-    {$ELSEIF TOFFEE}
+    {$ELSEIF TOFFEE AND NOT ISLAND}
     fIsID: Boolean;
     fClass: &Class;
     fProtocol: Protocol;
@@ -53,7 +53,7 @@ type
     property IsArray: Boolean read mapped.isArray();
     property IsEnum: Boolean read mapped.isEnum();
     property IsValueType: Boolean read mapped.isPrimitive();
-    {$ELSEIF TOFFEE}
+    {$ELSEIF TOFFEE AND NOT ISLAND}
     constructor withID;
     constructor withClass(aClass: &Class);
     constructor withProtocol(aProtocol: id);
@@ -97,9 +97,9 @@ type
     property IsEnum: Boolean read mapped.IsEnum;
     property IsValueType: Boolean read mapped.IsValueType;
     {$ELSEIF ISLAND}
-    property Interfaces: ImmutableList<&Type> read mapped.Interfaces.ToList();
-    property Methods: ImmutableList<&Method> read mapped.Methods.ToList();
-    property Properties: ImmutableList<&Property> read mapped.Properties.ToList();
+    property Interfaces: ImmutableList<&Type> read sequence of &Type(mapped.Interfaces).ToList();
+    property Methods: ImmutableList<&Method> read sequence of &Method(mapped.Methods).ToList();
+    property Properties: ImmutableList<&Property> read sequence of &Property(mapped.Properties).ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.BaseType;
@@ -116,7 +116,7 @@ implementation
 class method &Type.GetAllTypes: ImmutableList<&Type>;
 begin
   {$IF COOPER}
-  {$ELSEIF TOFFEE}
+  {$ELSEIF TOFFEE AND NOT ISLAND}
 
   var lCount := objc_getClassList(nil, 0);
   result := new List<&Type> withCapacity(lCount);
@@ -133,14 +133,14 @@ begin
   for each a in AppDomain.CurrentDomain.GetAssemblies do
     (result as List<&Type>).Add(a.GetTypes());
   {$ELSEIF ISLAND}
-  result := mapped.AllTypes.ToList();
+  result := sequence of &Type(mapped.AllTypes).ToList();
   {$ENDIF}
 end;
 
 class method &Type.GetType(aName: not nullable String): nullable &Type;
 begin
   {$IF COOPER}
-  {$ELSEIF TOFFEE}
+  {$ELSEIF TOFFEE AND NOT ISLAND}
   var lClass := NSClassFromString(aName);
   if assigned(lClass) then
     result := new &Type withClass(lClass);
@@ -152,7 +152,7 @@ begin
 end;
 
 {$IF COOPER}
-{$ELSEIF TOFFEE}
+{$ELSEIF TOFFEE AND NOT ISLAND}
 constructor &Type withID;
 begin
   self := inherited init;
