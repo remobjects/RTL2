@@ -280,6 +280,11 @@ method XmlElement.ElementsWithName(aLocalName: not nullable String; aNamespace: 
 begin
   {$IF ECHOES}
   result := (fNativeXmlNode as XElement).Elements().Where(c -> c.Name.LocalName = aLocalName).Select(c -> new XmlElement(c, self)) as not nullable;
+  {$ELSEIF TOFFEEV2}
+  if assigned(aNamespace) then
+    result := (fNativeXmlNode as NativeXmlElement).elementsForLocalName(aLocalName) URI(aNamespace.Url.ToAbsoluteString()).GetSequence.Select(c -> new XmlElement(c, self))
+  else
+    result := (fNativeXmlNode as NativeXmlElement).elementsForName(aLocalName).GetSequence.Select(c -> new XmlElement(c, self));
   {$ELSEIF TOFFEE}
   if assigned(aNamespace) then
     result := (fNativeXmlNode as NativeXmlElement).elementsForLocalName(aLocalName) URI(aNamespace.Url.ToAbsoluteString()).Select(c -> new XmlElement(c, self))
@@ -294,6 +299,9 @@ begin
   {$WARNING Not implemented}
   raise new NotImplementedException("XmlDocument.FromBinary() is not imoplemented yet.");
   //result := [];//(fNativeXmlNode as XElement).Elements(aLocalName).Select(c -> new XmlElement(c, self)) as not nullable;
+  {$ELSEIF TOFFEEV2}
+  var lURI := aNamespace:Url:ToAbsoluteString;
+  result := (fNativeXmlNode as NativeXmlElement).children.GetSequence.Where(c -> c.URI = lURI).Select(c -> new XmlElement(c, self));
   {$ELSEIF TOFFEE}
   var lURI := aNamespace:Url:ToAbsoluteString;
   result := (fNativeXmlNode as NativeXmlElement).children.Where(c -> c.URI = lURI).Select(c -> new XmlElement(c, self));
@@ -496,6 +504,8 @@ method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
 begin
   {$IF ECHOES}
   result := (fNativeXmlNode as NativeXmlElement).Attributes.Select(a -> new XmlAttribute(a, self)) as not nullable;
+  {$ELSEIF TOFFEEV2}
+  result := (fNativeXmlNode as NativeXmlElement).attributes.GetSequence.Select(a -> new XmlAttribute(a, self));
   {$ELSEIF TOFFEE}
   result := (fNativeXmlNode as NativeXmlElement).attributes.Select(a -> new XmlAttribute(a, self));
   {$ENDIF}
@@ -530,6 +540,8 @@ method XmlElement.GetElements: not nullable sequence of XmlElement;
 begin
   {$IF ECHOES}
   result := (fNativeXmlNode as NativeXmlElement).Elements().Select(c -> new XmlElement(c, self)) as not nullable;
+  {$ELSEIF TOFFEEV2}
+  result := (fNativeXmlNode as NativeXmlElement).children.GetSequence.Where(c -> c is NativeXmlElement).Select(c -> new XmlElement(NativeXmlNode(c), self));
   {$ELSEIF TOFFEE}
   result := (fNativeXmlNode as NativeXmlElement).children.Where(c -> c is NativeXmlElement).Select(c -> new XmlElement(NativeXmlNode(c), self));
   {$ENDIF}
@@ -540,6 +552,17 @@ begin
   {$IF ECHOES}
   {$WARNING Not implemented}
   raise new NotImplementedException("XmlElement.GetNodes() is not implemented for .NET yet.");
+  {$ELSEIF TOFFEEV2}
+  result := (fNativeXmlNode as NativeXmlElement).children.GetSequence.Select(c -> begin
+    if c is NativeXmlElement then
+      result := new XmlElement(c, self)
+    else case (c as NativeXmlNode).kind of
+      NSXMLNodeKind.XMLAttributeKind: result := new XmlAttribute(c, self);
+      NSXMLNodeKind.XMLCommentKind: result := new XmlComment(c, self);
+      NSXMLNodeKind.XMLNamespaceKind: result := new XmlNamespace(c, self);
+      else result := new XmlNode(c, self);
+    end;
+  end);
   {$ELSEIF TOFFEE}
   result := (fNativeXmlNode as NativeXmlElement).children.Select(c -> begin
     if c is NativeXmlElement then

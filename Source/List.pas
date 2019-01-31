@@ -33,7 +33,7 @@ type
     {$IF TOFFEEV2}
     method GetSequence: sequence of T;
     begin
-      exit INSFastEnumeration(mapped).GetSequence;
+      exit RemObjects.Elements.System.INSFastEnumeration<T>(mapped).GetSequence();
     end;
     {$ENDIF}
 
@@ -810,7 +810,7 @@ method ListHelpers.ToArray<T>(aSelf: NSArray): not nullable array of T;
 begin
   result := new T[aSelf.count];
   for i: Integer := 0 to aSelf.count - 1 do
-    result[i] := aSelf[i];
+    result[i] := T(aSelf[i]);
 end;
 
 method ListHelpers.ToArrayReverse<T>(aSelf: NSArray): not nullable array of T;

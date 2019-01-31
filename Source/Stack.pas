@@ -49,7 +49,7 @@ begin
   var n := mapped.lastObject;
   if n = nil then raise new StackEmptyException;
   if n = NSNull.null then n := nil;
-  result := n;
+  result := T(n);
   {$ENDIF}
 end;
 
@@ -114,7 +114,7 @@ begin
   if n = nil then raise new StackEmptyException;
   if n = NSNull.null then n := nil;
   mapped.removeLastObject;
-  result := n;
+  result := T(n);
   {$ENDIF}
 end;
 

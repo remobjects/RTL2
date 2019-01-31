@@ -7,7 +7,11 @@ uses
 
 type
   {$IF TOFFEE}
+  {$IFDEF ISLAND}
+  OtherString = unit RemObjects.Elements.System.String;
+  {$ELSE}
   OtherString = unit PlatformString;
+  {$ENDIF}
   {$ELSE}
   OtherString = unit Foundation.NSString;
   {$ENDIF}
@@ -85,7 +89,7 @@ type
 
     class operator Greater(aValue1: String; aValue2: OtherString): Boolean;
     begin
-      result := PlatformString(aValue1) > String(aValue2);
+      result := PlatformString(aValue1) > (aValue2);
     end;
 
     class operator Greater(aValue1: OtherString; aValue2: String): Boolean;

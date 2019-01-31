@@ -124,18 +124,6 @@ type
     operator Implicit(aCharSequence: CharSequence): String;
     operator Implicit(aString: String): CharSequence;
     {$ENDIF}
-
-    {$IF TOFFEEV2}
-    operator Implicit(aString: System.String): String;
-    begin
-      result := aString as Foundation.NSString;
-    end;
-
-    operator Implicit(aString: String): System.String;
-    begin
-      result := aString as Foundation.NSString;
-    end;
-    {$ENDIF}
   end;
 
 {$GLOBALS ON}
@@ -248,7 +236,7 @@ class operator String.Add(Value1: String; Value2: String): not nullable String;
 begin
   if not assigned(Value1) then exit coalesce(Value2, "");
   if not assigned(Value2) then exit Value1 as not nullable;
-  result := (PlatformString(Value1)+PlatformString(Value2)) as not nullable;
+  result := (PlatformString(Value1)+PlatformString(Value2)) as String as not nullable;
 end;
 
 class operator String.Add(Value1: String; Value2: Object): not nullable String;
@@ -714,7 +702,7 @@ begin
   end;
   result := lResult as not nullable;
   {$ELSEIF TOFFEE}
-  result := mapped.componentsSeparatedByString(aSeparator);
+  result := mapped.componentsSeparatedByString(aSeparator) as not nullable;
   if aRemoveEmptyEntries then
     result := result.Where(p -> p:Length > 0).ToList();
   {$ELSEIF ECHOES}
@@ -908,10 +896,10 @@ method String.ToLower(aLocale: Locale): not nullable String;
 begin
   {$IF COOPER}
   exit mapped.toLowerCase(aLocale) as not nullable;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToLower(aLocale) as not nullable;
   {$ELSEIF TOFFEE}
   exit mapped.lowercaseStringWithLocale(aLocale);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToLower(aLocale) as not nullable;
   {$ENDIF}
 end;
 

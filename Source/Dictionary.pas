@@ -261,7 +261,7 @@ type
         yield new KeyValuePair<T,U>(el.Key, el.Value);
     end;
     {$ELSEIF TOFFEE}
-    method GetSequence<T, U>(aSelf: NSDictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
+    method GetSequence<T, U>(aSelf: NSDictionary<T,U>) : sequence of KeyValuePair<T,U>; where T is NSObject, U is NSObject; iterator;
     begin
       for each el in aSelf.allKeys do
        yield new KeyValuePair<T,U>(T(el), aSelf[el]);

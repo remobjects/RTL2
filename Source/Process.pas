@@ -359,7 +359,7 @@ class method Process.QuoteArgumentIfNeeded(aArgument: not nullable String): not 
 begin
   result := aArgument;
   if result.Contains(" ") then
-    result := '"'+result.Replace('"', '\"')+'"'
+    result := String('"'+result.Replace('"', '\"')+'"')
 end;
 
 class method Process.SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
