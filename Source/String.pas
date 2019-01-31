@@ -105,8 +105,10 @@ type
     method TrimEnd(const TrimChars: array of Char): not nullable String;
     method TrimStart(const TrimChars: array of Char): not nullable String;
     method TrimNewLineCharacters: not nullable String; inline;
+    method StartsWith(Value: Char): Boolean; inline;
     method StartsWith(Value: String): Boolean; inline;
     method StartsWith(Value: String; IgnoreCase: Boolean): Boolean;
+    method EndsWith(Value: Char): Boolean; inline;
     method EndsWith(Value: String): Boolean; inline;
     method EndsWith(Value: String; IgnoreCase: Boolean): Boolean;
     method ToByteArray: not nullable array of Byte;
@@ -1034,6 +1036,11 @@ begin
   result := Trim([#13, #10]);
 end;
 
+method String.StartsWith(Value: Char): Boolean;
+begin
+  result := (Length > 0) and (self[0] = Value);
+end;
+
 method String.StartsWith(Value: String): Boolean;
 begin
   result := StartsWith(Value, False);
@@ -1070,6 +1077,12 @@ begin
   else
     result := mapped.StartsWith(Value, false);
   {$ENDIF}
+end;
+
+method String.EndsWith(Value: Char): Boolean;
+begin
+  var len := Length;
+  result := (len > 0) and (self[len-1] = Value);
 end;
 
 method String.EndsWith(Value: String): Boolean;
