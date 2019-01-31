@@ -727,7 +727,7 @@ method BinaryStream.ReadRaw(Buffer: ^void; Count: LongInt);
 begin
   fStream.&Read(fBuffer, 0, Count);
   {$IF TOFFEE}
-  memcpy(Buffer, @fBuffer[0], Count);
+  rtl.memcpy(Buffer, @fBuffer[0], Count);
   {$ELSEIF ISLAND}
   {$IFDEF WINDOWS}ExternalCalls.memcpy(Buffer, @fBuffer[0], Count){$ELSEIF POSIX}rtl.memcpy(Buffer, @fBuffer[0], Count){$ENDIF};
   {$ENDIF}
@@ -736,7 +736,7 @@ end;
 method BinaryStream.WriteRaw(Buffer: ^void; Count: LongInt);
 begin
   {$IF TOFFEE}
-  memcpy(@fBuffer[0], Buffer, Count);
+  rtl.memcpy(@fBuffer[0], Buffer, Count);
   {$ELSEIF ISLAND}
   {$IFDEF WINDOWS}ExternalCalls.memcpy(@fBuffer[0], Buffer, Count){$ELSEIF POSIX}rtl.memcpy(@fBuffer[0], Buffer, Count){$ENDIF};
   {$ENDIF}

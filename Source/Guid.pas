@@ -74,7 +74,7 @@ begin
   result := new java.util.UUID(bb.getLong, bb.getLong);
   {$ELSEIF TOFFEE}
   var lBytes: uuid_t;
-  memcpy(lBytes, aValue, sizeOf(uuid_t));
+  rtl.memcpy(lBytes, aValue, sizeOf(uuid_t));
   result := new NSUUID withUUIDBytes(var lBytes);
   {$ELSEIF ECHOES}
   //reverse byte order to normal (.NET reverse first 4 bytes and next two 2 bytes groups)
@@ -203,7 +203,7 @@ begin
   exit new java.util.UUID(0, 0);
   {$ELSEIF TOFFEE}
   var lBytes: uuid_t;
-  memset(lBytes, 0, sizeOf(uuid_t));
+  rtl.memset(lBytes, 0, sizeOf(uuid_t));
   exit new NSUUID withUUIDBytes(var lBytes);
   {$ELSEIF ECHOES OR ISLAND}
   exit new Guid(PlatformGuid.Empty);
@@ -221,7 +221,7 @@ begin
   result := new Byte[sizeOf(uuid_t)];
   var lBytes: uuid_t;
   mapped.getUUIDBytes(var lBytes);
-  memcpy(result, lBytes, sizeOf(uuid_t));
+  rtl.memcpy(result, lBytes, sizeOf(uuid_t));
   {$ELSEIF ECHOES}
   var Value := fGuid.ToByteArray;
   //reverse byte order to normal (.NET reverse first 4 bytes and next two 2 bytes groups)
