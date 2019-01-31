@@ -7,7 +7,11 @@ uses
 
 type
   {$IF TOFFEE}
+  {$IFDEF ISLAND}
+  OtherString = unit RemObjects.Elements.System.String;
+  {$ELSE}
   OtherString = unit PlatformString;
+  {$ENDIF}
   {$ELSE}
   OtherString = unit Foundation.NSString;
   {$ENDIF}

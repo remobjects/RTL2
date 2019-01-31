@@ -107,7 +107,7 @@ begin
   case aBase of
     2: result := ToBinaryString(aValue);
     8: result := ToOctalString(aValue);
-    10: result := aValue.ToString as not nullable;
+    10: result := aValue.ToString as String as not nullable;
     16: result := ToHexString(aValue);
     else raise new ConversionException('Unsupported base for ToString.');
   end;
@@ -118,7 +118,7 @@ begin
   case aBase of
     2: result := ToBinaryString(aValue);
     8: result := ToOctalString(aValue);
-    10: result := aValue.ToString as not nullable;
+    10: result := aValue.ToString as String as not nullable;
     16: result := ToHexString(aValue);
     else raise new ConversionException('Unsupported base for ToString.');
   end;
@@ -129,7 +129,7 @@ begin
   case aBase of
     2: result := ToBinaryString(aValue);
     8: result := ToOctalString(aValue);
-    10: result := aValue.ToString as not nullable;
+    10: result := aValue.ToString as String as not nullable;
     16: result := ToHexString(aValue);
     else raise new ConversionException('Unsupported base for ToString.');
   end;
@@ -141,7 +141,7 @@ begin
   case aBase of
     2: result := ToBinaryString(aValue);
     8: result := ToOctalString(aValue);
-    10: result := aValue.ToString as not nullable;
+    10: result := aValue.ToString as String as not nullable;
     16: result := ToHexString(aValue);
     else raise new ConversionException('Unsupported base for ToString.');
   end;

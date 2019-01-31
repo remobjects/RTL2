@@ -3,8 +3,8 @@
 interface
 
 type
-  PlatformImmutableQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ENDIF};
-  PlatformQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ENDIF};
+  PlatformImmutableQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ENDIF};
+  PlatformQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ENDIF};
 
   ImmutableQueue<T> = public class mapped to PlatformImmutableQueue<T>
   public
@@ -64,10 +64,10 @@ method ImmutableQueue<T>.ToArray: array of T;
 begin
   {$IF COOPER}
   exit mapped.toArray(new T[0]);
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.ToArray;
   {$ELSEIF TOFFEE}
   exit ListHelpers.ToArray<T>(self);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.ToArray;
   {$ENDIF}
 end;
 
@@ -118,8 +118,6 @@ begin
   if self.Count = 0 then
     raise new QueueEmptyException;
   exit mapped.poll;
-  {$ELSEIF ECHOES OR ISLAND}
-  exit mapped.Dequeue;
   {$ELSEIF TOFFEE}
   if self.Count = 0 then
     raise new QueueEmptyException;
@@ -128,6 +126,8 @@ begin
     lResult := nil;
   result := T(lResult);
   mapped.removeObjectAtIndex(0);
+  {$ELSEIF ECHOES OR ISLAND}
+  exit mapped.Dequeue;
   {$ENDIF}
 end;
 
@@ -135,10 +135,10 @@ method Queue<T>.Enqueue(Item: T);
 begin
   {$IF COOPER}
   mapped.add(Item);
-  {$ELSEIF ECHOES OR ISLAND}
-  mapped.Enqueue(Item);
   {$ELSEIF TOFFEE}
   Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(Item, NSNull.null));
+  {$ELSEIF ECHOES OR ISLAND}
+  mapped.Enqueue(Item);
   {$ENDIF}
 end;
 
