@@ -8,6 +8,14 @@ type
   ConvertTests = public class(Test)
   private
   protected
+    // Copy from Convert.... because in Convert it is private and inline
+    method internTrimLeadingZeros(aValue: not nullable String): not nullable String;
+    begin
+      for i: Int32 := 0 to length(aValue)-1 do
+        if aValue[i] ≠ '0' then exit aValue.Substring(i);
+      exit "";
+    end;
+
   public
 
     method TestInt32;
@@ -66,6 +74,30 @@ type
 
       //writeLn(Convert.TryToInt32("9223372036854775807"));
       //Assert.AreEqual(Convert.TryToInt32("9223372036854775807"), 9223372036854775807);      // fails to compile: // E546 Value "9223372036854775807" exceeds the bounds of target type "Int32"
+    end;
+
+
+    method TestHex;
+    begin
+      Assert.AreEqual(Convert.ToHexString(10,0), "A");
+    end;
+
+
+
+    method TrimLeadingZeros;
+    begin
+      var res : String;
+      var aValue :=  "000000000000000A";
+      res := internTrimLeadingZeros(aValue);
+       Assert.AreEqual(res, "A");
+      aValue :=  "00000000000000A0B";
+      res := internTrimLeadingZeros(aValue);
+      Assert.AreEqual(res, "A0B");
+
+      aValue :=  "0000000000000000";
+      res := internTrimLeadingZeros(aValue);
+      Assert.AreEqual(res, "");
+
     end;
 
   end;
