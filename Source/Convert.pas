@@ -287,9 +287,9 @@ end;
 
 method Convert.TrimLeadingZeros(aValue: not nullable String): not nullable String;
 begin
-  for i: Int32 := 0 to length(aValue)-2 do
+  for i: Int32 := 0 to length(aValue)-1 do
     if aValue[i] ≠ '0' then exit aValue.Substring(i);
-  exit aValue;
+  exit "";
 end;
 
 method Convert.ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;

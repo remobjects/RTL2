@@ -37,6 +37,7 @@ type
     class method Min(a,b: Int64): Int64; mapped to min(a,b);
     class method Pow(x, y: Double): Double;
     class method Round(a: Double): Int64;
+    class method Round(a : Double; digits :  Integer) : Double;
     class method Sign(d: Double): Integer;
     class method Sin(d: Double): Double; mapped to sin(d);
     class method Sinh(d: Double): Double; mapped to sinh(d);
@@ -72,6 +73,7 @@ type
     class method Min(a,b: Int64): Int64;
     class method Pow(x, y: Double): Double;
     class method Round(a: Double): Int64;
+    class method Round(a : Double; digits :  Integer) : Double;
     class method Sign(d: Double): Integer;
     class method Sin(x: Double): Double;
     class method Sinh(x: Double): Double;
@@ -106,6 +108,7 @@ type
     class method Min(a,b: Int64): Int64; mapped to Min(a,b);
     class method Pow(x, y: Double): Double; mapped to Pow(x,y);
     class method Round(a: Double): Int64;
+    class method Round(a : Double; digits :  Integer) : Double;
     class method Sign(d: Double): Integer; mapped to Sign(d);
     class method Sin(d: Double): Double; mapped to Sin(d);
     class method Sinh(d: Double): Double; mapped to Sinh(d);
@@ -238,25 +241,19 @@ begin
 
   exit Int64(Floor(a + 0.499999999999999999));
 end;
-{$ELSEIF TOFFEE}
-class method Math.Round(a: Double): Int64;
+
+class method Math.Round(a : Double; digits :  Integer) : Double;
 begin
-  if Consts.IsNaN(a) or Consts.IsInfinity(a) then
-    raise new ArgumentException("Value can not be rounded to Int64");
-
-  exit Int64(Floor(a + 0.499999999999999999));
+  if (digits < 0) or (digits > 15) then
+    raise new ArgumentException("digits must be between 0 and 15");
+  var factor := Pow(10.0, -digits);
+  if a > 0 then
+    result := Truncate((a / factor)+0.5) * factor
+  else
+    result := Truncate((a / factor)-0.5) * factor
 end;
-{$ELSEIF ECHOES or ISLAND}
-class method Math.Round(a: Double): Int64;
-begin
-  if Consts.IsNaN(a) or Consts.IsInfinity(a) then
-    raise new ArgumentException("Value can not be rounded to Int64");
 
-  exit Int64(Floor(a + 0.499999999999999999));
-end;
-{$ENDIF}
 
-{$IF COOPER}
 class method Math.Sign(d: Double): Integer;
 begin
   if Consts.IsNaN(d) then
@@ -266,6 +263,7 @@ begin
   if d < 0 then exit -1;
   exit 0;
 end;
+
 {$ELSEIF TOFFEE}
 class method Math.Sign(d: Double): Integer;
 begin
@@ -434,6 +432,51 @@ class method Math.Min(a: Integer; b: Integer): Integer;
 begin
   exit iif(a < b, a, b);
 end;
+
+class method Math.Round(a: Double): Int64;
+begin
+  if Consts.IsNaN(a) or Consts.IsInfinity(a) then
+    raise new ArgumentException("Value can not be rounded to Int64");
+
+  exit Int64(Floor(a + 0.499999999999999999));
+end;
+
+class method Math.Round(a : Double; digits :  Integer) : Double;
+begin
+  if (digits < 0) or (digits > 15) then
+    raise new ArgumentException("digits must be between 0 and 15");
+  var factor := Pow(10.0, -digits);
+  if a > 0 then
+    result := Truncate((a / factor)+0.5) * factor
+  else
+    result := Truncate((a / factor)-0.5) * factor
+end;
+
+ {$ELSEIF ECHOES OR ISLAND}
+class method Math.Round(a: Double): Int64;
+begin
+  if Consts.IsNaN(a) or Consts.IsInfinity(a) then
+    raise new ArgumentException("Value can not be rounded to Int64");
+
+  exit Int64(Floor(a + 0.499999999999999999));
+end;
+
+class method Math.Round(a : Double; digits :  Integer) : Double;
+begin
+  {$IF ECHOES}
+  result := mapped.Round(a, digits);
+  exit;
+  {$ELSE}
+  if (digits < 0) or (digits > 15) then
+    raise new ArgumentException("digits must be between 0 and 15");
+  var factor := Pow(10.0, -digits);
+  if a > 0 then
+    result := Truncate((a / factor)+0.5) * factor
+  else
+    result := Truncate((a / factor)-0.5) * factor
+   {$ENDIF}
+end;
+
 {$ENDIF}
 
 end.
