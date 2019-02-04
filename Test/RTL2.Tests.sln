@@ -5,7 +5,13 @@ Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Cooper", "..\S
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Echoes", "..\Source\Elements.RTL.Echoes.elements", "{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}"
 EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Linux", "..\Source\Elements.RTL.Island.Linux.elements", "{163F84DC-DC6B-4535-994F-0865D3A84D20}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Windows", "..\Source\Elements.RTL.Island.Windows.elements", "{6F888992-4293-4097-8AA3-6667E0187D4F}"
+EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Shared", "..\Source\Elements.RTL.Shared.elements", "{ABEC8ACC-B076-406C-871B-581E8AF0A453}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.iOS", "..\Source\Elements.RTL.Toffee.iOS.elements", "{EC0982C8-700B-4085-A401-59460E394DAA}"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.macOS", "..\Source\Elements.RTL.Toffee.macOS.elements", "{58D52FE5-E87E-4D9C-8FBB-280980F6762B}"
 EndProject
@@ -37,6 +43,18 @@ Global
 		{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
 		{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{163F84DC-DC6B-4535-994F-0865D3A84D20}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{6F888992-4293-4097-8AA3-6667E0187D4F}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{6F888992-4293-4097-8AA3-6667E0187D4F}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{6F888992-4293-4097-8AA3-6667E0187D4F}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{6F888992-4293-4097-8AA3-6667E0187D4F}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{EC0982C8-700B-4085-A401-59460E394DAA}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{EC0982C8-700B-4085-A401-59460E394DAA}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{EC0982C8-700B-4085-A401-59460E394DAA}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{EC0982C8-700B-4085-A401-59460E394DAA}.Release|AnyCPU.Build.0 = Release|AnyCPU
 		{58D52FE5-E87E-4D9C-8FBB-280980F6762B}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{58D52FE5-E87E-4D9C-8FBB-280980F6762B}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{58D52FE5-E87E-4D9C-8FBB-280980F6762B}.Release|AnyCPU.ActiveCfg = Release|AnyCPU

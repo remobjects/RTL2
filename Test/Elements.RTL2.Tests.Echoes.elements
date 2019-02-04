@@ -65,10 +65,13 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Web" />
-    <Reference Include="Elements">
+    <ProjectReference Include="Elements.RTL.Echoes">
+      <Name>Elements.RTL.Echoes</Name>
       <HintPath>..\Source\bin\Debug\Elements.dll</HintPath>
+      <Project>{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}</Project>
+      <ProjectFile>..\Source\Elements.RTL.Echoes.elements</ProjectFile>
       <Private>True</Private>
-    </Reference>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />

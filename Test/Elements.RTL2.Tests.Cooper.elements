@@ -49,16 +49,16 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="rt" />
-    <Reference Include="sugar">
-      <Private>True</Private>
-    </Reference>
     <Reference Include="swift">
       <Private>True</Private>
     </Reference>
-    <Reference Include="elements">
+    <ProjectReference Include="Elements.RTL.Cooper">
+      <Name>Elements.RTL.Cooper</Name>
       <HintPath>..\Source\bin\Debug\elements.jar</HintPath>
+      <Project>{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}</Project>
+      <ProjectFile>..\Source\Elements.RTL.Cooper.elements</ProjectFile>
       <Private>True</Private>
-    </Reference>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />

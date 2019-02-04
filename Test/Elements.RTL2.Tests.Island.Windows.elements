@@ -48,7 +48,12 @@
     <Reference Include="gc" />
     <Reference Include="Island" />
     <Reference Include="rtl" />
-    <Reference Include="Elements" />
+    <ProjectReference Include="Elements.RTL.Island.Windows">
+      <Name>Elements.RTL.Island.Windows</Name>
+      <HintPath />
+      <Project>{6F888992-4293-4097-8AA3-6667E0187D4F}</Project>
+      <ProjectFile>..\Source\Elements.RTL.Island.Windows.elements</ProjectFile>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
