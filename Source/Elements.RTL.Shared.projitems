@@ -111,9 +111,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)XmlTokenizer.pas">
       <VirtualFolder>Xml</VirtualFolder>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NativeXmlDocument.pas">
+    <None Include="$(MSBuildThisFileDirectory)NativeXmlDocument.pas">
       <VirtualFolder>Xml</VirtualFolder>
-    </Compile>
+    </None>
     <Compile Include="$(MSBuildThisFileDirectory)Thread.pas">
       <VirtualFolder>Threading</VirtualFolder>
     </Compile>
