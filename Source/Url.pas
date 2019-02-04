@@ -178,7 +178,7 @@ type
     [Hash]
     method GetHashCode: Integer; override;
     {$IF TOFFEE}
-    method copyWithZone(aZone: ^NSZone): instanceType;
+    method copyWithZone(aZone: ^NSZone): InstanceType;
     {$ENDIF}
   end;
 

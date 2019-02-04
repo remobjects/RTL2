@@ -92,7 +92,7 @@ begin
   {$IF COOPER}
   exit System.getenv(Name);
   {$ELSEIF TOFFEE}
-  exit string(Foundation.NSProcessInfo.processInfo:environment:objectForKey(Name));
+  exit String(Foundation.NSProcessInfo.processInfo:environment:objectForKey(Name));
   {$ELSEIF ECHOES}
   exit System.Environment.GetEnvironmentVariable(Name);
   {$ELSEIF ISLAND}

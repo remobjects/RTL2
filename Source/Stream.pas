@@ -175,8 +175,8 @@ type
     {$IF TOFFEE OR ISLAND}
     fBuffer: array of Byte;
     class const DefBufferSize = 8;
-    method ReadRaw(Buffer: ^void; Count: LongInt);
-    method WriteRaw(Buffer: ^void; Count: LongInt);
+    method ReadRaw(Buffer: ^Void; Count: LongInt);
+    method WriteRaw(Buffer: ^Void; Count: LongInt);
     {$ENDIF}
   public
     constructor(aStream: Stream);
