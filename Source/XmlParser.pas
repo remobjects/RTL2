@@ -379,7 +379,7 @@ begin
     if not Expected(out lError, XmlTokenKind.TagClose, XmlTokenKind.EmptyElementEnd) then exit;
     Tokenizer.Next;
     if (Tokenizer.Token = XmlTokenKind.Whitespace) then Tokenizer.Next;
-    if not Expected(out lError, XmlTokenKind.EOF, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction) then begin 
+    if not Expected(out lError, XmlTokenKind.EOF, XmlTokenKind.Comment, XmlTokenKind.ProcessingInstruction) then begin
       result.ErrorInfo := lError;
       exit;
     end;
@@ -468,7 +468,7 @@ begin
     lQuoteChar := lValue[0];
     lValue := lValue.Trim([lQuoteChar]);
   end;
-  if not Expected(out aError, XmlTokenKind.AttributeValue) then begin 
+  if not Expected(out aError, XmlTokenKind.AttributeValue) then begin
     Tokenizer.Next;
     aError.Row := Tokenizer.Row;
     aError.Column := Tokenizer.Column;

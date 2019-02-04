@@ -32,13 +32,13 @@ type
     constructor (aGuid: PlatformGuid);
     {$ENDIF}
 
-    {$IF NOT TOFFEE}
+    {$IF NOT (COOPER OR TOFFEE)}
+    [&Equals]
     method &Equals(aValue: Object): Boolean; override;
+    [Hash]
     method GetHashCode: Integer; override;
-    {$ELSE}
-    method isEqual(aValue: Object): Boolean; //override;
-    method hash: NSUInteger; mapped to hash;
     {$ENDIF}
+
     operator Equal(a, b: Guid): Boolean;
     operator NotEqual(a, b: Guid): Boolean;
 
@@ -112,13 +112,17 @@ begin
   {$ENDIF}
 end;
 
-{$IF NOT TOFFEE}
+{$IF NOT (COOPER OR TOFFEE)}
 method Guid.&Equals(aValue: Object): Boolean;
 begin
   if not assigned(aValue) or (aValue is not Guid) then
     exit false;
   {$IF COOPER}
   result := mapped.Equals(aValue);
+  {$ELSEIF TOFFEE}
+  if not assigned(aValue) or (aValue is not Guid) then
+    exit false;
+  result := mapped.isEqual(aValue);
   {$ELSEIF ECHOES OR ISLAND}
   result := fGuid.Equals((aValue as Guid).fGuid);
   {$ENDIF}
@@ -128,16 +132,11 @@ method Guid.GetHashCode: Integer;
 begin
   {$IF COOPER}
   result := mapped.GetHashCode;
+  {$ELSEIF TOFFEE}
+  result := mapped.hash;
   {$ELSEIF ECHOES OR ISLAND}
   result := fGuid.GetHashCode;
   {$ENDIF}
-end;
-{$ELSE}
-method Guid.isEqual(aValue: Object): Boolean;
-begin
-  if not assigned(aValue) or (aValue is not Guid) then
-    exit false;
-  result := mapped.isEqual(aValue);
 end;
 {$ENDIF}
 

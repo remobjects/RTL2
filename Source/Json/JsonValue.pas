@@ -9,19 +9,10 @@ type
 
     [ToString]
     method ToString: String; override;
-    {$IF TOFFEE}
-    method isEqual(obj: id): Boolean; override;
-    {$ELSE}
+    [&Equals]
     method &Equals(Obj: Object): Boolean; override;
-    {$ENDIF}
-
-    {$IF COOPER}
-    method hashCode: Integer; override;
-    {$ELSEIF TOFFEE}
-    method hash: Foundation.NSUInteger; override;
-    {$ELSEIF ECHOES OR ISLAND}
+    [Hash]
     method GetHashCode: Integer; override;
-    {$ENDIF}
 
     property Value: not nullable T;
     operator Implicit(aValue: JsonValue<T>): T;
@@ -95,40 +86,18 @@ begin
   result := Value.ToString;
 end;
 
-{$IF TOFFEE}
-method JsonValue<T>.isEqual(Obj: id): Boolean;
-begin
-  if (Obj = nil) or (not (Obj is JsonValue<T>)) then
-    exit false;
-
-  exit self.Value.Equals(JsonValue<T>(Obj).Value);
-end;
-
-{$ELSE}
 method JsonValue<T>.&Equals(Obj: Object): Boolean;
 begin
   if (Obj = nil) or (not (Obj is JsonValue<T>)) then
     exit false;
 
-  exit self.Value.Equals(JsonValue<T>(Obj).Value);
+  result := self.Value.Equals(JsonValue<T>(Obj).Value);
 end;
-{$ENDIF}
-{$IF COOPER}
-method JsonValue<T>.hashCode: Integer;
-begin
-  exit if self.Value = nil then -1 else self.Value.GetHashCode;
-end;
-{$ELSEIF TOFFEE}
-method JsonValue<T>.hash: Foundation.NSUInteger;
-begin
-  exit if self.Value = nil then -1 else self.Value.GetHashCode;
-end;
-{$ELSEIF ECHOES OR ISLAND}
+
 method JsonValue<T>.GetHashCode: Integer;
 begin
-  exit if self.Value = nil then -1 else self.Value.GetHashCode;
+  result := if self.Value = nil then -1 else self.Value.GetHashCode;
 end;
-{$ENDIF}
 
 operator JsonValue<T>.Implicit(aValue: JsonValue<T>): T;
 begin

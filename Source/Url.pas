@@ -77,7 +77,7 @@ type
     class method AddPercentEncodingsToPath(aString: String): String;
     class method RemovePercentEncodingsFromPath(aString: String; aAlsoRemovePlusCharacter: Boolean := false): String;
     class method TryRemovePercentEncodingsFromPath(aString: String; aAlsoRemovePlusCharacter: Boolean := false): nullable String;
-    class method UrlEncodeString(aString: String): String;
+    //class method UrlEncodeString(aString: String): String;
 
     //property PathWithoutLastComponent: String read GetPathWithoutLastComponent; // includes trailing "/" or "\", NOT decoded
 
@@ -161,7 +161,7 @@ type
     {$ELSEIF ECHOES}
     operator Implicit(aUrl: System.Uri): Url;
     operator Implicit(aUrl: Url): System.Uri;
-    {$ELSEIF TOFFEE}
+    {$ELSEIF DARWIN}
     operator Implicit(aUrl: Foundation.NSURL): Url;
     operator Implicit(aUrl: Url): Foundation.NSURL;
     {$ENDIF}
@@ -173,14 +173,12 @@ type
     class operator Equal(Value1: Object; Value2: Url): Boolean;
     class operator NotEqual(Value1: Object; Value2: Url): Boolean;
 
-    {$IF ECHOES}
+    [&Equals]
     method &Equals(obj: Object): Boolean; override;
+    [Hash]
     method GetHashCode: Integer; override;
-    {$ENDIF}
     {$IF TOFFEE}
-    method isEqual(obj: id): Boolean; override;
     method copyWithZone(aZone: ^NSZone): instanceType;
-    method hash: NSUInteger; override;
     {$ENDIF}
   end;
 
@@ -933,22 +931,22 @@ begin
   end;
 end;
 
-class method Url.UrlEncodeString(aString: String): String;
-begin
-  {$IF COOPER}
-  exit java.net.URLEncoder.Encode(aString, 'utf-8');
-  {$ELSEIF TOFFEE}
-  result := PlatformString(aString).stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.alphanumericCharacterSet);
-  {$ELSEIF ECHOES}
-    {$IF NETFX_CORE}
-    result := System.Net.WebUtility.UrlEncode(aString);
-    {$ELSE}
-    result := System.Web.HttpUtility.UrlEncode(aString);
-    {$ENDIF}
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemented}
-  {$ENDIF}
-end;
+//class method Url.UrlEncodeString(aString: String): String;
+//begin
+  //{$IF COOPER}
+  //exit java.net.URLEncoder.Encode(aString, 'utf-8');
+  //{$ELSEIF TOFFEE}
+  //result := PlatformString(aString).stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.alphanumericCharacterSet);
+  //{$ELSEIF ECHOES}
+    //{$IF NETFX_CORE}
+    //result := System.Net.WebUtility.UrlEncode(aString);
+    //{$ELSE}
+    //result := System.Web.HttpUtility.UrlEncode(aString);
+    //{$ENDIF}
+  //{$ELSEIF ISLAND}
+  //{$WARNING Not Implemented}
+  //{$ENDIF}
+//end;
 
 //
 // Casts
@@ -978,7 +976,7 @@ begin
   if assigned(aUrl) then
     result := new System.Uri(aUrl.ToAbsoluteString);
 end;
-{$ELSEIF TOFFEE}
+{$ELSEIF DARWIN}
 operator Url.Implicit(aUrl: Foundation.NSURL): Url;
 begin
   if assigned(aUrl) then
@@ -1037,43 +1035,30 @@ begin
   result := Url(Value1):ToAbsoluteString() ≠ Value2.ToAbsoluteString();
 end;
 
-{$IF ECHOES}
 method Url.Equals(obj: Object): Boolean;
-begin
-  if obj = self then
-    exit true;
-  if obj is Url then
-    exit CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString();
-  if obj is Uri then
-    exit CanonicalVersion.ToAbsoluteString() = ((obj as Uri) as Url).CanonicalVersion.ToAbsoluteString();
-end;
-
-method Url.GetHashCode: Integer;
-begin
-  result := (CanonicalVersion.ToAbsoluteString as PlatformString).GetHashCode;
-end;
-{$ENDIF}
-
-{$IF TOFFEE}
-method Url.isEqual(obj: id): Boolean;
 begin
   if obj = self then
     exit true;
   if obj is Url then
     exit (CanonicalVersion.ToAbsoluteString() = (obj as Url).CanonicalVersion.ToAbsoluteString()) or
          (IsFileUrl and (obj as Url).IsFileUrl and (CanonicalVersion.FilePath = (obj as Url).CanonicalVersion.FilePath));
-  if obj is NSURL then
-    exit CanonicalVersion.ToAbsoluteString() = ((obj as NSURL) as Url).CanonicalVersion.ToAbsoluteString();
+  if obj is Uri then
+    exit CanonicalVersion.ToAbsoluteString() = ((obj as Uri) as Url).CanonicalVersion.ToAbsoluteString();
+  {$IF DARWIN}
+  if obj is Foundation.NSURL then
+    exit CanonicalVersion.ToAbsoluteString() = ((obj as Foundation.NSURL) as Url).CanonicalVersion.ToAbsoluteString();
+  {$ENDIF}
 end;
 
+method Url.GetHashCode: Integer;
+begin
+  result := (CanonicalVersion.ToAbsoluteString as PlatformString).GetHashCode;
+end;
+
+{$IF TOFFEE}
 method Url.copyWithZone(aZone: ^NSZone): instancetype;
 begin
   result := Url.UrlWithString(self.ToString);
-end;
-
-method Url.hash: NSUInteger;
-begin
-  result := (CanonicalVersion.ToAbsoluteString as PlatformString).hash;
 end;
 {$ENDIF}
 

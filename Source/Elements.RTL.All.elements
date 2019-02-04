@@ -89,7 +89,6 @@
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
     <DefineConstants>TOFFEE;TOFFEEV2</DefineConstants>
-    <Enabled>False</Enabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.tvOS' ">
     <Mode>Toffee</Mode>
@@ -127,8 +126,6 @@
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <StartMode>Project</StartMode>
     <RegisterForComInterop>False</RegisterForComInterop>
-    <CpuType>anycpu</CpuType>
-    <RuntimeVersion>v25</RuntimeVersion>
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
