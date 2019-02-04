@@ -11,7 +11,6 @@ type
   public
     method FirstTest;
     begin
-      Assert.IsTrue(true);
 
       var lXmlStyle := new XmlFormattingOptions;
       lXmlStyle.WhitespaceStyle := XmlWhitespaceStyle.PreserveWhitespaceAroundText;

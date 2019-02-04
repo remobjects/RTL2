@@ -17,21 +17,21 @@ type
       //xml.Standalone := true;
       xml.Encoding := "utf-8";
       xml.Standalone := "yes";
-      Assert.AreEqual(xml.ToString, '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"/>');
+      Check.AreEqual(xml.ToString, '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"/>');
     end;
 
     method PreserveHeaders;
     begin
       var sXML := '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Project/>';
       var xml := XmlDocument.FromString(sXML);
-      Assert.AreEqual(xml.ToString, sXML);
+      Check.AreEqual(xml.ToString, sXML);
     end;
 
     method PreserveSpaces;
     begin
       var sXML := '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Project    '#13'Test= "foo"   '#13#13#10#9'  Bar  ="b  " >'#13'   '#13#9#19#13'  <Tag2   name=  "fo  "   />  '#9#13#10'</Project  >';
       var xml := XmlDocument.FromString(sXML);
-      Assert.AreEqual(xml.ToString, sXML);
+      Check.AreEqual(xml.ToString, sXML);
     end;
 
     method AddFile;
@@ -46,21 +46,21 @@ type
       var lxmlParser := new XmlParser(sXML, lXmlFormatOptions);
       var xml := lxmlParser.Parse();
       //var xml := XmlDocument.FromString(sXML);
-      //Assert.AreEqual(xml.ToString, sXML);
+      //Check.AreEqual(xml.ToString, sXML);
 
       var sXML2 := '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'#10'<Project>'#10#9'<ItemGroup>'#10#9#9'<Compile Include="foo" />'#10#9#9'<Compile Include="Bar.pas" />'#10#9'</ItemGroup>'#10'</Project>';
       var lCompile := xml.Root.FirstElementWithName("ItemGroup").AddElement("Compile");
       lCompile.SetAttribute("Include", "Bar.pas");
-      Assert.AreEqual(xml.ToString, sXML2);
+      Check.AreEqual(xml.ToString, sXML2);
     end;
 
     method AddDefaultPlatform;
     begin
       var lXml := XmlDocument.WithRootElement("Test");
       lXml.Root.SetAttribute("Condition","'$(Platform)' == ''");
-      Assert.AreEqual(lXml.Root.Attribute["Condition"].Value, "'$(Platform)' == ''");
-      Assert.AreEqual(lXml.Root.Attribute["Condition"].ToString, 'Condition="''$(Platform)'' == ''''"');
-      Assert.AreEqual(lXml.ToString, '<Test Condition="''$(Platform)'' == ''''"/>');
+      Check.AreEqual(lXml.Root.Attribute["Condition"].Value, "'$(Platform)' == ''");
+      Check.AreEqual(lXml.Root.Attribute["Condition"].ToString, 'Condition="''$(Platform)'' == ''''"');
+      Check.AreEqual(lXml.ToString, '<Test Condition="''$(Platform)'' == ''''"/>');
     end;
 
   end;

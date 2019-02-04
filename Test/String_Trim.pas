@@ -14,14 +14,14 @@ type
       var sEnd := #9#13#13#10#10#13'  '#9#13#13#10#10#13'    ';
 
       var s := sStart+sMiddle+sEnd;
-      Assert.AreEqual(s.Trim(), sMiddle);
-      Assert.AreEqual(s.TrimEnd(), sStart+sMiddle);
-      Assert.AreEqual(s.TrimStart(), sMiddle+sEnd);
+      Check.AreEqual(s.Trim(), sMiddle);
+      Check.AreEqual(s.TrimEnd(), sStart+sMiddle);
+      Check.AreEqual(s.TrimStart(), sMiddle+sEnd);
 
       var sNone := "foo "#13#10#9"  bar";
-      Assert.AreEqual(sNone.Trim(), sNone);
-      Assert.AreEqual(sNone.TrimEnd(), sNone);
-      Assert.AreEqual(sNone.TrimStart(), sNone);
+      Check.AreEqual(sNone.Trim(), sNone);
+      Check.AreEqual(sNone.TrimEnd(), sNone);
+      Check.AreEqual(sNone.TrimStart(), sNone);
     end;
 
   end;

@@ -12,32 +12,32 @@ type
     begin
       var xml := XmlDocument.FromString('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><root xmlns="http://default" xmlns:a="http://a" xmlns:b="http://bc"><one/><a:two/><b:three/></root>');
 
-      Assert.IsTrue(xml.Root.LocalName = "root");
-      Assert.IsTrue(xml.Root.DefinedNamespaces.Count = 3);
-      //Assert.IsTrue(xml.Root.DefaultNamespace.Name = "");
-      //Assert.IsTrue(xml.Root.DefaultNamespace.Url.ToAbsoluteString() = "http://default");
-      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[0].Uri.ToString, Uri.UriWithString("http://default").ToString());
-      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[1].Uri.ToString, Uri.UriWithString("http://a").ToString());
-      Assert.AreEqual(xml.Root.DefinedNamespaces.ToList()[2].Uri.ToString, Uri.UriWithString("http://bc").ToString());
+      Check.IsTrue(xml.Root.LocalName = "root");
+      Check.IsTrue(xml.Root.DefinedNamespaces.Count = 3);
+      //Check.IsTrue(xml.Root.DefaultNamespace.Name = "");
+      //Check.IsTrue(xml.Root.DefaultNamespace.Url.ToAbsoluteString() = "http://default");
+      Check.AreEqual(xml.Root.DefinedNamespaces.ToList()[0].Uri.ToString, Uri.UriWithString("http://default").ToString());
+      Check.AreEqual(xml.Root.DefinedNamespaces.ToList()[1].Uri.ToString, Uri.UriWithString("http://a").ToString());
+      Check.AreEqual(xml.Root.DefinedNamespaces.ToList()[2].Uri.ToString, Uri.UriWithString("http://bc").ToString());
 
-      Assert.IsNotNil(xml.Root.FirstElementWithName("one"));
-      Assert.IsNotNil(xml.Root.FirstElementWithName("two"));
-      Assert.IsNotNil(xml.Root.FirstElementWithName("three"));
-      Assert.IsNotNil(xml.Root.FirstElementWithName("a:two"));
-      Assert.IsNotNil(xml.Root.FirstElementWithName("b:three"));
-      Assert.IsNotNil(xml.Root.FirstElementWithName("{http://bc}three"));
+      Check.IsNotNil(xml.Root.FirstElementWithName("one"));
+      Check.IsNotNil(xml.Root.FirstElementWithName("two"));
+      Check.IsNotNil(xml.Root.FirstElementWithName("three"));
+      Check.IsNotNil(xml.Root.FirstElementWithName("a:two"));
+      Check.IsNotNil(xml.Root.FirstElementWithName("b:three"));
+      Check.IsNotNil(xml.Root.FirstElementWithName("{http://bc}three"));
 
-      //Assert.AreEqual(xml.Root.FirstElementWithName("one").Namespace, xml.Root.DefaultNamespace);
-      Assert.AreEqual(xml.Root.FirstElementWithName("one").Namespace, xml.Root.DefinedNamespaces.ToList()[0]);
-      Assert.AreEqual(xml.Root.FirstElementWithName("two"):&Namespace, xml.Root.DefinedNamespaces.ToList()[1]);
-      Assert.AreEqual(xml.Root.FirstElementWithName("three"):&Namespace, xml.Root.DefinedNamespaces.ToList()[2]);
+      //Check.AreEqual(xml.Root.FirstElementWithName("one").Namespace, xml.Root.DefaultNamespace);
+      Check.AreEqual(xml.Root.FirstElementWithName("one").Namespace, xml.Root.DefinedNamespaces.ToList()[0]);
+      Check.AreEqual(xml.Root.FirstElementWithName("two"):&Namespace, xml.Root.DefinedNamespaces.ToList()[1]);
+      Check.AreEqual(xml.Root.FirstElementWithName("three"):&Namespace, xml.Root.DefinedNamespaces.ToList()[2]);
     end;
 
     method UserSettingsFile;
     begin
       var _userSettingsXML := XmlDocument.WithRootElement("Project");
       _userSettingsXML.Root.AddNamespace(nil, Url.UrlWithString("http://schemas.microsoft.com/developer/msbuild/2003"));
-      Assert.AreEqual(_userSettingsXML.ToString, '<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"/>');
+      Check.AreEqual(_userSettingsXML.ToString, '<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"/>');
     end;
 
   end;

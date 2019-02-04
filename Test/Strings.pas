@@ -8,7 +8,7 @@ type
   public
     method FirstTest;
     begin
-      Assert.IsTrue(true);
+      Check.IsTrue(true);
     end;
   end;
 

@@ -16,8 +16,8 @@ type
         end;
 
       if lFilename.FileExists then;
-      Assert.AreEqual(lFilename.FileExists, false);
-      Assert.AreEqual(File.Exists(lFilename), false);
+      Check.AreEqual(lFilename.FileExists, false);
+      Check.AreEqual(File.Exists(lFilename), false);
     end;
   end;
 
