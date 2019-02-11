@@ -241,12 +241,12 @@ end;
 
 class operator String.Add(Value1: String; Value2: Object): not nullable String;
 begin
-  result := (Value1 + coalesce(Value2, "").ToString) as not nullable;
+  result := (Value1 + coalesce(String(Value2:ToString), String(""))) as not nullable;
 end;
 
 class operator String.Add(Value1: Object; Value2: String): not nullable String;
 begin
-  result := (coalesce(Value1, "").ToString + Value2) as not nullable;
+  result := (String(coalesce(String(Value1:ToString),String(""))) + Value2) as not nullable;
 end;
 
 class operator String.Implicit(Value: Char): String;

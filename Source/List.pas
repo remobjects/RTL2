@@ -5,8 +5,13 @@ interface
 type
   PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ENDIF};
   PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ENDIF};
+  {$IFDEF TOFFEE and ISLAND}
+  PlatformSequence<T> = public Foundation.INSFastEnumeration;
+  {$ELSE}
+  PlatformSequence<T> = public sequence of T;
+  {$ENDIF}
 
-  ImmutableList<T> = public class (sequence of T) mapped to PlatformImmutableList<T>
+  ImmutableList<T> = public class (PlatformSequence<T>) mapped to PlatformImmutableList<T>
   {$IFDEF TOFFEE} where T is class;{$ENDIF}
   private
     method GetItem(&Index: Integer): T;
@@ -66,7 +71,7 @@ type
     property Item[i: Integer]: T read GetItem; default;
   end;
 
-  List<T> = public class (ImmutableList<T>, sequence of T) mapped to PlatformList<T>
+  List<T> = public class (ImmutableList<T>) mapped to PlatformList<T>
   {$IFDEF TOFFEE}
    where T is class;
   {$ENDIF}
