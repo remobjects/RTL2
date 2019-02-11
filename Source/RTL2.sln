@@ -33,6 +33,8 @@ Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.tvOS", 
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.watchOS", "Elements.RTL.Toffee.watchOS.elements", "{E1E9CB29-553D-4EA9-B9D1-62A5195BDD10}"
 EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.ToffeeV2.macOS", "Elements.RTL.ToffeeV2.macOS.elements", "{81D69900-FED5-4A87-841B-575FF5653840}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|AnyCPU = Debug|AnyCPU
@@ -99,6 +101,10 @@ Global
 		{E1E9CB29-553D-4EA9-B9D1-62A5195BDD10}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{E1E9CB29-553D-4EA9-B9D1-62A5195BDD10}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
 		{E1E9CB29-553D-4EA9-B9D1-62A5195BDD10}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{81D69900-FED5-4A87-841B-575FF5653840}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{81D69900-FED5-4A87-841B-575FF5653840}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{81D69900-FED5-4A87-841B-575FF5653840}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{81D69900-FED5-4A87-841B-575FF5653840}.Release|AnyCPU.Build.0 = Release|AnyCPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
