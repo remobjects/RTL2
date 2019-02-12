@@ -43,7 +43,6 @@
   <ItemGroup>
     <Reference Include="Foundation" />
     <Reference Include="rtl" />
-    <Reference Include="libToffee" />
     <Reference Include="CoreFoundation" />
     <Reference Include="UIKit" />
   </ItemGroup>
