@@ -6,7 +6,7 @@ type
   PlatformImmutableDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ENDIF};
   PlatformDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ENDIF};
 
-  ImmutableDictionary<T, U> = public class mapped to PlatformImmutableDictionary<T,U>  {$IF TOFFEE} where T is class, U is class; {$ENDIF}
+  ImmutableDictionary<T, U> = public class (PlatformSequence<KeyValuePair<T,U>>) mapped to PlatformImmutableDictionary<T,U> {$IF TOFFEE} where T is class, U is class; {$ENDIF}
   private
     method GetKeys: not nullable ImmutableList<T>;
     method GetValues: not nullable sequence of U;
@@ -30,9 +30,19 @@ type
     method UniqueMutableCopy: not nullable Dictionary<T,U>;
     method MutableVersion: not nullable Dictionary<T,U>;
 
-    {$IF NOT ECHOES}
+    //[&Sequence]
     method GetSequence: sequence of KeyValuePair<T,U>;
-    {$ENDIF}
+    begin
+      exit DictionaryHelpers.GetSequence<T, U>(self);
+    end;
+
+    //[&Sequence]
+    //method GetSequence: sequence of tuple of (String, JsonNode); iterator;
+    //begin
+      //for each kv in fItem do
+        //yield (kv.Key, kv.Value);
+    //end;
+
   end;
 
   Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to PlatformDictionary<T,U>
@@ -210,13 +220,6 @@ begin
   mapped[Key] := Value;
 end;
 
-{$IF NOT ECHOES}
-method ImmutableDictionary<T,U>.GetSequence: sequence of KeyValuePair<T,U>;
-begin
-  exit DictionaryHelpers.GetSequence<T, U>(self);
-end;
-{$ENDIF}
-
 method ImmutableDictionary<T,U>.UniqueCopy: not nullable ImmutableDictionary<T,U>;
 begin
   {$IF NOT TOFFEE}
@@ -265,6 +268,12 @@ type
     begin
       for each el in aSelf.allKeys do
        yield new KeyValuePair<T,U>(T(el), aSelf[el]);
+    end;
+    {$ELSEIF ECHOES}
+    method GetSequence<T, U>(aSelf: System.Collections.Generic.Dictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
+    begin
+      for each el in aSelf.Keys do
+        yield new KeyValuePair<T,U>(el, aSelf[el]);
     end;
     {$ELSEIF ISLAND}
     method GetSequence<T, U>(aSelf: RemObjects.Elements.System.Dictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;

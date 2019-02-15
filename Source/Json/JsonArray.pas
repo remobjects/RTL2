@@ -3,7 +3,7 @@
 interface
 
 type
-  JsonArray = public class (JsonNode, ISequence<JsonNode>)
+  JsonArray = public class (JsonNode, sequence of JsonNode)
   private
     fItems: not nullable List<JsonNode>;
     method GetItem(aIndex: Integer): not nullable JsonNode;
@@ -32,18 +32,14 @@ type
 
     method ToJson: String; override;
 
-    {$IF COOPER}
-    method &iterator: java.util.&Iterator<JsonNode>;
-    {$ELSEIF TOFFEE AND NOT TOFFEEV2}
-    {$HIDE CPW8}
+    [&Sequence]
+    method GetSequence: sequence of JsonNode; iterator;
+    begin
+      yield fItems;
+    end;
+
+    {$IF TOFFEE AND NOT TOFFEEV2}
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
-    {$SHOW CPW8}
-    {$ELSEIF ECHOES}
-    method GetNonGenericEnumerator: System.Collections.IEnumerator; implements System.Collections.IEnumerable.GetEnumerator;
-    method GetEnumerator: System.Collections.Generic.IEnumerator<JsonNode>;
-    {$ELSEIF ISLAND}
-    method GetNonGenericEnumerator(): IEnumerator; implements IEnumerable.GetEnumerator;
-    method GetEnumerator(): IEnumerator<JsonNode>;
     {$ENDIF}
 
     class method Load(JsonString: String): not nullable JsonArray;
@@ -159,37 +155,12 @@ begin
   exit Serializer.Serialize;
 end;
 
-{$IF COOPER}
-method JsonArray.&iterator: java.util.Iterator<JsonNode>;
-begin
-  exit Iterable<JsonNode>(fItems).iterator;
-end;
-{$ELSEIF TOFFEE AND NOT TOFFEEV2}
+{$IF TOFFEE AND NOT TOFFEEV2}
 method JsonArray.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
 begin
   {$HIDE CPW8}
   exit NSArray(fItems).countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
   {$SHOW CPW8}
-end;
-{$ELSEIF ECHOES}
-method JsonArray.GetNonGenericEnumerator: System.Collections.IEnumerator;
-begin
-  exit GetEnumerator;
-end;
-
-method JsonArray.GetEnumerator: System.Collections.Generic.IEnumerator<JsonNode>;
-begin
-  exit System.Collections.Generic.IEnumerable<JsonNode>(fItems).GetEnumerator;
-end;
-{$ELSEIF ISLAND}
-method JsonArray.GetNonGenericEnumerator: IEnumerator;
-begin
-  exit GetEnumerator;
-end;
-
-method JsonArray.GetEnumerator: IEnumerator<JsonNode>;
-begin
-  exit IEnumerable<JsonNode>(fItems).GetEnumerator;
 end;
 {$ENDIF}
 
