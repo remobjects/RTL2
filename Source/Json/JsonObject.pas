@@ -13,7 +13,7 @@ type
     method SetItem(aKey: not nullable String; aValue: Int32);
     method SetItem(aKey: not nullable String; aValue: Double);
     method GetKeys: not nullable sequence of String;
-    method GetProperties: sequence of KeyValuePair<String, JsonNode>; iterator;
+    method GetProperties: sequence of tuple of (String,JsonNode); iterator;
 
   public
     constructor;
@@ -35,7 +35,7 @@ type
     end;
 
     {$IF TOFFEE AND NOT TOFFEEV2}
-    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
+    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^tuple of (String,JsonNode)) count(len: NSUInteger): NSUInteger;
     {$ENDIF}
 
     class method Load(JsonString: String): JsonObject;
@@ -47,7 +47,7 @@ type
     property Item[aKey: not nullable String]: Int32 write SetItem; default; override;
     property Item[aKey: not nullable String]: Double write SetItem; default; override;
     property Keys: not nullable sequence of String read GetKeys; override;
-    property Properties: sequence of KeyValuePair<String, JsonNode> read GetProperties;
+    property Properties: sequence of tuple of (String,JsonNode) read GetProperties;
   end;
 
 implementation
@@ -144,14 +144,14 @@ begin
   result := Serializer.Serialize;
 end;
 
-method JsonObject.GetProperties: sequence of KeyValuePair<String, JsonNode>;
+method JsonObject.GetProperties: sequence of tuple of (String,JsonNode);
 begin
   for aKey in Keys do
-    yield new KeyValuePair<String, JsonNode>(aKey, Item[aKey]);
+    yield (aKey, Item[aKey]);
 end;
 
 {$IF TOFFEE AND NOT TOFFEEV2}
-method JsonObject.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
+method JsonObject.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^tuple of (String,JsonNode)) count(len: NSUInteger): NSUInteger;
 begin
   if aState^.state <> 0 then
     exit 0;
