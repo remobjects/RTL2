@@ -3,7 +3,7 @@
 interface
 
 type
-  JsonObject = public class(JsonNode, ISequence<KeyValuePair<String, JsonNode>>)
+  JsonObject = public class(JsonNode, sequence of tuple of (String, JsonNode))
   private
     fItems: Dictionary<String, JsonNode>;
     method GetItem(aKey: not nullable String): nullable JsonNode;
@@ -13,7 +13,7 @@ type
     method SetItem(aKey: not nullable String; aValue: Int32);
     method SetItem(aKey: not nullable String; aValue: Double);
     method GetKeys: not nullable sequence of String;
-    method GetProperties: sequence of KeyValuePair<String, JsonNode>; iterator;
+    method GetProperties: sequence of tuple of (String,JsonNode); iterator;
 
   public
     constructor;
@@ -27,18 +27,15 @@ type
 
     method ToJson: String; override;
 
-    {$IF COOPER}
-    method &iterator: java.util.&Iterator<KeyValuePair<String, JsonNode>>;
-    {$ELSEIF TOFFEE AND NOT TOFFEEV2}
-    {$HIDE CPW8}
-    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
-    {$SHOW CPW8}
-    {$ELSEIF ECHOES}
-    method GetNonGenericEnumerator: System.Collections.IEnumerator; implements System.Collections.IEnumerable.GetEnumerator;
-    method GetEnumerator: System.Collections.Generic.IEnumerator<KeyValuePair<String, JsonNode>>;
-    {$ELSEIF ISLAND}
-    method GetNonGenericEnumerator(): IEnumerator; implements IEnumerable.GetEnumerator;
-    method GetEnumerator(): IEnumerator<KeyValuePair<String,JsonNode>>;
+    [&Sequence]
+    method GetSequence: sequence of tuple of (String, JsonNode); iterator;
+    begin
+      for each kv in fItems do
+        yield (kv.Key, kv.Value);
+    end;
+
+    {$IF TOFFEE AND NOT TOFFEEV2}
+    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^tuple of (String,JsonNode)) count(len: NSUInteger): NSUInteger;
     {$ENDIF}
 
     class method Load(JsonString: String): JsonObject;
@@ -50,7 +47,7 @@ type
     property Item[aKey: not nullable String]: Int32 write SetItem; default; override;
     property Item[aKey: not nullable String]: Double write SetItem; default; override;
     property Keys: not nullable sequence of String read GetKeys; override;
-    property Properties: sequence of KeyValuePair<String, JsonNode> read GetProperties;
+    property Properties: sequence of tuple of (String,JsonNode) read GetProperties;
   end;
 
 implementation
@@ -147,46 +144,19 @@ begin
   result := Serializer.Serialize;
 end;
 
-method JsonObject.GetProperties: sequence of KeyValuePair<String, JsonNode>;
+method JsonObject.GetProperties: sequence of tuple of (String,JsonNode);
 begin
   for aKey in Keys do
-    yield new KeyValuePair<String, JsonNode>(aKey, Item[aKey]);
+    yield (aKey, Item[aKey]);
 end;
 
-{$IF COOPER}
-method JsonObject.iterator: java.util.&Iterator<KeyValuePair<String, JsonNode>>;
-begin
-  exit Properties.iterator;
-end;
-{$ELSEIF TOFFEE AND NOT TOFFEEV2}
-method JsonObject.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^KeyValuePair<String,JsonNode>) count(len: NSUInteger): NSUInteger;
+{$IF TOFFEE AND NOT TOFFEEV2}
+method JsonObject.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^tuple of (String,JsonNode)) count(len: NSUInteger): NSUInteger;
 begin
   if aState^.state <> 0 then
     exit 0;
 
   exit GetProperties.countByEnumeratingWithState(aState) objects(stackbuf) count(len);
-end;
-{$ELSEIF ECHOES}
-method JsonObject.GetNonGenericEnumerator: System.Collections.IEnumerator;
-begin
-  exit GetEnumerator;
-end;
-
-method JsonObject.GetEnumerator: System.Collections.Generic.IEnumerator<KeyValuePair<String, JsonNode>>;
-begin
-  var props := GetProperties;
-  exit props.GetEnumerator;
-end;
-{$ELSEIF ISLAND}
-method JsonObject.GetNonGenericEnumerator: IEnumerator;
-begin
-  exit GetEnumerator;
-end;
-
-method JsonObject.GetEnumerator: IEnumerator<KeyValuePair<String, JsonNode>>;
-begin
-  var props := GetProperties;
-  exit props.GetEnumerator;
 end;
 {$ENDIF}
 

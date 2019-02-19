@@ -41,7 +41,6 @@ type
     operator Implicit(aValue: JsonIntegerValue): not nullable Double;
     operator Implicit(aValue: JsonIntegerValue): not nullable Single;
     {$ENDIF}
-    //operator Explicit(aValue: JsonIntegerValue): JsonFloatValue;
     //property IntegerValue: Integer read Value write Value; override;
     //property FloatValue: Double read Value write inherited IntegerValue; override;
     //property StringValue: String read ToJson write ToJson; override;
@@ -103,11 +102,6 @@ operator JsonValue<T>.Implicit(aValue: JsonValue<T>): T;
 begin
   result := aValue:Value;
 end;
-
-{operator JsonValue<T>.Explicit(aValue: JsonValue<T>): T;
-begin
-  result := aValue:Value;
-end;}
 
 { JsonStringValue }
 
@@ -192,11 +186,6 @@ begin
   result := aValue.Value;
 end;
 {$ENDIF}
-
-{operator JsonIntegerValue.Explicit(aValue: JsonIntegerValue): JsonFloatValue;
-begin
-  result := new JsonFloatValue(aValue.Value);
-end;}
 
 { JsonFloatValue }
 

@@ -40,21 +40,6 @@ type
       result := aValue as OtherString as PlatformString /*as String*/;
     end;
 
-    class operator Explicit(aValue: nullable String): nullable OtherString;
-    begin
-      result := aValue;
-    end;
-
-    class operator Explicit(aValue: nullable OtherString): nullable String;
-    begin
-      result := aValue;
-    end;
-
-    class operator Explicit(aValue: nullable id): nullable String;
-    begin
-      result := aValue;
-    end;
-
     //
     // Equality
     //
