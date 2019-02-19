@@ -19,6 +19,7 @@ type
 
     method Parse;
 
+  assembly
     method ParseWhitespace;
     method ParseName;
     method ParseValue;

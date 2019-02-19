@@ -87,6 +87,7 @@ type
     method GetNodeType : XmlNodeType;
     constructor withParent(aParent: XmlElement := nil);
   protected
+    method CheckName(aName: String): Boolean;
     method CharIsWhitespace(C: String): Boolean;
     method ConvertEntity(S: String; C: nullable Char): String;
   public
@@ -137,6 +138,7 @@ type
     //fIsEmpty: Boolean := true;
     constructor withParent(aParent: XmlElement := nil);
     constructor withParent(aParent: XmlElement) Indent(aIndent: String := "");
+    RawName: String;
 
   public
     constructor withName(aLocalName: not nullable String);
@@ -714,6 +716,13 @@ begin
   end;
 end;
 
+method XmlNode.CheckName(aName: String): Boolean;
+begin
+  var t := new XmlTokenizer(aName);
+  t.ParseName;
+  if t.Value = aName then exit true;
+end;
+
 constructor XmlNode withParent(aParent: XmlElement);
 begin
   fParent := aParent;
@@ -826,13 +835,13 @@ end;
 constructor XmlElement withName(aLocalName: not nullable String);
 begin
   constructor withParent(nil);
-  fLocalName := aLocalName;
+  LocalName := aLocalName;
 end;
 
 constructor XmlElement withName(aLocalName: not nullable String) Value(aValue: not nullable String);
 begin
   constructor withParent(nil);
-  fLocalName := aLocalName;
+  LocalName := aLocalName;
   Value := aValue;
 end;
 
@@ -877,6 +886,7 @@ method XmlElement.AddAttribute(aAttribute: not nullable XmlAttribute);
 begin
   //fAttributes.Add(aAttribute);
   fAttributesAndNamespaces.Add(aAttribute);
+  aAttribute.fParent := self;
 end;
 
 method XmlElement.SetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String);
@@ -884,10 +894,10 @@ begin
   if assigned(Attributes) then begin
     var lAttribute := GetAttributes.Where(a -> a.LocalName = aName).FirstOrDefault();
     if assigned(lAttribute) then lAttribute.Value := aValue
-    else fAttributesAndNamespaces.Add(new XmlAttribute(aName, aNamespace, aValue));
+    else fAttributesAndNamespaces.Add(new XmlAttribute(aName, aNamespace, aValue, fParent := self));
   end
   else begin
-    fAttributesAndNamespaces.Add( new XmlAttribute(aName, aNamespace, aValue));
+    fAttributesAndNamespaces.Add( new XmlAttribute(aName, aNamespace, aValue, fParent := self));
   end;
 end;
 
@@ -1079,21 +1089,24 @@ end;
 
 method XmlElement.GetLocalName: not nullable String;
 begin
-  //result := fLocalName as not nullable;
-  result := fLocalName.Trim as not nullable;
+  result := fLocalName as not nullable;
+  //result := fLocalName.Trim as not nullable;
 end;
 
 method XmlElement.GetFullName: not nullable String;
 begin
   result := "";
   if length(&Namespace:Prefix) > 0 then result := &Namespace.Prefix+':';
-  result := result + LocalName;
+  if assigned(RawName) then result := result+RawName
+  else result := result + LocalName;
 end;
 
 method XmlElement.SetLocalName(aValue: not nullable String);
 begin
+  if not CheckName(aValue) then raise new Exception('"{0}" is not valid Xmlelement name', aValue);
   fLocalName := aValue;
   EndTagName := nil;
+  RawName := nil;
 end;
 
 method XmlElement.GetNamespace: nullable XmlNamespace;
@@ -1240,7 +1253,8 @@ method XmlElement.AddNamespace(aNamespace: not nullable XmlNamespace);
 begin
   if GetNamespace(aNamespace.Prefix) = nil then begin
     //fNamespaces.Add(aNamespace);
-    fAttributesAndNamespaces.Add(aNamespace);
+    aNamespace.fParent := self;
+    fAttributesAndNamespaces.Add(aNamespace);    
     if (aNamespace.Prefix = nil) or (aNamespace.Prefix = "") then fDefaultNamespace := aNamespace;
   end
   else if aNamespace.Prefix=nil then raise new Exception("Duplicate namespace xmlns")
@@ -1249,7 +1263,7 @@ end;
 
 method XmlElement.AddNamespace(aPrefix: nullable String; aUri: not nullable Uri): XmlNamespace;
 begin
-  result := new XmlNamespace(aPrefix, aUri);
+  result := new XmlNamespace(aPrefix, aUri, fParent := self);
   AddNamespace(result);
 end;
 
@@ -1379,7 +1393,8 @@ begin
             Sb.Append(' ');
         Sb.Append("/>");
       end;
-    end;
+    end else 
+      Sb.Append("/>");
   end;
   if fNodes.count > 0 then Sb.Append('>');
   /********/
@@ -1528,9 +1543,9 @@ end;
 
 constructor XmlAttribute(aLocalName: not nullable String; aNamespace: nullable XmlNamespace; aValue: not nullable String);
 begin
-  fLocalName := aLocalName;
-  fNamespace := aNamespace;
   inherited constructor;
+  LocalName := aLocalName;
+  fNamespace := aNamespace;
   setValue(aValue);
   fNodeType := XmlNodeType.Attribute;
 end;
@@ -1538,9 +1553,6 @@ end;
 method XmlAttribute.GetLocalName: not nullable String;
 begin
   //result := fLocalName as not nullable;
-  /*if fLocalName.IndexOf("=") > -1 then begin
-    result := fLocalName.Substring(0, fLocalName.IndexOf("="));
-  end;*/
   result := fLocalName.Trim as not nullable;
 end;
 
@@ -1568,6 +1580,7 @@ end;
 
 method XmlAttribute.SetLocalName(aValue: not nullable String);
 begin
+  if not CheckName(aValue) then raise new Exception('"{0}" is not a valid XMLAttribute name', aValue);
   fLocalName := aValue;
 end;
 

@@ -675,7 +675,7 @@ begin
   end;
   if assigned(aError) then exit;
   if (Tokenizer.Token = XmlTokenKind.TagClose) then begin
-      if WS <> "" then result.LocalName := result.LocalName + WS;
+      if WS <> "" then result.RawName := result.LocalName + WS;
       Tokenizer.Next;
       var WSValue: String := "";
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and (FormatOptions.NewLineForElements) and not result.PreserveSpace then
@@ -750,7 +750,7 @@ begin
           result.AddNode(new XmlText(result,Value := ""));
         Tokenizer.Next;
         if Expected(out aError, XmlTokenKind.ElementName) then begin //exit;
-          if (result.FullName <> Tokenizer.Value) then begin
+          if (result.FullName.TrimEnd <> Tokenizer.Value) then begin
             result.EndTagName := Tokenizer.Value;
             var lEndTagName := result.EndTagName;
             aError := new XmlErrorInfo;
@@ -775,7 +775,7 @@ begin
             var lDotPosStart := result.LocalName.IndexOf('.');
             if lDotPosStart > 0 then begin
               var lStartTagNames := result.LocalName.Split('.');
-              var lDotPosEnd := lEndTagName.IndexOf('.');
+              //var lDotPosEnd := lEndTagName.IndexOf('.');
               var lEndTagNames := lEndTagName.Split('.');
               for i: Integer := 0 to lStartTagNames.Count-1 do begin
                 if (lEndTagNames.Count > i) then
