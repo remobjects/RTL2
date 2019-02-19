@@ -36,6 +36,8 @@ type
     method WaitFor;
     method WaitFor(aTimeoutInMilliseconds: Int32);
     method WaitFor(aTimeout: TimeSpan);
+
+    method Dispose();
   end;
 
 implementation
@@ -140,6 +142,18 @@ begin
   fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds));
   {$ENDIF}
 end;
+
+method &Event.Dispose();
+begin
+  {$IF COOPER}
+  {$ELSEIF TOFFEE}
+  {$ELSEIF ECHOES}
+  fPlatformEvent.Dispose();
+  {$ELSEIF ISLAND}
+  fPlatformEvent.Dispose();
+  {$ENDIF}
+end;
+
 
 {$ENDIF}
 
