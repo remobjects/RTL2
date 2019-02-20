@@ -88,6 +88,9 @@ type
     constructor withRepeatedValue(aValue: T; aCount: Integer);
 
     method &Add(aItem: T): T; inline;
+    {$IF TOFFEEV2}
+    method &Add(Items: nullable List<T>); inline; // prevents "ambiguous ovwerload" with Add(sequence of T))
+    {$ENDIF}
     method &Add(Items: nullable ImmutableList<T>); inline;
     method &Add(params Items: nullable array of T);
     method &Add(Items: nullable sequence of T); inline;
@@ -281,6 +284,14 @@ begin
   exit mapped[&Index];
   {$ENDIF}
 end;
+
+{$IF TOFFEEV2}
+method List<T>.Add(Items: nullable List<T>);
+begin
+  if assigned(Items) then
+    mapped.addObjectsFromArray(Items);
+end;
+{$ENDIF}
 
 method List<T>.Add(Items: nullable ImmutableList<T>);
 begin
