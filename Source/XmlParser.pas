@@ -675,7 +675,7 @@ begin
   end;
   if assigned(aError) then exit;
   if (Tokenizer.Token = XmlTokenKind.TagClose) then begin
-      if WS <> "" then result.RawName := result.LocalName + WS;
+      if WS <> "" then result.WSAfterName := WS;
       Tokenizer.Next;
       var WSValue: String := "";
       if (FormatOptions.WhitespaceStyle = XmlWhitespaceStyle.PreserveWhitespaceAroundText) and (FormatOptions.NewLineForElements) and not result.PreserveSpace then

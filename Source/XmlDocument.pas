@@ -138,7 +138,7 @@ type
     //fIsEmpty: Boolean := true;
     constructor withParent(aParent: XmlElement := nil);
     constructor withParent(aParent: XmlElement) Indent(aIndent: String := "");
-    RawName: String;
+    WSAfterName: String;
 
   public
     constructor withName(aLocalName: not nullable String);
@@ -1097,8 +1097,7 @@ method XmlElement.GetFullName: not nullable String;
 begin
   result := "";
   if length(&Namespace:Prefix) > 0 then result := &Namespace.Prefix+':';
-  if assigned(RawName) then result := result+RawName
-  else result := result + LocalName;
+  result := result + LocalName;
 end;
 
 method XmlElement.SetLocalName(aValue: not nullable String);
@@ -1106,7 +1105,7 @@ begin
   if not CheckName(aValue) then raise new Exception('"{0}" is not valid Xmlelement name', aValue);
   fLocalName := aValue;
   EndTagName := nil;
-  RawName := nil;
+  WSAfterName := nil;
 end;
 
 method XmlElement.GetNamespace: nullable XmlNamespace;
@@ -1300,6 +1299,7 @@ begin
   var strSb := new StringBuilder();
   var Sb := new StringBuilder("<");
   Sb.Append(FullName);
+  if assigned(WSAfterName) then Sb.Append(WSAfterName);
   var lLineBreak := coalesce(aFormatOptions.NewLineString, Document:fLineBreak, Environment.LineBreak);
   var lFormat := false;
   var indent : String := nil;
