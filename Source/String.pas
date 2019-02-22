@@ -127,10 +127,10 @@ type
         yield Chars[i];
     end;
 
-    operator Implicit(aString: String): sequence of  Char;
-    begin
-      result := aString.GetSequence;
-    end;
+    //operator Implicit(aString: String): sequence of  Char;
+    //begin
+      //result := aString.GetSequence;
+    //end;
 
     {$IF COOPER}
     operator Implicit(aCharSequence: CharSequence): String;
