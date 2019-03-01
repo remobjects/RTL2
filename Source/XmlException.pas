@@ -21,7 +21,6 @@ type
       inherited constructor(aMessage);
       {$ENDIF}
     end;
-    property Message: String read; override;
     property Row: Integer;
     property Column: Integer;
   end;
