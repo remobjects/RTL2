@@ -356,7 +356,10 @@ begin
     raise new FileNotFoundException(aFileName);
   var lXMl := TryFromFile(aFileName, true);
   if assigned(lXMl:ErrorInfo) then
-    raise new XmlException(lXMl.ErrorInfo.Message, lXMl.ErrorInfo.Row, lXMl.ErrorInfo.Column);
+    if lXMl.ErrorInfo.Row = -1 then
+      raise new XmlException(lXMl.ErrorInfo.Message)
+    else
+      raise new XmlException(lXMl.ErrorInfo.Message, lXMl.ErrorInfo.Row, lXMl.ErrorInfo.Column);
   result := lXMl as not nullable;
 end;
 
@@ -367,12 +370,22 @@ end;
 
 class method XmlDocument.TryFromFile(aFileName: not nullable File; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
-  if aFileName.Exists then begin
-    var XmlStr:String := aFileName.ReadText();
-    var lXmlParser := new XmlParser(XmlStr);
-    result := lXmlParser.Parse();
-    result.fXmlParser := lXmlParser;
-    if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
+  try
+    if aFileName.Exists then begin
+      var XmlStr:String := aFileName.ReadText();
+      var lXmlParser := new XmlParser(XmlStr);
+      result := lXmlParser.Parse();
+      result.fXmlParser := lXmlParser;
+      if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
+    end;
+  except
+    on E: Exception do
+      if aAllowBrokenDocument then begin
+        if not assigned(result) then
+          result := new XmlDocument;
+        if not assigned(result.ErrorInfo) then
+          result.ErrorInfo := new XmlErrorInfo(Message := E.Message, Row := -1);
+      end;
   end;
 end;
 {$ENDIF}
@@ -383,8 +396,14 @@ begin
   {$HINT Fix Below} // 78937: `defined()` doesnt seem to work (and adds extra warning)
   raise new XmlException("Not implemented for WebAssemlbly yet");
   {$ELSE}
-  if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then
-    result := FromFile(aUrl.FilePath)
+  if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then begin
+    result := FromFile(aUrl.FilePath);
+    if assigned(result:ErrorInfo) then
+      if result.ErrorInfo.Row = -1 then
+        raise new XmlException(result.ErrorInfo.Message)
+      else
+        raise new XmlException(result.ErrorInfo.Message, result.ErrorInfo.Row, result.ErrorInfo.Column);
+  end
   else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
     {$IFDEF ISLAND}
     raise new NotImplementedException;
@@ -407,25 +426,39 @@ begin
   {$IF WEBASSEMBLY}
   {$HINT Fix Below} // 78937: `defined()` doesnt seem to work (and adds extra warning)
   {$ELSE}
+    try
   if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then
     result := TryFromFile(aUrl.FilePath, aAllowBrokenDocument)
-  else if aUrl.Scheme in ["http", "https"] then try
+  else if aUrl.Scheme in ["http", "https"] then //try
     {$IFDEF ISLAND}
     raise new NotImplementedException;
     {$ELSE}
     result := Http.GetXml(new HttpRequest(aUrl));
     {$ENDIF}
   except
-    on E: XmlException do;
-    on E: HttpException do;
+    on E: Exception do begin 
+      if aAllowBrokenDocument then begin
+        if not assigned(result) then
+          result := new XmlDocument;
+        if not assigned(result.ErrorInfo) then
+          result.ErrorInfo := new XmlErrorInfo(Message := E.Message, Row := -1);
+      end;
+    {on E: XmlException do;
+    on E: HttpException do;}
+    end;
   end;
+
   {$ENDIF}
 end;
 
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
   var lResult := TryFromString(aString, true);
-  if (lResult.ErrorInfo <> nil) then raise new XmlException(lResult.ErrorInfo.Message, lResult.ErrorInfo.Row, lResult.ErrorInfo.Column);
+  if (lResult.ErrorInfo <> nil) then 
+    if lResult.ErrorInfo.Row = -1 then
+      raise new XmlException(lResult.ErrorInfo.Message)
+    else
+      raise new XmlException(lResult.ErrorInfo.Message, lResult.ErrorInfo.Row, lResult.ErrorInfo.Column);
   result := lResult as not nullable;
 end;
 
@@ -436,10 +469,20 @@ end;
 
 class method XmlDocument.TryFromString(aString: not nullable String; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
-  var lXmlParser := new XmlParser(aString);
-  result := lXmlParser.Parse();
-  result.fXmlParser := lXmlParser;
-  if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
+  try
+    var lXmlParser := new XmlParser(aString);
+    result := lXmlParser.Parse();
+    result.fXmlParser := lXmlParser;
+    if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
+  except
+    on E: Exception do
+      if aAllowBrokenDocument then begin
+        if not assigned(result) then
+          result := new XmlDocument;
+        if not assigned(result.ErrorInfo) then
+          result.ErrorInfo := new XmlErrorInfo(Message := E.Message);
+      end;
+  end;
 end;
 
 class method XmlDocument.FromBinary(aBinary: not nullable ImmutableBinary): not nullable XmlDocument;
