@@ -49,10 +49,8 @@ type
     class method TryParse(aValue: String): nullable Guid;
 
     method ToByteArray: array of Byte;
+    method ToString: String; {$IF ISLAND OR ECHOES}override;{$ENDIF}
     method ToString(Format: GuidFormat): String;
-
-    //[ToString]
-    //method ToString: String; override;
   end;
 
 
@@ -238,6 +236,11 @@ begin
   Exchange(Value, 6, 7);
   exit Value;
   {$ENDIF}
+end;
+
+method Guid.ToString: String;
+begin
+  result := ToString(GuidFormat.Default);
 end;
 
 method Guid.ToString(Format: GuidFormat): String;

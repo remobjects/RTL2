@@ -459,7 +459,7 @@ begin
 end;
 
 method Convert.ToBase64String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
-  const Codes64: String = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/';
+  const Codes64: String = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 begin
   var sb := new StringBuilder();
   var a: Int32 := 0;
@@ -481,11 +481,14 @@ begin
     x := b shl (6 - a);
     sb.Append(Codes64[x]);
   end;
+  var lRemainder := sb.Length mod 3;
+  if lRemainder <> 0 then
+    sb.Append('=', (3-lRemainder));
   result := sb.ToString as not nullable;
 end;
 
 method convert.Base64StringToByteArray(S: String): array of Byte;
-  const Codes64: String = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/';
+  const Codes64: String = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 begin
   var a := 0;
   var b := 0;
