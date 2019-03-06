@@ -597,9 +597,8 @@ method String.IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integ
 begin
   {$IF COOPER OR (ISLAND AND NOT TOFFEE)}
   for i: Integer := StartIndex to Length-1 do
-     for each c: Char in AnyOf do
-       if Chars[i] = c then
-         exit i;
+    if AnyOf.ContainsChar(Chars[i]) then
+      exit i;
   result := -1;
   {$ELSEIF ECHOES}
   result := mapped.IndexOfAny(AnyOf, StartIndex);
@@ -660,22 +659,21 @@ end;
 
 method String.LastIndexOfAny(const AnyOf: array of Char): Integer; inline;
 begin
-  result := LastIndexOfAny(AnyOf, 0);
+  result := LastIndexOfAny(AnyOf, Length-1);
 end;
 
 method String.LastIndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
 begin
-  {$IF COOPER OR (ISLAND AND NOT TOFFEE)}
-  for i: Integer := Length-1 downto StartIndex do
-    for each c: Char in AnyOf do
-      if Chars[i] = c then
-        exit i;
+  {$IF COOPER OR ECHOES OR (ISLAND AND NOT TOFFEE)}
+  for i: Integer := Length-1 downto 0 do
+    if AnyOf.ContainsChar(Chars[i]) then
+      exit i;
   result := -1;
   {$ELSEIF ECHOES}
   result := mapped.LastIndexOfAny(AnyOf, StartIndex);
   {$ELSEIF TOFFEE}
   var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
-  var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.LiteralSearch or NSStringCompareOptions.BackwardsSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
+  var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.LiteralSearch or NSStringCompareOptions.BackwardsSearch) range(NSMakeRange(0, StartIndex));
   result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;
