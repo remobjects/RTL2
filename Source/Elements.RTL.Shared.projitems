@@ -145,6 +145,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Registry.pas" />
     <None Include="$(MSBuildThisFileDirectory)Resources.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)SimpleCommandLineParser.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)DateParser.pas">
+      <VirtualFolder>Dates &amp; Co</VirtualFolder>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
