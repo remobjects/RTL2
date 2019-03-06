@@ -153,7 +153,7 @@ end;
 
 extension method array of Char.ContainsChar(aChar: Char): Boolean;
 begin
-  for i: Integer := 0 to RemObjects.Elements.System.length(self) do
+  for i: Integer := 0 to RemObjects.Elements.System.length(self)-1 do
     if self[i] = aChar then
       exit true;
 end;
