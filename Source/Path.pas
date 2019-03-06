@@ -47,7 +47,7 @@ type
     property PathListSeparatorChar: Char read if Environment.OS = OperatingSystem.Windows then ';' else ':';
   end;
 
-extension method array of Char.ContainsChar(aChar: Char): Boolean; private;
+extension method array of Char.ContainsChar(aChar: Char): Boolean; assembly;
 
 implementation
 
