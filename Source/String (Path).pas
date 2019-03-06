@@ -19,10 +19,11 @@ type
     {$ENDIF}
 
     property LastPathComponent: String read Path.GetFilename(self); inline;                                 // uses the platform-specific folder separator
+    property LastUnixPathComponent: String read Path.GetUnixFilename(self); inline;
+    property LastWindowsPathComponent: String read Path.GetWindowsFilename(self); inline;
+
     property LastPathComponentWithoutExtension: String read Path.GetFilenameWithoutExtension(self); inline; // uses the platform-specific folder separator
-    property LastUnixPathComponent: String read Path.GetUnixFilenameWithoutExtension(self); inline;
     property LastUnixPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastUnixPathComponent); inline;
-    property LastWindowsPathComponent: String read Path.GetWindowsFilenameWithoutExtension(self); inline;
     property LastWindowsPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastWindowsPathComponent); inline;
 
     property PathWithoutExtension: String read Path.GetPathWithoutExtension(self); inline;
