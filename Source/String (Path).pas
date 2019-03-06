@@ -7,12 +7,8 @@
   {$DEFINE KNOWN_WINDOWS}
 {$ENDIF}
 
-interface
-
 type
   String = public partial class mapped to PlatformString
-  assembly
-    method GetLastPathComponentWithSeparatorChar(aSeparator: String): not nullable String;
 
   public
 
@@ -24,10 +20,10 @@ type
 
     property LastPathComponent: String read Path.GetFilename(self); inline;                                 // uses the platform-specific folder separator
     property LastPathComponentWithoutExtension: String read Path.GetFilenameWithoutExtension(self); inline; // uses the platform-specific folder separator
-    property LastUnixPathComponent: String read GetLastPathComponentWithSeparatorChar('/');
-    property LastUnixPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastUnixPathComponent);
-    property LastWindowsPathComponent: String read GetLastPathComponentWithSeparatorChar('\');
-    property LastWindowsPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastWindowsPathComponent);
+    property LastUnixPathComponent: String read Path.GetUnixFilenameWithoutExtension(self); inline;
+    property LastUnixPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastUnixPathComponent); inline;
+    property LastWindowsPathComponent: String read Path.GetWindowsFilenameWithoutExtension(self); inline;
+    property LastWindowsPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastWindowsPathComponent); inline;
 
     property PathWithoutExtension: String read Path.GetPathWithoutExtension(self); inline;
     property PathExtension: String read Path.GetExtension(self); inline;
@@ -68,27 +64,6 @@ type
 
     property ToPathWithLocalFolderPrefixIfRelative: String read if not StartsWith(".") and not StartsWith(Path.DirectorySeparatorChar) then "."+Path.DirectorySeparatorChar+self else self;
     property QuotedIfNeeded: String read if IndexOf(" ") > -1 then String('"'+self+'"') else self;
-
   end;
-
-implementation
-
-method String.GetLastPathComponentWithSeparatorChar(aSeparator: String): not nullable String;
-begin
-  if RemObjects.Elements.System.length(self) = 0 then
-    exit "";
-
-  result := self;
-  var LastChar: Char := result[result.Length-1];
-  if LastChar = aSeparator then
-    result := result.Substring(0, result.Length-1);
-
-  var lIndex := result.LastIndexOf(aSeparator);
-
-  if (lIndex > -1) and (lIndex < result.Length-1) then
-    exit result.Substring(lIndex+1);
-
-  exit result;
-end;
 
 end.
