@@ -75,6 +75,8 @@ type
     method LastIndexOf(Value: String): Int32; inline;
     method LastIndexOf(Value: Char; StartIndex: Integer): Integer;
     method LastIndexOf(const Value: String; StartIndex: Integer): Integer;
+    method LastIndexOfAny(const AnyOf: array of Char): Integer; inline;
+    method LastIndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
     method Substring(StartIndex: Int32): not nullable String; inline;
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String; inline;
     method SubstringToFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
@@ -594,18 +596,15 @@ end;
 method String.IndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
 begin
   {$IF COOPER OR (ISLAND AND NOT TOFFEE)}
-  for i: Integer := StartIndex to Length - 1 do begin
-     for each c: Char in AnyOf do begin
-       if Chars[i] = c then
-         exit i;
-     end;
-  end;
+  for i: Integer := StartIndex to Length-1 do
+    if AnyOf.ContainsChar(Chars[i]) then
+      exit i;
   result := -1;
   {$ELSEIF ECHOES}
   result := mapped.IndexOfAny(AnyOf, StartIndex);
   {$ELSEIF TOFFEE}
   var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
-  var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.NSLiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
+  var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.LiteralSearch) range(NSMakeRange(StartIndex, mapped.length - StartIndex));
   result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;
@@ -630,7 +629,7 @@ begin
   {$IF NOT TOFFEE}
   exit mapped.LastIndexOf(Value);
   {$ELSEIF TOFFEE}
-  var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.NSBackwardsSearch);
+  var r := mapped.rangeOfString(Value) options(NSStringCompareOptions.BackwardsSearch);
   exit if (r.location = NSNotFound) and (r.length = 0) then -1 else Int32(r.location);
   {$ENDIF}
 end;
@@ -653,8 +652,29 @@ begin
   if (result = StartIndex) and (Value.Length > 1) then
     result := -1;
   {$ELSEIF TOFFEE}
-  var r:= mapped.rangeOfString(Value) options(NSStringCompareOptions.NSLiteralSearch or NSStringCompareOptions.NSBackwardsSearch) range(NSMakeRange(0, StartIndex + 1));
+  var r:= mapped.rangeOfString(Value) options(NSStringCompareOptions.LiteralSearch or NSStringCompareOptions.BackwardsSearch) range(NSMakeRange(0, StartIndex + 1));
   exit if (r.location = NSNotFound) and (r.length = 0) then -1 else Int32(r.location);
+  {$ENDIF}
+end;
+
+method String.LastIndexOfAny(const AnyOf: array of Char): Integer; inline;
+begin
+  result := LastIndexOfAny(AnyOf, Length-1);
+end;
+
+method String.LastIndexOfAny(const AnyOf: array of Char; StartIndex: Integer): Integer;
+begin
+  {$IF COOPER OR ECHOES OR (ISLAND AND NOT TOFFEE)}
+  for i: Integer := Length-1 downto 0 do
+    if AnyOf.ContainsChar(Chars[i]) then
+      exit i;
+  result := -1;
+  {$ELSEIF ECHOES}
+  result := mapped.LastIndexOfAny(AnyOf, StartIndex);
+  {$ELSEIF TOFFEE}
+  var lChars := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(AnyOf) length(AnyOf.length));
+  var r := mapped.rangeOfCharacterFromSet(lChars) options(NSStringCompareOptions.LiteralSearch or NSStringCompareOptions.BackwardsSearch) range(NSMakeRange(0, StartIndex));
+  result := if r.location = NSNotFound then -1 else Integer(r.location);
   {$ENDIF}
 end;
 
@@ -1062,7 +1082,7 @@ begin
   end
   else begin
     if IgnoreCase then
-      result := (mapped.compare(Value) options(NSStringCompareOptions.NSCaseInsensitiveSearch) range(NSMakeRange(0, Value.length)) = NSComparisonResult.NSOrderedSame)
+      result := (mapped.compare(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(0, Value.length)) = NSComparisonResult.NSOrderedSame)
     else
       result := mapped.hasPrefix(Value);
   end;
@@ -1106,7 +1126,7 @@ begin
   end
   else begin
     if IgnoreCase then
-      result := (mapped.compare(Value) options(NSStringCompareOptions.NSCaseInsensitiveSearch) range(NSMakeRange(mapped.length - Value.length, Value.length)) = NSComparisonResult.NSOrderedSame)
+      result := (mapped.compare(Value) options(NSStringCompareOptions.CaseInsensitiveSearch) range(NSMakeRange(mapped.length - Value.length, Value.length)) = NSComparisonResult.NSOrderedSame)
     else
       result := mapped.hasSuffix(Value);
   end;

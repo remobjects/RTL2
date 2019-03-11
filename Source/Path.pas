@@ -6,6 +6,9 @@ type
   Path = public static class
   private
     method DoGetParentDirectory(aFileName: not nullable String; aFolderSeparator: Char): nullable String;
+    method DoGetParentDirectory(aFileName: not nullable String; aFolderSeparators: array of Char): nullable String;
+    method GetLastPathComponentWithSeparatorChar(aPath:String; aSeparator: Char): not nullable String;
+    method GetLastPathComponentWithSeparatorChars(aPath:String; aSeparators: array of Char): not nullable String;
 
   public
     method ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
@@ -19,10 +22,15 @@ type
     method GetWindowsParentDirectory(aFileName: not nullable String): nullable String;
 
     method GetExtension(aFileName: not nullable String): not nullable String;
+
     method GetFileName(aFileName: not nullable String): not nullable String;
     method GetUnixFileName(aFileName: not nullable String): not nullable String;
     method GetWindowsFileName(aFileName: not nullable String): not nullable String;
+
     method GetFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
+    method GetUnixFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
+    method GetWindowsFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
+
     method GetPathWithoutExtension(aFileName: not nullable String): not nullable String;
     {$IF NOT WEBASSEMBLY}
     method GetFullPath(RelativePath: not nullable String): not nullable String;
@@ -38,6 +46,8 @@ type
     property DirectorySeparatorChar: Char read Folder.Separator;
     property PathListSeparatorChar: Char read if Environment.OS = OperatingSystem.Windows then ';' else ':';
   end;
+
+extension method array of Char.ContainsChar(aChar: Char): Boolean; assembly;
 
 implementation
 
@@ -92,7 +102,10 @@ end;
 
 method Path.GetParentDirectory(aFileName: not nullable String): nullable String;
 begin
-  result := DoGetParentDirectory(aFileName, Folder.Separator);
+  if defined("WINDOWS") or (defined("ECHOES") and (Environment.OS = OperatingSystem.Windows)) then
+    result := DoGetParentDirectory(aFileName, ['/','\'])
+  else
+    result := DoGetParentDirectory(aFileName, Folder.Separator);
 end;
 
 method Path.GetUnixParentDirectory(aFileName: not nullable String): nullable String;
@@ -138,6 +151,46 @@ begin
   end;
 end;
 
+extension method array of Char.ContainsChar(aChar: Char): Boolean;
+begin
+  for i: Integer := 0 to RemObjects.Elements.System.length(self)-1 do
+    if self[i] = aChar then
+      exit true;
+end;
+
+method Path.DoGetParentDirectory(aFileName: not nullable String; aFolderSeparators: array of Char): nullable String;
+begin
+  if length(aFileName) = 0 then
+    raise new ArgumentException("Invalid arguments");
+
+  var LastChar := aFileName[aFileName.Length - 1];
+
+  if aFolderSeparators.ContainsChar(LastChar) then
+    aFileName := aFileName.Substring(0, aFileName.Length - 1);
+
+  if ((length(aFileName) = 1) and aFolderSeparators.ContainsChar(aFileName[0])) or ((length(aFileName) = 2) and (aFileName[1] = ':')) then
+    exit nil; // root folder has no parent
+
+  var lIndex := aFileName.LastIndexOfAny(aFolderSeparators);
+
+  if aFileName.StartsWith('\\') then begin
+
+    if lIndex > 1 then
+      result := aFileName.Substring(0, lIndex)
+    else
+      result := nil; // network share has no parent folder
+
+  end
+  else begin
+
+    if lIndex > -1 then
+      result := aFileName.Substring(0, lIndex)
+    else
+      result := ""
+
+  end;
+end;
+
 method Path.GetExtension(aFileName: not nullable String): not nullable String;
 begin
   aFileName := GetFileName(aFileName);
@@ -151,22 +204,47 @@ end;
 
 method Path.GetFileName(aFileName: not nullable String): not nullable String;
 begin
-  result := aFileName.GetLastPathComponentWithSeparatorChar(Folder.Separator);
+  if defined("WINDOWS") or (defined("ECHOES") and (Environment.OS = OperatingSystem.Windows)) then
+    result := GetLastPathComponentWithSeparatorChars(aFileName, ['/','\'])
+  else
+    result := GetLastPathComponentWithSeparatorChar(aFileName, Folder.Separator);
 end;
 
 method Path.GetUnixFileName(aFileName: not nullable String): not nullable String;
 begin
-  result := aFileName.GetLastPathComponentWithSeparatorChar('/');
+  result := GetLastPathComponentWithSeparatorChar(aFileName, '/');
 end;
 
 method Path.GetWindowsFileName(aFileName: not nullable String): not nullable String;
 begin
-  result := aFileName.GetLastPathComponentWithSeparatorChar('\');
+  result := GetLastPathComponentWithSeparatorChar(aFileName, '\');
 end;
 
 method Path.GetFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
 begin
   aFileName := GetFileName(aFileName);
+  var lIndex := aFileName.LastIndexOf(".");
+
+  if lIndex <> -1 then
+    exit aFileName.Substring(0, lIndex);
+
+  exit aFileName;
+end;
+
+method Path.GetUnixFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
+begin
+  aFileName := GetUnixFileName(aFileName);
+  var lIndex := aFileName.LastIndexOf(".");
+
+  if lIndex <> -1 then
+    exit aFileName.Substring(0, lIndex);
+
+  exit aFileName;
+end;
+
+method Path.GetWindowsFileNameWithoutExtension(aFileName: not nullable String): not nullable String;
+begin
+  aFileName := GetWindowsFileName(aFileName);
   var lIndex := aFileName.LastIndexOf(".");
 
   if lIndex <> -1 then
@@ -224,5 +302,41 @@ begin
   result := (aPath as Foundation.NSString).stringByExpandingTildeInPath as not nullable String;
 end;
 {$ENDIF}
+
+method Path.GetLastPathComponentWithSeparatorChar(aPath:String; aSeparator: Char): not nullable String;
+begin
+  if RemObjects.Elements.System.length(aPath) = 0 then
+    exit "";
+
+  result := aPath as not nullable;
+  var LastChar: Char := result[result.Length-1];
+  if LastChar = aSeparator then
+    result := result.Substring(0, result.Length-1);
+
+  var lIndex := result.LastIndexOf(aSeparator);
+
+  if (lIndex > -1) and (lIndex < result.Length-1) then
+    exit result.Substring(lIndex+1);
+
+  exit result;
+end;
+
+method Path.GetLastPathComponentWithSeparatorChars(aPath:String; aSeparators: array of Char): not nullable String;
+begin
+  if RemObjects.Elements.System.length(aPath) = 0 then
+    exit "";
+
+  result := aPath as not nullable;
+  var LastChar: Char := result[result.Length-1];
+  if aSeparators.ContainsChar(LastChar) then
+    result := result.Substring(0, result.Length-1);
+
+  var lIndex := result.LastIndexOfAny(aSeparators);
+
+  if (lIndex > -1) and (lIndex < result.Length-1) then
+    exit result.Substring(lIndex+1);
+
+  exit result;
+end;
 
 end.
