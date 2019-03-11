@@ -12,10 +12,12 @@ type
     class method GetNextSepOrStringToken(var aFormat: String): String;
     class method SkipToNextToken(var aFormat: String; var aDateTime: String): Boolean;
     class method ParseStandard(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
-    class method ParsePersonalized(aDateTime: String; aFormat: String; var output: DateTime): Boolean;  
+    class method ParsePersonalized(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
   public
     class method Parse(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
   end;
+
+  const MaxValue = 2147483647;
 
 implementation
 
@@ -53,7 +55,7 @@ class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Int
 begin
   var lToken := GetNextNumberToken(var aFormat);
   aNumber := Convert.TryToInt32(lToken);
-  result := aNumber <> nil;  
+  result := aNumber <> nil;
 end;
 
 class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer): Boolean;
@@ -96,7 +98,7 @@ begin
     if aDateTime.StartsWith(lToken) then
       aDateTime := aDateTime.SubString(lToken.Length)
     else
-      exit false;    
+      exit false;
     lToken := GetNextSepOrStringToken(var aFormat);
   end;
   result := true;
@@ -174,7 +176,7 @@ class method DateParser.ParsePersonalized(aDateTime: String; aFormat: String; va
 begin
   if aFormat.Length = 1 then
     exit ParseStandard(aDateTime, aFormat, var output);
-    
+
     var lDay, lMonth, lYear, lHour, lMin, lSec, lOffset: Integer;
     var lTmp: String;
     var lFormat := aFormat.Trim;
@@ -217,23 +219,23 @@ begin
         end;
 
         'y': begin // year, 0 --> 99
-          if not GetNextNumberToken(var lDateTime, var lYear, 0, Int32.MaxValue) then exit false;
+          if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then exit false;
         end;
 
         'yy': begin // year, 00 --> 99
-          if not GetNextNumberToken(var lDateTime, var lYear, 0, Int32.MaxValue) then exit false;
+          if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then exit false;
         end;
 
         'yyy': begin // year, 001 --> 900 , 1900 --> 2018, minimum three digits
-          if not GetNextNumberToken(var lDateTime, var lYear, 0, Int32.MaxValue) then exit false;
+          if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then exit false;
         end;
 
         'yyyy': begin // year, 0001 --> 2018 , four digits
-          if not GetNextNumberToken(var lDateTime, var lYear, 0, Int32.MaxValue) then exit false;
+          if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then exit false;
         end;
 
         'yyyyy': begin // year, 00001 --> 02018, five digits
-          if not GetNextNumberToken(var lDateTime, var lYear, 0, Int32.MaxValue) then exit false;
+          if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then exit false;
         end;
 
         'h': begin // hour, 1 --> 12
