@@ -14,7 +14,10 @@ type
     class method ParseStandard(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
     class method ParsePersonalized(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
   public
+    //class method Parse(aDateTime: String; var output: DateTime): Boolean;
+    //class method Parse(aDateTime: String; aLocale: Locale; var output: DateTime): Boolean;
     class method Parse(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
+    //class method Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime): Boolean;
   end;
 
   const MaxValue = 2147483647;
