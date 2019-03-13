@@ -144,6 +144,12 @@ begin
   fDateTimeFormat.PMString := aLocaleID.DateTimeFormat.PMDesignator;
   fDateTimeFormat.AMString := aLocaleID.DateTimeFormat.AMDesignator;
   fDateTimeFormat.DateSeparator := aLocaleID.DateTimeFormat.DateSeparator;
+  &Array.Copy(aLocaleID.DateTimeFormat.AbbreviatedDayNames, fDateTimeFormat.ShortDayNames, aLocaleID.DateTimeFormat.AbbreviatedDayNames.Length);
+  &Array.Copy(aLocaleID.DateTimeFormat.DayNames, fDateTimeFormat.LongDayNames, aLocaleID.DateTimeFormat.DayNames.Length);
+  //fDateTimeFormat.ShortDayNames := aLocaleID.DateTimeFormat.AbbreviatedDayNames;
+  //fDateTimeFormat.LongDayNames := aLocaleID.DateTimeFormat.DayNames;
+  fDateTimeFormat.ShortMonthNames := aLocaleID.DateTimeFormat.AbbreviatedMonthNames;
+  fDateTimeFormat.LongMonthNames := aLocaleID.DateTimeFormat.MonthNames;
 
   fNumberFormat.Currency := aLocaleID.NumberFormat.CurrencySymbol;
   //if length(aLocaleID.NumberFormat.CurrencyGroupSizes) > 0 then
@@ -272,22 +278,22 @@ end;
 
 method DateTimeFormatInfo.SetShortTimePattern(aValue: String);
 begin
-
+  fShortTimePattern := aValue;
 end;
 
 method DateTimeFormatInfo.SetLongTimePattern(aValue: String);
 begin
-
+  fLongTimePattern := aValue;
 end;
 
 method DateTimeFormatInfo.SetShortDatePattern(aValue: String);
 begin
-
+  fShortDatePattern := aValue;
 end;
 
 method DateTimeFormatInfo.SetLongDatePattern(aValue: String);
 begin
-
+  fLongDatePattern := aValue;
 end;
 
 method DateTimeFormatInfo.CheckReadOnly;
