@@ -20,10 +20,10 @@ type
     class method CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond: Integer; aOptions: DateParserOptions := []): DateTime;
     class method InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
   public
-    class method Parse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
-    class method Parse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
-    class method Parse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
-    class method Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
   end;
 
   const MaxValue = 2147483647;
@@ -337,12 +337,12 @@ begin
   result := true;
 end;
 
-class method DateParser.Parse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions): Boolean;
+class method DateParser.TryParse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
-  result := Parse(aDateTime, Locale.Current, var output, aOptions);
+  result := TryParse(aDateTime, Locale.Current, var output, aOptions);
 end;
 
-class method DateParser.Parse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions): Boolean;
+class method DateParser.TryParse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
   if aFormat.Length = 1 then
     if not StandardToInternalPattern(aFormat, Locale.Current, var aFormat) then
@@ -351,7 +351,7 @@ begin
   result := InternalParse(aDateTime, aFormat, Locale.Current, var output, aOptions);
 end;
 
-class method DateParser.Parse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
+class method DateParser.TryParse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
   // 1. string with a date and time component, including long and short patterns.
   // 2. only date component
@@ -374,7 +374,7 @@ begin
   result := false;
 end;
 
-class method DateParser.Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
+class method DateParser.TryParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
   if aFormat.Length = 1 then
     if not StandardToInternalPattern(aFormat, aLocale, var aFormat) then
