@@ -74,10 +74,10 @@ type
     class method ToOADate(aDateTime: DateTime): Double;
     class method FromOADate(aOADate: Double): DateTime;
 
-    class method Parse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
-    class method Parse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
-    class method Parse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
-    class method Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
 
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     method ToString: PlatformString; override;
@@ -645,24 +645,24 @@ begin
   result := new DateTime(lMillis * TICKS_PER_MILLISECOND);
 end;
 
-class method DateTime.Parse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+class method DateTime.TryParse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
 begin
-  result := DateParser.Parse(aDateTime, var output, aOptions);
+  result := DateParser.TryParse(aDateTime, var output, aOptions);
 end;
 
-class method DateTime.Parse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+class method DateTime.TryParse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
 begin
-  result := DateParser.Parse(aDateTime, aLocale, var output, aOptions);
+  result := DateParser.TryParse(aDateTime, aLocale, var output, aOptions);
 end;
 
-class method DateTime.Parse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+class method DateTime.TryParse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
 begin
-  result := DateParser.Parse(aDateTime, aFormat, var output, aOptions);
+  result := DateParser.TryParse(aDateTime, aFormat, var output, aOptions);
 end;
 
-class method DateTime.Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+class method DateTime.TryParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
 begin
-  result := DateParser.Parse(aDateTime, aFormat, aLocale, var output, aOptions);
+  result := DateParser.TryParse(aDateTime, aFormat, aLocale, var output, aOptions);
 end;
 
 end.

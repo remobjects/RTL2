@@ -55,7 +55,10 @@ begin
       lChar := NormalizeChar(aFormat[lIndex]);
   end;
   result := aFormat.Substring(0, lIndex);
-  aFormat := aFormat.Substring(lIndex);
+  if lIndex < aFormat.Length then
+    aFormat := aFormat.Substring(lIndex)
+  else
+    aFormat := '';
 end;
 
 class method DateParser.GetNextNumberToken(var aFormat: String): String;
@@ -70,7 +73,10 @@ begin
       lChar := aFormat[lIndex];
   end;
   result := aFormat.Substring(0, lIndex);
-  aFormat := aFormat.Substring(lIndex);
+  if lIndex < aFormat.Length then
+    aFormat := aFormat.Substring(lIndex)
+  else
+    aFormat := '';
 end;
 
 class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Integer): Boolean;
