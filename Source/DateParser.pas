@@ -3,6 +3,9 @@
 interface
 
 type
+  DateParserOption = public enum(UseCurrentForMissing) of Integer;
+  DateParserOptions = public set of DateParserOption;
+
   DateParser = public class
   private
     class method GetNextStringToken(var aFormat: String): String;
@@ -11,15 +14,16 @@ type
     class method GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer): Boolean;
     class method GetNextSepOrStringToken(var aFormat: String): String;
     class method SkipToNextToken(var aFormat: String; var aDateTime: String): Boolean;
-    class method ParseStandard(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
+    class method StandardToInternalPattern(aFormat: String; aLocale: Locale; var output: String): Boolean;
     class method CheckIfAny(aToken: String; aValues: array of String): Boolean;
     class method NormalizeChar(aChar: Char): Char;
-    class method InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime): Boolean;
+    class method CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond: Integer; aOptions: DateParserOptions := []): DateTime;
+    class method InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
   public
-    class method Parse(aDateTime: String; var output: DateTime): Boolean;
-    class method Parse(aDateTime: String; aLocale: Locale; var output: DateTime): Boolean;
-    class method Parse(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
-    class method Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime): Boolean;
+    class method Parse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method Parse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method Parse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions := []): Boolean;
   end;
 
   const MaxValue = 2147483647;
@@ -34,7 +38,8 @@ begin
     'í', 'Í', 'ì', 'Ì': result := 'i';
     'ó', 'Ó', 'ò', 'Ò': result := 'o';
     'ú', 'Ú', 'ù', 'Ù': result := 'u';
-    else result := aChar;
+    else
+      result := aChar;
   end;
 end;
 
@@ -71,8 +76,10 @@ end;
 class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Integer): Boolean;
 begin
   var lToken := GetNextNumberToken(var aFormat);
-  aNumber := Convert.TryToInt32(lToken);
-  result := aNumber <> nil;
+  var lNumber := Convert.TryToInt32(lToken);
+  result := assigned(lNumber);
+  if result then
+    aNumber := lNumber;
 end;
 
 class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer): Boolean;
@@ -121,71 +128,23 @@ begin
   result := true;
 end;
 
-class method DateParser.ParseStandard(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
+class method DateParser.StandardToInternalPattern(aFormat: String; aLocale: Locale; var output: String): Boolean;
 begin
-  if aFormat.Length <> 1 then exit false;
-
   case aFormat of
-    'd': begin
+    'd': output := aLocale.DateTimeFormat.ShortDatePattern; // Short date pattern
+    'D': output := aLocale.DateTimeFormat.LongDatePattern; // Long date pattern
+    'f': output:= aLocale.DateTimeFormat.LongDatePattern + ' ' + aLocale.DateTimeFormat.ShortTimePattern; // Full date/time pattern (short time)
+    'F': output:= aLocale.DateTimeFormat.LongDatePattern + ' ' + aLocale.DateTimeFormat.LongTimePattern; // Full date/time pattern (long time)
+    'g': output:= aLocale.DateTimeFormat.ShortDatePattern + ' ' + aLocale.DateTimeFormat.ShortTimePattern; // General date/time pattern (short time)
+    'G': output:= aLocale.DateTimeFormat.ShortDatePattern + ' ' + aLocale.DateTimeFormat.LongTimePattern; // General date/time pattern (long time)
+    't': output := aLocale.DateTimeFormat.ShortTimePattern; // Short time pattern
+    'T': output := aLocale.DateTimeFormat.LongTimePattern; // Long time pattern
 
-    end;
-
-    'D': begin
-
-    end;
-
-    'f': begin
-
-    end;
-
-    'F': begin
-
-    end;
-
-    'g': begin
-
-    end;
-
-    'G': begin
-
-    end;
-
-    'M', 'm': begin
-
-    end;
-
-    'O', 'o': begin
-
-    end;
-
-    'R', 'r': begin
-
-    end;
-
-    's': begin
-
-    end;
-
-    't': begin
-
-    end;
-
-    'T': begin
-
-    end;
-
-    'u': begin
-
-    end;
-
-    'U': begin
-
-    end;
-
-    'y', 'Y': begin
-
-    end;
+    else
+      exit false;
   end;
+
+  result := true;
 end;
 
 class method DateParser.CheckIfAny(aToken: String; aValues: array of String): Boolean;
@@ -197,8 +156,26 @@ begin
   exit false;
 end;
 
+class method DateParser.CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond: Integer; aOptions: DateParserOptions): DateTime;
+begin
+  if aYear = 0 then
+    aYear := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Year else 1;
+  if aMonth = 0 then
+    aMonth := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Month else 1;
+  if aDay = 0 then
+    aDay := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Day else 1;
+  if aHour = 0 then
+    aHour := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Hour else 12;
+  if aMin = 0 then
+    if [DateParserOption.UseCurrentForMissing] in aOptions then aMin := DateTime.Today.Minute;
+  if aSecond = 0 then
+    if [DateParserOption.UseCurrentForMissing] in aOptions then aSecond := DateTime.Today.Second;
+
+  result := new DateTime(aYear, aMonth, aDay, aHour, aMin, aSecond);
+end;
+
 // "mm/dd/yyyy hh:nn:ss" --> "1/23/2018 4:55:23"
-class method DateParser.InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime): Boolean;
+class method DateParser.InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
   var lDay, lMonth, lYear, lHour, lMin, lSec, lOffset: Integer;
   var lWithSeconds: Boolean := false;
@@ -356,35 +333,54 @@ begin
   end;
   if not lWithSeconds then
     lSec := 0;
-  output := new DateTime(lYear, lMonth, lDay, lHour, lMin, lSec);
+  output := CheckAndSetDateTime(lYear, lMonth, lDay, lHour, lMin, lSec, aOptions);
   result := true;
 end;
 
-class method DateParser.Parse(aDateTime: String; var outPut: DateTime): Boolean;
+class method DateParser.Parse(aDateTime: String; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
-  result := Parse(aDateTime, Locale.Current, var outPut);
+  result := Parse(aDateTime, Locale.Current, var output, aOptions);
 end;
 
-class method DateParser.Parse(aDateTime: String; aFormat: String; var output: DateTime): Boolean;
+class method DateParser.Parse(aDateTime: String; aFormat: String; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
   if aFormat.Length = 1 then
-    result := ParseStandard(aDateTime, aFormat, var output)
-  else
-    result := InternalParse(aDateTime, aFormat, Locale.Current, var output);
+    if not StandardToInternalPattern(aFormat, Locale.Current, var aFormat) then
+      exit false;
+
+  result := InternalParse(aDateTime, aFormat, Locale.Current, var output, aOptions);
 end;
 
-class method DateParser.Parse(aDateTime: String; aLocale: Locale; var output: DateTime): Boolean;
+class method DateParser.Parse(aDateTime: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
-  // date - time
-  // date
-  // only month and day, assuming current year
-  // time with seconds
-  // time with no seconds
+  // 1. string with a date and time component, including long and short patterns.
+  // 2. only date component
+  // 3. time with seconds
+  // 4. time with no seconds
+  var lFormats := new String[8];
+  lFormats[0] := aLocale.DateTimeFormat.LongDatePattern + ' ' + aLocale.DateTimeFormat.LongTimePattern; // long date, long time
+  lFormats[1] := aLocale.DateTimeFormat.LongDatePattern + ' ' + aLocale.DateTimeFormat.ShortTimePattern; // long date, short time
+  lFormats[2] := aLocale.DateTimeFormat.ShortDatePattern + ' ' + aLocale.DateTimeFormat.LongTimePattern; // short date, long time
+  lFormats[3] := aLocale.DateTimeFormat.ShortDatePattern + ' ' + aLocale.DateTimeFormat.ShortTimePattern; // short date, short time
+
+  lFormats[4] := aLocale.DateTimeFormat.LongDatePattern; // long date
+  lFormats[5] := aLocale.DateTimeFormat.ShortDatePattern; // short date
+  lFormats[6] := aLocale.DateTimeFormat.LongTimePattern; // long time
+  lFormats[7] := aLocale.DateTimeFormat.shortTimePattern; // short time
+  for each lFormat in lFormats do
+    if InternalParse(aDateTime, lFormat, aLocale, var output, aOptions) then
+      exit true;
+
+  result := false;
 end;
 
-class method DateParser.Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime): Boolean;
+class method DateParser.Parse(aDateTime: String; aFormat: String; aLocale: Locale; var output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
-  result := InternalParse(aDateTime, aFormat, aLocale, var output);
+  if aFormat.Length = 1 then
+    if not StandardToInternalPattern(aFormat, aLocale, var aFormat) then
+      exit false;
+
+  result := InternalParse(aDateTime, aFormat, aLocale, var output, aOptions);
 end;
 
 end.

@@ -124,6 +124,10 @@ begin
   fDateTimeFormat.LongTimePattern := 'hh:mm:ss';
   fDateTimeFormat.ShortTimePattern := 'hh:mm';
   var lDateSymbols := lFormat.getDateFormatSymbols;
+  fDateTimeFormat.ShortDayNames := lDateSymbols.getShortWeekdays();
+  fDateTimeFormat.LongDayNames := lDateSymbols.getWeekdays();
+  fDateTimeFormat.ShortMonthNames := lDateSymbols.getShortMonths();
+  fDateTimeFormat.LongMonthNames := lDateSymbols.getMonths();
   if lDateSymbols.AmPmStrings.length > 1 then begin
     fDateTimeFormat.AMString := lDateSymbols.AmPmStrings[0];
     fDateTimeFormat.PMString := lDateSymbols.AmPmStrings[1];
@@ -144,10 +148,8 @@ begin
   fDateTimeFormat.PMString := aLocaleID.DateTimeFormat.PMDesignator;
   fDateTimeFormat.AMString := aLocaleID.DateTimeFormat.AMDesignator;
   fDateTimeFormat.DateSeparator := aLocaleID.DateTimeFormat.DateSeparator;
-  &Array.Copy(aLocaleID.DateTimeFormat.AbbreviatedDayNames, fDateTimeFormat.ShortDayNames, aLocaleID.DateTimeFormat.AbbreviatedDayNames.Length);
-  &Array.Copy(aLocaleID.DateTimeFormat.DayNames, fDateTimeFormat.LongDayNames, aLocaleID.DateTimeFormat.DayNames.Length);
-  //fDateTimeFormat.ShortDayNames := aLocaleID.DateTimeFormat.AbbreviatedDayNames;
-  //fDateTimeFormat.LongDayNames := aLocaleID.DateTimeFormat.DayNames;
+  fDateTimeFormat.ShortDayNames := aLocaleID.DateTimeFormat.AbbreviatedDayNames;
+  fDateTimeFormat.LongDayNames := aLocaleID.DateTimeFormat.DayNames;
   fDateTimeFormat.ShortMonthNames := aLocaleID.DateTimeFormat.AbbreviatedMonthNames;
   fDateTimeFormat.LongMonthNames := aLocaleID.DateTimeFormat.MonthNames;
 
@@ -166,6 +168,10 @@ begin
   fDateTimeFormat.PMString := aLocaleID.DateTimeFormat.PMString;
   fDateTimeFormat.AMString := aLocaleID.DateTimeFormat.AMString;
   fDateTimeFormat.DateSeparator := aLocaleID.DateTimeFormat.DateSeparator;
+  fDateTimeFormat.ShortDayNames := aLocaleID.DateTimeFormat.ShortDayNames;
+  fDateTimeFormat.LongDayNames := aLocaleID.DateTimeFormat.LongDayNames;
+  fDateTimeFormat.ShortMonthNames := aLocaleID.DateTimeFormat.ShortMonthNames;
+  fDateTimeFormat.LongMonthNames := aLocaleID.DateTimeFormat.LongMonthNames;
 
   fNumberFormat.Currency := aLocaleID.NumberFormat.Currency;
   fNumberFormat.DecimalSeparator := aLocaleID.NumberFormat.DecimalSeparator;
@@ -238,42 +244,42 @@ end;
 
 method DateTimeFormatInfo.SetShortDayNames(aValue: array of String);
 begin
-
+  fShortDayNames := aValue;
 end;
 
 method DateTimeFormatInfo.SetLongDayNames(aValue: array of String);
 begin
-
+  fLongDayNames := aValue;
 end;
 
 method DateTimeFormatInfo.SetShortMonthNames(aValue: array of String);
 begin
-
+  fShortMonthNames := aValue;
 end;
 
 method DateTimeFormatInfo.SetLongMonthNames(aValue: array of String);
 begin
-
+  fLongMonthNames := aValue;
 end;
 
 method DateTimeFormatInfo.SetDateSeparator(aValue: String);
 begin
-
+  fDateSeparator := aValue;
 end;
 
 method DateTimeFormatInfo.SetTimeSeparator(aValue: String);
 begin
-
+  fTimeSeparator := aValue;
 end;
 
 method DateTimeFormatInfo.SetAMString(aValue: String);
 begin
-
+  fAMString := aValue;
 end;
 
 method DateTimeFormatInfo.SetPMString(aValue: String);
 begin
-
+  fPMString := aValue;
 end;
 
 method DateTimeFormatInfo.SetShortTimePattern(aValue: String);
@@ -303,32 +309,35 @@ end;
 
 constructor DateTimeFormatInfo(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
 begin
-
+  fIsReadOnly := aIsReadonly;
 end;
 
 constructor NumberFormatInfo(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String; aIsReadOnly: Boolean := false);
 begin
-
+  fIsReadOnly := aIsReadOnly;
+  fDecimalSeparator := aDecimalSeparator;
+  fThousandsSeparator := aThousandsSeparator;
+  fCurrency := aCurrency;
 end;
 
 method NumberFormatInfo.SetDecimalSeparator(aValue: Char);
 begin
-
+  fDecimalSeparator := aValue;
 end;
 
 method NumberFormatInfo.SetThousandsSeparator(aValue: Char);
 begin
-
+  fThousandsSeparator := aValue;
 end;
 
 method NumberFormatInfo.SetCurrency(aValue: String);
 begin
-
+  fCurrency := aValue;
 end;
 
 constructor NumberFormatInfo(aIsReadOnly: Boolean := false);
 begin
-
+  fIsReadOnly := aIsReadOnly;
 end;
 
 end.
