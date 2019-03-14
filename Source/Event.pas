@@ -34,8 +34,8 @@ type
     method &Set;
     method Reset;
     method WaitFor;
-    method WaitFor(aTimeoutInMilliseconds: Int32);
-    method WaitFor(aTimeout: TimeSpan);
+    method WaitFor(aTimeoutInMilliseconds: Int32): Boolean;
+    method WaitFor(aTimeout: TimeSpan): Boolean;
 
     method Dispose();
   end;
@@ -106,40 +106,44 @@ begin
   {$ENDIF}
 end;
 
-method &Event.WaitFor(aTimeoutInMilliseconds: Int32);
+method &Event.WaitFor(aTimeoutInMilliseconds: Int32): Boolean;
 begin
   {$IF COOPER}
   fPlatformEvent.lock();
   if not fState then
-    fCond.await(aTimeoutInMilliseconds, java.util.concurrent.TimeUnit.MILLISECONDS);
+    result := fCond.await(aTimeoutInMilliseconds, java.util.concurrent.TimeUnit.MILLISECONDS)
+  else
+    result :=  true;
   if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
   {$ELSEIF TOFFEE}
-  WaitFor(TimeSpan.FromMilliseconds(aTimeoutInMilliseconds));
+  result := WaitFor(TimeSpan.FromMilliseconds(aTimeoutInMilliseconds));
   {$ELSEIF ECHOES}
-  fPlatformEvent.WaitOne(aTimeoutInMilliseconds);
+  result := fPlatformEvent.WaitOne(aTimeoutInMilliseconds);
   {$ELSEIF ISLAND}
-  fPlatformEvent.Wait(aTimeoutInMilliseconds);
+  result := fPlatformEvent.Wait(aTimeoutInMilliseconds);
   {$ENDIF}
 end;
 
-method &Event.WaitFor(aTimeout: Timespan);
+method &Event.WaitFor(aTimeout: Timespan): Boolean;
 begin
   {$IF COOPER}
-  WaitFor(Int32(aTimeout.TotalMilliSeconds));
+  result := WaitFor(Int32(aTimeout.TotalMilliSeconds));
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
   var lWaitTime := DateTime.UtcNow.Add(aTimeout);
   if not fState then
-    fPlatformEvent.waitUntilDate(lWaitTime);
+    result := fPlatformEvent.waitUntilDate(lWaitTime)
+  else
+    result :=  true;
   if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
   {$ELSEIF ECHOES}
-  fPlatformEvent.WaitOne(aTimeout);
+  result := fPlatformEvent.WaitOne(aTimeout);
   {$ELSEIF ISLAND}
-  fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds));
+  result := fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds));
   {$ENDIF}
 end;
 
