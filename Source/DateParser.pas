@@ -297,11 +297,13 @@ begin
       's': begin // seconds, 0 --> 59
         if not GetNextNumberToken(var lDateTime, var lSec, 0, 59) then
           exit false;
+        lWithSeconds := true;
       end;
 
       'ss': begin // seconds, 00 --> 59
         if not GetNextNumberToken(var lDateTime, var lSec, 0, 59) then
           exit false;
+        lWithSeconds := true;
       end;
 
       't': begin // am/pm, first character only
