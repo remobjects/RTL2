@@ -78,11 +78,10 @@ type
     method GetIdentifier: not nullable String;
     class var fCurrent: Locale;
     class var fInvariant: Locale;
-  protected
-    constructor(aLocaleID: PlatformLocale);
   public
     operator Implicit(aValue: Locale): PlatformLocale;
     operator Implicit(aValue: PlatformLocale): Locale;
+    constructor(aLocaleID: PlatformLocale);
     constructor(aLocale: String);
     class property Invariant: Locale read GetInvariant;
     class property Current: Locale read GetCurrent;
