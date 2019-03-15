@@ -307,11 +307,11 @@ begin
       end;
 
       't': begin // am/pm, first character only
-
+        lTmp := GetNextSepOrStringToken(var lDateTime);
        end;
 
       'tt': begin // am/pm, full string
-
+        lTmp := GetNextSepOrStringToken(var lDateTime);
       end;
 
       'z', 'zz': begin // timezone, with no '0', -2

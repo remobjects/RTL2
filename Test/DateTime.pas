@@ -57,6 +57,17 @@ type
       Check.AreEqual(lDateTime.Hour, 17);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 45);
+
+      lRes := DateTime.TryParse('17:34', Locale.Invariant, var lDateTime);
+      Check.IsTrue(lRes);
+      Check.AreEqual(lDateTime.Hour, 17);
+      Check.AreEqual(lDateTime.Minute, 34);
+
+      lRes := DateTime.TryParse('17:34:45', Locale.Invariant, var lDateTime);
+      Check.IsTrue(lRes);
+      Check.AreEqual(lDateTime.Hour, 17);
+      Check.AreEqual(lDateTime.Minute, 34);
+      Check.AreEqual(lDateTime.Second, 45);
     end;
   end;
 end.
