@@ -82,6 +82,7 @@ type
     constructor(aLocaleID: PlatformLocale);
   public
     operator Implicit(aValue: Locale): PlatformLocale;
+    operator Implicit(aValue: PlatformLocale): Locale;
     constructor(aLocale: String);
     class property Invariant: Locale read GetInvariant;
     class property Current: Locale read GetCurrent;
@@ -96,6 +97,11 @@ implementation
 operator Locale.Implicit(aValue: Locale): PlatformLocale;
 begin
   result := aValue.fLocaleID;
+end;
+
+operator Locale.Implicit(aValue: PlatformLocale): Locale;
+begin
+  result := new Locale(aValue);
 end;
 
 constructor Locale(aLocale: String);
