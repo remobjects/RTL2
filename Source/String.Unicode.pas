@@ -1,0 +1,106 @@
+﻿namespace RemObjects.Elements.RTL;
+
+type
+  UnicodeCodePoint = public type UInt32;
+
+  String = public partial class
+  private
+  protected
+  public
+
+    method ToHexString: String;
+    begin
+      result := Convert.ToHexString(Encoding.UTF16LE.GetBytes(self));
+    end;
+
+    method ToCharacterIndices: ImmutableList<Integer>;
+    begin
+      var lResult := new List<Integer> withCapacity(Length);
+
+      var i := 0;
+      var len := Length;
+      while i < len do begin
+        lResult.Add(i);
+
+        var ch := UInt32(self[i]);
+
+        if (ch ≤ $0D7FF) or (ch > $00E000) then begin // normal characacter
+          inc(i);
+          if i ≥ len then break;
+        end
+        else if (ch ≥ $00D800) and (ch ≤ $00DBFF) then begin // beginning of surrogate pair
+          var lCurrentSurrogate := ch;
+          inc(i);
+
+          ch := UInt32(self[i]);
+          if (ch ≥ $00DC00) and (ch < $00DFFF) then begin
+
+            var lCode := $10000;
+            lCode := lCode + ((lCurrentSurrogate and $03FF) shl 10);
+            lCode := lCode + (ch and $03FF);
+            //var lNewChar := UInt32(lCode);
+
+            inc(i);
+            if i ≥ len then break;
+
+          end
+          else begin
+            raise new Exception($"Invalid surrogate pair at index {i}");
+          end;
+
+        end
+        else begin
+          raise new Exception($"Invalid surrogate pair at index {i}");
+        end;
+      end;
+
+      result := lResult;
+    end;
+
+    method ToUnicodeCodePoints: ImmutableList<UnicodeCodePoint>;
+    begin
+      var lResult := new List<UnicodeCodePoint> withCapacity(Length);
+
+      var i := 0;
+      var len := Length;
+      while i < len do begin
+
+        var ch := UInt32(self[i]);
+
+        if (ch ≤ $0D7FF) or (ch > $00E000) then begin // normal characacter
+          lResult.Add(UnicodeCodePoint(ch));
+          inc(i);
+          //if i ≥ len then break;
+        end
+        else if (ch ≥ $00D800) and (ch ≤ $00DBFF) then begin // beginning of surrogate pair
+          var lCurrentSurrogate := ch;
+          inc(i);
+
+          ch := UInt32(self[i]);
+          if (ch ≥ $00DC00) and (ch < $00DFFF) then begin
+
+            var lCode := $10000;
+            lCode := lCode + ((lCurrentSurrogate and $03FF) shl 10);
+            lCode := lCode + (ch and $03FF);
+            lResult.Add(UnicodeCodePoint(lCode));
+
+            inc(i);
+            //if i ≥ len then break;
+
+          end
+          else begin
+            raise new Exception($"Invalid surrogate pair at index {i}");
+          end;
+
+        end
+        else begin
+          raise new Exception($"Invalid surrogate pair at index {i}");
+        end;
+      end;
+
+      result := lResult;
+    end;
+
+  end;
+
+end.
