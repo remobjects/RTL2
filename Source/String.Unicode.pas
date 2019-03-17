@@ -10,10 +10,18 @@ type
 
     method ToHexString: String;
     begin
-      result := Convert.ToHexString(Encoding.UTF16LE.GetBytes(self));
+      result := Convert.ToHexString(Encoding.UTF16BE.GetBytes(self));
     end;
 
-    method ToCharacterIndices: ImmutableList<Integer>;
+    method IsIndexInsideOfASurrogatePair(aIndex: Integer): Boolean; inline;
+    begin
+      if (aIndex ≤ 0) or (aIndex ≥ Length-1) then
+        exit false;
+      var ch := UInt32(self[aIndex-1]);
+      result := (ch ≥ $00D800) and (ch ≤ $00DBFF);
+    end;
+
+    method ToUnicodeCodePointIndices: ImmutableList<Integer>;
     begin
       var lResult := new List<Integer> withCapacity(Length);
 
