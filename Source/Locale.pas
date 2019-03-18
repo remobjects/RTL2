@@ -112,7 +112,7 @@ begin
   aLocale := aLocale.Replace('_', '-');
   constructor(new System.Globalization.CultureInfo(aLocale));
   {$ELSEIF TOFFEE}
-  constructor(new NSLocale withLocaleIdentifier(aLocale));
+  constructor( NSLocale.localeWithLocaleIdentifier(NSLocale.canonicalLocaleIdentifierFromString(aLocale));
   {$ELSEIF ISLAND}
   constructor(new RemObjects.Elements.System.Locale(aLocale));
   {$ENDIF}
@@ -186,6 +186,15 @@ begin
   lDateFormatter.timeStyle := NSDateFormatterStyle.NSDateFormatterShortStyle;
   fDateTimeFormat.ShortTimePattern := lDateFormatter.dateFormat;
 
+  for i:Integer := 0 to 6 do begin
+    fDateTimeFormat.ShortDayNames[i] := lDateFormatter.shortWeekdaySymbols[i];
+    fDateTimeFormat.LongDayNames[i] := lDateFormatter.weekdaySymbols[i];
+  end;
+  for i: Integer := 0 to 11 do begin
+    fDateTimeFormat.ShortMonthNames[i] := lDateFormatter.shortMonthSymbols[i];
+    fDateTimeFormat.LongMonthNames[i] := lDateFormatter.monthSymbols[i];
+  end;
+
   var lNumberFormatter := new NSNumberFormatter();
   lNumberFormatter.locale := aLocaleID;
   fNumberFormat.Currency := lNumberFormatter.currencySymbol;
@@ -220,7 +229,7 @@ begin
     {$ELSEIF ECHOES}
     fInvariant := new Locale(System.Globalization.CultureInfo.InvariantCulture);
     {$ELSEIF TOFFEE}
-    raise new NotSupportedException("Invariant locale is not supported on Cocoa yet");
+    fInvariant := NSLocale.systemLocale;
     {$ELSEIF ISLAND}
     fInvariant := new Locale(RemObjects.Elements.System.Locale.Invariant);
     {$ENDIF}
@@ -248,8 +257,12 @@ method Locale.GetIdentifier: not nullable String;
 begin
   {$IF COOPER}
   result := fLocaleID.toString() as not nullable;
-  {$ELSE}
-  result := '' as not nullable;
+  {$ELSEIF TOFFEE}
+  result := fLocaleID.localeIdentifier as not nullable;
+  {$ELSEIF ECHOES}
+  result := fLocaleID.Name as not nullable;
+  {$ELSEIF ISLAND}
+  result := fLocaleID.Identifier;
   {$ENDIF}
 end;
 
