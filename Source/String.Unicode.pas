@@ -118,15 +118,17 @@ type
 
   end;
 
-extension method UnicodeCodePoint.ToUTF16: String;
-begin
-  if UInt32(self) > $ffff then begin
-    result := chr($D800 + (((UInt32(self) - $10000) shr 10) and $03ff))+
-              chr($DC00 + ((UInt32(self) - $10000) and $03ff));
-  end
-  else begin
-    result := chr(UInt16(self));
-  end;
-end;
+// > ld:       l_OBJC_$_CATEGORY___RemObjects_Elements_RTL_UnicodeCodePoint_$_RemObjects.Elements.RTL.__Extensions__UInt32 in libElements.a(__Extensions__UInt32-df2adcab4d8e8b3acfbf7cdc3bbfc045.o)
+
+//extension method UnicodeCodePoint.ToUTF16: String; public;
+//begin
+  //if UInt32(self) > $ffff then begin
+    //result := chr($D800 + (((UInt32(self) - $10000) shr 10) and $03ff))+
+              //chr($DC00 + ((UInt32(self) - $10000) and $03ff));
+  //end
+  //else begin
+    //result := chr(UInt16(self));
+  //end;
+//end;
 
 end.

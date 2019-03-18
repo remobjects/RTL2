@@ -229,7 +229,7 @@ begin
     {$ELSEIF ECHOES}
     fInvariant := new Locale(System.Globalization.CultureInfo.InvariantCulture);
     {$ELSEIF TOFFEE}
-    fInvariant := NSLocale.systemLocale;
+    fInvariant := new Locale(NSLocale.systemLocale);
     {$ELSEIF ISLAND}
     fInvariant := new Locale(RemObjects.Elements.System.Locale.Invariant);
     {$ENDIF}

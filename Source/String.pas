@@ -61,6 +61,10 @@ type
     class method EqualsIgnoringCaseInvariant(ValueA: String; ValueB: String): Boolean;
 
     method Contains(Value: String): Boolean; inline;
+    method ContainsAny(const AnyOf: array of Char): Boolean;
+    method ContainsAny(const AnyOf: array of Char; aStartIndex: Integer): Boolean;
+    method ContainsAnyNonASCII: Boolean;
+    method ContainsAnyNonASCII(aStartIndex: Integer): Boolean;
     method IndexOf(Value: Char): Int32; inline;
     method IndexOf(Value: String): Int32; inline;
     method IndexOfIgnoringCase(Value: Char): Int32; inline;
@@ -504,6 +508,30 @@ begin
   {$ENDIF}
 end;
 
+method String.ContainsAny(const AnyOf: array of Char): Boolean;
+begin
+  result := ContainsAny(AnyOf, 0);
+end;
+
+method String.ContainsAny(const AnyOf: array of Char; aStartIndex: Integer): Boolean;
+begin
+  for i: Integer := aStartIndex to Length-1 do
+    if AnyOf.ContainsChar(Chars[i]) then
+      exit true;
+end;
+
+method String.ContainsAnyNonASCII: Boolean;
+begin
+  result := ContainsAnyNonASCII(0);
+end;
+
+method String.ContainsAnyNonASCII(aStartIndex: Integer): Boolean;
+begin
+  for i: Integer := aStartIndex to Length-1 do
+    if Chars[i] > 127 then
+      exit true;
+end;
+
 method String.IndexOf(Value: Char): Int32;
 begin
   result := IndexOf(Value, 0);
@@ -916,7 +944,7 @@ begin
   {$IF COOPER}
   exit mapped.toLowerCase(Locale.Invariant) as not nullable;
   {$ELSEIF TOFFEE}
-  exit mapped.lowercaseStringWithLocale(Locale.Invariant);
+  exit mapped.lowercaseStringWithLocale(NSLocale.systemLocale);
   {$ELSEIF ECHOES}
   exit mapped.ToLowerInvariant as not nullable;
   {$ELSEIF ISLAND}
@@ -951,7 +979,7 @@ begin
   {$IF COOPER}
   exit mapped.toUpperCase(Locale.Invariant) as not nullable;
   {$ELSEIF TOFFEE}
-  exit mapped.uppercaseStringWithLocale(Locale.Invariant);
+  exit mapped.uppercaseStringWithLocale(NSLocale.systemLocale);
   {$ELSEIF ECHOES}
   exit mapped.ToUpperInvariant as not nullable;
   {$ELSEIF ISLAND}
