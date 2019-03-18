@@ -2,6 +2,7 @@
 
 type
   UnicodeCodePoint = public type UInt32;
+  UnicodeCharacter = public type String;
 
   String = public partial class
   private
@@ -65,6 +66,7 @@ type
       result := lResult;
     end;
 
+    {$IF NOT COOPER}
     method ToUnicodeCodePoints: ImmutableList<UnicodeCodePoint>;
     begin
       var lResult := new List<UnicodeCodePoint> withCapacity(Length);
@@ -108,6 +110,12 @@ type
 
       result := lResult;
     end;
+    {$ENDIF}
+
+    method ToUnicodeCharacters: ImmutableList<UnicodeCharacter>;
+    begin
+    end;
+
 
   end;
 
