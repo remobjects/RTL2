@@ -116,7 +116,17 @@ type
     begin
     end;
 
-
   end;
+
+extension method UnicodeCodePoint.ToUTF16: String;
+begin
+  if UInt32(self) > $ffff then begin
+    result := chr($D800 + (((UInt32(self) - $10000) shr 10) and $03ff))+
+              chr($DC00 + ((UInt32(self) - $10000) and $03ff));
+  end
+  else begin
+    result := chr(UInt16(self));
+  end;
+end;
 
 end.

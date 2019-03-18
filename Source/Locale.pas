@@ -112,7 +112,7 @@ begin
   aLocale := aLocale.Replace('_', '-');
   constructor(new System.Globalization.CultureInfo(aLocale));
   {$ELSEIF TOFFEE}
-  constructor( NSLocale.localeWithLocaleIdentifier(NSLocale.canonicalLocaleIdentifierFromString(aLocale));
+  constructor(NSLocale.localeWithLocaleIdentifier(NSLocale.canonicalLocaleIdentifierFromString(aLocale)));
   {$ELSEIF ISLAND}
   constructor(new RemObjects.Elements.System.Locale(aLocale));
   {$ENDIF}
