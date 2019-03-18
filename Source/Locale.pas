@@ -160,22 +160,6 @@ begin
     fNumberFormat.DecimalSeparator := aLocaleID.NumberFormat.NumberDecimalSeparator[0];
   if aLocaleID.NumberFormat.NumberGroupSeparator.Length > 0 then
     fNumberFormat.ThousandsSeparator := aLocaleID.NumberFormat.NumberGroupSeparator[0];
-  {$ELSEIF ISLAND}
-  fDateTimeFormat.LongDatePattern := aLocaleID.DateTimeFormat.LongDatePattern;
-  fDateTimeFormat.ShortDatePattern := aLocaleID.DateTimeFormat.ShortDatePattern;
-  fDateTimeFormat.LongTimePattern := aLocaleID.DateTimeFormat.LongTimePattern;
-  fDateTimeFormat.ShortTimePattern := aLocaleID.DateTimeFormat.ShortTimePattern;
-  fDateTimeFormat.PMString := aLocaleID.DateTimeFormat.PMString;
-  fDateTimeFormat.AMString := aLocaleID.DateTimeFormat.AMString;
-  fDateTimeFormat.DateSeparator := aLocaleID.DateTimeFormat.DateSeparator;
-  fDateTimeFormat.ShortDayNames := aLocaleID.DateTimeFormat.ShortDayNames;
-  fDateTimeFormat.LongDayNames := aLocaleID.DateTimeFormat.LongDayNames;
-  fDateTimeFormat.ShortMonthNames := aLocaleID.DateTimeFormat.ShortMonthNames;
-  fDateTimeFormat.LongMonthNames := aLocaleID.DateTimeFormat.LongMonthNames;
-
-  fNumberFormat.Currency := aLocaleID.NumberFormat.Currency;
-  fNumberFormat.DecimalSeparator := aLocaleID.NumberFormat.DecimalSeparator;
-  fNumberFormat.ThousandsSeparator := aLocaleID.NumberFormat.ThousandsSeparator;
   {$ELSEIF TOFFEE}
   var lDateFormatter := new NSDateFormatter();
   lDateFormatter.locale := aLocaleID;
@@ -202,6 +186,22 @@ begin
     fNumberFormat.DecimalSeparator := lNumberFormatter.decimalSeparator[0];
   if lNumberFormatter.groupingSeparator.length > 0 then
     fNumberFormat.ThousandsSeparator := lNumberFormatter.groupingSeparator[0];
+  {$ELSEIF ISLAND}
+  fDateTimeFormat.LongDatePattern := aLocaleID.DateTimeFormat.LongDatePattern;
+  fDateTimeFormat.ShortDatePattern := aLocaleID.DateTimeFormat.ShortDatePattern;
+  fDateTimeFormat.LongTimePattern := aLocaleID.DateTimeFormat.LongTimePattern;
+  fDateTimeFormat.ShortTimePattern := aLocaleID.DateTimeFormat.ShortTimePattern;
+  fDateTimeFormat.PMString := aLocaleID.DateTimeFormat.PMString;
+  fDateTimeFormat.AMString := aLocaleID.DateTimeFormat.AMString;
+  fDateTimeFormat.DateSeparator := aLocaleID.DateTimeFormat.DateSeparator;
+  fDateTimeFormat.ShortDayNames := aLocaleID.DateTimeFormat.ShortDayNames;
+  fDateTimeFormat.LongDayNames := aLocaleID.DateTimeFormat.LongDayNames;
+  fDateTimeFormat.ShortMonthNames := aLocaleID.DateTimeFormat.ShortMonthNames;
+  fDateTimeFormat.LongMonthNames := aLocaleID.DateTimeFormat.LongMonthNames;
+
+  fNumberFormat.Currency := aLocaleID.NumberFormat.Currency;
+  fNumberFormat.DecimalSeparator := aLocaleID.NumberFormat.DecimalSeparator;
+  fNumberFormat.ThousandsSeparator := aLocaleID.NumberFormat.ThousandsSeparator;
   {$ENDIF}
 end;
 
