@@ -111,6 +111,8 @@ begin
   {$ELSEIF ECHOES}
   aLocale := aLocale.Replace('_', '-');
   constructor(new System.Globalization.CultureInfo(aLocale));
+  {$ELSEIF TOFFEE}
+  constructor(new NSLocale withLocaleIdentifier(aLocale));
   {$ELSEIF ISLAND}
   constructor(new RemObjects.Elements.System.Locale(aLocale));
   {$ENDIF}
@@ -217,6 +219,8 @@ begin
     fInvariant := new Locale(java.util.Locale.ROOT);
     {$ELSEIF ECHOES}
     fInvariant := new Locale(System.Globalization.CultureInfo.InvariantCulture);
+    {$ELSEIF TOFFEE}
+    raise new NotSupportedException("Invariant locale is not supported on Cocoa yet");
     {$ELSEIF ISLAND}
     fInvariant := new Locale(RemObjects.Elements.System.Locale.Invariant);
     {$ENDIF}
@@ -231,6 +235,8 @@ begin
     fCurrent := new Locale(java.util.Locale.getDefault());
     {$ELSEIF ECHOES}
     fCurrent := new Locale(System.Threading.Thread.CurrentThread.CurrentCulture);
+    {$ELSEIF TOFFEE}
+    fCurrent := new Locale(NSLocale.currentLocale); // maybe autoupdatingCurrentLocale?
     {$ELSEIF ISLAND}
     fCurrent := new Locale(RemObjects.Elements.System.Locale.Current);
     {$ENDIF}
