@@ -50,6 +50,7 @@ type
 
       Check.AreEqual("🤷🏼‍♀️".ToUnicodeCodePointIndices().JoinedString(","), "0,2,4,5,6");
       Check.AreEqual("🤷🏼‍♀️".ToUnicodeCodePoints().JoinedString(","), "129335,127996,8205,9792,65039");
+      Check.AreEqual("🤷🏼‍♀️".ToUnicodeCharacters().JoinedString(","), "🤷🏼‍♀️");
       Check.AreEqual("🤷🏼‍♀️".ToHexString(),"D83EDD37D83CDFFC200D2640FE0F");
                                      // "D83E+DD37, D83C+DFFC, 200D, 2640, FE0F");
                                      // 1F937 (Person shrugging)
@@ -57,6 +58,10 @@ type
                                      // 200D (Zero Width Joiner)
                                      // 2640 (Female Sign)
                                      // FE0F Variation Selector-16, An invisible codepoint which specifies that the preceding character should be displayed with emoji presentation. Only required if the preceding character defaults to text presentation.)
+
+      Check.AreEqual("🤪🤷🏼‍♀️🤷".ToUnicodeCharacters().JoinedString(","), "🤪,🤷🏼‍♀️,🤷");
+      Check.AreEqual("👁️‍🗨️ Eye in Speech Bubble".ToUnicodeCharacters().JoinedString(","), "👁️‍🗨️, ,E,y,e, ,i,n, ,S,p,e,e,c,h, ,B,u,b,b,l,e");
+      Check.AreEqual("🇨🇼 Flag: Curaçao".ToUnicodeCharacters().JoinedString(","), "🇨🇼, ,F,l,a,g,:, ,C,u,r,a,ç,a,o");
     end;
 
   end;

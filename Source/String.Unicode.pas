@@ -112,23 +112,72 @@ type
     end;
     {$ENDIF}
 
+    {$IF ECHOES}
     method ToUnicodeCharacters: ImmutableList<UnicodeCharacter>;
     begin
+      var lResult := new List<UnicodeCharacter>;
+
+      var lCurrentChar := "";
+      var lCombineWithNext := false;
+      var lIsRegionalIndicatorLetter := false;
+      for each ch: UInt32 in ToUnicodeCodePoints do begin
+        if ch in [$1F3FB..$1F3FF, // skin tone
+                  $1F9B0..$1F9B3  // hair color
+                  ] then begin
+          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
+          continue;
+        end;
+        if ch in [$FE00..$FE0F] then begin // Variation Selectors
+          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
+          continue;
+        end;
+
+        if ch in [$1F1E6..$1F1FF] then begin // Regional Indicator Symbol Letter
+          if lIsRegionalIndicatorLetter then begin
+            lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
+            lIsRegionalIndicatorLetter := false;
+            continue;
+          end
+          else begin
+            lIsRegionalIndicatorLetter := true;
+          end;
+        end;
+
+        if ch in [$200D] then begin // Joiners
+          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
+          lCombineWithNext := true;
+          continue;
+        end;
+
+        if lCombineWithNext then begin
+          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
+          lCombineWithNext := false;
+        end
+        else begin
+          if lCurrentChar.Length > 0 then
+            lResult.Add(lCurrentChar as UnicodeCharacter);
+          lCurrentChar := UnicodeCodePoint(ch).ToUTF16;
+        end;
+      end;
+      if lCurrentChar.Length > 0 then
+        lResult.Add(lCurrentChar as UnicodeCharacter);
+      result := lResult;//ToUnicodeCodePoints.Select(ch -> chr(ch).ToString as UnicodeCharacter).ToList;
     end;
+    {$ENDIF}
 
   end;
 
-// > ld:       l_OBJC_$_CATEGORY___RemObjects_Elements_RTL_UnicodeCodePoint_$_RemObjects.Elements.RTL.__Extensions__UInt32 in libElements.a(__Extensions__UInt32-df2adcab4d8e8b3acfbf7cdc3bbfc045.o)
-
-//extension method UnicodeCodePoint.ToUTF16: String; public;
-//begin
-  //if UInt32(self) > $ffff then begin
-    //result := chr($D800 + (((UInt32(self) - $10000) shr 10) and $03ff))+
-              //chr($DC00 + ((UInt32(self) - $10000) and $03ff));
-  //end
-  //else begin
-    //result := chr(UInt16(self));
-  //end;
-//end;
+{$IF ECHOES}
+extension method UnicodeCodePoint.ToUTF16: String; public;
+begin
+  if UInt32(self) > $ffff then begin
+    result := chr($D800 + (((UInt32(self) - $10000) shr 10) and $03ff))+
+              chr($DC00 + ((UInt32(self) - $10000) and $03ff));
+  end
+  else begin
+    result := chr(UInt16(self));
+  end;
+end;
+{$ENDIF}
 
 end.
