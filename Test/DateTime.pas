@@ -34,23 +34,22 @@ type
 
     method TestDateTimeParse;
     begin
-      var lDateTime: DateTime;
-      var lRes := DateTime.TryParse('12/04/2019', Locale.Invariant, var lDateTime);
-      Check.IsTrue(lRes);
+      var lDateTime := DateTime.TryParse('12/04/2019', Locale.Invariant);
+      Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 12);
       Check.AreEqual(lDateTime.Day, 4);
       Check.AreEqual(lDateTime.Year, 2019);
 
-      lRes := DateTime.TryParse('11/20/2019 17:34', Locale.Invariant, var lDateTime);
-      Check.IsTrue(lRes);
+      lDateTime := DateTime.TryParse('11/20/2019 17:34', Locale.Invariant);
+      Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 11);
       Check.AreEqual(lDateTime.Day, 20);
       Check.AreEqual(lDateTime.Year, 2019);
       Check.AreEqual(lDateTime.Hour, 17);
       Check.AreEqual(lDateTime.Minute, 34);
 
-      lRes := DateTime.TryParse('11/20/2019 17:34:45', Locale.Invariant, var lDateTime);
-      Check.IsTrue(lRes);
+      lDateTime := DateTime.TryParse('11/20/2019 17:34:45', Locale.Invariant);
+      Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 11);
       Check.AreEqual(lDateTime.Day, 20);
       Check.AreEqual(lDateTime.Year, 2019);
@@ -58,13 +57,13 @@ type
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 45);
 
-      lRes := DateTime.TryParse('17:34', Locale.Invariant, var lDateTime);
-      Check.IsTrue(lRes);
+      lDateTime := DateTime.TryParse('17:34', Locale.Invariant);
+      Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Hour, 17);
       Check.AreEqual(lDateTime.Minute, 34);
 
-      lRes := DateTime.TryParse('17:34:45', Locale.Invariant, var lDateTime);
-      Check.IsTrue(lRes);
+      lDateTime := DateTime.TryParse('17:34:45', Locale.Invariant);
+      Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Hour, 17);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 45);
