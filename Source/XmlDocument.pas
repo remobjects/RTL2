@@ -436,7 +436,7 @@ begin
     result := Http.GetXml(new HttpRequest(aUrl));
     {$ENDIF}
   except
-    on E: Exception do begin 
+    on E: Exception do begin
       if aAllowBrokenDocument then begin
         if not assigned(result) then
           result := new XmlDocument;
@@ -454,7 +454,7 @@ end;
 class method XmlDocument.FromString(aString: not nullable String): not nullable XmlDocument;
 begin
   var lResult := TryFromString(aString, true);
-  if (lResult.ErrorInfo <> nil) then 
+  if (lResult.ErrorInfo <> nil) then
     if lResult.ErrorInfo.Row = -1 then
       raise new XmlException(lResult.ErrorInfo.Message)
     else
@@ -1145,7 +1145,7 @@ end;
 
 method XmlElement.SetLocalName(aValue: not nullable String);
 begin
-  if not CheckName(aValue) and (aValue <> "[ERROR]") then 
+  if not CheckName(aValue) and (aValue <> "[ERROR]") then
     raise new Exception('"{0}" is not valid Xmlelement name', aValue);
   fLocalName := aValue;
   EndTagName := nil;
@@ -1199,19 +1199,21 @@ begin
   result := "";
   for each lNode in Nodes do begin
     if (lNode.NodeType = XmlNodeType.Text) and ((PreserveSpace) or (length(XmlText(lNode).Value:Trim) > 0)) then begin
-      if (result <> "") and not String.CharacterIsWhitespace(result[result.length-1]) and (length(XmlText(lNode).Value) > 0) and not string.CharacterIsWhitespace(XmlText(lNode).Value[0]) then
+      if (result <> "") and not result[result.length-1].IsWhitespace and (length(XmlText(lNode).Value) > 0) and not XmlText(lNode).Value[0].IsWhitespace then
         result := result+" ";
       result := result+XmlText(lNode).Value
     end
-    else if lNode.NodeType = XmlNodeType.Element then
+    else if lNode.NodeType = XmlNodeType.Element then begin
       if aWithNested then begin
         var lValue := XmlElement(lNode).GetValue(true);
-        if (result <> "") and not String.CharacterIsWhitespace(result[result.length-1]) and (length(lValue) > 0) and not String.CharacterIsWhitespace(lValue[0]) then
+        if (result <> "") and not result[result.length-1].IsWhitespace and (length(lValue) > 0) and not lValue[0].IsWhitespace then
           result := result+" ";
         result := result+lValue;
-      end
+      end;
+    end;
   end
 end;
+
 method XmlElement.SetValue(aValue: nullable String);
 begin
   fNodes.RemoveAll;
@@ -1297,7 +1299,7 @@ begin
   if GetNamespace(aNamespace.Prefix) = nil then begin
     //fNamespaces.Add(aNamespace);
     aNamespace.fParent := self;
-    fAttributesAndNamespaces.Add(aNamespace);    
+    fAttributesAndNamespaces.Add(aNamespace);
     if (aNamespace.Prefix = nil) or (aNamespace.Prefix = "") then fDefaultNamespace := aNamespace;
   end
   else if aNamespace.Prefix=nil then raise new Exception("Duplicate namespace xmlns")
@@ -1437,7 +1439,7 @@ begin
             Sb.Append(' ');
         Sb.Append("/>");
       end;
-    end else 
+    end else
       Sb.Append("/>");
   end;
   if fNodes.count > 0 then Sb.Append('>');
@@ -1624,7 +1626,7 @@ end;
 
 method XmlAttribute.SetLocalName(aValue: not nullable String);
 begin
-  if not CheckName(aValue) and (aValue <> "[ERROR]") then 
+  if not CheckName(aValue) and (aValue <> "[ERROR]") then
     raise new Exception('"{0}" is not a valid XMLAttribute name', aValue);
   fLocalName := aValue;
 end;

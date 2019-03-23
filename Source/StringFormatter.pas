@@ -127,7 +127,7 @@ begin
   if (ptr < max) and (aString[ptr] = ',') then begin
     // White space between ',' and number or sign.
     inc(ptr);
-    while (ptr < max) and (String.CharacterIsWhiteSpace(aString[ptr])) do inc(ptr);
+    while (ptr < max) and aString[ptr].IsWhitespace do inc(ptr);
     var start := ptr;
     aFormat := aString.Substring(start, ptr - start);
     left_align := ((ptr < max) and (aString[ptr] = '-'));

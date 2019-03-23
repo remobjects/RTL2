@@ -470,7 +470,7 @@ begin
       exit false; // can never be relative;
     end
     else if SelfIsDriveletter and BaseIsDriveletter then begin
-      if LowerChar(Path[1]) ≠ LowerChar(aUrl.Path[1]) then exit false; // different drive, can never be relative;
+      if Path[1].ToLower/*Invariant*/ ≠ aUrl.Path[1].ToLower/*Invariant*/ then exit false; // different drive, can never be relative;
       result := true;
     end
     else if Host:ToLowerInvariant ≠ aUrl.Host:ToLowerInvariant then begin

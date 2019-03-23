@@ -47,8 +47,6 @@ type
     property PathListSeparatorChar: Char read if Environment.OS = OperatingSystem.Windows then ';' else ':';
   end;
 
-extension method array of Char.ContainsChar(aChar: Char): Boolean; assembly;
-
 implementation
 
 method Path.ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
@@ -149,13 +147,6 @@ begin
       result := ""
 
   end;
-end;
-
-extension method array of Char.ContainsChar(aChar: Char): Boolean;
-begin
-  for i: Integer := 0 to RemObjects.Elements.System.length(self)-1 do
-    if self[i] = aChar then
-      exit true;
 end;
 
 method Path.DoGetParentDirectory(aFileName: not nullable String; aFolderSeparators: array of Char): nullable String;
