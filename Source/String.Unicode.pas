@@ -60,7 +60,6 @@ type
       result := lResult;
     end;
 
-    {.$IF NOT COOPER}
     method ToUnicodeCodePoints: ImmutableList<UnicodeCodePoint>;
     begin
       var lResult := new List<UnicodeCodePoint> withCapacity(Length);
@@ -96,7 +95,6 @@ type
 
       result := lResult;
     end;
-    {.$ENDIF}
 
     method UnicodeCodePointAtIndex(aIndex: Integer): UnicodeCodePoint;
     begin
@@ -163,7 +161,7 @@ type
       if (aIndex = 0) or (aIndex = Length) then
         exit false;
       if IsIndexInsideOfASurrogatePair(aIndex) then
-        raise new UnicodeException($"Index {aIndex} is inside a surrogate pair");
+        exit IsIndexInsideOfAJoinedUnicodeCharacter(aIndex-1) or IsIndexInsideOfAJoinedUnicodeCharacter(aIndex+1);
 
       var cp := UnicodeCodePointAtIndex(aIndex);
       if IsModifierUnicodePoint(cp) or IsVariationSelectorsUnicodePoint(cp) or IsJoinerUnicodePoint(cp) then begin
