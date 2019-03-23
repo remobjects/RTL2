@@ -59,6 +59,11 @@ type
   end;
   {$ENDIF}
 
+  {$IF COOPER OR TOFFEEV1}
+  IndexOutOfRangeException = public class(RTLException)
+  end;
+  {$ENDIF}
+
   Exception_Helpers = public extension class(Exception)
   public
     {$IF TOFFEE}
