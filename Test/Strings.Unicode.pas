@@ -93,8 +93,8 @@ type
       Check.AreEqual("👁️‍🗨️ Eye".IsIndexInsideOfAJoinedUnicodeCharacter(6), true);
       Check.AreEqual("👁️‍🗨️ Eye".IsIndexInsideOfAJoinedUnicodeCharacter(7), false);
 
-      writeLn("🇨🇼🇨🇼".ToUnicodeCodePointIndices().JoinedString(","));
-      writeLn("🇨🇼🇨🇼".ToUnicodeCodePoints().JoinedString(","));
+      //writeLn("🇨🇼🇨🇼".ToUnicodeCodePointIndices().JoinedString(","));
+      //writeLn("🇨🇼🇨🇼".ToUnicodeCodePoints().JoinedString(","));
       Check.AreEqual("🇨🇼🇨🇼".IsIndexInsideOfAJoinedUnicodeCharacter(0), false);
       Check.AreEqual("🇨🇼🇨🇼".IsIndexInsideOfAJoinedUnicodeCharacter(2), true);
       Check.AreEqual("🇨🇼🇨🇼".IsIndexInsideOfAJoinedUnicodeCharacter(4), false);

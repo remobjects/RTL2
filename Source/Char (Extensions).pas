@@ -109,6 +109,17 @@ type
           exit true;
     end;
 
+    class operator &Add(Value1: array of Char; Value2: array of Char): array of Char;
+    begin
+      var len1 := RemObjects.Elements.System.length(Value1);
+      var len2 := RemObjects.Elements.System.length(Value2);
+      result := new Char[len1+len2];
+      for i: Integer := 0 to len1-1 do
+        result[i] := Value1[i];
+      for i: Integer := 0 to len2-1 do
+        result[len1+i] := Value2[i];
+    end;
+
   end;
 
 end.

@@ -243,18 +243,18 @@ type
     begin
       var lResult := new List<UnicodeCharacter>;
 
-      var lCurrentChar := "";
+      var lCurrentChar: array of Char;
       var lCombineWithNext := false;
       var lIsRegionalIndicatorLetter := false;
       for each ch: UInt32 in ToUnicodeCodePoints do begin
         if IsModifierUnicodePoint(ch) or IsVariationSelectorsUnicodePoint(ch) then begin
-          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16String;
+          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
           continue;
         end;
 
         if IsRegionalIndicatorUnicodePoint(ch) then begin // Regional Indicator Symbol Letter
           if lIsRegionalIndicatorLetter then begin
-            lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16String;
+            lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
             lIsRegionalIndicatorLetter := false;
             continue;
           end
@@ -264,23 +264,23 @@ type
         end;
 
         if IsJoinerUnicodePoint(ch) then begin // Joiners
-          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16String;
+          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
           lCombineWithNext := true;
           continue;
         end;
 
         if lCombineWithNext then begin
-          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16String;
+          lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
           lCombineWithNext := false;
         end
         else begin
-          if lCurrentChar.Length > 0 then
-            lResult.Add(lCurrentChar as UnicodeCharacter);
-          lCurrentChar := UnicodeCodePoint(ch).ToUTF16String;
+          if RemObjects.Elements.System.length(lCurrentChar) > 0 then
+            lResult.Add(new String(lCurrentChar) as UnicodeCharacter);
+          lCurrentChar := UnicodeCodePoint(ch).ToUTF16;
         end;
       end;
-      if lCurrentChar.Length > 0 then
-        lResult.Add(lCurrentChar as UnicodeCharacter);
+      if RemObjects.Elements.System.length(lCurrentChar) > 0 then
+        lResult.Add(new String(lCurrentChar) as UnicodeCharacter);
       result := lResult;//ToUnicodeCodePoints.Select(ch -> chr(ch).ToString as UnicodeCharacter).ToList;
     end;
 
