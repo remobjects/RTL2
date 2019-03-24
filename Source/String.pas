@@ -722,6 +722,17 @@ type
       {$ENDIF}
     end;
 
+    method Remove(OldValue: String): not nullable String; inline;
+    begin
+      if IsNullOrEmpty(OldValue) then
+        raise new ArgumentNullException("OldValue");
+      {$IF NOT TOFFEE}
+      exit mapped.Replace(OldValue, "") as not nullable;
+      {$ELSEIF TOFFEE}
+      exit mapped.stringByReplacingOccurrencesOfString(OldValue) withString("");
+      {$ENDIF}
+    end;
+
     method &Remove(aStartIndex: Int32; aLength: Int32): not nullable String; inline;
     begin
       {$IF COOPER}
