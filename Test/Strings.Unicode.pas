@@ -24,6 +24,11 @@ type
 
   public
 
+    method DummyTest;
+    begin
+      //raise new Exception;
+    end;
+
     method FirstTest;
     begin
 
@@ -113,6 +118,15 @@ type
       Check.AreEqual("Hello".ToUnicodeCodePoints().JoinedString(","), "72,101,108,108,111");
       Check.AreEqual("🤪🤪🤪".ToUnicodeCodePoints().JoinedString(","), "129322,129322,129322");
       Check.AreEqual("Hell🤪 There".ToUnicodeCodePoints().JoinedString(","), "72,101,108,108,129322,32,84,104,101,114,101");
+
+      Check.AreEqual("👨‍👨‍👧‍👧".ToUnicodeCodePointIndices().JoinedString(","), "0,2,3,5,6,8,9");
+      Check.AreEqual("👨‍👨‍👧‍👧".ToUnicodeCodePoints().JoinedString(","), "128104,8205,128104,8205,128103,8205,128103");
+      //Check.AreEqual("👨‍👨‍👧‍👧".ToUnicodeCharacterIndices().JoinedString(","), "0");
+      Check.AreEqual("👨‍👨‍👧‍👧".ToUnicodeCharacters().JoinedString(","), "👨‍👨‍👧‍👧");
+      Check.AreEqual("👨‍👨‍👧‍👧".ToHexString(),"D83DDC68200DD83DDC68200DD83DDC67200DD83DDC67");
+
+      Check.AreEqual("👩🏽‍🤝‍👩🏼".ToUnicodeCodePointIndices().JoinedString(","), "0,2,4,5,7,8,10");
+      Check.AreEqual("🏴‍☠️".ToUnicodeCodePointIndices().JoinedString(","), "0,2,3,4");
 
       Check.AreEqual("🤷🏼‍♀️".ToUnicodeCodePointIndices().JoinedString(","), "0,2,4,5,6");
       Check.AreEqual("🤷🏼‍♀️".ToUnicodeCodePoints().JoinedString(","), "129335,127996,8205,9792,65039");

@@ -51,6 +51,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="RemObjects.Elements.EUnit">
       <Private>True</Private>
+      <HintPath>..\..\_RemObjects\EUnit\bin\Debug\NET\RemObjects.Elements.EUnit.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
