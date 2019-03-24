@@ -10,19 +10,19 @@ type
 
     method UrlTypes;
     begin
-      var ftp := Url.UrlWithString("ftp://ftp.is.co.za/rfc/rfc1808.txt");
-      var gopher := Url.UrlWithString("gopher://spinaltap.micro.umn.edu/00/Weather/California/Los%20Angeles");
-      var http := Url.UrlWithString("http://www.math.uio.no/faq/compression-faq/part1.html");
+      //var ftp := Url.UrlWithString("ftp://ftp.is.co.za/rfc/rfc1808.txt");
+      //var gopher := Url.UrlWithString("gopher://spinaltap.micro.umn.edu/00/Weather/California/Los%20Angeles");
+      //var http := Url.UrlWithString("http://www.math.uio.no/faq/compression-faq/part1.html");
       //var mail := Url.UrlWithString("mailto:mduerst@ifi.unizh.ch");
       //var news := Url.UrlWithString("news:comp.infosystems.www.servers.unix");
-      var telnet := Url.UrlWithString("telnet://melvyl.ucop.edu/");
+      //var telnet := Url.UrlWithString("telnet://melvyl.ucop.edu/");
     end;
 
     method TestUrlWithString();
     begin
       var s := "http://foo:8986/bar/baz-1340456-786%2dabc/d";
       var u := Url.UrlWithString(s);
-      writeLn(u.ToAbsoluteString);
+      //writeLn(u.ToAbsoluteString);
       Check.AreEqual(s, u.ToAbsoluteString);
     end;
 
@@ -260,13 +260,13 @@ type
 
     method Dummy2();
     begin
-      var baseUrl := Url.UrlWithString("file:///Users/mh/Code/git/EUnit/");
-      var url2 := Url.UrlWithString("file:///Users/mh/Code/IslandRTL/Source/Bin/Debug/Linux/x86_64/Island.fx");
-      var url := Url.UrlWithUnixPath("/Users/mh/Code/IslandRTL/Source/Bin/Debug/Linux/x86_64/Island.fx");
-      writeLn(url2);
-      writeLn(url);
-      var path := url.FilePathRelativeToUrl(baseUrl) Threshold(3);
-      writeLn(path);
+      //var baseUrl := Url.UrlWithString("file:///Users/mh/Code/git/EUnit/");
+      //var url2 := Url.UrlWithString("file:///Users/mh/Code/IslandRTL/Source/Bin/Debug/Linux/x86_64/Island.fx");
+      //var url := Url.UrlWithUnixPath("/Users/mh/Code/IslandRTL/Source/Bin/Debug/Linux/x86_64/Island.fx");
+      //writeLn(url2);
+      //writeLn(url);
+      //var path := url.FilePathRelativeToUrl(baseUrl) Threshold(3);
+      //writeLn(path);
     end;
 
     method Dummy();
@@ -289,19 +289,19 @@ type
 
     method Escaping;
     begin
-      var base := Url.UrlWithFilePath("/foo");
-      var u := base.UrlWithRelativeOrAbsoluteWindowsSubPath("rofx-xcode\samples\website samples\oxygene\dasampleapp\masterviewcontroller.pas");
-      writeLn(u);
+      //var base := Url.UrlWithFilePath("/foo");
+      //var u := base.UrlWithRelativeOrAbsoluteWindowsSubPath("rofx-xcode\samples\website samples\oxygene\dasampleapp\masterviewcontroller.pas");
+      //writeLn(u);
 
-      var base2 := Url.UrlWithFilePath("/foo/rofx-xcode/");
-      var u2 := base2.UrlWithRelativeOrAbsoluteWindowsSubPath("samples\website samples\oxygene\dasampleapp\masterviewcontroller.pas");
-      writeLn(u2);
+      //var base2 := Url.UrlWithFilePath("/foo/rofx-xcode/");
+      //var u2 := base2.UrlWithRelativeOrAbsoluteWindowsSubPath("samples\website samples\oxygene\dasampleapp\masterviewcontroller.pas");
+      //writeLn(u2);
 
-      var base3 := Url.UrlWithString("file:///foo/rofx-xcode/foo.pas");
-      var u3 := base3.CanonicalVersion;
-      writeLn(u3);
+      //var base3 := Url.UrlWithString("file:///foo/rofx-xcode/foo.pas");
+      //var u3 := base3.CanonicalVersion;
+      //writeLn(u3);
 
-      //writeLn("x");
+      ////writeLn("x");
     end;
 
     method TestPathComponents();
