@@ -93,13 +93,34 @@ type
       Check.AreEqual("👁️‍🗨️ Eye".IsIndexInsideOfAJoinedUnicodeCharacter(6), true);
       Check.AreEqual("👁️‍🗨️ Eye".IsIndexInsideOfAJoinedUnicodeCharacter(7), false);
 
-      //writeLn("🇨🇼🇨🇼".ToUnicodeCodePointIndices().JoinedString(","));
-      //writeLn("🇨🇼🇨🇼".ToUnicodeCodePoints().JoinedString(","));
+      writeLn("🇨🇼🇨🇼".ToUnicodeCodePointIndices().JoinedString(","));
+      writeLn("🇨🇼🇨🇼".ToUnicodeCodePoints().JoinedString(","));
       Check.AreEqual("🇨🇼🇨🇼".IsIndexInsideOfAJoinedUnicodeCharacter(0), false);
       Check.AreEqual("🇨🇼🇨🇼".IsIndexInsideOfAJoinedUnicodeCharacter(2), true);
       Check.AreEqual("🇨🇼🇨🇼".IsIndexInsideOfAJoinedUnicodeCharacter(4), false);
       Check.AreEqual("🇨🇼🇨🇼".IsIndexInsideOfAJoinedUnicodeCharacter(6), true);
       Check.AreEqual("🇨🇼🇨🇼".IsIndexInsideOfAJoinedUnicodeCharacter(8), false);
+
+      Check.AreEqual("🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(0), 0);
+      Check.AreEqual("🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(2), 0);
+      Check.AreEqual("🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(4), 4);
+      Check.AreEqual("🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(6), 4);
+      Check.AreEqual("a🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(0), 0);
+      Check.AreEqual("a🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(1), 1);
+      Check.AreEqual("a🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(3), 1);
+      Check.AreEqual("a🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(5), 5);
+      Check.AreEqual("a🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(7), 5);
+      Check.AreEqual("a🇨🇼🇨🇼".StartIndexOfJoinedUnicodeCharacterAtIndex(9), 9);
+      //1F9B8 1F3FB 200D 2640 FE0F 79
+
+      var lCPs: array of UnicodeCodePoint := [UnicodeCodePoint(2640)];
+      //var x := new String(lCPs); // E400 No overloaded constructor with 1 parameter for type "String"
+      //Check.AreEqual(ord(x[0]), 2640);
+
+      Check.AreEqual("🇨🇼🇨🇼".IndexAfterJoinedUnicodeCharacterCoveringIndex(0), 0);
+      Check.AreEqual("🇨🇼🇨🇼".IndexAfterJoinedUnicodeCharacterCoveringIndex(2), 4);
+      Check.AreEqual("🇨🇼🇨🇼".IndexAfterJoinedUnicodeCharacterCoveringIndex(4), 4);
+      Check.AreEqual("🇨🇼🇨🇼".IndexAfterJoinedUnicodeCharacterCoveringIndex(6), 8);
 
       Check.AreEqual("你好".Length, 2);
       Check.AreEqual("你好".ToUnicodeCodePointIndices().JoinedString(","), "0,1");
@@ -113,7 +134,7 @@ type
       //Check.AreEqual("Hello".ToUnicodeCodePoints().JoinedHexString(","), "72,101,108,108,111");
       //Check.AreEqual("🤪🤪🤪".ToUnicodeCodePoints().JoinedHexString(","), "129322,129322,129322");
       //Check.AreEqual("Hell🤪 There".ToUnicodeCodePoints().JoinedHexString(","), "72,101,108,108,129322,32,84,104,101,114,101");
-      //Check.AreEqual("🤷🏼‍♀️".ToUnicodeCodePoints().JoinedHexString(","), "129335,127996,8205,9792,65039");
+      //Check.AreEqual("🤷🏼‍♀️🤷🏼‍♀️".ToUnicodeCodePoints().JoinedHexString(","), "129335,127996,8205,9792,65039");
 
       Check.AreEqual("Hello".ToUnicodeCodePoints().JoinedString(","), "72,101,108,108,111");
       Check.AreEqual("🤪🤪🤪".ToUnicodeCodePoints().JoinedString(","), "129322,129322,129322");

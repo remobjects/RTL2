@@ -37,6 +37,8 @@ type
     class property UTF8: not nullable Encoding read GetEncoding("UTF-8") as not nullable;
     class property UTF16LE: not nullable Encoding read GetEncoding("UTF-16LE") as not nullable;
     class property UTF16BE: not nullable Encoding read GetEncoding("UTF-16BE") as not nullable;
+    class property UTF32LE: not nullable Encoding read GetEncoding("UTF-32LE") as not nullable;
+    class property UTF32BE: not nullable Encoding read GetEncoding("UTF-32BE") as not nullable;
 
     class property &Default: not nullable Encoding read UTF8;
 
