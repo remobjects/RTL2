@@ -17,31 +17,44 @@ type
       {$ENDIF}
     end;
 
-    method ToLowerInvariant: Char;
-    begin
-      {$IF COOPER}
-      result := Character.toLowerCase(self);
-      {$ELSEIF TOFFEE}
-      result := chr(rtl.toLower(ord(self)));
-      {$ELSEIF ECHOES}
-      result := Char.ToLowerInvariant(self);
-      {$ELSEIF ISLAND}
-      result := self.ToLower();
-      {$ENDIF}
-    end;
+    //method ToLowerInvariant: Char;
+    //begin
+      //{$IF COOPER}
+      //result := Character.toLowerCase(self);
+      //{$ELSEIF TOFFEE}
+      //result := chr(rtl.toLower(ord(self)));
+      //{$ELSEIF ECHOES}
+      //result := Char.ToLowerInvariant(self);
+      //{$ELSEIF ISLAND}
+      //result := self.ToLower();
+      //{$ENDIF}
+    //end;
 
     method ToUpperChar: Char; assembly;
     begin
       {$IF COOPER}
       result := Character.toUpperCase(self);
       {$ELSEIF TOFFEE}
-      result := chr(toupper(ord(self)));
+      result := chr(rtl.toupper(ord(self)));
       {$ELSEIF ECHOES}
       result := Char.ToUpper(self);
       {$ELSEIF ISLAND}
       result := self.ToUpper();
       {$ENDIF}
     end;
+
+    //method ToUpperCharInvariant: Char; assembly;
+    //begin
+      //{$IF COOPER}
+      //result := Character.toUpperCase(self);
+      //{$ELSEIF TOFFEE}
+      //result := chr(rtl.toupper(ord(self)));
+      //{$ELSEIF ECHOES}
+      //result := Char.ToUpper(self);
+      //{$ELSEIF ISLAND}
+      //result := self.ToUpper();
+      //{$ENDIF}
+    //end;
 
     //
     //
