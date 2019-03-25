@@ -9,7 +9,7 @@ uses
 extension method ImmutableList<UnicodeCodePoint>.JoinedHexString(aSeparator: String): RemObjects.Elements.RTL.String;
 
 type
-  String = public class(Test)
+  String_Unicode = public class(Test)
   protected
 
     method JoinedHexString(aList: ImmutableList<UnicodeCodePoint>): RemObjects.Elements.RTL.String;
