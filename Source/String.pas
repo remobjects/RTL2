@@ -71,7 +71,7 @@ type
         chars[i] := aChar;
       result := new PlatformString(chars);
       {$ELSEIF TOFFEE}
-      result := PlatformString("").stringByPaddingToLength(aCount) withString(PlatformString.stringWithFormat("%c", aChar)) startingAtIndex(0);
+      result := PlatformString("").stringByPaddingToLength(aCount) withString(PlatformString.stringWithFormat("%C", aChar)) startingAtIndex(0);
       {$ELSEIF ECHOES}
       result := new PlatformString(aChar, aCount);
       {$ELSEIF ISLAND}
@@ -109,7 +109,7 @@ type
       {$ELSEIF TOFFEE}
       if Value = #0 then
         exit NSString.stringWithFormat(#0) as not nullable;
-      exit NSString.stringWithFormat("%c", Value) as not nullable;
+      exit NSString.stringWithFormat("%C", Value) as not nullable;
       {$ELSEIF ECHOES}
       exit new PlatformString(Value, 1);
       {$ELSEIF ISLAND}
@@ -420,7 +420,7 @@ type
       {$IF NOT TOFFEE}
       result := mapped.IndexOf(Value, StartIndex);
       {$ELSEIF TOFFEE}
-      result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
+      result := IndexOf(NSString.stringWithFormat("%C", Value), StartIndex);
       {$ENDIF}
     end;
 
@@ -445,7 +445,7 @@ type
       {$IF COOPER}
       result := self.ToLower().IndexOf(Character.toLowerCase(Value), StartIndex);
       {$ELSEIF TOFFEE}
-      result := IndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
+      result := IndexOf(NSString.stringWithFormat("%C", Value), StartIndex);
       {$ELSEIF ECHOES}
       result := mapped.IndexOf(Value, StartIndex, StringComparison.OrdinalIgnoreCase);
       {$ELSEIF ISLAND}
@@ -503,7 +503,7 @@ type
       {$IF NOT TOFFEE}
       result := mapped.LastIndexOf(Value);
       {$ELSEIF TOFFEE}
-      result := LastIndexOf(NSString.stringWithFormat("%c", Value));
+      result := LastIndexOf(NSString.stringWithFormat("%C", Value));
       {$ENDIF}
     end;
 
@@ -528,7 +528,7 @@ type
       {$IF COOPER OR ECHOES}
       result := mapped.LastIndexOf(Value, StartIndex);
       {$ELSEIF TOFFEE}
-      result := LastIndexOf(NSString.stringWithFormat("%c", Value), StartIndex);
+      result := LastIndexOf(NSString.stringWithFormat("%C", Value), StartIndex);
       {$ELSEIF ISLAND}
       result := mapped.LastIndexOf(String(Value), StartIndex);
       {$ENDIF}
@@ -769,7 +769,7 @@ type
       {$ELSEIF TOFFEE}
       var lTotal: Integer := TotalWidth - mapped.length;
       if lTotal > 0 then begin
-        var lChars := NSString.stringWithFormat("%c", PaddingChar);
+        var lChars := NSString.stringWithFormat("%C", PaddingChar);
         lChars := lChars.stringByPaddingToLength(lTotal) withString(PaddingChar) startingAtIndex(0);
         exit lChars + self;
       end;
