@@ -388,6 +388,7 @@ method DateTimeHelpers.GetComponent(aSelf: NSDate; Component: NSCalendarUnit): I
 begin
   var lComponents := NSCalendar.currentCalendar().components(Component) fromDate(aSelf);
   case Component of
+    NSCalendarUnit.NSWeekdayCalendarUnit: result := lComponents.weekday;
     NSCalendarUnit.NSDayCalendarUnit: result := lComponents.day;
     NSCalendarUnit.NSHourCalendarUnit: result := lComponents.hour;
     NSCalendarUnit.NSMinuteCalendarUnit: result := lComponents.minute;
