@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-    <ProjectGuid>28817723-bb33-4c5f-8705-a7b3dff15174</ProjectGuid>
+    <ProjectGuid>{7BE9FACF-063C-4230-A4DA-D9F9D08CFCF8}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
