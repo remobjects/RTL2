@@ -13,7 +13,7 @@ type
   PlatformMonitor = public RemObjects.Elements.System.Monitor;
   {$ENDIF};
 
-  Monitor = public class({$IF ISLAND}RemObjects.Elements.System.IMonitor{$ENDIF}) mapped to PlatformMonitor
+  Monitor = public class({$IF ISLAND AND NOT TOFFEE}RemObjects.Elements.System.IMonitor{$ENDIF}) mapped to PlatformMonitor
   public
     constructor;
     method Lock;
