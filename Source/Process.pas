@@ -399,9 +399,11 @@ class method Process.JoinAndQuoteArgumentsForCommandLine(aArguments: not nullabl
 begin
   result := "";
   for each a in aArguments do begin
-    if length(result) > 0 then
-      result := result+" ";
-    result := result+QuoteArgumentIfNeeded(a);
+    if length(a) > 0 then begin
+      if length(result) > 0 then
+        result := result+" ";
+      result := result+QuoteArgumentIfNeeded(a);
+    end;
   end;
 end;
 
