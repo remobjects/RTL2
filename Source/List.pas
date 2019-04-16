@@ -19,6 +19,7 @@ type
   public
     constructor; mapped to constructor();
     constructor(Items: ImmutableList<T>);
+    constructor(Items: sequence of T);
     constructor(params anArray: array of T);
 
     method Contains(aItem: T): Boolean; inline;
@@ -83,6 +84,7 @@ type
 
     constructor; mapped to constructor();
     constructor(Items: ImmutableList<T>);
+    constructor(Items: sequence of T);
     constructor(params anArray: array of T);
     constructor withCapacity(aCapacity: Integer);
     constructor withRepeatedValue(aValue: T; aCount: Integer);
@@ -177,6 +179,11 @@ begin
   {$ENDIF}
 end;
 
+constructor ImmutableList<T>(Items: sequence of T);
+begin
+  result := coalesce(Items:ToList, new ImmutableList<T>);
+end;
+
 constructor ImmutableList<T>(params anArray: array of T);
 begin
   {$IF COOPER}
@@ -201,6 +208,11 @@ begin
   {$ELSEIF ISLAND}
   result := new RemObjects.Elements.System.List<T>(Items);
   {$ENDIF}
+end;
+
+constructor List<T>(Items: sequence of T);
+begin
+  result := coalesce(Items:ToList, new List<T>);
 end;
 
 constructor List<T>(params anArray: array of T);
