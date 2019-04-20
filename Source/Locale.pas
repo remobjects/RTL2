@@ -141,9 +141,15 @@ begin
   end;
   fDateTimeFormat.DateSeparator := '/';
 
-  var lCurrency := java.util.Currency.getInstance(aLocaleID);
-  fNumberFormat.Currency := lCurrency.getSymbol;
-  //fNumberFormat.CurrencyDecimals := lCurrency.DefaultFractionDigits;
+  if (aLocaleID ≠ java.util.Locale.ROOT) then begin
+    var lCurrency := java.util.Currency.getInstance(aLocaleID);
+    fNumberFormat.Currency := lCurrency.getSymbol;
+    //fNumberFormat.CurrencyDecimals := lCurrency.DefaultFractionDigits;
+  end
+  else begin
+    fNumberFormat.Currency := "¤";
+    //fNumberFormat.CurrencyDecimals := 2;
+  end;
   var lSymbols := new java.text.DecimalFormat().getDecimalFormatSymbols;
   fNumberFormat.DecimalSeparator := lSymbols.getDecimalSeparator;
   fNumberFormat.ThousandsSeparator := lSymbols.getGroupingSeparator;
