@@ -1,8 +1,8 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES OR MACOS OR WINDOWS} // OR LINUX
-
 interface
+
+{$IF ECHOES OR MACOS OR WINDOWS} // OR LINUX
 
 type
   {$IF JAVA}
@@ -15,20 +15,14 @@ type
   PlatformProcess = public RemObjects.Elements.System.Process;
   {$ENDIF}
 
-  Process = public class {$IF ECHOES OR COCOA OR ISLAND}mapped to PlatformProcess{$ENDIF}
+  Process = public partial class {$IF ECHOES OR COCOA OR ISLAND}mapped to PlatformProcess{$ENDIF}
   private
-    class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
     class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
     {$IF TOFFEE}
     class method processStdOutData(rawString: String) lastIncompleteLogLine(out lastIncompleteLogLine: String) callback(callback: block(aLine: String));
     {$ENDIF}
   protected
   public
-
-    class method JoinAndQuoteArgumentsForCommandLine(aArguments: not nullable ImmutableList<String>): not nullable String;
-    class method SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
-
-    class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable ImmutableList<String>): not nullable String;
 
     method WaitFor; inline;
     method Start; inline;
@@ -54,7 +48,22 @@ type
 
   end;
 
+{$ENDIF}
+
+type
+  Process = public partial class
+  private
+    class method QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
+
+  public
+    class method JoinAndQuoteArgumentsForCommandLine(aArguments: not nullable ImmutableList<String>): not nullable String;
+    class method SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
+    class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable ImmutableList<String>): not nullable String;
+  end;
+
 implementation
+
+{$IF ECHOES OR MACOS OR WINDOWS} // OR LINUX
 
 method Process.WaitFor;
 begin
@@ -355,6 +364,8 @@ begin
   {$ENDIF}
 end;
 
+{$ENDIF}
+
 class method Process.QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
 begin
   result := aArgument;
@@ -415,7 +426,5 @@ begin
     aCommand := aCommand+" "+JoinAndQuoteArgumentsForCommandLine(aArguments);
   result := aCommand;
 end;
-
-{$ENDIF}
 
 end.
