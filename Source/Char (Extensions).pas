@@ -110,6 +110,47 @@ type
       {$ENDIF}
     end;
 
+    property IsUpper: Boolean read
+    begin
+      {$IF COOPER}
+      result := java.lang.Character.isUpperCase(self);
+      {$ELSEIF TOFFEE}
+      result := Foundation.NSCharacterSet.uppercaseLetterCharacterSet.characterIsMember(self);
+      {$ELSEIF ECHOES}
+      result := Char.IsUpper(self);
+      {$ELSEIF ISLAND}
+      {$WARNING Not Implemeted for Island}
+      raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+      {$ENDIF}
+    end;
+
+    property IsLower: Boolean read
+    begin
+      {$IF COOPER}
+      result := java.lang.Character.isLowerCase(self);
+      {$ELSEIF TOFFEE}
+      result := Foundation.NSCharacterSet.lowercaseLetterCharacterSet.characterIsMember(self);
+      {$ELSEIF ECHOES}
+      result := Char.IsLower(self);
+      {$ELSEIF ISLAND}
+      {$WARNING Not Implemeted for Island}
+      raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+      {$ENDIF}
+    end;
+
+    property IsDigit: Boolean read
+    begin
+      {$IF COOPER}
+      result := java.lang.Character.isDigit(self);
+      {$ELSEIF TOFFEE}
+      result := Foundation.NSCharacterSet.decimalDigitCharacterSet.characterIsMember(self);
+      {$ELSEIF ECHOES}
+      result := Char.IsDigit(self);
+      {$ELSEIF ISLAND}
+      result := Char.IsNumber(self)
+      {$ENDIF}
+    end;
+
   end;
 
   CharArrayExtensions = public extension record(array of Char)
