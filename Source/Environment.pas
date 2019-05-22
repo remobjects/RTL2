@@ -18,7 +18,8 @@ type
     method GetOSVersion: String;
     method GetOSBitness: Int32;
     method GetProcessBitness: Int32;
-    method GetEnvironmentVariable(Name: String): String;
+    method GetEnvironmentVariable(aName: String): String;
+    method SetEnvironmentVariable(aName: String; aValue: String);
     method GetCurrentDirectory: String;
 
     method GetIsMono: Boolean;
@@ -64,7 +65,11 @@ type
 
     property IsMono: Boolean read GetIsMono;
 
-    property EnvironmentVariable[Name: String]: String read GetEnvironmentVariable;
+    {$IF COOPER}
+    property EnvironmentVariable[aName: String]: String read GetEnvironmentVariable;
+    {$ELSE}
+    property EnvironmentVariable[aName: String]: String read GetEnvironmentVariable write SetEnvironmentVariable;
+    {$ENDIF}
     property CurrentDirectory: String read GetCurrentDirectory;
   end;
 
@@ -87,16 +92,29 @@ type
 
 implementation
 
-method Environment.GetEnvironmentVariable(Name: String): String;
+method Environment.GetEnvironmentVariable(aName: String): String;
 begin
   {$IF COOPER}
-  exit System.getenv(Name);
+  exit System.getenv(aName);
   {$ELSEIF TOFFEE}
-  exit String(Foundation.NSProcessInfo.processInfo:environment:objectForKey(Name));
+  exit String(Foundation.NSProcessInfo.processInfo:environment[aName]);
   {$ELSEIF ECHOES}
-  exit System.Environment.GetEnvironmentVariable(Name);
+  exit System.Environment.GetEnvironmentVariable(aName);
   {$ELSEIF ISLAND}
-  exit RemObjects.Elements.System.Environment.GetEnvironmentVariable(Name);
+  exit RemObjects.Elements.System.Environment.GetEnvironmentVariable(aName);
+  {$ENDIF}
+end;
+
+method Environment.SetEnvironmentVariable(aName: String; aValue: String);
+begin
+  {$IF COOPER}
+  raise new NotImplementedException("Setting ebvironment variables is not supported on Java.")
+  {$ELSEIF TOFFEE}
+  setenv(NSString(aName).UTF8String, NSString(aValue):UTF8String, 1);
+  {$ELSEIF ECHOES}
+  System.Environment.SetEnvironmentVariable(aName, aValue);
+  {$ELSEIF ISLAND}
+  RemObjects.Elements.System.Environment.SetEnvironmentVariable(aName, aValue);
   {$ENDIF}
 end;
 
