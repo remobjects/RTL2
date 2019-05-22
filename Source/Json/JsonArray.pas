@@ -57,6 +57,27 @@ type
     begin
       result := new JsonArray(aValue);
     end;
+
+    operator Implicit(aValue: ImmutableList<JsonNode>): JsonArray;
+    begin
+      result := new JsonArray(aValue.ToArray);
+    end;
+
+    operator Implicit(aValue: array of JsonNode): JsonArray;
+    begin
+      result := new JsonArray(aValue);
+    end;
+
+    operator Implicit(aValue: JsonArray): ImmutableList<JsonNode>;
+    begin
+      result := aValue.ToList();
+    end;
+
+    operator Implicit(aValue: JsonArray): array of JsonNode;
+    begin
+      result := aValue.fItems.ToArray();
+    end;
+
   end;
 
 implementation
