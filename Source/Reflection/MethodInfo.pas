@@ -97,6 +97,7 @@ begin
   for each a in aArgs index i do
     lInvokation.setArgument(@a) atIndex(i+2);
   lInvokation.invoke();
+  lInvokation.getReturnValue(@result);
 end;
 {$ENDIF}
 
