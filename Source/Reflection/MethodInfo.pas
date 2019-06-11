@@ -91,7 +91,12 @@ end;
 
 method &Method.Invoke(aInstance: Object; aArgs: array of Object): Object;
 begin
-  result := rtl.objc_msgSend(aInstance, Selector, [aArgs]);
+  var lInvokation := NSInvocation.invocationWithMethodSignature(aInstance.methodSignatureForSelector(Selector));
+  lInvokation.setSelector(Selector);
+  lInvokation.setTarget(aInstance);
+  for each a in aArgs index i do
+    lInvokation.setArgument(@a) atIndex(i+2);
+  lInvokation.invoke();
 end;
 {$ENDIF}
 
