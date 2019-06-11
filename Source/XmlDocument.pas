@@ -1657,8 +1657,7 @@ begin
   if not(aFormatInsideTags) and (innerWSright <> nil) then Sb.Append(innerWSright);
   Sb.Append(QuoteChar);
   if (originalRawValue <> nil) and (aPreserveExactStringsForUnchnagedValues) then Sb.Append(originalRawValue)
-  //else Sb.Append(ConvertEntity(Value, QuoteChar));
-  else Sb.Append(Value);
+  else Sb.Append(ConvertEntity(Value, QuoteChar));
   Sb.Append(QuoteChar);
   result := Sb.ToString();
 end;
