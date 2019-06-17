@@ -854,10 +854,13 @@ method XmlNode.ConvertEntity(S: String; C: nullable Char): String;
 begin
   if S = nil then exit nil;
   result := S.Replace('&',"&amp;");
-  result := result.Replace('>',"&gt;");
-  result := result.Replace('<',"&lt;");
   if (C = '''') then result := result.Replace('''',"&apos");
   if (C = '"') then result := result.Replace('"',"&quot;");
+  if not(self is XmlAttribute) then begin
+    result := result.Replace('>',"&gt;");
+    result := result.Replace('<',"&lt;");
+  end;
+
 end;
 
 { XmlElement }

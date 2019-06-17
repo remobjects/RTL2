@@ -6,7 +6,7 @@ type
     constructor(aMessage: String; aRow: Integer; aColumn: Integer);
     begin
       {$IF TOFFEE}
-      inherited constructor withName('SugarException') reason(aMessage) userInfo(nil);
+      inherited constructor withName('SugarException') reason(aMessage+" at "+aRow+"/"+aColumn) userInfo(nil);
       {$ELSE}
       inherited constructor(aMessage+" at "+aRow+"/"+aColumn);
       {$ENDIF}
