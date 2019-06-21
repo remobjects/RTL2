@@ -1148,7 +1148,7 @@ end;
 
 method XmlElement.SetLocalName(aValue: not nullable String);
 begin
-  if not CheckName(aValue) and (aValue <> "[ERROR]") then
+  if (not CheckName(aValue) and not(aValue.Contains("[ERROR]"))) then
     raise new Exception('"{0}" is not valid Xmlelement name', aValue);
   fLocalName := aValue;
   EndTagName := nil;
