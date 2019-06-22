@@ -58,6 +58,7 @@
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>iOS</SDK>
+    <SupportUIKitForMac>True</SupportUIKitForMac>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.tvOS' ">
     <Mode>Island</Mode>
@@ -76,6 +77,7 @@
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.iOS' ">
     <Mode>Toffee</Mode>
     <SDK>iOS</SDK>
+    <SupportUIKitForMac>True</SupportUIKitForMac>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.macOS' ">

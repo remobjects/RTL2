@@ -19,6 +19,7 @@
     <CrossPlatform>True</CrossPlatform>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
+    <SupportUIKitForMac>True</SupportUIKitForMac>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
