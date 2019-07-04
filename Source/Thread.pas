@@ -64,14 +64,14 @@ type
 
     {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
     {$IF ECHOES}[Warning("Not Implemented for Echoes")]{$ENDIF}
-    property CallStack: List<String> read
+    property CallStack: ImmutableList<String> read
     begin
       {$IF COOPER}
       result := mapped.getStackTrace().Select(a -> a.toString()).ToList() as not nullable;
       {$ELSEIF TOFFEE}
       result := mapped.callStackSymbols as List<String>;
       {$ELSEIF ECHOES}
-      result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
+      result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Echoes yet}
       {$ELSEIF ISLAND}
       result := new ImmutableList<String>("Call stack not available."); {$WARNING Not implemented/supported for Island yet}
       {$ENDIF}

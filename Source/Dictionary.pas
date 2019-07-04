@@ -3,7 +3,7 @@
 interface
 
 type
-  PlatformImmutableDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ENDIF};
+  PlatformImmutableDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.ImmutableDictionary<T,U>{$ENDIF};
   PlatformDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ENDIF};
 
   ImmutableDictionary<T, U> = public class (PlatformSequence<KeyValuePair<T,U>>) mapped to PlatformImmutableDictionary<T,U> {$IF TOFFEE} where T is class, U is class; {$ENDIF}
@@ -242,13 +242,12 @@ end;
 
 method ImmutableDictionary<T,U>.MutableVersion: not nullable Dictionary<T,U>;
 begin
-  {$IF NOT TOFFEE}
-  result := self;
+  {$IF TOFFEE}
+  result := coalesce(NSMutableDictionary<T,U>(self), mapped.mutableCopy) as not nullable;
+  {$ELSEIF ISLAND}
+  result := coalesce(Dictionary<T,U>(self), new PlatformDictionary<T,U>(self)) as not nullable;
   {$ELSE}
-  if self is NSMutableDictionary then
-    result := self as NSMutableDictionary<T,U>
-  else
-    result := mapped.mutableCopy as not nullable;
+  result := self;
   {$ENDIF}
 end;
 
@@ -276,7 +275,7 @@ type
         yield new KeyValuePair<T,U>(el, aSelf[el]);
     end;
     {$ELSEIF ISLAND}
-    method GetSequence<T, U>(aSelf: RemObjects.Elements.System.Dictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
+    method GetSequence<T, U>(aSelf: RemObjects.Elements.System.ImmutableDictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
     begin
       for each el in aSelf.Keys do
         yield new KeyValuePair<T,U>(el, aSelf[el]);

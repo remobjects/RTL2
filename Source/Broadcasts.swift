@@ -220,7 +220,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 			#else
 			var subs: SubscriptionList?
 			lockRead() {
-				subs = subscriptions[broadcast]?.UniqueCopy()
+				subs = subscriptions[broadcast]?.UniqueMutableCopy()
 			}
 			for s in subs {
 				if s.object == nil || s.object == object {

@@ -3,7 +3,7 @@
 interface
 
 type
-  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ENDIF};
+  PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.ImmutableList<T>{$ENDIF};
   PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ENDIF};
   {$IFDEF TOFFEE and ISLAND}
   PlatformSequence<T> = public Foundation.INSFastEnumeration;
@@ -667,13 +667,12 @@ end;
 
 method ImmutableList<T>.MutableVersion: not nullable List<T>;
 begin
-  {$IF NOT TOFFEE}
-  result := self;
+  {$IF TOFFEE}
+  result := coalesce(NSMutableArray<T>(self), mapped.mutableCopy) as not nullable;
+  {$ELSEIF ISLAND}
+  result := coalesce(List<T>(self), new List<T>(self)) as not nullable;
   {$ELSE}
-  if self is NSMutableArray then
-    result := self as NSMutableArray<T>
-  else
-    result := mapped.mutableCopy as not nullable;
+  result := self;
   {$ENDIF}
 end;
 
