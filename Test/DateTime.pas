@@ -36,7 +36,7 @@ type
     begin
       var lDateTime := DateTime.TryParse('12/04/2019', Locale.Invariant);
       Check.IsNotNil(lDateTime);
-      Check.AreEqual(lDateTime.Month, 12);
+      Assert.AreEqual(lDateTime.Month, 12);
       Check.AreEqual(lDateTime.Day, 4);
       Check.AreEqual(lDateTime.Year, 2019);
 
