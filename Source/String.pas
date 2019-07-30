@@ -1117,6 +1117,82 @@ type
       //result := aString.GetSequence;
     //end;
 
+    //83028: Cocoa: BAD_ACCESS in FuzzyMatch
+    //method FuzzyMatches(aHaystack: String): Boolean; public;
+    //begin
+      //var lSelfLength := self.Length;
+      //var lHaystackLength: Integer := aHaystack:Length;
+      //if lSelfLength > lHaystackLength then exit false;
+      //if lSelfLength = lHaystackLength then exit self.EqualsIgnoringCaseInvariant(aHaystack);
+      //var lStart: Integer := 0;
+      //Outer: for lOuter: Integer := 0 to lSelfLength -1 do begin
+        //var lNeedleChar := self[lOuter];
+        //if lNeedleChar in ['A'..'Z'] then lNeedleChar := Char(ord(lNeedleChar) - ord('A') + ord('a'));
+        //for lInner: Integer := lStart to lHaystackLength -1 do begin
+          //var lHaystackChar := aHaystack[lInner];
+          //if lHaystackChar in ['A'..'Z'] then lHaystackChar := Char(ord(lHaystackChar) - ord('A') + ord('a'));
+          //if lHaystackChar = lNeedleChar then  begin
+            //lStart := lInner + 1;
+            //continue Outer;
+          //end;
+        //end;
+        //exit false;
+      //end;
+      //exit true;
+    //end;
+
+    method FuzzyMatches(aHaystack: not nullable String): Boolean; public;
+    begin
+      var lSelfLength := self.Length;
+      var lHaystackLength: Integer := aHaystack:Length;
+      if lSelfLength > lHaystackLength then exit false;
+      if lSelfLength = lHaystackLength then exit self.EqualsIgnoringCaseInvariant(aHaystack);
+      var lStart: Integer := 0;
+      Outer: for lOuter: Integer := 0 to lSelfLength-1 do begin
+        var lFound := false;
+        var lNeedleChar := self[lOuter];
+        if lNeedleChar in ['A'..'Z'] then lNeedleChar := Char(ord(lNeedleChar) - ord('A') + ord('a'));
+        for lInner: Integer := lStart to lHaystackLength-1 do begin
+          var lHaystackChar := aHaystack[lInner];
+          if lHaystackChar in ['A'..'Z'] then lHaystackChar := Char(ord(lHaystackChar) - ord('A') + ord('a'));
+          if lHaystackChar = lNeedleChar then  begin
+            lStart := lInner + 1;
+            lFound := true;
+            break;
+          end;
+        end;
+        if not lFound then
+          exit false;
+      end;
+      exit true;
+    end;
+
+    method LevenshteinDistanceTo(aOther: not nullable String): Integer;
+    begin
+      var n: Integer := self.Length;
+      var m: Integer := aOther.Length;
+      var d := new Integer[n + 1, m + 1];
+      if n = 0 then begin
+        exit m;
+      end;
+      if m = 0 then begin
+        exit n;
+      end;
+      for i: Integer := 0 to n do
+        d[i, 0] := i;
+      for j: Integer := 0 to m do
+        d[0, j] := j;
+      for j: Integer := 1 to m do
+        for i: Integer := 1 to n do
+          if self[i - 1] = aOther[j - 1] then begin
+            d[i, j] := d[i - 1, j - 1];
+          end
+          else begin
+            d[i, j] := Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + 1);
+          end;
+      exit d[n, m];
+    end;
+
     const
       // from https://msdn.microsoft.com/en-us/library/system.Char.iswhitespace%28v=vs.110%29.aspx
       WhiteSpaceCharacters: array of Char =
