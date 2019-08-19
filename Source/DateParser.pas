@@ -9,9 +9,9 @@ type
   DateParser = public class
   private
     class method GetNextStringToken(var aFormat: String): String;
-    class method GetNextNumberToken(var aFormat: String): String;
-    class method GetNextNumberToken(var aFormat: String; var aNumber: Integer): Boolean;
-    class method GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer): Boolean;
+    class method GetNextNumberToken(var aFormat: String; aMaxLength: Integer): String;
+    class method GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMaxLength: Integer): Boolean;
+    class method GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer; aMaxLength: Integer): Boolean;
     class method GetNextSepOrStringToken(var aFormat: String): String;
     class method SkipToNextToken(var aFormat: String; var aDateTime: String): Boolean;
     class method StandardToInternalPattern(aFormat: String; aLocale: Locale; var output: String): Boolean;
@@ -49,7 +49,8 @@ begin
 
   var lIndex := 0;
   var lChar := NormalizeChar(aFormat[lIndex]);
-  while (lIndex < aFormat.Length) and (((lChar >= chr('a')) and (lChar <= chr('z'))) or ((lChar >= chr('A')) and (lChar <= chr('Z')))) do begin
+  var lFirstChar := lChar;
+  while (lIndex < aFormat.Length) and (((lChar >= chr('a')) and (lChar <= chr('z'))) or ((lChar >= chr('A')) and (lChar <= chr('Z')))) and (lFirstChar = lChar) do begin
     inc(lIndex);
     if lIndex < aFormat.Length then
       lChar := NormalizeChar(aFormat[lIndex]);
@@ -61,13 +62,13 @@ begin
     aFormat := '';
 end;
 
-class method DateParser.GetNextNumberToken(var aFormat: String): String;
+class method DateParser.GetNextNumberToken(var aFormat: String; aMaxLength: Integer): String;
 begin
   if aFormat.Length = 0 then exit '';
 
   var lIndex := 0;
   var lChar := aFormat[lIndex];
-  while (lIndex < aFormat.Length) and (((lChar >= chr('0')) and (lChar <= chr('9')))) do begin
+  while (lIndex < aFormat.Length) and (((lChar >= chr('0')) and (lChar <= chr('9')))) and (lIndex < aMaxLength) do begin
     inc(lIndex);
     if lIndex < aFormat.Length then
       lChar := aFormat[lIndex];
@@ -79,18 +80,18 @@ begin
     aFormat := '';
 end;
 
-class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Integer): Boolean;
+class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMaxLength: Integer): Boolean;
 begin
-  var lToken := GetNextNumberToken(var aFormat);
+  var lToken := GetNextNumberToken(var aFormat, aMaxLength);
   var lNumber := Convert.TryToInt32(lToken);
   result := assigned(lNumber);
   if result then
     aNumber := lNumber;
 end;
 
-class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer): Boolean;
+class method DateParser.GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer; aMaxLength: Integer): Boolean;
 begin
-  result := GetNextNumberToken(var aFormat, var aNumber) and (aNumber >= aMin) and (aNumber <= aMax);
+  result := GetNextNumberToken(var aFormat, var aNumber, aMaxLength) and (aNumber >= aMin) and (aNumber <= aMax);
 end;
 
 class method DateParser.GetNextSepOrStringToken(var aFormat: String): String;
@@ -196,12 +197,12 @@ begin
   while lToken.Length > 0 do begin
     case lToken of
       'd': begin // day 1 --> 31
-        if not GetNextNumberToken(var lDateTime, var lDay, 1, 31) then
+        if not GetNextNumberToken(var lDateTime, var lDay, 1, 31, 2) then
           exit false;
       end;
 
       'dd': begin // day 01 --> 31
-        if not GetNextNumberToken(var lDateTime, var lDay, 1, 31) then
+        if not GetNextNumberToken(var lDateTime, var lDay, 1, 31, 2) then
           exit false;
       end;
 
@@ -218,12 +219,12 @@ begin
       end;
 
       'M': begin // month 1 --> 12
-        if not GetNextNumberToken(var lDateTime, var lMonth, 1, 12) then
+        if not GetNextNumberToken(var lDateTime, var lMonth, 1, 12, 2) then
           exit false;
       end;
 
       'MM': begin // month 01 --> 12
-        if not GetNextNumberToken(var lDateTime, var lMonth, 1, 12) then
+        if not GetNextNumberToken(var lDateTime, var lMonth, 1, 12, 2) then
           exit false;
       end;
 
@@ -240,68 +241,68 @@ begin
       end;
 
       'y': begin // year, 0 --> 99
-        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then
+        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue, 2) then
           exit false;
       end;
 
       'yy': begin // year, 00 --> 99
-        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then
+        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue, 2) then
           exit false;
       end;
 
       'yyy': begin // year, 001 --> 900 , 1900 --> 2018, minimum three digits
-        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then
+        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue, 4) then
           exit false;
       end;
 
       'yyyy': begin // year, 0001 --> 2018 , four digits
-        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then
+        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue, 4) then
           exit false;
       end;
 
       'yyyyy': begin // year, 00001 --> 02018, five digits
-        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue) then
+        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue, 5) then
           exit false;
       end;
 
       'h': begin // hour, 1 --> 12
-        if not GetNextNumberToken(var lDateTime, var lHour, 1, 12) then
+        if not GetNextNumberToken(var lDateTime, var lHour, 1, 12, 2) then
           exit false;
       end;
 
       'hh': begin // hour, 01 --> 12
-        if not GetNextNumberToken(var lDateTime, var lHour, 1, 12) then
+        if not GetNextNumberToken(var lDateTime, var lHour, 1, 12, 2) then
           exit false;
       end;
 
       'H': begin // hour, 0 --> 23
-        if not GetNextNumberToken(var lDateTime, var lHour, 0, 23) then
+        if not GetNextNumberToken(var lDateTime, var lHour, 0, 23, 2) then
           exit false;
       end;
 
       'HH': begin // hour, 00 --> 23
-        if not GetNextNumberToken(var lDateTime, var lHour, 0, 23) then
+        if not GetNextNumberToken(var lDateTime, var lHour, 0, 23, 2) then
           exit false;
       end;
 
       'm': begin // minutes, 0 --> 59
-        if not GetNextNumberToken(var lDateTime, var lMin, 0, 59) then
+        if not GetNextNumberToken(var lDateTime, var lMin, 0, 59, 2) then
           exit false;
       end;
 
       'mm': begin // minutes, 00 --> 59
-        if not GetNextNumberToken(var lDateTime, var lMin, 0, 59) then
+        if not GetNextNumberToken(var lDateTime, var lMin, 0, 59, 2) then
           exit false;
       end;
 
       's': begin // seconds, 0 --> 59
-        if not GetNextNumberToken(var lDateTime, var lSec, 0, 59) then
+        if not GetNextNumberToken(var lDateTime, var lSec, 0, 59, 2) then
           exit false;
         lWithSeconds := true;
       end;
 
       'ss': begin // seconds, 00 --> 59
-        if not GetNextNumberToken(var lDateTime, var lSec, 0, 59) then
+        if not GetNextNumberToken(var lDateTime, var lSec, 0, 59, 2) then
           exit false;
         lWithSeconds := true;
       end;
@@ -317,17 +318,17 @@ begin
       'z', 'zz': begin // timezone, with no '0', -2
         lTmp := GetNextSepOrStringToken(var lDateTime);
         if (lTmp <> '+') and (lTmp <> '-') then exit false;
-        if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23) then exit false;
+        if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then exit false;
         if lTmp = '-' then lOffset := -lOffset;
       end;
 
       'zzz': begin // timezone, with minutes, -02:00
         lTmp := GetNextSepOrStringToken(var lDateTime);
         if (lTmp <> '+') and (lTmp <> '-') then exit false;
-        if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23) then exit false;
+        if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then exit false;
         if not SkipToNextToken(var lFormat, var lDateTime) then exit false;
         var lMinutes: Integer;
-        if not GetNextNumberToken(var lDateTime, var lMinutes, 0, 23) then exit false;
+        if not GetNextNumberToken(var lDateTime, var lMinutes, 0, 23, 2) then exit false;
         if lTmp = '-' then lOffset := -lOffset;
       end;
 
