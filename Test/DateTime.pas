@@ -67,6 +67,15 @@ type
       Check.AreEqual(lDateTime.Hour, 17);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 45);
+
+      lDateTime := DateTime.TryParse('20190814-125000', 'yyyyMMdd-HHmmss', Locale.Invariant);
+      Check.IsNotNil(lDateTime);
+      Check.AreEqual(lDateTime.Month, 8);
+      Check.AreEqual(lDateTime.Day, 14);
+      Check.AreEqual(lDateTime.Year, 2019);
+      Check.AreEqual(lDateTime.Hour, 12);
+      Check.AreEqual(lDateTime.Minute, 50);
+      Check.AreEqual(lDateTime.Second, 00);
     end;
   end;
 end.
