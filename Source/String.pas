@@ -879,6 +879,33 @@ type
       {$ENDIF}
     end;
 
+    method Capitalize: not nullable String;
+    begin
+      case self.Length of
+        0: result := self;
+        1: result := self.ToUpperInvariant;
+        else result := self.Substring(0, 1).ToUpperInvariant+self.Substring(1).ToLowerInvariant;
+      end;
+    end;
+
+    method CapitalizeInvariant: not nullable String;
+    begin
+      case self.Length of
+        0: result := self;
+        1: result := self.ToUpperInvariant;
+        else result := self.Substring(0, 1).ToUpperInvariant+self.Substring(1).ToLowerInvariant;
+      end;
+    end;
+
+    method Capitalize(aLocale: Locale): not nullable String;
+    begin
+      case self.Length of
+        0: result := self;
+        1: result := self.ToUpper(aLocale);
+        else result := self.Substring(0, 1).ToUpper(aLocale)+self.Substring(1).ToLower(aLocale);
+      end;
+    end;
+
     //
     // Trim
     //
