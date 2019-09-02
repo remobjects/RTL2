@@ -149,6 +149,7 @@
       <VirtualFolder>Dates &amp; Co</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)String.Unicode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
