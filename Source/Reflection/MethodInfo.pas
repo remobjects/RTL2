@@ -39,6 +39,7 @@ type
     property Parameters: array of Parameter read mapped.GetParameters();
     {$ENDIF}
     {$IF COOPER}
+    method Invoke(aInstance: Object; params aArgs: array of Object): Object;
     property Name: String read mapped.getName();
     property ReturnType: &Type read mapped.getReturnType();
     property IsStatic: Boolean read java.lang.reflect.Modifier.isStatic(mapped.getModifiers);
@@ -50,7 +51,7 @@ type
     {$ENDIF}
     {$IF TOFFEE}
     constructor withClass(aClass: &Type) &method(aMethod: rtl.Method);
-    method Invoke(aInstance: Object; aArgs: array of Object): Object;
+    method Invoke(aInstance: Object; params aArgs: array of Object): Object;
     property Name: String read NSStringFromSelector(&Selector);
     property Pointer: rtl.Method read fMethod;
     property &Selector: SEL read method_getName(fMethod);
@@ -89,7 +90,7 @@ begin
 
 end;
 
-method &Method.Invoke(aInstance: Object; aArgs: array of Object): Object;
+method &Method.Invoke(aInstance: Object; params aArgs: array of Object): Object;
 begin
   var lInvokation := NSInvocation.invocationWithMethodSignature(aInstance.methodSignatureForSelector(Selector));
   lInvokation.setSelector(Selector);
@@ -102,6 +103,11 @@ end;
 {$ENDIF}
 
 {$IF COOPER}
+method &Method.Invoke(aInstance: Object; params aArgs: array of Object): Object;
+begin
+  mapped.invoke(aInstance, aArgs);
+end;
+
 method &Method.getParameters: array of Parameter;
 begin
   var parameterTypes := mapped.ParameterTypes;

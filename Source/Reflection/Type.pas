@@ -140,6 +140,7 @@ end;
 class method &Type.GetType(aName: not nullable String): nullable &Type;
 begin
   {$IF COOPER}
+  result := PlatformType.forName(aName);
   {$ELSEIF TOFFEE AND NOT ISLAND}
   var lClass := NSClassFromString(aName);
   if assigned(lClass) then
