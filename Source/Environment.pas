@@ -365,11 +365,15 @@ end;
 method Environment.GetOS: OperatingSystem;
 begin
   {$IF COOPER}
-  {$HINT how to detect android? i don't wanna build RTL separately}
   var lOSName := String(System.getProperty("os.name")):ToLowerInvariant;
   if lOSName.Contains("windows") then exit OperatingSystem.Windows
-  else if lOSName.Contains("linux") then exit OperatingSystem.Linux
   else if lOSName.Contains("mac") then exit OperatingSystem.macOS
+  else if lOSName.Contains("linux") then begin
+    var lRuntime := String(System.Property["java.runtime.name"]):ToLowerInvariant;
+    if lRuntime.Contains("android") then
+      exit OperatingSystem.Android;
+    exit OperatingSystem.Linux;
+  end
   else exit OperatingSystem.Unknown;
   {$ELSEIF TOFFEE}
     {$IF OSX}
