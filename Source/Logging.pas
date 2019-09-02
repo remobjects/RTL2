@@ -65,7 +65,7 @@ type
 
 {$GLOBALS ON}
 
-property Logger: ILogger := new SimpleLogger(); lazy;
+property Logger: ILogger := new SimpleLogger(); lazy; public;
 
 method Log(aMessage: String); public;
 begin
