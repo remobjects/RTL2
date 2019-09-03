@@ -15,11 +15,11 @@ type
     end;
 
     //83186: Cooper: problem with default interface implementation
-    //method LogMultipleLines(aMessage: String);
-    //begin
-      //for each s in aMessage.Split(#10) do
-        //Log(s.Trim([#13]));
-    //end;
+    method LogMultipleLines(aMessage: String);
+    begin
+      for each s in aMessage.Split(#10) do
+        Log(s.Trim([#13]));
+    end;
   end;
 
   SimpleLogger = partial class(ILogger)
@@ -28,7 +28,7 @@ type
     method Log(aMessage: String);
     begin
       {$IF DARWIN AND (MACOS OR SIMULATOR)}
-      NSLog("%@", aMessage)
+      Foundation.NSLog("%@", aMessage)
       {$ELSEIF JAVA}
       if not fCheckedForAndroid then begin
         fCheckedForAndroid := true;
