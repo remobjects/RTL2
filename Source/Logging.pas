@@ -64,8 +64,10 @@ type
   {$ENDIF}
 
 {$GLOBALS ON}
-
-property Logger: ILogger := new SimpleLogger(); lazy; public;
+  __Global = public static partial class
+  public
+    class property Logger: ILogger := new SimpleLogger(); lazy; 
+  end;
 
 method Log(aMessage: String); public;
 begin
