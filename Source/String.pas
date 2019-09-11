@@ -153,6 +153,35 @@ type
       exit Compare(Value1, Value2) <> 0;
     end;
 
+    {$IFDEF COOPER}
+
+    class operator Equal(Value1: Char; Value2: String): Boolean;
+    begin
+      if not assigned(Value2) then
+        exit false;
+
+      exit String(Value1).CompareTo(Value2) = 0;
+    end;
+
+    class operator Equal(Value2: String; Value1: Char): Boolean;
+    begin
+      if not assigned(Value2) then
+        exit false;
+
+      exit String(Value1).CompareTo(Value2) = 0;
+    end;
+
+    class operator NotEqual(Value1: String; Value2: Char): Boolean;
+    begin
+      exit Compare(Value1, Value2) <> 0;
+    end;
+
+    class operator NotEqual(Value2: Char; Value1: String): Boolean;
+    begin
+      exit Compare(Value1, Value2) <> 0;
+    end;
+    {$ENDIF}
+
     {$IF COOPER}
     operator Implicit(aCharSequence: CharSequence): String;
     begin
