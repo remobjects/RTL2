@@ -14,12 +14,11 @@ type
       Log(coalesce(aObject:ToString(), "(null)"));
     end;
 
-    //83186: Cooper: problem with default interface implementation
-    //method LogMultipleLines(aMessage: String);
-    //begin
-      //for each s in aMessage.Split(#10) do
-        //Log(s.Trim([#13]));
-    //end;
+    method LogMultipleLines(aMessage: String);
+    begin
+      for each s in aMessage.Split(#10) do
+        Log(s.Trim([#13]));
+    end;
   end;
 
   SimpleLogger = partial class(ILogger)
@@ -66,7 +65,7 @@ type
 {$GLOBALS ON}
   __Global = public static partial class
   public
-    class property Logger: ILogger := new SimpleLogger(); lazy; 
+    class property Logger: ILogger := new SimpleLogger(); lazy;
   end;
 
 method Log(aMessage: String); public;
