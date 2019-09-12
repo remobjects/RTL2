@@ -84,6 +84,7 @@ begin
   {$ELSEIF ECHOES}
   var ms := new ImmutablePlatformBinary();
   ms.Write(anArray, 0, anArray.Length);
+  ms.Position := 0;
   exit ms;
   {$ELSEIF ISLAND}
   var ms := new ImmutablePlatformBinary();
@@ -103,6 +104,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   var ms := new ImmutablePlatformBinary();
   ImmutablePlatformBinary(Bin).WriteTo(ms);
+  ms.Position := 0;
   exit ms;
   {$ENDIF}
 end;
@@ -129,6 +131,7 @@ begin
   {$ELSEIF ECHOES}
   var ms := new PlatformBinary();
   ms.Write(anArray, 0, anArray.Length);
+  ms.Position := 0;
   exit ms;
   {$ELSEIF ISLAND}
   var ms := new PlatformBinary();
@@ -148,6 +151,7 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   var ms := new PlatformBinary();
   PlatformBinary(Bin).WriteTo(ms);
+  ms.Position := 0;
   exit ms;
   {$ENDIF}
 end;
