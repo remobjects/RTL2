@@ -30,13 +30,48 @@ type
     property PathExtension: String read Path.GetExtension(self); inline;
     property NetworkServerName: nullable String read Path.GetNetworkServerName(self); inline;
 
+    property ParentDirectory: nullable String read Path.GetParentDirectory(self);
+    property WindowsParentDirectory: nullable String read Path.GetWindowsParentDirectory(self);
+    property UnixParentDirectory: nullable String read Path.GetUnixParentDirectory(self);
+
+    method AppendPath(params aPaths: array of String): nullable String;
+    begin
+      result := Path.Combine(self, aPaths);
+    end;
+
+    method AppendWindowsPath(params aPaths: array of String): nullable String;
+    begin
+      result := Path.CombineWindowsPath(self, aPaths);
+    end;
+
+    method AppendUnixPath(params aPaths: array of String): nullable String;
+    begin
+      result := Path.CombineUnixPath(self, aPaths);
+    end;
+
     property IsWindowsPath: Boolean read (Length > 2) and ((self[1] = ':') or StartsWith("\\")); // Drive letter or Windows network path
 
     property IsAbsoluteWindowsPath: Boolean read (Length > 2) and ((self[1] = ':') or StartsWith("\")); // single back-slash is abolute too, even if useless
     property IsAbsoluteUnixPath: Boolean read StartsWith("/");
     property IsAbsolutePath: Boolean read IsAbsoluteUnixPath or IsAbsoluteWindowsPath;
 
+    method ToPathRelativeToFolder(aBasePath: not nullable String): nullable String;
+    begin
+      result := Url.UrlWithFilePath(self).FilePathRelativeToUrl(Url.UrlWithFilePath(aBasePath)) Always(true);
+    end;
+
+    method ToPathRelativeToFolder(aBasePath: not nullable String) Threshold(aThreshold: Integer): nullable String;
+    begin
+      result := Url.UrlWithFilePath(self).FilePathRelativeToUrl(Url.UrlWithFilePath(aBasePath)) Threshold(aThreshold);
+    end;
+
+    method ToPathRelativeToFolder(aBasePath: not nullable String) Always(aAlways: Boolean): nullable String;
+    begin
+      result := Url.UrlWithFilePath(self).FilePathRelativeToUrl(Url.UrlWithFilePath(aBasePath)) Always(aAlways);
+    end;
+
     // Coverts a knonw-to-be Windows or Unix Path to the opposite
+
     property ToUnixPathFromWindowsPath: String read Replace("\", "/");
     property ToWindowsPathFromUnixPath: String read Replace("/", "\");
 
