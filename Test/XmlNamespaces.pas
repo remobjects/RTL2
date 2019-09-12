@@ -36,7 +36,7 @@ type
     method UserSettingsFile;
     begin
       var _userSettingsXML := XmlDocument.WithRootElement("Project");
-      _userSettingsXML.Root.AddNamespace(nil, Url.UrlWithString("http://schemas.microsoft.com/developer/msbuild/2003"));
+      _userSettingsXML.Root.AddNamespace(nil, "http://schemas.microsoft.com/developer/msbuild/2003");
       Check.AreEqual(_userSettingsXML.ToString, '<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"/>');
     end;
 

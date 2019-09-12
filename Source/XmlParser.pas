@@ -502,13 +502,7 @@ begin
        lLocalName:=lLocalName.Substring(6);
     result := new XmlNamespace withParent(aParent);
     (result as XmlNamespace).Prefix := lLocalName;
-    var lUri := Uri.TryUriWithString(lValue);
-    if (lUri = nil) and (lLocalName <> "") then begin
-      aError := new XmlErrorInfo();
-      aError.FillErrorInfo("Wrong Url","",lEndRow, lEndCol);
-      exit;
-    end;
-    (result as XmlNamespace).Uri := lUri;//.TryUriWithString(lValue);
+    (result as XmlNamespace).Uri := lValue;
     result.NodeRange.FillRange(lStartRow, lStartCol, lEndRow, lEndCol);
     (result as XmlNamespace).WSleft := lWSleft;
     (result as XmlNamespace).innerWSleft := linnerWSleft;
@@ -618,7 +612,7 @@ begin
       var lPrefix := lAttribute.LocalName.Substring(0, lColonPos);
       var lLocalName := lAttribute.LocalName.Substring(lColonPos+1);
       if lPrefix = "xml" then begin
-        lNamespace := new XmlNamespace(lPrefix, Url.UrlWithString(XmlConsts.XML_NAMESPACE_URL));
+        lNamespace := new XmlNamespace(lPrefix, XmlConsts.XML_NAMESPACE_URL);
         case lLocalName of
           "lang":;
           "space": begin
