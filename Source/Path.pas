@@ -5,8 +5,6 @@ interface
 type
   Path = public static class
   private
-    method DoGetParentDirectory(aFileName: not nullable String; aFolderSeparator: Char): nullable String;
-    method DoGetParentDirectory(aFileName: not nullable String; aFolderSeparators: array of Char): nullable String;
     method GetLastPathComponentWithSeparatorChar(aPath:String; aSeparator: Char): not nullable String;
     method GetLastPathComponentWithSeparatorChars(aPath:String; aSeparators: array of Char): not nullable String;
 
@@ -16,6 +14,9 @@ type
     method Combine(aBasePath: nullable String; params aPaths: array of String): nullable String;
     method CombineUnixPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
     method CombineWindowsPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
+
+    method GetParentDirectory(aFileName: not nullable String) FolderSeparator(aFolderSeparator: Char): nullable String;
+    method GetParentDirectory(aFileName: not nullable String) FolderSeparators(aFolderSeparators: array of Char): nullable String; private;
 
     method GetParentDirectory(aFileName: not nullable String): nullable String;
     method GetUnixParentDirectory(aFileName: not nullable String): nullable String;
@@ -101,22 +102,22 @@ end;
 method Path.GetParentDirectory(aFileName: not nullable String): nullable String;
 begin
   if defined("WINDOWS") or (defined("ECHOES") and (Environment.OS = OperatingSystem.Windows)) then
-    result := DoGetParentDirectory(aFileName, ['/','\'])
+    result := GetParentDirectory(aFileName) FolderSeparators(['/','\'])
   else
-    result := DoGetParentDirectory(aFileName, Folder.Separator);
+    result := GetParentDirectory(aFileName) FolderSeparator(Folder.Separator);
 end;
 
 method Path.GetUnixParentDirectory(aFileName: not nullable String): nullable String;
 begin
-  result := DoGetParentDirectory(aFileName, '/');
+  result := GetParentDirectory(aFileName) FolderSeparator('/');
 end;
 
 method Path.GetWindowsParentDirectory(aFileName: not nullable String): nullable String;
 begin
-  result := DoGetParentDirectory(aFileName, '\');
+  result := GetParentDirectory(aFileName)  FolderSeparator('\');
 end;
 
-method Path.DoGetParentDirectory(aFileName: not nullable String; aFolderSeparator: Char): nullable String;
+method Path.GetParentDirectory(aFileName: not nullable String) FolderSeparator(aFolderSeparator: Char): nullable String;
 begin
   if length(aFileName) = 0 then
     raise new ArgumentException("Invalid arguments");
@@ -149,7 +150,7 @@ begin
   end;
 end;
 
-method Path.DoGetParentDirectory(aFileName: not nullable String; aFolderSeparators: array of Char): nullable String;
+method Path.GetParentDirectory(aFileName: not nullable String) FolderSeparators(aFolderSeparators: array of Char): nullable String;
 begin
   if length(aFileName) = 0 then
     raise new ArgumentException("Invalid arguments");
