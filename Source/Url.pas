@@ -107,7 +107,7 @@ type
 
     property PathExtension: String read GetPathExtension;     // will include the "."
     property LastPathComponent: String read GetLastPathComponent;
-    property LastPathComponentWithoutExtension: String read Path:LastPathComponentWithoutExtension;
+    property LastPathComponentWithoutExtension: String read GetLastPathComponent:PathWithoutExtension;
     property FilePathWithoutLastComponent: String read GetFilePathWithoutLastComponent;               // includes trailing "/" or "\"
     property WindowsPathWithoutLastComponent: String read GetWindowsPathWithoutLastComponent; // includes trailing "\"
     property UnixPathWithoutLastComponent: String read GetUnixPathWithoutLastComponent;       // includes trailing "/"
