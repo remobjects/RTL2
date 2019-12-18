@@ -172,7 +172,7 @@ begin
   if aDay = 0 then
     aDay := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Day else 1;
   if aHour = 0 then
-    aHour := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Hour else 12;
+    aHour := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Hour;
   if aMin = 0 then
     if [DateParserOption.UseCurrentForMissing] in aOptions then aMin := DateTime.Today.Minute;
   if aSecond = 0 then
