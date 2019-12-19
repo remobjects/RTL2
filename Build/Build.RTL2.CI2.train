@@ -54,7 +54,7 @@ function runEBuild(project, out, params)
 
 function compileRTL2()
 {
-	msbuild.updateAssemblyVersion("../Source/Gold/Properties/AssemblyInfo.pas", elementsVersion);
+	msbuild.updateAssemblyVersion("../Source/RTL2/Source/Properties/AssemblyInfo.pas", elementsVersion);
 	runEBuild("Source/RTL2/Source/RTL2.sln", "../Bin", expand('--output-folder-uses-mode-name --output-folder-uses-sdk-name --setting:Architecture=Legacy'));
 	file.move("../Bin/Cooper/Plain/*.*", "../Bin/Cooper/"); // flatten
 }
