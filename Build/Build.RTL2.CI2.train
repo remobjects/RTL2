@@ -1,0 +1,69 @@
+include("$(Train)/ci2.train");
+
+var elementsInTools = expand("$(CIToolsBaseFolder)/Tools/Elements");
+
+//var elementsVersionIni = ini.fromFile("$(elementsInTools)/VersionInfo.ini");
+//var elementsVersion = elementsVersionIni.getValue("Options", "VERSION");
+var elementsVersion = getVersionNumberFromGlobalIni("Elements");
+export("CIVersionNumber", elementsVersion);
+
+var optionNoParallel = ciOptions.contains("NO_PARALLEL");
+var optionRebuild = ciOptions.contains("REBUILD");
+var optionClearCache = ciOptions.contains("CLEARCACHE") || optionRebuild;
+var useLatestCompiler = true;
+
+if (useLatestCompiler)
+{
+	var elementsShared = path.resolve("./elements-shared");
+	folder.create(elementsShared);
+	var elementsBin = expand("$(elementsShared)/ZipDistro");
+
+	var sharedElementsS3 = findClosestSharedS3FolderWithBranch("elements", "develop");
+	extractZipFromS3(getSharedS3Bucket(), sharedElementsS3, "FullZipDistro.zip", elementsBin);
+	file.copy("$(elementsBin)/References/Echoes/NET", elementsBin);
+	var ebuildExe = expand('$(elementsBin)/EBuild.exe');
+	var eBuildReferenceFolderOverrides = '"--setting:ToffeeSDKFolder=$(elementsBin)/Toffee SDKs" "--setting:IslandSDKFolder=$(elementsBin)/Island SDKs" "--setting:AdditionalReferencePaths=$(elementsBin)/References"';
+}
+else
+{
+	var ebuildExe = expand('$(elementsInTools)/EBuild.exe');
+	var eBuildReferenceFolderOverrides = '"--setting:ToffeeSDKFolder=$(elementsInTools)/Toffee SDKs" "--setting:IslandSDKFolder=$(elementsInTools)/Island SDKs" "--setting:AdditionalReferencePaths=$(elementsInTools)/References"';
+}
+var ebuildIntermediatebasefolder = expand("c:\\ci\\EBuild-cache\\GBL\\$(CIBranch)");
+var eBuildStandardParams = expand("--setting:Device=True --setting:Simulator=True --setting:Mac=True --setting:SimulatorArchitecture=Legacy --debug --intermediatebasefolder:$(ebuildIntermediatebasefolder)");
+
+if (optionClearCache)
+{
+	folder.remove(ebuildIntermediatebasefolder);
+}
+
+//
+// Methods
+//
+
+function runEBuild(project, out, params)
+{
+	var commandline = expand('--debug --no-copy-local $(eBuildReferenceFolderOverrides) $(eBuildStandardParams) "--out:$(out)" $(params)');
+	if (optionRebuild)
+		commandline = commandline+" --nocache";
+	if (!optionNoParallel)
+		commandline = commandline+" --parallel";
+	log(commandline);
+	ebuild.runCustomEBuild(path.resolve(ebuildExe), project, commandline);	
+}
+
+function compileRTL2()
+{
+	msbuild.updateAssemblyVersion("../Source/Gold/Properties/AssemblyInfo.pas", elementsVersion);
+	runEBuild("Source/RTL2/Source/RTL2.sln", "../Bin", expand('--output-folder-uses-mode-name --output-folder-uses-sdk-name --setting:Architecture=Legacy'));
+	file.move("../Bin/Cooper/Plain/*.*", "../Bin/Cooper/"); // flatten
+}
+
+compileRTL2();
+
+zipName = expand("$(CIReleaseFolder)/RTL2.zip");
+zip.compress(zipName, "../Bin", "*.*", true);
+
+var s3 = getSharedS3Bucket();
+s3.uploadFile(zipName, ciSharedPrefix);
+
