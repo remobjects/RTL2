@@ -94,14 +94,14 @@ type
 
     class property Today: DateTime read {$IF COOPER OR TOFFEE}UtcNow.Date{$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.Today){$ENDIF};
     class property UtcNow: DateTime read {$IF COOPER OR TOFFEE}new DateTime(){$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.UtcNow){$ENDIF};
-    const TicksSince1970: Int64 = 621355968000000000;
+    const TicksTill1970: Int64 = 621355968000000000;
 
     property TimeSince: TimeSpan read (UtcNow-self);
     class method TimeSince(aOtherDateTime: DateTime): TimeSpan;
 
     property Ticks: Int64 read
-      {$IF COOPER}(mapped.TimeInMillis +mapped.TimeZone.getOffset(mapped.TimeInMillis)) * TimeSpan.TicksPerMillisecond + TicksSince1970
-      {$ELSEIF TOFFEE}Int64((mapped.timeIntervalSince1970 + DateTimeHelpers.LocalTimezone.secondsFromGMTForDate(mapped)) * TimeSpan.TicksPerSecond) + TicksSince1970
+      {$IF COOPER}(mapped.TimeInMillis +mapped.TimeZone.getOffset(mapped.TimeInMillis)) * TimeSpan.TicksPerMillisecond + TicksTill1970
+      {$ELSEIF TOFFEE}Int64((mapped.timeIntervalSince1970 + DateTimeHelpers.LocalTimezone.secondsFromGMTForDate(mapped)) * TimeSpan.TicksPerSecond) + TicksTill1970
       {$ELSEIF ECHOES OR ISLAND}fDateTime.Ticks
       {$ENDIF};
     class operator &Add(a: DateTime; b: TimeSpan): DateTime;
@@ -215,11 +215,11 @@ constructor DateTime(aTicks: Int64);
 begin
   {$IFDEF COOPER}
   var lCalendar := Calendar.Instance;
-  var dt := (aTicks - TicksSince1970) / TimeSpan.TicksPerMillisecond;
+  var dt := (aTicks - TicksTill1970) / TimeSpan.TicksPerMillisecond;
   lCalendar.Time := new Date(dt - lCalendar.TimeZone.getOffset(dt));
   result := lCalendar;
   {$ELSEIF TOFFEE}
-  var dt := NSDate.dateWithTimeIntervalSince1970(Double(aTicks - TicksSince1970) / TimeSpan.TicksPerSecond);
+  var dt := NSDate.dateWithTimeIntervalSince1970(Double(aTicks - TicksTill1970) / TimeSpan.TicksPerSecond);
   result := NSDate.dateWithTimeInterval(-DateTimeHelpers.LocalTimezone.secondsFromGMTForDate(dt)) sinceDate(dt);
   {$ELSEIF ECHOES OR ISLAND}
   fDateTime := new PlatformDateTime(aTicks);
