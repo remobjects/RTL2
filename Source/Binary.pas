@@ -35,6 +35,8 @@ type
     method Subdata(Range: Range): Binary;
     method Subdata(aStartIndex: Integer; aCount: Integer): Binary;
 
+    method IndexOf(aBytes: array of Byte): Integer;
+
     method UniqueCopy: not nullable ImmutableBinary;
     method UniqueMutableCopy: not nullable Binary;
     method MutableVersion: not nullable Binary;
@@ -67,6 +69,39 @@ type
     operator Implicit(aData: NSData): Binary;
     {$ENDIF}
   end;
+
+  ByteArrayExtensions = public extension record(array of Byte)
+  public
+
+    method IndexOf(aBytes: array of Byte): Integer;
+    begin
+      result := -1;
+      var len := RemObjects.Elements.System.length(aBytes);
+      if len = 0 then
+        exit;
+      if len ≤ RemObjects.Elements.System.length(self) then begin
+        lOuterLoop:
+          for i: Integer := 0 to Length-len do begin
+            if aBytes[0] = self[i] then begin
+              for j: Integer := 1 to len-1 do
+                if aBytes[j] ≠ self[i+j] then
+                  continue lOuterLoop;
+              exit i;
+            end;
+          end;
+      end;
+    end;
+
+    method IndexOf(aByte: Byte): Integer;
+    begin
+      result := -1;
+      for i: Integer := 0 to RemObjects.Elements.System.length(self)-1 do
+        if aByte = self[i] then
+          exit i;
+    end;
+
+  end;
+
 
 implementation
 
@@ -248,6 +283,11 @@ begin
   {$ELSEIF TOFFEE}
   mapped.appendData(Bin);
   {$ENDIF}
+end;
+
+method ImmutableBinary.IndexOf(aBytes: array of Byte): Integer;
+begin
+  result := ToArray.IndexOf(aBytes);
 end;
 
 method ImmutableBinary.UniqueCopy: not nullable ImmutableBinary;
