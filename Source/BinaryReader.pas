@@ -24,22 +24,22 @@ type
     // Read at specific offset
     //
 
-    method ReadUInt64(aOffset: UInt64): UInt64; inline;
+    method ReadUInt64(aOffset: UInt64): UInt64; /*inline;*/
     begin
       result := ReadUInt64(var aOffset);
     end;
 
-    method ReadUInt32(aOffset: UInt64): UInt32; inline;
+    method ReadUInt32(aOffset: UInt64): UInt32; /*inline;*/
     begin
       result := ReadUInt32(var aOffset);
     end;
 
-    method ReadUInt16(aOffset: UInt64): UInt16; inline;
+    method ReadUInt16(aOffset: UInt64): UInt16; /*inline;*/
     begin
       result := ReadUInt16(var aOffset);
     end;
 
-    method ReadUInt8(aOffset: UInt64): UInt16; inline;
+    method ReadUInt8(aOffset: UInt64): UInt16; /*inline;*/
     begin
       result := ReadUInt8(var aOffset);
     end;
@@ -149,7 +149,7 @@ type
       inc(aOffset, lLength);
     end;
 
-    method ReadStringWithULEB128LengthIndicator(aOffset: UInt64) Encoding(aEncoding: Encoding := Encoding.UTF8): String; inline;
+    method ReadStringWithULEB128LengthIndicator(aOffset: UInt64) Encoding(aEncoding: Encoding := Encoding.UTF8): String; /*inline;*/
     begin
       result := ReadStringWithULEB128LengthIndicator(var aOffset) Encoding(aEncoding);
     end;
