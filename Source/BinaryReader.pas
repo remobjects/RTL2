@@ -184,6 +184,74 @@ type
       inc(aOffset);
     end;
 
+    //
+
+    method ReadDouble(var aOffset: UInt64): Double;
+    begin
+      case Endianess of
+        Endianess.Little: result := ReadDoubleLE(var aOffset);
+        Endianess.Big: result := ReadDoubleBE(var aOffset);
+      end;
+    end;
+
+    method ReadSingle(var aOffset: UInt64): Single;
+    begin
+      case Endianess of
+        Endianess.Little: result := ReadSingleLE(var aOffset);
+        Endianess.Big: result := ReadSingleBE(var aOffset);
+      end;
+    end;
+
+    method ReadDoubleLE(var aOffset: UInt64): Double;
+    begin
+      {$IF ECHOES}
+      result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
+      {$ELSEIF COOPER}
+      result := Double.longBitsToDouble(ReadInt64LE(var aOffset));
+      {$ELSE}
+      var lBuffer := ReadByteArray(var aOffset) Length(sizeOf(Double));
+      lBuffer.Reverse();
+      memcpy(@lBuffer[0], @result, sizeOf(Double));
+      {$ENDIF}
+    end;
+
+    method ReadDoubleBE(var aOffset: UInt64): Double;
+    begin
+      {$IF ECHOES}
+      result := BitConverter.Int64BitsToDouble(ReadInt64BE(var aOffset));
+      {$ELSEIF COOPER}
+      result := Double.longBitsToDouble(ReadInt64BE(var aOffset));
+      {$ELSE}
+      ReadByteArray(var aOffset) Length(sizeOf(Double)) ToAddress(@result);
+      {$ENDIF}
+    end;
+
+    method ReadSingleLE(var aOffset: UInt64): Single;
+    begin
+      {$IF ECHOES}
+      result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
+      {$ELSEIF COOPER}
+      result := Float.intBitsToFloat(ReadInt32LE(var aOffset));
+      {$ELSE}
+      var lBuffer := ReadByteArray(var aOffset) Length(sizeOf(Single));
+      lBuffer.Reverse();
+      memcpy(@lBuffer[0], @result, sizeOf(Single));
+      {$ENDIF}
+    end;
+
+    method ReadSingleBE(var aOffset: UInt64): Single;
+    begin
+      {$IF ECHOES}
+      result := BitConverter.Int64BitsToDouble(ReadInt32BE(var aOffset));
+      {$ELSEIF COOPER}
+      result := Float.intBitsToFloat(ReadInt32BE(var aOffset));
+      {$ELSE}
+      ReadByteArray(var aOffset) Length(sizeOf(Single)) ToAddress(@result);
+      {$ENDIF}
+    end;
+
+    //
+
     method ReadULEB128(var aOffset: UInt64): UInt32;
     begin
       var lByte := fBytes[aOffset];
@@ -224,79 +292,13 @@ type
       inc(aOffset, aLength);
     end;
 
-    //
-
-    const SIZE_DOUBLE = 8; private;
-    const SIZE_SINGLE = 4; private;
-
-    method ReadDouble(var aOffset: UInt64): Double;
+    {$IF ISLAND OR TOFFEE}
+    method ReadByteArray(var aOffset: UInt64) Length(aLength: Integer) ToAddress(aAddress: ^Void): array of Byte;
     begin
-      case Endianess of
-        Endianess.Little: result := ReadDoubleLE(var aOffset);
-        Endianess.Big: result := ReadDoubleBE(var aOffset);
-      end;
+      memcpy(@fBytes[aOffset], aAddress, aLength);
+      inc(aOffset, aLength);
     end;
-
-    method ReadSingle(var aOffset: UInt64): Single;
-    begin
-      case Endianess of
-        Endianess.Little: result := ReadSingleLE(var aOffset);
-        Endianess.Big: result := ReadSingleBE(var aOffset);
-      end;
-    end;
-
-    method ReadDoubleLE(var aOffset: UInt64): Double;
-    begin
-      {$IF ECHOES}
-      result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
-      {$ELSEIF COOPER}
-      result := Double.longBitsToDouble(ReadInt64LE(var aOffset));
-      {$ELSE}
-      var lBuffer := ReadByteArray(var aOffset) Length(SIZE_DOUBLE);
-      lBuffer.Reverse();
-      memcpy(@lBuffer[0], @result, SIZE_DOUBLE);
-      {$ENDIF}
-    end;
-
-    method ReadDoubleBE(var aOffset: UInt64): Double;
-    begin
-      {$IF ECHOES}
-      result := BitConverter.Int64BitsToDouble(ReadInt64BE(var aOffset));
-      {$ELSEIF COOPER}
-      result := Double.longBitsToDouble(ReadInt64BE(var aOffset));
-      {$ELSE}
-      var lBuffer := ReadByteArray(var aOffset) Length(SIZE_DOUBLE);
-      //lBuffer.Reverse();
-      memcpy(@lBuffer[0], @result, SIZE_DOUBLE);
-      {$ENDIF}
-    end;
-
-    method ReadSingleLE(var aOffset: UInt64): Single;
-    begin
-      {$IF ECHOES}
-      result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
-      {$ELSEIF COOPER}
-      result := Float.intBitsToFloat(ReadInt32LE(var aOffset));
-      {$ELSE}
-      var lBuffer := ReadByteArray(var aOffset) Length(SIZE_SINGLE);
-      lBuffer.Reverse();
-      memcpy(@lBuffer[0], @result, SIZE_SINGLE);
-      {$ENDIF}
-    end;
-
-    method ReadSingleBE(var aOffset: UInt64): Single;
-    begin
-      {$IF ECHOES}
-      result := BitConverter.Int64BitsToDouble(ReadInt32BE(var aOffset));
-      {$ELSEIF COOPER}
-      result := Float.intBitsToFloat(ReadInt32BE(var aOffset));
-      {$ELSE}
-      var lBuffer := ReadByteArray(var aOffset) Length(SIZE_SINGLE);
-      //lBuffer.Reverse();
-      memcpy(@lBuffer[0], @result, SIZE_SINGLE);
-      {$ENDIF}
-    end;
-
+    {$ENDIF}
 
     //
     // Read at current offset
