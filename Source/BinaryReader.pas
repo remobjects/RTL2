@@ -46,6 +46,62 @@ type
 
     //
 
+    method ReadInt64(var aOffset: UInt64): UInt64;
+    begin
+      case Endianess of
+        Endianess.Little: result := ReadUInt64LE(var aOffset) as Int64;
+        Endianess.Big: result := ReadUInt64BE(var aOffset) as Int64;
+      end;
+    end;
+
+    method ReadInt32(var aOffset: UInt64): UInt32;
+    begin
+      case Endianess of
+        Endianess.Little: result := ReadUInt32LE(var aOffset) as Int32;
+        Endianess.Big: result := ReadUInt32BE(var aOffset) as Int32;
+      end;
+    end;
+
+    method ReadInt16(var aOffset: UInt64): UInt16;
+    begin
+      case Endianess of
+        Endianess.Little: result := ReadUInt16LE(var aOffset) as Int16;
+        Endianess.Big: result := ReadUInt16BE(var aOffset) as Int16;
+      end;
+    end;
+
+    method ReadInt64LE(var aOffset: UInt64): UInt64;
+    begin
+      result := ReadUInt64LE(var aOffset) as Int64;
+    end;
+
+    method ReadInt64BE(var aOffset: UInt64): UInt64;
+    begin
+      result := ReadUInt64BE(var aOffset) as Int64;
+    end;
+
+    method ReadInt32LE(var aOffset: UInt64): UInt32;
+    begin
+      result := ReadUInt32LE(var aOffset) as Int32;
+    end;
+
+    method ReadInt32BE(var aOffset: UInt64): UInt32;
+    begin
+      result := ReadUInt32BE(var aOffset) as Int32;
+    end;
+
+    method ReadInt16LE(var aOffset: UInt64): UInt16;
+    begin
+      result := ReadUInt16LE(var aOffset) as Int16;
+    end;
+
+    method ReadInt16BE(var aOffset: UInt64): UInt16;
+    begin
+      result := ReadUInt16BE(var aOffset) as Int16;
+    end;
+
+    //
+
     method ReadUInt64(var aOffset: UInt64): UInt64;
     begin
       case Endianess of
@@ -153,6 +209,94 @@ type
     begin
       result := ReadStringWithULEB128LengthIndicator(var aOffset) Encoding(aEncoding);
     end;
+
+    method ReadByteArray(var aOffset: UInt64) Length(aLength: Integer): array of Byte;
+    begin
+      result := new Byte[aLength];
+      {$IF TOFFEE OR ISLAND}
+      memcpy(@fBytes[aOffset], @result[0], aLength);
+      {$ELSEIF ECHOES}
+      &Array.Copy(fBytes, aOffset, result, 0, aLength);
+      {$ELSE}
+      for i: UInt64 := 0 to aLength-1 do
+        result[i] := fBytes[aOffset+i];
+      {$ENDIF}
+      inc(aOffset, aLength);
+    end;
+
+    //
+
+    const SIZE_DOUBLE = 8; private;
+    const SIZE_SINGLE = 4; private;
+
+    method ReadDouble(var aOffset: UInt64): Double;
+    begin
+      case Endianess of
+        Endianess.Little: result := ReadDoubleLE(var aOffset);
+        Endianess.Big: result := ReadDoubleBE(var aOffset);
+      end;
+    end;
+
+    method ReadSingle(var aOffset: UInt64): Single;
+    begin
+      case Endianess of
+        Endianess.Little: result := ReadSingleLE(var aOffset);
+        Endianess.Big: result := ReadSingleBE(var aOffset);
+      end;
+    end;
+
+    method ReadDoubleLE(var aOffset: UInt64): Double;
+    begin
+      {$IF ECHOES}
+      result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
+      {$ELSEIF COOPER}
+      result := Double.longBitsToDouble(ReadInt64LE(var aOffset));
+      {$ELSE}
+      var lBuffer := ReadByteArray(var aOffset) Length(SIZE_DOUBLE);
+      lBuffer.Reverse();
+      memcpy(@lBuffer[0], @result, SIZE_DOUBLE);
+      {$ENDIF}
+    end;
+
+    method ReadDoubleBE(var aOffset: UInt64): Double;
+    begin
+      {$IF ECHOES}
+      result := BitConverter.Int64BitsToDouble(ReadInt64BE(var aOffset));
+      {$ELSEIF COOPER}
+      result := Double.longBitsToDouble(ReadInt64BE(var aOffset));
+      {$ELSE}
+      var lBuffer := ReadByteArray(var aOffset) Length(SIZE_DOUBLE);
+      //lBuffer.Reverse();
+      memcpy(@lBuffer[0], @result, SIZE_DOUBLE);
+      {$ENDIF}
+    end;
+
+    method ReadSingleLE(var aOffset: UInt64): Single;
+    begin
+      {$IF ECHOES}
+      result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
+      {$ELSEIF COOPER}
+      result := Float.intBitsToFloat(ReadInt32LE(var aOffset));
+      {$ELSE}
+      var lBuffer := ReadByteArray(var aOffset) Length(SIZE_SINGLE);
+      lBuffer.Reverse();
+      memcpy(@lBuffer[0], @result, SIZE_SINGLE);
+      {$ENDIF}
+    end;
+
+    method ReadSingleBE(var aOffset: UInt64): Single;
+    begin
+      {$IF ECHOES}
+      result := BitConverter.Int64BitsToDouble(ReadInt32BE(var aOffset));
+      {$ELSEIF COOPER}
+      result := Float.intBitsToFloat(ReadInt32BE(var aOffset));
+      {$ELSE}
+      var lBuffer := ReadByteArray(var aOffset) Length(SIZE_SINGLE);
+      //lBuffer.Reverse();
+      memcpy(@lBuffer[0], @result, SIZE_SINGLE);
+      {$ENDIF}
+    end;
+
 
     //
     // Read at current offset

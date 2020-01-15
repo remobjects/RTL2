@@ -100,6 +100,16 @@ type
           exit i;
     end;
 
+    method &Reverse(aArray: array of Byte);
+    begin
+      var len := Length;
+      for i: Integer := 0 to (len-1) div 2 do begin
+        var lSave := self[i];
+        self[i] := self[len-1-i];
+        self[len-1-i] := lSave;
+      end;
+    end;
+
   end;
 
 
