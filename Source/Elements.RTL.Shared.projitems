@@ -151,6 +151,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)String.Unicode.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)BinaryReader.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Observer.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">

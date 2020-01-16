@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0" DefaultTargets="Build">
   <PropertyGroup Label="Globals">
-    <ProjectGuid>ABEC8ACC-B076-406C-871B-581E8AF0A453</ProjectGuid>
+    <ProjectGuid>{ABEC8ACC-B076-406C-871B-581E8AF0A453}</ProjectGuid>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
     <DefaultLanguage>Oxygene</DefaultLanguage>
   </PropertyGroup>
