@@ -292,6 +292,8 @@ begin
   end;
   {$ELSEIF TOFFEE}
   result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
+  {$ELSEIF ISLAND AND WINDOWS}
+  result := RemObjects.Elements.System.Environment.GetEnvironmentVariable('appdata');
   {$ENDIF}
   {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then
