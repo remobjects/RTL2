@@ -359,6 +359,8 @@ begin
   result := lFormatter.stringFromDate(mapped);
   {$ELSEIF ECHOES}
   result := fDateTime.ToShortDateString;
+  {$ELSEIF ISLAND}
+  result := fDateTime.ToShortPrettyDateString();
   {$ENDIF}
 end;
 
