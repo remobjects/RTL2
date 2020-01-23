@@ -640,7 +640,8 @@ begin
 
   Symbols.DecimalSeparator := '.';
   Symbols.GroupingSeparator := ',';
-  Symbols.ExponentSeparator := 'E';
+  Symbols.ExponentSeparator := 'E+';
+  DecFormat.setDecimalFormatSymbols(Symbols);
   DecFormat.setParseIntegerOnly(false);
   var Position := new java.text.ParsePosition(0);
 
