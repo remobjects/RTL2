@@ -75,7 +75,7 @@ type
 
       if defined("ECHOES") then
         GC.SuppressFinalize(self)
-      else if defined("ISLAND") then
+      else if defined("ISLAND") and exists(Utilities.SuppressFinalize) then
         Utilities.SuppressFinalize(self)
     end;
 
