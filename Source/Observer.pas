@@ -8,7 +8,7 @@ uses
 type
   ObserverBlock = public block(aTarget: not nullable Object; aName: not nullable String);
 
-  Observer = public partial class
+  Observer = public partial class(IDisposable)
   public
 
     constructor(aTarget: not nullable Object; aName: not nullable String; aWillChangeCallback: ObserverBlock := nil; aDidChangeCallback: not nullable ObserverBlock);
@@ -72,6 +72,21 @@ type
       else begin
         {$ERROR Unsupported platform}
       end;
+
+      if defined("ECHOES") then
+        GC.SuppressFinalize(self)
+      else if defined("ISLAND") then
+        Utilities.SuppressFinalize(self)
+    end;
+
+    method Dispose; //override;
+    begin
+      Unsubscribe();
+    end;
+
+    finalizer;
+    begin
+      Unsubscribe();
     end;
 
   private
