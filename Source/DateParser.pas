@@ -5,6 +5,7 @@ interface
 type
   DateParserOption = public enum(UseCurrentForMissing) of Integer;
   DateParserOptions = public set of DateParserOption;
+  DateTimeKind = public enum(Unspecified, Utc, Local) of Integer;
 
   DateParser = public class
   private
@@ -14,9 +15,11 @@ type
     class method GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer; aMaxLength: Integer): Boolean;
     class method GetNextSepOrStringToken(var aFormat: String): String;
     class method SkipToNextToken(var aFormat: String; var aDateTime: String): Boolean;
+    class method SkipToken(aToken: String; var aFormat: string): Boolean;
     class method StandardToInternalPattern(aFormat: String; aLocale: Locale; var output: String): Boolean;
     class method CheckIfAny(aToken: String; aValues: array of String): Boolean;
     class method NormalizeChar(aChar: Char): Char;
+    class method ParseSecondFraction(aFormat: string; var aDateTime: string; var aMilliseconds: Integer): Boolean;
     class method CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond: Integer; aOptions: DateParserOptions := []): DateTime;
     class method InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions): Boolean;
   public
@@ -127,12 +130,69 @@ begin
   var lToken := GetNextSepOrStringToken(var aFormat);
   while lToken.Length > 0 do begin
     if aDateTime.StartsWith(lToken) then
-      aDateTime := aDateTime.SubString(lToken.Length)
+      aDateTime := aDateTime.Substring(lToken.Length)
     else
       exit false;
     lToken := GetNextSepOrStringToken(var aFormat);
   end;
   result := true;
+end;
+
+class method DateParser.SkipToken(aToken: String; var aFormat: string): Boolean;
+begin
+  if aFormat.StartsWith(aToken) then begin
+    aFormat := aFormat.Substring(aToken.Length);
+    exit true;
+  end;
+  exit false;
+end;
+
+class method DateParser.ParseSecondFraction(aFormat: string; var aDateTime: string; var aMilliseconds: Integer): Boolean;
+begin
+  var lTmp: Integer := 0;
+  case aFormat of
+    'f', 'F': begin // tenths of a second
+      if not GetNextNumberToken(var aDateTime, var lTmp, 0, 9, 1) then
+        exit false;
+      aMilliseconds := lTmp * 100;
+    end;
+
+    'ff', 'FF': begin // hundredths of a second
+      if not GetNextNumberToken(var aDateTime, var lTmp, 0, 99, 2) then
+        exit false;
+      aMilliseconds := lTmp * 10;
+    end;
+
+    'fff', 'FFF': begin // milliseconds
+      if not GetNextNumberToken(var aDateTime, var aMilliseconds, 0, 999, 3) then
+        exit false;
+    end;
+
+    'ffff', 'FFFF': begin // ten thousandths of a second
+      if not GetNextNumberToken(var aDateTime, var lTmp, 0, 9999, 4) then
+        exit false;
+      aMilliseconds := Math.Round(lTmp / 10);
+    end;
+
+    'fffff', 'FFFFF': begin // hundred thousandths of a second
+      if not GetNextNumberToken(var aDateTime, var lTmp, 0, 99999, 5) then
+        exit false;
+      aMilliseconds := Math.Round(lTmp / 100);
+    end;
+
+    'ffffff', 'FFFFFF': begin // millionths of a second
+      if not GetNextNumberToken(var aDateTime, var lTmp, 0, 999999, 6) then
+        exit false;
+      aMilliseconds := Math.Round(lTmp / 1000);
+    end;
+
+    'fffffff', 'FFFFFFF': begin // ten millionths of a second
+      if not GetNextNumberToken(var aDateTime, var lTmp, 0, 9999999, 7) then
+        exit false;
+      aMilliseconds := Math.Round(lTmp / 10000);
+    end;
+  end;
+  exit true;
 end;
 
 class method DateParser.StandardToInternalPattern(aFormat: String; aLocale: Locale; var output: String): Boolean;
@@ -184,9 +244,11 @@ end;
 // "mm/dd/yyyy hh:nn:ss" --> "1/23/2018 4:55:23"
 class method DateParser.InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
-  var lDay, lMonth, lYear, lHour, lMin, lSec, lOffset: Integer;
+  var lDay, lMonth, lYear, lHour, lMin, lSec, lMSec, lOffset: Integer;
   var lWithSeconds: Boolean := false;
+  var lWithMilliSeconds: Boolean := false;
   var lWithOffset: Boolean := false;
+  var lDateKind: DateTimeKind := DateTimeKind.Unspecified;
   var lTmp: String;
   var lFormat := aFormat.Trim;
   var lDateTime := aDateTime.Trim;
@@ -307,12 +369,46 @@ begin
         lWithSeconds := true;
       end;
 
+      'f', 'ff', 'fff', 'ffff', 'fffff', 'ffffff', 'fffffff',
+      'F', 'FF', 'FFF', 'FFFF', 'FFFFF', 'FFFFFF', 'FFFFFFF': begin
+        if not ParseSecondFraction(lToken, var lDateTime, var lMSec) then
+          exit false;
+        lWithMilliSeconds := true;
+      end;
+
       't': begin // am/pm, first character only
         lTmp := GetNextSepOrStringToken(var lDateTime);
        end;
 
       'tt': begin // am/pm, full string
         lTmp := GetNextSepOrStringToken(var lDateTime);
+      end;
+
+      'T': begin // special case: separator for ISO 8601 strings
+        lTmp := GetNextStringToken(var lDateTime);
+        if lTmp ≠ 'T' then
+          exit false;
+      end;
+
+      'K': begin // timezone info
+        lTmp := GetNextStringToken(var lDateTime);
+        if lTmp = 'Z' then
+          lDateKind := DateTimeKind.Utc
+        else begin
+          lTmp := GetNextSepOrStringToken(var lDateTime);
+          case lTmp of
+            '+', '-': begin
+              if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then exit false;
+              if lTmp = '-' then lOffset := -lOffset;
+              if (lDateTime ≠ '') and (SkipToken(":", var lDateTime)) then begin
+                var lMinutes: Integer;
+                if not GetNextNumberToken(var lDateTime, var lMinutes, 0, 59, 2) then exit false;
+              end;
+            end;
+
+            '': lDateKind := DateTimeKind.Unspecified;
+          end;
+        end;
       end;
 
       'z', 'zz': begin // timezone, with no '0', -2
@@ -326,9 +422,9 @@ begin
         lTmp := GetNextSepOrStringToken(var lDateTime);
         if (lTmp <> '+') and (lTmp <> '-') then exit false;
         if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then exit false;
-        if not SkipToNextToken(var lFormat, var lDateTime) then exit false;
+        if not SkipToken(":", var lDateTime) then exit false;
         var lMinutes: Integer;
-        if not GetNextNumberToken(var lDateTime, var lMinutes, 0, 23, 2) then exit false;
+        if not GetNextNumberToken(var lDateTime, var lMinutes, 0, 59, 2) then exit false;
         if lTmp = '-' then lOffset := -lOffset;
       end;
 

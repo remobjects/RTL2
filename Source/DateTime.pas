@@ -41,6 +41,7 @@ type
     constructor(aYear, aMonth, aDay: Integer);
     constructor(aYear, aMonth, aDay, anHour, aMinute: Integer);
     constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond: Integer);
+    constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond, aMSec: Integer);
     {$IF COOPER}
     constructor(aDate: date);
     {$ENDIF}
@@ -168,7 +169,7 @@ end;
 constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer);
 begin
   {$IF COOPER OR TOFFEE}
-  constructor(aYear, aMonth, aDay, 0, 0, 0);
+  constructor(aYear, aMonth, aDay, 0, 0, 0, 0);
   {$ELSEIF ECHOES OR ISLAND}
   fDateTime := new PlatformDateTime(aYear, aMonth, aDay);
   {$ENDIF}
@@ -177,13 +178,22 @@ end;
 constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer; anHour: Integer; aMinute: Integer);
 begin
   {$IF COOPER OR TOFFEE}
-  constructor(aYear, aMonth, aDay, anHour, aMinute, 0);
+  constructor(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
   {$ELSEIF ECHOES OR ISLAND}
-  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0);
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
   {$ENDIF}
 end;
 
 constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer; anHour: Integer; aMinute: Integer; aSecond: Integer);
+begin
+  {$IF COOPER OR TOFFEE}
+  constructor(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
+  {$ELSEIF ECHOES OR ISLAND}
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
+  {$ENDIF}
+end;
+
+constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer; anHour: Integer; aMinute: Integer; aSecond: Integer; aMSec: Integer);
 begin
   {$IF COOPER}
   var lCalendar := Calendar.Instance;
@@ -194,7 +204,7 @@ begin
   lCalendar.set(Calendar.HOUR_OF_DAY, anHour);
   lCalendar.set(Calendar.MINUTE, aMinute);
   lCalendar.set(Calendar.SECOND, aSecond);
-  lCalendar.set(Calendar.MILLISECOND, 0);
+  lCalendar.set(Calendar.MILLISECOND, aMSec);
   result := lCalendar;
   {$ELSEIF TOFFEE}
   var Components: NSDateComponents := new NSDateComponents();
@@ -204,10 +214,11 @@ begin
   Components.setHour(anHour);
   Components.setMinute(aMinute);
   Components.setSecond(aSecond);
+  Components.setNanosecond(aMSec * 1000000);
   var lCalendar := NSCalendar.currentCalendar();
   result := lCalendar.dateFromComponents(Components);
   {$ELSEIF ECHOES OR ISLAND}
-  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond);
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond, aMSec);
   {$ENDIF}
 end;
 
