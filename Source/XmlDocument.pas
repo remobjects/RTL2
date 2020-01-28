@@ -770,6 +770,7 @@ end;
 
 method XmlNode.CheckName(aName: String): Boolean;
 begin
+  if aName = "" then exit false;
   var t := new XmlTokenizer(aName);
   t.ParseName;
   if t.Value = aName then exit true;
