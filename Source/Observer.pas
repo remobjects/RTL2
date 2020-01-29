@@ -32,7 +32,7 @@ type
       else if defined("DARWIN") and (fTarget is IslandWrappedCocoaObject) then begin
         IslandWrappedCocoaObject(fTarget).Value.addObserver(self) forKeyPath(aName) options(if assigned(aWillChangeCallback) then Foundation.NSKeyValueObservingOptions.Old or Foundation.NSKeyValueObservingOptions.New else Foundation.NSKeyValueObservingOptions.New) context(nil);
       end
-      else if defined("DARWIN") and (fTarget is IslandWrappedSwiftObject) then begin
+      else if defined("DARWIN") and not defined('TVOS') and not defined('WATCHOS') and (fTarget is IslandWrappedSwiftObject) then begin
         raise new NotImplementedException("Observer is not yet supported on Swift objects");
       end
       else if defined("ISLAND") then begin
@@ -61,7 +61,7 @@ type
       else if defined("DARWIN") and (fTarget is IslandWrappedCocoaObject) then begin
         IslandWrappedCocoaObject(fTarget).Value.removeObserver(self) forKeyPath(fName);
       end
-      else if defined("DARWIN") and (fTarget is IslandWrappedSwiftObject) then begin
+      else if defined("DARWIN") and not defined('TVOS') and not defined('WATCHOS') and (fTarget is IslandWrappedSwiftObject) then begin
         raise new NotImplementedException("Observer is not yet supported on Swift objects");
       end
       else if defined("ISLAND") then begin
