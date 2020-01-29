@@ -5,7 +5,6 @@ interface
 type
   DateParserOption = public enum(UseCurrentForMissing) of Integer;
   DateParserOptions = public set of DateParserOption;
-  DateTimeKind = public enum(Unspecified, Utc, Local) of Integer;
 
   DateParser = public class
   private
@@ -20,12 +19,13 @@ type
     class method CheckIfAny(aToken: String; aValues: array of String): Boolean;
     class method NormalizeChar(aChar: Char): Char;
     class method ParseSecondFraction(aFormat: string; var aDateTime: string; var aMilliseconds: Integer): Boolean;
-    class method CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond: Integer; aOptions: DateParserOptions := []): DateTime;
+    class method CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond, aMSec: Integer; aOptions: DateParserOptions := []): DateTime;
     class method InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions): Boolean;
   public
     class method TryParse(aDateTime: String; out output: DateTime; aOptions: DateParserOptions := []): Boolean;
     class method TryParse(aDateTime: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions := []): Boolean;
     class method TryParse(aDateTime: String; aFormat: String; out output: DateTime; aOptions: DateParserOptions := []): Boolean;
+    class method TryParseISO8601(aDateTime: String; out output: DateTime): Boolean;
     class method TryParse(aDateTime: String; aFormat: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions := []): Boolean;
   end;
 
@@ -206,6 +206,7 @@ begin
     'G': output:= aLocale.DateTimeFormat.ShortDatePattern + ' ' + aLocale.DateTimeFormat.LongTimePattern; // General date/time pattern (long time)
     't': output := aLocale.DateTimeFormat.ShortTimePattern; // Short time pattern
     'T': output := aLocale.DateTimeFormat.LongTimePattern; // Long time pattern
+    'o', 'O': output := 'yyyy-MM-ddTHH:mm:ss.fffffffK'; // ISO 8601
 
     else
       exit false;
@@ -223,7 +224,7 @@ begin
   exit false;
 end;
 
-class method DateParser.CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond: Integer; aOptions: DateParserOptions): DateTime;
+class method DateParser.CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond, aMSec: Integer; aOptions: DateParserOptions): DateTime;
 begin
   if aYear = 0 then
     aYear := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Year else 1;
@@ -231,24 +232,30 @@ begin
     aMonth := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Month else 1;
   if aDay = 0 then
     aDay := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Day else 1;
-  if aHour = 0 then
-    aHour := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Hour;
-  if aMin = 0 then
-    if [DateParserOption.UseCurrentForMissing] in aOptions then aMin := DateTime.Today.Minute;
-  if aSecond = 0 then
-    if [DateParserOption.UseCurrentForMissing] in aOptions then aSecond := DateTime.Today.Second;
+  if aHour = -1 then
+    aHour := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Hour else 0;
+  if aMin = -1 then
+    aMin := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Minute else 0;
+  if aSecond = -1 then
+    aSecond := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Second else 0;
+  if aMSec = -1 then
+    aMSec := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Second else 0;
 
-  result := new DateTime(aYear, aMonth, aDay, aHour, aMin, aSecond);
+  result := new DateTime(aYear, aMonth, aDay, aHour, aMin, aSecond, aMSec);
 end;
 
 // "mm/dd/yyyy hh:nn:ss" --> "1/23/2018 4:55:23"
 class method DateParser.InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
-  var lDay, lMonth, lYear, lHour, lMin, lSec, lMSec, lOffset: Integer;
-  var lWithSeconds: Boolean := false;
-  var lWithMilliSeconds: Boolean := false;
-  var lWithOffset: Boolean := false;
-  var lDateKind: DateTimeKind := DateTimeKind.Unspecified;
+  var lDay: Integer := 0;
+  var lMonth: Integer := 0;
+  var lYear: Integer := 0;
+  var lHour: Integer := -1;
+  var lMin: Integer := -1;
+  var lSec: Integer := -1;
+  var lMSec: Integer := -1;
+  var lOffset: Integer := 0;
+  var lOffsetMin: Integer := 0;
   var lTmp: String;
   var lFormat := aFormat.Trim;
   var lDateTime := aDateTime.Trim;
@@ -360,20 +367,17 @@ begin
       's': begin // seconds, 0 --> 59
         if not GetNextNumberToken(var lDateTime, var lSec, 0, 59, 2) then
           exit false;
-        lWithSeconds := true;
       end;
 
       'ss': begin // seconds, 00 --> 59
         if not GetNextNumberToken(var lDateTime, var lSec, 0, 59, 2) then
           exit false;
-        lWithSeconds := true;
       end;
 
       'f', 'ff', 'fff', 'ffff', 'fffff', 'ffffff', 'fffffff',
       'F', 'FF', 'FFF', 'FFFF', 'FFFFF', 'FFFFFF', 'FFFFFFF': begin
         if not ParseSecondFraction(lToken, var lDateTime, var lMSec) then
           exit false;
-        lWithMilliSeconds := true;
       end;
 
       't': begin // am/pm, first character only
@@ -393,20 +397,22 @@ begin
       'K': begin // timezone info
         lTmp := GetNextStringToken(var lDateTime);
         if lTmp = 'Z' then
-          lDateKind := DateTimeKind.Utc
+          lOffset := 0
         else begin
           lTmp := GetNextSepOrStringToken(var lDateTime);
           case lTmp of
             '+', '-': begin
-              if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then exit false;
-              if lTmp = '-' then lOffset := -lOffset;
+              if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then
+                exit false;
+              if lTmp = '-' then
+                lOffset := -lOffset;
               if (lDateTime ≠ '') and (SkipToken(":", var lDateTime)) then begin
-                var lMinutes: Integer;
-                if not GetNextNumberToken(var lDateTime, var lMinutes, 0, 59, 2) then exit false;
+                if not GetNextNumberToken(var lDateTime, var lOffsetMin, 0, 59, 2) then
+                  exit false;
               end;
             end;
 
-            '': lDateKind := DateTimeKind.Unspecified;
+            '': lOffset := 0;
           end;
         end;
       end;
@@ -414,17 +420,20 @@ begin
       'z', 'zz': begin // timezone, with no '0', -2
         lTmp := GetNextSepOrStringToken(var lDateTime);
         if (lTmp <> '+') and (lTmp <> '-') then exit false;
-        if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then exit false;
+        if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then
+          exit false;
         if lTmp = '-' then lOffset := -lOffset;
       end;
 
       'zzz': begin // timezone, with minutes, -02:00
         lTmp := GetNextSepOrStringToken(var lDateTime);
         if (lTmp <> '+') and (lTmp <> '-') then exit false;
-        if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then exit false;
-        if not SkipToken(":", var lDateTime) then exit false;
-        var lMinutes: Integer;
-        if not GetNextNumberToken(var lDateTime, var lMinutes, 0, 59, 2) then exit false;
+        if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then
+          exit false;
+        if not SkipToken(":", var lDateTime) then
+          exit false;
+        if not GetNextNumberToken(var lDateTime, var lOffsetMin, 0, 59, 2) then
+          exit false;
         if lTmp = '-' then lOffset := -lOffset;
       end;
 
@@ -433,12 +442,13 @@ begin
       end;
     end;
 
-    if not SkipToNextToken(var lFormat, var lDateTime) then exit false;
+    if not SkipToNextToken(var lFormat, var lDateTime) then
+      exit false;
     lToken := GetNextStringToken(var lFormat);
   end;
-  if not lWithSeconds then
-    lSec := 0;
-  output := CheckAndSetDateTime(lYear, lMonth, lDay, lHour, lMin, lSec, aOptions);
+  output := CheckAndSetDateTime(lYear, lMonth, lDay, lHour, lMin, lSec, lMSec, aOptions);
+  if lOffset ≠ 0 then
+    output := output.AddHours(lOffset);
   result := true;
 end;
 
@@ -453,7 +463,17 @@ begin
     if not StandardToInternalPattern(aFormat, Locale.Current, var aFormat) then
       exit false;
 
-  result := InternalParse(aDateTime, aFormat, Locale.Current, out  output, aOptions);
+  result := InternalParse(aDateTime, aFormat, Locale.Current, out output, aOptions);
+end;
+
+class method DateParser.TryParseISO8601(aDateTime: String; out output: DateTime): Boolean;
+begin
+  var lFormats := ['yyyy-MM-ddTHH:mm:ss.fffffffK', 'yyyy-MM-ddTHH:mm:ss.fffffffzzz', 'yyyy-MM-ddTHH:mm:ssK', 'yyyy-MM-ddTHH:mm:ss.fK'];
+  for lFormat in lFormats do begin
+    result := InternalParse(aDateTime, lFormat, Locale.Invariant, out output, []);
+    if result then
+      exit;
+  end;
 end;
 
 class method DateParser.TryParse(aDateTime: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions): Boolean;

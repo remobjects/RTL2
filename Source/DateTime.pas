@@ -78,6 +78,7 @@ type
     class method TryParse(aDateTime: String; aOptions: DateParserOptions := []): nullable DateTime;
     class method TryParse(aDateTime: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
     class method TryParse(aDateTime: String; aFormat: String; aOptions: DateParserOptions := []): nullable DateTime;
+    class method TryParseISO8601(aDateTime: String): nullable DateTime;
     class method TryParse(aDateTime: String; aFormat: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
 
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
@@ -674,6 +675,12 @@ end;
 class method DateTime.TryParse(aDateTime: String; aFormat: String; aOptions: DateParserOptions := []): nullable DateTime;
 begin
   if DateParser.TryParse(aDateTime, aFormat, out var lResult, aOptions) then
+    result := lResult;
+end;
+
+class method DateTime.TryParseISO8601(aDateTime: String): nullable DateTime;
+begin
+  if DateParser.TryParseISO8601(aDateTime, out var lResult) then
     result := lResult;
 end;
 
