@@ -158,13 +158,7 @@ end;
 
 constructor DateTime;
 begin
-  {$IF COOPER}
-  result := Calendar.Instance;
-  {$ELSEIF TOFFEE}
-  result := new PlatformDateTime();
-  {$ELSEIF ECHOES OR ISLAND}
-  fDateTime := new PlatformDateTime();
-  {$ENDIF}
+  result := UtcNow;
 end;
 
 constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer);
