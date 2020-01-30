@@ -158,7 +158,11 @@ end;
 
 constructor DateTime;
 begin
+  {$IF COOPER OR TOFFEE}
   result := UtcNow;
+  {$ELSEIF ECHOES OR ISLAND}
+  fDateTime := PlatformDateTime.UtcNow;
+  {$ENDIF}
 end;
 
 constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer);
