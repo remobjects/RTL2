@@ -123,7 +123,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)List (Extensions).pas">
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Sequence (Extensions).pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sequence (Extensions).pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.Foundation.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Uri.pas">
       <VirtualFolder>Files and Paths</VirtualFolder>
