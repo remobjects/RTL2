@@ -295,7 +295,7 @@ type
 
   XmlDocumentType = public class(XmlNode)
   public
-    constructor (aParent: XmlElement := nil);
+    constructor ();
     property Name: String;
     property SystemId: String;
     property PublicId: String;
@@ -1785,9 +1785,8 @@ begin
   fNodeType := XmlNodeType.ProcessingInstruction;
 end;
 
-constructor XmlDocumentType(aParent: XmlElement);
+constructor XmlDocumentType();
 begin
-  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.DocumentType;
 end;
 
