@@ -831,13 +831,13 @@ begin
       if XmlDocumentType(self).Name <> nil then Sb.Append(XmlDocumentType(self).Name);
       if XmlDocumentType(self).PublicId <> nil then begin
         Sb.Append(" PUBLIC ");
-        Sb.Append(XmlDocumentType(self).PublicId);
+        Sb.Append('"'+XmlDocumentType(self).PublicId+'"');
         Sb.Append(' ');
-        Sb.Append(XmlDocumentType(self).SystemId);
+        Sb.Append('"'+XmlDocumentType(self).SystemId+'"');
       end
       else if XmlDocumentType(self).SystemId <> nil then begin
         Sb.Append(" SYSTEM ");
-        Sb.Append(XmlDocumentType(self).SystemId);
+        Sb.Append('"'+XmlDocumentType(self).SystemId+'"');
       end;
       if XmlDocumentType(self).Declaration <> nil then begin
         Sb.Append(" [");
