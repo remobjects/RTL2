@@ -14,6 +14,7 @@ type
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
     fDefaultVersion := "1.0";
+    fWasDocType: Boolean;
 
     method GetNodes: ImmutableList<XmlNode>;
     method GetRoot: not nullable XmlElement;
@@ -617,7 +618,15 @@ end;
 method XmlDocument.AddNode(aNode: not nullable XmlNode);
 begin
   aNode.Document := self;
-  fNodes.Add(aNode);
+  if aNode.NodeType = XmlNodeType.DocumentType then
+    if fWasDocType then
+      raise new XmlException("Only one DOCTYPE node could be added")
+    else begin
+      fNodes.Insert(0, aNode);
+      fWasDocType := true;
+    end 
+  else
+    fNodes.Add(aNode);
 end;
 
 method XmlDocument.GetRoot: not nullable XmlElement;
@@ -1512,7 +1521,7 @@ begin
           end;
           Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
         end
-        else Sb.Append(aNode.tostring(aSaveFormatted, aFormatInsideTags, aFormatOptions));
+        else Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
         lEmptyLines := "";
         AddNewLine := lFormat;
       end;
