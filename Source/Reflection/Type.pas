@@ -233,7 +233,7 @@ begin
   methodInfos := class_copyMethodList(fClass, var methodCount);
   result := NSMutableArray<&Method>.arrayWithCapacity(methodCount);
   for i: Int32 := 0 to methodCount-1 do
-    NSMutableArray<&Method>(result).addObject(new &Method withClass(fClass) &method(methodInfos[i]));
+    NSMutableArray<&Method>(result).addObject(new &Method withClass(fClass as &Type) &method(methodInfos[i]));
 end;
 
 method &Type.Get_Properties: ImmutableList<&Property>;
@@ -243,7 +243,7 @@ begin
   propInfos := class_copyPropertyList(fClass, var propCount);
   result := NSMutableArray<&Property>.arrayWithCapacity(propCount);
   for i: Int32 := 0 to propCount-1 do
-    NSMutableArray<&Property>(result).addObject(new &Property withClass(fClass) &property(propInfos[i]));
+    NSMutableArray<&Property>(result).addObject(new &Property withClass(fClass as &Type) &property(propInfos[i]));
 end;
 
 method &Type.IsSubclassOf(aType: &Type): Boolean;
