@@ -176,9 +176,9 @@ end;
 constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer; anHour: Integer; aMinute: Integer; aSecond: Integer);
 begin
   {$IF COOPER OR TOFFEE}
-  constructor(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
+  constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond, 0);
   {$ELSEIF ECHOES OR ISLAND}
-  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond, 0);
   {$ENDIF}
 end;
 
