@@ -639,16 +639,10 @@ begin
 
   {$IF COOPER}
   var DecFormat: java.text.DecimalFormat := java.text.DecimalFormat(java.text.DecimalFormat.getInstance(aLocale));
-  var Symbols: java.text.DecimalFormatSymbols := java.text.DecimalFormatSymbols.getInstance(aLocale);
-
-  Symbols.DecimalSeparator := '.';
-  Symbols.GroupingSeparator := ',';
-  Symbols.ExponentSeparator := 'E+';
-  DecFormat.setDecimalFormatSymbols(Symbols);
-  DecFormat.setParseIntegerOnly(false);
   var Position := new java.text.ParsePosition(0);
-
   aValue := aValue.Trim.ToUpper;
+  // E+ is not accepted, just E or E-
+  aValue := aValue.Replace('E+', 'E');
   {$IF ANDROID}
   if aValue.Length > 1 then begin
     var DecimalIndex := aValue.IndexOf(".");
