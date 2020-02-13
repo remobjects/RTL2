@@ -535,19 +535,25 @@ end;
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
   if not aAlways or CanGetPathRelativeToUrl(aUrl) then
-    result := FilePathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+    result := coalesce(FilePathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3), FilePath)
+  else
+    result := FilePath;
 end;
 
 method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
   if not aAlways or CanGetPathRelativeToUrl(aUrl) then
-    result := WindowsPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+    result := coalesce(WindowsPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3), WindowsPath)
+  else
+    result := WindowsPath;
 end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
   if not aAlways or CanGetPathRelativeToUrl(aUrl) then
-    result := UnixPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+    result := coalesce(UnixPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3), UnixPath)
+  else
+    result := UnixPath;
 end;
 
 method Url.IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
