@@ -154,6 +154,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logging.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)BinaryReader.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Observer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Difference.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
