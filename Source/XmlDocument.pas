@@ -840,13 +840,22 @@ begin
       if XmlDocumentType(self).Name <> nil then Sb.Append(XmlDocumentType(self).Name);
       if XmlDocumentType(self).PublicId <> nil then begin
         Sb.Append(" PUBLIC ");
-        Sb.Append('"'+XmlDocumentType(self).PublicId+'"');
+        var lAddQuotes := (XmlDocumentType(self).PublicId[0] <> "'") and (XmlDocumentType(self).PublicId[0] <> '"');
+        if lAddQuotes then Sb.Append('"');
+        Sb.Append(XmlDocumentType(self).PublicId);
+        if lAddQuotes then Sb.Append('"');
         Sb.Append(' ');
-        Sb.Append('"'+XmlDocumentType(self).SystemId+'"');
+        lAddQuotes := (XmlDocumentType(self).SystemId[0] <> "'") and (XmlDocumentType(self).SystemId[0] <> '"');
+        if lAddQuotes then Sb.Append('"');
+        Sb.Append(XmlDocumentType(self).SystemId);
+        if lAddQuotes then Sb.Append('"');
       end
       else if XmlDocumentType(self).SystemId <> nil then begin
         Sb.Append(" SYSTEM ");
-        Sb.Append('"'+XmlDocumentType(self).SystemId+'"');
+        var lAddQuotes := (XmlDocumentType(self).SystemId[0] <> "'") and (XmlDocumentType(self).SystemId[0] <> '"');
+        if lAddQuotes then Sb.Append('"');
+        Sb.Append(XmlDocumentType(self).SystemId);
+        if lAddQuotes then Sb.Append('"');
       end;
       if XmlDocumentType(self).Declaration <> nil then begin
         Sb.Append(" [");
