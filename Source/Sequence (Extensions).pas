@@ -1,6 +1,5 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ISLAND}
 type
   ISequence_Extensions<T> = public extension class (ISequence<T>)
   private
@@ -29,7 +28,6 @@ type
         result := self.ToList().ToSortedList(aComparison)
     end;
 
-
     method JoinedString(aSeparator: nullable String := nil): not nullable String;
     begin
       var lResult := new StringBuilder();
@@ -42,6 +40,5 @@ type
     end;
 
   end;
-{$ENDIF}
 
 end.
