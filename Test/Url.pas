@@ -153,7 +153,7 @@ type
       Check.AreEqual(lUrl.WindowsPath, "C:\Program Files\Tëst\Tést.txt");
 
 
-      lUrl := Url.UrlWithFilepath("/Foo/String+Helpers.cs");
+      lUrl := Url.UrlWithFilePath("/Foo/String+Helpers.cs");
       Check.AreEqual(lUrl.ToAbsoluteString, "file:///Foo/String%2BHelpers.cs");
       Check.AreEqual(lUrl.UnixPath, "/Foo/String+Helpers.cs");
     end;
