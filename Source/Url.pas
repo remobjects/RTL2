@@ -425,7 +425,7 @@ begin
     if length(fHost) > 0 then
       result := "\\"+fHost+result
     else if IsAbsoluteWindowsFileURL then
-      result := result.SubString(1);
+      result := result.Substring(1);
   end;
 end;
 
@@ -602,7 +602,7 @@ begin
     if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then begin
       result := result.Replace('/', RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
       if IsAbsoluteWindowsFileURL then
-        result := result.SubString(1);
+        result := result.Substring(1);
     end;
     {$ENDIF}
   end;
@@ -613,7 +613,7 @@ begin
   result := GetUnixPathWithoutLastComponent;
   result := result:Replace('/', '\');
   if IsAbsoluteWindowsFileURL then
-    result := result.SubString(1);
+    result := result.Substring(1);
 end;
 
 method Url.GetPathWithoutLastComponent: String;
@@ -662,7 +662,7 @@ begin
   var lPath := fPath;
   if length(lPath) > 0 then begin
     if lPath.EndsWith("/") then
-      lPath := lPath.SubString(0, length(lPath)-1);
+      lPath := lPath.Substring(0, length(lPath)-1);
     if not aNewExtension.StartsWith(".") then
       aNewExtension := "."+aNewExtension; // force a "." into the neww extension
     lPath := lPath+aNewExtension;
