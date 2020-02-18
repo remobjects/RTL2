@@ -5,14 +5,22 @@ type
     where T is IComparable<T>;
 
   public
-    {$IF NOT ISLAND}
     constructor betweenSequences(aSequence, bSequence: sequence of T);
     begin
-      constructor betweenSortedLists(aSequence.ToSortedList, bSequence.ToSortedList);
+      constructor betweenSortedLists(aSequence.ToSortedList( (a, b) -> a.CompareTo(b) ), bSequence.ToSortedList( (a, b) -> a.CompareTo(b) ) );
     end;
-    {$ENDIF}
+
+    constructor betweenSequences(aSequence, bSequence: sequence of T; aComparison: Comparison<T>);
+    begin
+      constructor betweenSortedLists(aSequence.ToSortedList(aComparison), bSequence.ToSortedList(aComparison), aComparison);
+    end;
 
     constructor betweenSortedLists(aList, bList: ImmutableList<T>);
+    begin
+      constructor betweenSortedLists(aList, bList, (a, b) -> a.CompareTo(b) );
+    end;
+
+    constructor betweenSortedLists(aList, bList: ImmutableList<T>; aComparison: Comparison<T>);
     begin
       var a := 0;
       var b := 0;
@@ -23,7 +31,7 @@ type
 
           var aValue := aList[a];
           var bValue := bList[b];
-          var lCompare := aValue.CompareTo(bValue);
+          var lCompare := aComparison(aValue, bValue);
           if lCompare = 0 then begin
             // value is in both lists, just move on
             inc(a);

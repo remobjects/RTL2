@@ -1,13 +1,12 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES OR ISLAND}
 type
   List_Extensions<T> = public extension class(PlatformList<T>)
   private
   protected
   public
 
-    {$IF NOT ISLAND}
+    {$IF NOT (ISLAND OR COOPER)}
     method ToSortedList: ImmutableList<T>;
     begin
       result := (self as ImmutableList<T>).ToSortedList();
@@ -30,6 +29,5 @@ type
     end;
 
   end;
-{$ENDIF}
 
 end.

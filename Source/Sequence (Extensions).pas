@@ -10,7 +10,7 @@ type
       //result := &Select(i -> i as U).ToList();
     //end;
 
-    {$IF NOT ISLAND}
+    {$IF NOT (ISLAND OR COOPER)}
     method ToSortedList: ImmutableList<T>;
     begin
       if self is ImmutableList<T> then
