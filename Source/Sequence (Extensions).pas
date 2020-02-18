@@ -2,23 +2,11 @@
 
 type
   ISequence_Extensions<T> = public extension class (ISequence<T>)
-  private
-  protected
   public
     //method ToList<U>: not nullable ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
     //begin
       //result := &Select(i -> i as U).ToList();
     //end;
-
-    {$IF NOT (ISLAND OR COOPER)}
-    method ToSortedList: ImmutableList<T>;
-    begin
-      if self is ImmutableList<T> then
-        result := (self as ImmutableList<T>).ToSortedList()
-      else
-        result := self.ToList().ToSortedList();
-    end;
-    {$ENDIF}
 
     method ToSortedList(aComparison: Comparison<T>): ImmutableList<T>;
     begin
@@ -40,5 +28,18 @@ type
     end;
 
   end;
+
+  {$IF NOT COOPER AND NOT ISLAND}
+  ISequence_Extensions_Compararable<T> = public extension class (ISequence<T>)
+    where T is IComparable<T>;
+  public
+
+    method ToSortedList: ImmutableList<T>;
+    begin
+      self.ToSortedList( (a, b) -> a.CompareTo(b) );
+    end;
+
+  end;
+  {$ENDIF}
 
 end.
