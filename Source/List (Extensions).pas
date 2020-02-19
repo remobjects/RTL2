@@ -21,17 +21,15 @@ type
 
   end;
 
-  {$IF NOT ISLAND}
-  PlatformList_Extensions_Compararable<T> = public extension class (ImmutableList<T>)
-    where T is IComparable<T>;
-  public
+  //PlatformList_Extensions_Compararable<T> = public extension class (ImmutableList<T>)
+    //where T is IComparable<T>;
+  //public
 
-    method ToSortedList: ImmutableList<T>;
-    begin
-      self.ToSortedList( (a, b) -> a.CompareTo(b) );
-    end;
+    //method ToSortedList: ImmutableList<T>;
+    //begin
+      //self.ToSortedList( (a, b) -> a.CompareTo(b) );
+    //end;
 
-  end;
-  {$ENDIF}
+  //end;
 
 end.

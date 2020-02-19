@@ -29,7 +29,7 @@ type
 
   end;
 
-  {$IF NOT COOPER AND NOT ISLAND}
+  {$IF NOT COOPER}
   ISequence_Extensions_Compararable<T> = public extension class (ISequence<T>)
     where T is IComparable<T>;
   public

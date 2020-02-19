@@ -69,7 +69,6 @@ type
     property Item[i: Integer]: T read GetItem; default;
   end;
 
-  {$IF NOT ISLAND}
   ImmutableList_Extensions_Compararable<T> = public extension class (ImmutableList<T>)
     where T is IComparable<T>;
   public
@@ -78,7 +77,6 @@ type
       result := ToSortedList( (a, b) -> a.CompareTo(b) );
     end;
   end;
-  {$ENDIF}
 
   List<T> = public class (ImmutableList<T>) mapped to PlatformList<T>
   {$IFDEF TOFFEE}
