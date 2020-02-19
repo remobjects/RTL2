@@ -43,9 +43,6 @@ type
     end;
     {$ENDIF}
 
-    {$IF NOT COOPER AND NOT ISLAND}
-    method ToSortedList: ImmutableList<T>;
-    {$ENDIF}
     method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
     {$IFDEF COOPER}
     method ToArray: not nullable array of T; inline;
@@ -72,9 +69,20 @@ type
     property Item[i: Integer]: T read GetItem; default;
   end;
 
+  {$IF NOT ISLAND}
+  ImmutableList_Extensions_Compararable<T> = public extension class (ImmutableList<T>)
+    where T is IComparable<T>;
+  public
+    method ToSortedList: ImmutableList<T>;
+    begin
+      result := ToSortedList( (a, b) -> a.CompareTo(b) );
+    end;
+  end;
+  {$ENDIF}
+
   List<T> = public class (ImmutableList<T>) mapped to PlatformList<T>
   {$IFDEF TOFFEE}
-   where T is class;
+    where T is class;
   {$ENDIF}
   private
     method GetItem(&Index: Integer): T;
@@ -565,13 +573,6 @@ begin
   (result as PlatformList<T>).Sort((x, y) -> Comparison(x, y));
   {$ENDIF}
 end;
-
-{$IF NOT COOPER AND NOT ISLAND}
-method ImmutableList<T>.ToSortedList: ImmutableList<T>;
-begin
-  result := self.OrderBy(n -> n).ToList();
-end;
-{$ENDIF}
 
 {$IFDEF COOPER}
 method ImmutableList<T>.ToArray: not nullable array of T;

@@ -425,7 +425,7 @@ begin
     if length(fHost) > 0 then
       result := "\\"+fHost+result
     else if IsAbsoluteWindowsFileURL then
-      result := result.SubString(1);
+      result := result.Substring(1);
   end;
 end;
 
@@ -535,19 +535,25 @@ end;
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
   if not aAlways or CanGetPathRelativeToUrl(aUrl) then
-    result := FilePathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+    result := coalesce(FilePathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3), FilePath)
+  else
+    result := FilePath;
 end;
 
 method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
   if not aAlways or CanGetPathRelativeToUrl(aUrl) then
-    result := WindowsPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+    result := coalesce(WindowsPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3), WindowsPath)
+  else
+    result := WindowsPath;
 end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
   if not aAlways or CanGetPathRelativeToUrl(aUrl) then
-    result := UnixPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3);
+    result := coalesce(UnixPathRelativeToUrl(aUrl) Threshold(if aAlways then Consts.MaxInt32 else 3), UnixPath)
+  else
+    result := UnixPath;
 end;
 
 method Url.IsUnderneath(aPotentialBaseUrl: not nullable Url): Boolean;
@@ -596,7 +602,7 @@ begin
     if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then begin
       result := result.Replace('/', RemObjects.Elements.RTL.Path.DirectorySeparatorChar);
       if IsAbsoluteWindowsFileURL then
-        result := result.SubString(1);
+        result := result.Substring(1);
     end;
     {$ENDIF}
   end;
@@ -607,7 +613,7 @@ begin
   result := GetUnixPathWithoutLastComponent;
   result := result:Replace('/', '\');
   if IsAbsoluteWindowsFileURL then
-    result := result.SubString(1);
+    result := result.Substring(1);
 end;
 
 method Url.GetPathWithoutLastComponent: String;
@@ -656,7 +662,7 @@ begin
   var lPath := fPath;
   if length(lPath) > 0 then begin
     if lPath.EndsWith("/") then
-      lPath := lPath.SubString(0, length(lPath)-1);
+      lPath := lPath.Substring(0, length(lPath)-1);
     if not aNewExtension.StartsWith(".") then
       aNewExtension := "."+aNewExtension; // force a "." into the neww extension
     lPath := lPath+aNewExtension;

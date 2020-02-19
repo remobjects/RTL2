@@ -782,12 +782,12 @@ type
     // Padd
     //
 
-    method PadStart(TotalWidth: Integer): String; inline;
+    method PadStart(TotalWidth: Integer): not nullable String; inline;
     begin
       result := PadStart(TotalWidth, ' ');
     end;
 
-    method PadStart(TotalWidth: Integer; PaddingChar: Char): String;
+    method PadStart(TotalWidth: Integer; PaddingChar: Char): not nullable String;
     begin
       {$IF COOPER}
       var lTotal := TotalWidth - mapped.length;
@@ -810,12 +810,12 @@ type
       {$ENDIF}
     end;
 
-    method PadEnd(TotalWidth: Integer): String; inline;
+    method PadEnd(TotalWidth: Integer): not nullable String; inline;
     begin
       result := PadEnd(TotalWidth, ' ');
     end;
 
-    method PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
+    method PadEnd(TotalWidth: Integer; PaddingChar: Char): not nullable String;
     begin
       {$IF COOPER}
       var lTotal := TotalWidth - mapped.length;

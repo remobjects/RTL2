@@ -14,6 +14,7 @@ type
     fNodes: List<XmlNode> := new List<XmlNode>;
     fRoot: /*not nullable*/ XmlElement;
     fDefaultVersion := "1.0";
+    fWasDocType: Boolean;
 
     method GetNodes: ImmutableList<XmlNode>;
     method GetRoot: not nullable XmlElement;
@@ -294,7 +295,7 @@ type
 
   XmlDocumentType = public class(XmlNode)
   public
-    constructor (aParent: XmlElement := nil);
+    constructor ();
     property Name: String;
     property SystemId: String;
     property PublicId: String;
@@ -617,7 +618,15 @@ end;
 method XmlDocument.AddNode(aNode: not nullable XmlNode);
 begin
   aNode.Document := self;
-  fNodes.Add(aNode);
+  if aNode.NodeType = XmlNodeType.DocumentType then
+    if fWasDocType then
+      raise new XmlException("Only one DOCTYPE node could be added")
+    else begin
+      fNodes.Insert(0, aNode);
+      fWasDocType := true;
+    end 
+  else
+    fNodes.Add(aNode);
 end;
 
 method XmlDocument.GetRoot: not nullable XmlElement;
@@ -831,13 +840,22 @@ begin
       if XmlDocumentType(self).Name <> nil then Sb.Append(XmlDocumentType(self).Name);
       if XmlDocumentType(self).PublicId <> nil then begin
         Sb.Append(" PUBLIC ");
+        var lAddQuotes := (XmlDocumentType(self).PublicId[0] <> "'") and (XmlDocumentType(self).PublicId[0] <> '"');
+        if lAddQuotes then Sb.Append('"');
         Sb.Append(XmlDocumentType(self).PublicId);
+        if lAddQuotes then Sb.Append('"');
         Sb.Append(' ');
+        lAddQuotes := (XmlDocumentType(self).SystemId[0] <> "'") and (XmlDocumentType(self).SystemId[0] <> '"');
+        if lAddQuotes then Sb.Append('"');
         Sb.Append(XmlDocumentType(self).SystemId);
+        if lAddQuotes then Sb.Append('"');
       end
       else if XmlDocumentType(self).SystemId <> nil then begin
         Sb.Append(" SYSTEM ");
+        var lAddQuotes := (XmlDocumentType(self).SystemId[0] <> "'") and (XmlDocumentType(self).SystemId[0] <> '"');
+        if lAddQuotes then Sb.Append('"');
         Sb.Append(XmlDocumentType(self).SystemId);
+        if lAddQuotes then Sb.Append('"');
       end;
       if XmlDocumentType(self).Declaration <> nil then begin
         Sb.Append(" [");
@@ -1512,7 +1530,7 @@ begin
           end;
           Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
         end
-        else Sb.Append(aNode.tostring(aSaveFormatted, aFormatInsideTags, aFormatOptions));
+        else Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
         lEmptyLines := "";
         AddNewLine := lFormat;
       end;
@@ -1776,9 +1794,8 @@ begin
   fNodeType := XmlNodeType.ProcessingInstruction;
 end;
 
-constructor XmlDocumentType(aParent: XmlElement);
+constructor XmlDocumentType();
 begin
-  inherited constructor withParent(aParent);
   fNodeType := XmlNodeType.DocumentType;
 end;
 

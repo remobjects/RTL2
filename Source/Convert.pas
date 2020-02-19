@@ -23,8 +23,8 @@ type
     {$IF NOT COOPER}
     method ToString(aValue: UInt64; aBase: Integer := 10): not nullable String; // 76887: Cooper: load error with RTL2
     {$ENDIF}
-    method ToString(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aLocale: Locale := nil): not nullable String;
-    method ToStringInvariant(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1): not nullable String;
+    method ToString(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aMinWidth: Integer := 0; aLocale: Locale := nil): not nullable String;
+    method ToStringInvariant(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aMinWidth: Integer := 0): not nullable String;
     method ToString(aValue: Char): not nullable String;
     method ToString(aValue: Object): not nullable String;
 
@@ -150,12 +150,12 @@ begin
 end;
 {$ENDIF}
 
-method Convert.ToStringInvariant(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1): not nullable String;
+method Convert.ToStringInvariant(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aMinWidth: Integer := 0): not nullable String;
 begin
-  result := ToString(aValue, aDigitsAfterDecimalPoint, Locale.Invariant);
+  result := ToString(aValue, aDigitsAfterDecimalPoint, aMinWidth, Locale.Invariant);
 end;
 
-method Convert.ToString(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aLocale: Locale := nil): not nullable String;
+method Convert.ToString(aValue: Double; aDigitsAfterDecimalPoint: Integer := -1; aMinWidth: Integer := 0; aLocale: Locale := nil): not nullable String;
 begin
   if Consts.IsNegativeInfinity(aValue) then
     exit "-Infinity";
@@ -166,8 +166,8 @@ begin
   if Consts.IsNaN(aValue) then
     exit "NaN";
 
-  {$IF COOPER}
   if aLocale = nil then aLocale := Locale.Current;
+  {$IF COOPER}
   var DecFormat := java.text.DecimalFormat(java.text.DecimalFormat.getInstance(aLocale));
   var FloatPattern := if aDigitsAfterDecimalPoint < 0 then "#.###############" else if aDigitsAfterDecimalPoint = 0 then "0" else "0."+new String('0', aDigitsAfterDecimalPoint);
   DecFormat.applyPattern(FloatPattern);
@@ -175,7 +175,7 @@ begin
   {$ELSEIF TOFFEE}
   var numberFormatter := new NSNumberFormatter();
   numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
-  numberFormatter.locale := coalesce(aLocale, Locale.Current);
+  numberFormatter.locale := aLocale;
   if aLocale = Locale.Invariant then numberFormatter.usesGroupingSeparator := false;
   if aDigitsAfterDecimalPoint ≥ 0 then begin
     numberFormatter.maximumFractionDigits := aDigitsAfterDecimalPoint;
@@ -183,18 +183,21 @@ begin
   end;
   result := numberFormatter.stringFromNumber(aValue) as not nullable;
   {$ELSEIF ECHOES}
-  if aLocale = nil then aLocale := Locale.Current;
   if aDigitsAfterDecimalPoint < 0 then
     result := System.Convert.ToString(aValue, aLocale) as not nullable
   else
     result := aValue.ToString("0."+new String('0', aDigitsAfterDecimalPoint), aLocale) as not nullable
   {$ELSEIF ISLAND}
-  if aLocale = nil then aLocale := Locale.Current;
   if aDigitsAfterDecimalPoint < 0 then
     result := aValue.ToString(aLocale) as not nullable
   else
     result := aValue.ToString(aDigitsAfterDecimalPoint, aLocale) as not nullable
   {$ENDIF}
+
+  if aMinWidth > 0 then
+    result := result.PadStart(aMinWidth, ' ')
+  else if aMinWidth > 0 then
+    result := result.PadEnd(aMinWidth, ' ');
 end;
 
 method Convert.ToString(aValue: Char): not nullable String;
@@ -636,16 +639,10 @@ begin
 
   {$IF COOPER}
   var DecFormat: java.text.DecimalFormat := java.text.DecimalFormat(java.text.DecimalFormat.getInstance(aLocale));
-  var Symbols: java.text.DecimalFormatSymbols := java.text.DecimalFormatSymbols.getInstance(aLocale);
-
-  Symbols.DecimalSeparator := '.';
-  Symbols.GroupingSeparator := ',';
-  Symbols.ExponentSeparator := 'E+';
-  DecFormat.setDecimalFormatSymbols(Symbols);
-  DecFormat.setParseIntegerOnly(false);
   var Position := new java.text.ParsePosition(0);
-
   aValue := aValue.Trim.ToUpper;
+  // E+ is not accepted, just E or E-
+  aValue := aValue.Replace('E+', 'E');
   {$IF ANDROID}
   if aValue.Length > 1 then begin
     var DecimalIndex := aValue.IndexOf(".");

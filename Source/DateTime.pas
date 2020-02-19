@@ -36,7 +36,6 @@ type
     const OADATE_OFFSET: Int64 = 599264352000000000;
     const TICKS_PER_MILLISECOND: Int64 = 10000;
   public
-    constructor;
     constructor(aTicks: Int64);
     constructor(aYear, aMonth, aDay: Integer);
     constructor(aYear, aMonth, aDay, anHour, aMinute: Integer);
@@ -95,7 +94,7 @@ type
     property Date: DateTime read {$IF COOPER OR TOFFEE}new DateTime(self.Year, self.Month, self.Day, 0, 0, 0){$ELSEIF ECHOES OR ISLAND}new DateTime(fDateTime.Date){$ENDIF};
 
     class property Today: DateTime read {$IF COOPER OR TOFFEE}UtcNow.Date{$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.Today){$ENDIF};
-    class property UtcNow: DateTime read {$IF COOPER OR TOFFEE}new DateTime(){$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.UtcNow){$ENDIF};
+    class property UtcNow: DateTime read {$IF COOPER}Calendar.Instance{$ELSEIF TOFFEE}new PlatformDateTime(){$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.UtcNow){$ENDIF};
     const TicksTill1970: Int64 = 621355968000000000;
 
     property TimeSince: TimeSpan read (UtcNow-self);
@@ -156,17 +155,6 @@ begin
 end;
 {$ENDIF}
 
-constructor DateTime;
-begin
-  {$IF COOPER}
-  result := Calendar.Instance;
-  {$ELSEIF TOFFEE}
-  result := new PlatformDateTime();
-  {$ELSEIF ECHOES OR ISLAND}
-  fDateTime := new PlatformDateTime();
-  {$ENDIF}
-end;
-
 constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer);
 begin
   {$IF COOPER OR TOFFEE}
@@ -188,9 +176,9 @@ end;
 constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer; anHour: Integer; aMinute: Integer; aSecond: Integer);
 begin
   {$IF COOPER OR TOFFEE}
-  constructor(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
+  constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond, 0);
   {$ELSEIF ECHOES OR ISLAND}
-  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond, 0);
   {$ENDIF}
 end;
 

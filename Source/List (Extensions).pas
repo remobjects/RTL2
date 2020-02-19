@@ -1,18 +1,8 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF ECHOES OR ISLAND}
 type
-  List_Extensions<T> = public extension class(PlatformList<T>)
-  private
-  protected
+  PlatformList_Extensions<T> = public extension class(PlatformList<T>)
   public
-
-    {$IF NOT ISLAND}
-    method ToSortedList: ImmutableList<T>;
-    begin
-      result := (self as ImmutableList<T>).ToSortedList();
-    end;
-    {$ENDIF}
 
     method ToSortedList(aComparison: Comparison<T>): ImmutableList<T>;
     begin
@@ -30,6 +20,18 @@ type
     end;
 
   end;
-{$ENDIF}
+
+  {$IF NOT ISLAND}
+  PlatformList_Extensions_Compararable<T> = public extension class (ImmutableList<T>)
+    where T is IComparable<T>;
+  public
+
+    method ToSortedList: ImmutableList<T>;
+    begin
+      self.ToSortedList( (a, b) -> a.CompareTo(b) );
+    end;
+
+  end;
+  {$ENDIF}
 
 end.

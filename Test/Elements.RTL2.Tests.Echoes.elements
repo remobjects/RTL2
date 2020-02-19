@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
     <RootNamespace>RemObjects.Elements.RTL.Tests</RootNamespace>
-    <ProjectGuid>4FE86A5E-1886-47EC-921E-D93AE32079B2</ProjectGuid>
+    <ProjectGuid>{4FE86A5E-1886-47EC-921E-D93AE32079B2}</ProjectGuid>
     <OutputType>exe</OutputType>
     <AssemblyName>Elements.RTL2.Tests.Echoes</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -51,7 +51,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="RemObjects.Elements.EUnit">
       <Private>True</Private>
-      <HintPath>..\..\_RemObjects\EUnit\bin\Debug\NET\RemObjects.Elements.EUnit.dll</HintPath>
+      <HintPath>..\..\RemObjects\EUnit\bin\Debug\NET\RemObjects.Elements.EUnit.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

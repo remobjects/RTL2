@@ -18,11 +18,11 @@ type
     property FileOrFolderExists: Boolean read File.Exists(self) or Folder.Exists(self); inline;
     {$ENDIF}
 
-    property LastPathComponent: String read Path.GetFilename(self); inline;                                 // uses the platform-specific folder separator
-    property LastUnixPathComponent: String read Path.GetUnixFilename(self); inline;
-    property LastWindowsPathComponent: String read Path.GetWindowsFilename(self); inline;
+    property LastPathComponent: String read Path.GetFileName(self); inline;                                 // uses the platform-specific folder separator
+    property LastUnixPathComponent: String read Path.GetUnixFileName(self); inline;
+    property LastWindowsPathComponent: String read Path.GetWindowsFileName(self); inline;
 
-    property LastPathComponentWithoutExtension: String read Path.GetFilenameWithoutExtension(self); inline; // uses the platform-specific folder separator
+    property LastPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(self); inline; // uses the platform-specific folder separator
     property LastUnixPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastUnixPathComponent); inline;
     property LastWindowsPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastWindowsPathComponent); inline;
 

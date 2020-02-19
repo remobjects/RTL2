@@ -123,7 +123,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)List (Extensions).pas">
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Sequence (Extensions).pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sequence (Extensions).pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.Foundation.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Uri.pas">
       <VirtualFolder>Files and Paths</VirtualFolder>
@@ -152,6 +154,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logging.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)BinaryReader.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Observer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Difference.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
