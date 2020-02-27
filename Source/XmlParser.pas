@@ -576,6 +576,9 @@ begin
   //check prefix for LocalName
   var lNamespace: XmlNamespace := nil;
   var lColonPos := result.LocalName.IndexOf(':');
+  var lEmptyName: Boolean;
+  if lColonPos = (result.LocalName.Length-1) then
+    lEmptyName := true;
   if lColonPos > 0 then begin
     var lPrefix := result.LocalName.Substring(0, lColonPos);
     lNamespace := coalesce(result.Namespace[lPrefix], GetNamespaceForPrefix(lPrefix, aParent));
@@ -594,7 +597,7 @@ begin
           end;
           lElement := lElement.Parent;
       end;
-      result.LocalName := '[ERROR]:'+result.LocalName.Substring(lColonPos+1);//, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
+      result.LocalName := '[ERROR]:'+ iif(lEmptyName, "[ERROR]",result.LocalName.Substring(lColonPos+1));
       result.OpenTagEndLine := 0;
       result.OpenTagEndColumn := 0;
       //if assigned (aError) then exit;
@@ -603,14 +606,16 @@ begin
       exit;
     end;
     result.Namespace := lNamespace;
-    result.LocalName := result.LocalName.Substring(lColonPos+1);//, result.LocalName.Length-result.LocalName.IndexOf(':')-1);
+    result.LocalName := iif(lEmptyName, "[ERROR]", result.LocalName.Substring(lColonPos+1));
   end;
   //check prefix for attributes
   for each lAttribute in result.Attributes do begin
-  lColonPos := lAttribute.LocalName.IndexOf(':');
+    lColonPos := lAttribute.LocalName.IndexOf(':');
+    if lColonPos = (lAttribute.LocalName.Length -1) then
+      lEmptyName := true;
     if lColonPos >0 then begin
       var lPrefix := lAttribute.LocalName.Substring(0, lColonPos);
-      var lLocalName := lAttribute.LocalName.Substring(lColonPos+1);
+      var lLocalName := iif (lEmptyName, "[ERROR]", lAttribute.LocalName.Substring(lColonPos+1));
       if lPrefix = "xml" then begin
         lNamespace := new XmlNamespace(lPrefix, XmlConsts.XML_NAMESPACE_URL);
         case lLocalName of
