@@ -26,5 +26,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)XmlFormatting.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Unicode.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json.pas" />
   </ItemGroup>
 </Project>

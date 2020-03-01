@@ -177,9 +177,15 @@ begin
   numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
   numberFormatter.locale := aLocale;
   if aLocale = Locale.Invariant then numberFormatter.usesGroupingSeparator := false;
-  if aDigitsAfterDecimalPoint ≥ 0 then begin
+  numberFormatter.usesSignificantDigits := aDigitsAfterDecimalPoint ≥ 0;
+  if numberFormatter.usesSignificantDigits then begin
     numberFormatter.maximumFractionDigits := aDigitsAfterDecimalPoint;
     numberFormatter.minimumFractionDigits := aDigitsAfterDecimalPoint;
+  end
+  else begin
+    // Docs say these are ignored when usesSignificantDigits is false, but they are not :(
+    numberFormatter.maximumFractionDigits := 20;
+    numberFormatter.minimumFractionDigits := 0;
   end;
   result := numberFormatter.stringFromNumber(aValue) as not nullable;
   {$ELSEIF ECHOES}
