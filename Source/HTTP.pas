@@ -79,7 +79,7 @@ type
   public
     property Headers: not nullable Dictionary<String,String>; readonly; //todo: list itself should be read-only
     property Code: Int32; readonly;
-    property Success: Boolean read self.Exception = nil;
+    property Success: Boolean read (Exception = nil) and (Code < 300);
     property Exception: Exception public read unit write;
 
     method GetContentAsString(aEncoding: Encoding := nil; contentCallback: not nullable HttpContentResponseBlock<String>);
@@ -747,8 +747,8 @@ begin
 
     try
       var webResponse := webRequest.GetResponse() as HttpWebResponse;
-      if webResponse.StatusCode >= 300 then begin
-        if not aThrowOnError then exit nil;
+      if webResponse.StatusCode ≥ 300 then begin
+        if not aThrowOnError then new HttpResponse(webResponse);
         var lException := new HttpException(String.Format("Unable to complete request. Error code: {0}", webResponse.StatusCode), result);
         (webResponse as IDisposable).Dispose;
         raise lException;
@@ -758,11 +758,18 @@ begin
       end;
     except
       on E: System.Net.WebException do begin
-        if not aThrowOnError then exit nil;
-        if E.Response is HttpWebResponse then
-          raise new HttpException(E.Message, new HttpResponse(E.Response as HttpWebResponse))
-        else
-          raise new HttpException(E.Message);
+        if not aThrowOnError then begin
+          if E.Response is HttpWebResponse then
+            exit new HttpResponse(E.Response as HttpWebResponse)
+          else
+            exit nil;
+        end
+        else begin
+          if E.Response is HttpWebResponse then
+            raise new HttpException(E.Message, new HttpResponse(E.Response as HttpWebResponse))
+          else
+            raise new HttpException(E.Message);
+        end;
       end;
     end;
 
