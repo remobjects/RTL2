@@ -15,6 +15,12 @@ type
       Check.AreNotEqual(f.ToJson, "12.187");
     end;
 
+    method TryFromAString;
+    begin
+      var lJson := JsonDocument.TryFromString("");
+      Check.IsNil(lJson);
+    end;
+
   end;
 
 

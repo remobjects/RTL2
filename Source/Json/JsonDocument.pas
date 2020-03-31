@@ -22,9 +22,12 @@ type
     class method FromString(aString: not nullable String): not nullable JsonDocument;
     {$IF NOT WEBASSEMBLY}
     class method TryFromFile(aFile: not nullable File): nullable JsonDocument;
+    class method TryFromFile(aFile: not nullable File; out aException: Exception): nullable JsonDocument;
     {$ENDIF}
     class method TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): nullable JsonDocument;
+    class method TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
     class method TryFromString(aString: not nullable String): nullable JsonDocument;
+    class method TryFromString(aString: not nullable String; out aException: Exception): nullable JsonDocument;
     class method CreateDocument: not nullable JsonDocument;
 
     constructor;
@@ -127,8 +130,16 @@ begin
   try
     result := new JsonDocument(new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize);
   except
+  end;
+end;
+
+class method JsonDocument.TryFromFile(aFile: not nullable File; out aException: Exception): nullable JsonDocument;
+begin
+  try
+    result := new JsonDocument(new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize);
+  except
     on E: JsonException do
-      exit nil;
+      aException := E;
   end;
 end;
 {$ENDIF}
@@ -139,8 +150,17 @@ begin
     if aEncoding = nil then aEncoding := Encoding.Default;
     result := new JsonDocument(new JsonDeserializer(new String(aBinary.ToArray, aEncoding)).Deserialize);
   except
-    on E: JsonException do
-      exit nil;
+  end;
+end;
+
+class method JsonDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
+begin
+  try
+    if aEncoding = nil then aEncoding := Encoding.Default;
+    result := new JsonDocument(new JsonDeserializer(new String(aBinary.ToArray, aEncoding)).Deserialize);
+  except
+    on E: Exception do
+      aException := E;
   end;
 end;
 
@@ -149,8 +169,16 @@ begin
   try
     result := new JsonDocument(new JsonDeserializer(aString).Deserialize)
   except
-    on E: JsonException do
-      exit nil;
+  end;
+end;
+
+class method JsonDocument.TryFromString(aString: not nullable String; out aException: Exception): nullable JsonDocument;
+begin
+  try
+    result := new JsonDocument(new JsonDeserializer(aString).Deserialize)
+  except
+    on E: Exception do
+      aException := E;
   end;
 end;
 
