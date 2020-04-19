@@ -48,10 +48,10 @@ type
     begin
       {$IF JAVA}
       result := ToString.compareTo(rhs:ToString);
-      {$ELSEIF ECHOES OR ISLAND}
-      result := ToString.CompareTo(rhs:ToString);
       {$ELSEIF TOFFEE}
       result := ToString.compare(rhs:ToString);
+      {$ELSEIF ECHOES OR ISLAND}
+      result := ToString.CompareTo(rhs:ToString);
       {$ENDIF}
     end;
 
