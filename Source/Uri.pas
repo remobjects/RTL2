@@ -56,7 +56,7 @@ type
     end;
 
     {$IF TOFFEE}
-    method compare(rhs: Uri): Integer;
+    method compare(rhs: Uri): NSComparisonResult;
     begin
       result := ToString.compare(rhs:ToString);
     end;
