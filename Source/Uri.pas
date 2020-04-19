@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
 type
-  Uri = public abstract class
+  Uri = public abstract class(IComparable<Uri>)
   private
   protected
   public
@@ -43,6 +43,24 @@ type
       if not assigned(Value1) then exit not assigned(Value2);
       exit Value1.ToString <> Value2:ToString;
     end;
+
+    method CompareTo(rhs: Uri): Integer;
+    begin
+      {$IF JAVA}
+      result := ToString.compareTo(rhs:ToString);
+      {$ELSEIF ECHOES OR ISLAND}
+      result := ToString.CompareTo(rhs:ToString);
+      {$ELSEIF TOFFEE}
+      result := ToString.compare(rhs:ToString);
+      {$ENDIF}
+    end;
+
+    {$IF TOFFEE}
+    method compare(rhs: Uri): Integer;
+    begin
+      result := ToString.compare(rhs:ToString);
+    end;
+    {$ENDIF}
 
   end;
 
