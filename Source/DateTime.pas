@@ -47,6 +47,9 @@ type
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     constructor (aDateTime: PlatformDateTime);
     {$ENDIF}
+    {$IF ECHOES}
+    constructor;
+    {$ENDIF}
 
     class method Compare(Value1, Value2: DateTime): Integer;
 
@@ -146,6 +149,14 @@ type
     method AdjustDate(aSelf: NSDate; Component: NSCalendarUnit; Value: NSInteger): DateTime;
     class property LocalTimezone: NSTimeZone := NSTimeZone.localTimeZone;
   end;
+{$ENDIF}
+
+{$IF ECHOES}
+[Error("This constructor is provided only for compatibility with .NET Serialization")]
+constructor DateTime;
+begin
+  raise new Exception("This constructor is provided only for compatibility with .NET Serialization");
+end;
 {$ENDIF}
 
 {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
