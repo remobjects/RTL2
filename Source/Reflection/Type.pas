@@ -42,6 +42,7 @@ type
   public
     class property AllTypes: ImmutableList<&Type> read GetAllTypes;
     class method GetType(aName: not nullable String): nullable &Type;
+    constructor withPlatformType(aType: PlatformType);
     {$IF COOPER}
     property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
     property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
@@ -148,7 +149,18 @@ begin
   {$ELSEIF ECHOES}
   result := PlatformType.GetType(aName);
   {$ELSEIF ISLAND}
-  //result := mapped.AllTypes.ToList();
+  raise new NotImplementedException("Type.GetType");
+  {$ENDIF}
+end;
+
+constructor &Type withPlatformType(aType: PlatformType);
+begin
+  {$IF ECHOES OR COOPER}
+  result := aType as &Type;
+  {$ELSEIF TOFFEE AND NOT ISLAND}
+  constructor withClass(aType);
+  {$ELSE}
+  raise new NotImplementedException("Type withPlatformType");
   {$ENDIF}
 end;
 
