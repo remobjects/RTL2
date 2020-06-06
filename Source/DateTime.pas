@@ -63,6 +63,11 @@ type
     method &Add(Value: TimeSpan): DateTime;
 
     method CompareTo(Value: DateTime): Integer;
+
+    {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
+    [ToString]
+    method ToString: PlatformString; override;
+    {$ENDIF}
     method ToString(aTimeZone: TimeZone := nil): String;
     method ToString(Format: String; aTimeZone: TimeZone := nil): String;
     method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
@@ -83,9 +88,6 @@ type
     class method TryParseISO8601(aDateTime: String): nullable DateTime;
     class method TryParse(aDateTime: String; aFormat: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
 
-    {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
-    method ToString: PlatformString; override;
-    {$ENDIF}
 
     property Hour: Integer read {$IF COOPER}mapped.get(Calendar.HOUR_OF_DAY){$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSHourCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Hour{$ENDIF};
     property Minute: Integer read {$IF COOPER}mapped.get(Calendar.MINUTE){$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSMinuteCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Minute{$ELSEIF TOFFEE}DateTimeHelpers.GetComponent(mapped, NSCalendarUnit.NSMinuteCalendarUnit){$ENDIF};
@@ -292,6 +294,8 @@ begin
     result := lDateInTimeZone.ToString(DateFormatter.Format(Format))
   else
     result := lDateInTimeZone.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture));
+  {$ELSEIF ISLAND}
+  result := fDateTime.ToString; {$HINT incomplete, as it does not use Format, Culture or TimeZone yet}
   {$ENDIF}
 end;
 
@@ -312,6 +316,8 @@ begin
   lFormatter.dateStyle := NSDateFormatterStyle.ShortStyle;
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
   result := lFormatter.stringFromDate(mapped);
+  {$ELSEIF ISLAND}
+  {$HINT NEEDS ISLAND}//result := fDateTime.ToShortDateString;
   {$ELSEIF ECHOES}
   result := fDateTime.ToShortDateString;
   {$ENDIF}
@@ -331,6 +337,8 @@ begin
   result := lFormatter.stringFromDate(mapped);
   {$ELSEIF ECHOES}
   result := fDateTime.ToShortTimeString();
+  {$ELSEIF ISLAND}
+  {$HINT NEEDS ISLAND}//result := fDateTime.ToShortTimeString;
   {$ENDIF}
 end;
 
@@ -353,6 +361,8 @@ begin
   result := lFormatter.stringFromDate(mapped);
   {$ELSEIF ECHOES}
   result := ToShortDateString();
+  {$ELSEIF ISLAND}
+  result := ToShortPrettyDateString();
   {$ENDIF}
 end;
 
@@ -371,7 +381,7 @@ begin
   {$ELSEIF ECHOES}
   result := fDateTime.ToShortDateString;
   {$ELSEIF ISLAND}
-  result := fDateTime.ToShortPrettyDateString();
+  result := ToShortPrettyDateString();{$HINT NEEDS ISLAND}//result := fDateTime.ToLongPrettyDateString();
   {$ENDIF}
 end;
 
