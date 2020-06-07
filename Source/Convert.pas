@@ -63,9 +63,9 @@ type
     method ToByte(aValue: not nullable String): Byte;
 
     method ToChar(aValue: Boolean): Char;
-    method ToChar(aValue: Int32): Char;
+    method ToChar(aValue: Int32): Char; inline;
     method ToChar(aValue: Int64): Char;
-    method ToChar(aValue: Byte): Char;
+    method ToChar(aValue: Byte): Char; inline;
     method ToChar(aValue: not nullable String): Char;
 
     method ToBoolean(aValue: Double): Boolean;
@@ -177,14 +177,13 @@ begin
   numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
   numberFormatter.locale := aLocale;
   if aLocale = Locale.Invariant then numberFormatter.usesGroupingSeparator := false;
-  numberFormatter.usesSignificantDigits := aDigitsAfterDecimalPoint ≥ 0;
-  if numberFormatter.usesSignificantDigits then begin
+  numberFormatter.usesSignificantDigits := false;
+  if aDigitsAfterDecimalPoint ≥ 0 then begin
     numberFormatter.maximumFractionDigits := aDigitsAfterDecimalPoint;
     numberFormatter.minimumFractionDigits := aDigitsAfterDecimalPoint;
   end
   else begin
-    // Docs say these are ignored when usesSignificantDigits is false, but they are not :(
-    numberFormatter.maximumFractionDigits := 20;
+    numberFormatter.maximumFractionDigits := 00;
     numberFormatter.minimumFractionDigits := 0;
   end;
   result := numberFormatter.stringFromNumber(aValue) as not nullable;
@@ -784,6 +783,9 @@ end;
 
 method Convert.ToChar(aValue: Int64): Char;
 begin
+  if (aValue < 0) and (aValue ≥ -32768) then
+    exit char(Int32(aValue)); // Values from -32768 through -1 are treated the same as values in the range +32768 through +65535.
+
   if (aValue > Consts.MaxChar) or (aValue < Consts.MinChar) then
     raise new ArgumentOutOfRangeException(RTLErrorMessages.TYPE_RANGE_ERROR, "Char");
 
