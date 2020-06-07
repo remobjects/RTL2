@@ -82,6 +82,14 @@ type
       Assert.AreEqual(Convert.ToHexString(10,0), "A");
     end;
 
+    method TestBinary;
+    begin
+      Check.AreEqual(Convert.TryBinaryStringToUInt64("1x"), nil);
+      Check.AreEqual(Convert.TryBinaryStringToUInt64("1"), 1);
+      Check.AreEqual(Convert.TryBinaryStringToUInt64("10"), 2);
+      Check.AreEqual(Convert.TryBinaryStringToUInt64("100"), 4);
+      Check.AreEqual(Convert.TryBinaryStringToUInt64("1001"), 9);
+    end;
 
 
     method TrimLeadingZeros;
