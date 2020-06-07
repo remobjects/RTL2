@@ -92,6 +92,7 @@ type
     method TryHexStringToUInt32(aValue: not nullable String): nullable UInt32;
     method TryHexStringToUInt64(aValue: not nullable String): nullable UInt64;
     method HexStringToByteArray(aData: not nullable String): array of Byte;
+    method TryBinaryStringToUInt64(aValue: nullable String): nullable UInt64;
 
     method ToBase64String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
     method Base64StringToByteArray(S: String): array of Byte;
@@ -464,6 +465,24 @@ begin
   if lScanner.scanHexLongLong(var lValue) then
     result := lValue;
   {$ENDIF}
+end;
+
+method Convert.TryBinaryStringToUInt64(aValue: nullable String): nullable UInt64;
+begin
+  aValue := aValue:Trim;
+  var len := length(aValue);
+  if 0 < len ≤ 64 then begin
+    var lResult: UInt64 := 0;
+    var lDigits: array of Char := aValue.ToCharArray();
+    for i: Integer := len-1 downto 0 do begin
+      case lDigits[i] of
+        '0':;
+        '1': lResult := lResult + (1 shl (len-i-1));
+        else exit nil;
+      end;
+    end;
+    result := lResult;
+  end;
 end;
 
 method Convert.ToBase64String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
