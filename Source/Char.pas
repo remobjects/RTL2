@@ -60,6 +60,8 @@ type
     //
     //
 
+    property IsLatin: Boolean read ord(self) < length(Unicode.Latin1CharInfo); assembly;
+
     property IsWhitespace: Boolean read
     begin
       {$IF COOPER}
@@ -80,8 +82,9 @@ type
       {$ELSEIF ECHOES}
       result := Char.IsLetter(self);
       {$ELSEIF ISLAND}
-      {$WARNING Not Implemeted for Island}
-      raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+      if IsLatin then
+        result := (Unicode.Latin1CharInfo[ord(self)] and (Unicode.IsUpperCaseLetterFlag or Unicode.IsLowerCaseLetterFlag)) ≠ 0;
+      {$HINT does not cover > Latin characters yet }
       {$ENDIF}
     end;
 
@@ -105,8 +108,7 @@ type
       {$ELSEIF ECHOES}
       result := Char.IsLetter(self) or Char.IsNumber(self);
       {$ELSEIF ISLAND}
-      {$WARNING Not Implemeted for Island}
-      raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+      result := IsLetter or IsNumber;
       {$ENDIF}
     end;
 
@@ -119,8 +121,9 @@ type
       {$ELSEIF ECHOES}
       result := Char.IsUpper(self);
       {$ELSEIF ISLAND}
-      {$WARNING Not Implemeted for Island}
-      raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+      if IsLatin then
+        result := (Unicode.Latin1CharInfo[ord(self)] and (Unicode.IsUpperCaseLetterFlag)) ≠ 0;
+      {$HINT does not cover > Latin characters yet }
       {$ENDIF}
     end;
 
@@ -133,8 +136,9 @@ type
       {$ELSEIF ECHOES}
       result := Char.IsLower(self);
       {$ELSEIF ISLAND}
-      {$WARNING Not Implemeted for Island}
-      raise new NotImplementedException("Some String APIs are not implemented for Island yet.");
+      if IsLatin then
+        result := (Unicode.Latin1CharInfo[ord(self)] and (Unicode.IsLowerCaseLetterFlag)) ≠ 0;
+      {$HINT does not cover > Latin characters yet }
       {$ENDIF}
     end;
 
