@@ -6,7 +6,7 @@
     <SharedGUID>ABEC8ACC-B076-406C-871B-581E8AF0A453</SharedGUID>
     <Import_RootNamespace>Elements.RTL.Shared</Import_RootNamespace>
     <ProjectGuid>{ABEC8ACC-B076-406C-871B-581E8AF0A453}</ProjectGuid>
-    <RootNamespace>RemObjects,Elements.RTL</RootNamespace>
+    <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Stream.pas" />
