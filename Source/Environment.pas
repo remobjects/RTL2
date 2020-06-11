@@ -105,6 +105,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF COOPER}[Error("This method is not supported for Java")]{$ENDIF}
 method Environment.SetEnvironmentVariable(aName: String; aValue: String);
 begin
   {$IF COOPER}

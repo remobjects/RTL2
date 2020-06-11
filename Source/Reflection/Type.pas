@@ -138,6 +138,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 class method &Type.GetType(aName: not nullable String): nullable &Type;
 begin
   {$IF COOPER}
@@ -153,6 +154,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF ISLAND AND NOT TOFFEE}[Warning("Not Implemented for Island")]{$ENDIF}
 constructor &Type withPlatformType(aType: PlatformType);
 begin
   {$IF ECHOES OR COOPER}

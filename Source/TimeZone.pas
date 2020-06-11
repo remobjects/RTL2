@@ -54,6 +54,7 @@ begin
 end;
 
 {$IF ECHOES}[Warning("TimeZoneWithAbreviation is not suppoprted on .NET")]{$ENDIF}
+{$IF ISLAND AND NOT TOFFEE}[Warning("Not Implemented for Island")]{$ENDIF}
 class method TimeZone.get_TimeZoneWithAbreviation(aAbbreviation: String): nullable TimeZone;
 begin
   {$IF COOPER}

@@ -400,11 +400,12 @@ begin
 end;
 {$ENDIF}
 
+{$IF WEBASSEMBLY}[Warning("Not Implemented for WebAssembly")]{$ENDIF}
 class method XmlDocument.FromUrl(aUrl: not nullable Url): not nullable XmlDocument;
 begin
   {$IF WEBASSEMBLY}
   {$HINT Fix Below} // 78937: `defined()` doesnt seem to work (and adds extra warning)
-  raise new XmlException("Not implemented for WebAssemlbly yet");
+  raise new NotImplementedException("Not implemented for WebAssemlbly yet");
   {$ELSE}
   if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then begin
     result := FromFile(aUrl.FilePath);
@@ -415,11 +416,7 @@ begin
         raise new XmlException(result.ErrorInfo.Message, result.ErrorInfo.Row, result.ErrorInfo.Column);
   end
   else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
-    {$IFDEF ISLAND}
-    raise new NotImplementedException;
-    {$ELSE}
     result := Http.GetXml(new HttpRequest(aUrl))
-    {$ENDIF}
   end
   else
     raise new XmlException(String.Format("Cannot load XML from URL '{0}'.", aUrl.ToAbsoluteString()));
@@ -624,7 +621,7 @@ begin
     else begin
       fNodes.Insert(0, aNode);
       fWasDocType := true;
-    end 
+    end
   else
     fNodes.Add(aNode);
 end;
