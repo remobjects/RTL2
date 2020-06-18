@@ -17,6 +17,7 @@ type
 
     {$IF NOT WEBASSEMBLY}
     class method FromFile(aFile: not nullable File): not nullable JsonDocument;
+    class method FromUrl(aUrl: not nullable Url): not nullable JsonDocument;
     {$ENDIF}
     class method FromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): not nullable JsonDocument;
     class method FromString(aString: not nullable String): not nullable JsonDocument;
@@ -110,6 +111,19 @@ end;
 class method JsonDocument.FromFile(aFile: not nullable File): not nullable JsonDocument;
 begin
   result := new JsonDocument(new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize)
+end;
+
+class method JsonDocument.FromUrl(aUrl: not nullable Url): not nullable JsonDocument;
+begin
+  if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then begin
+    result := FromFile(aUrl.FilePath);
+  end
+  else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
+    result := Http.GetJson(new HttpRequest(aUrl))
+  end
+  else begin
+    raise new XmlException(String.Format("Cannot load Json from URL '{0}'.", aUrl.ToAbsoluteString()));
+  end;
 end;
 {$ENDIF}
 
