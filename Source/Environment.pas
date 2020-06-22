@@ -528,7 +528,7 @@ begin
     {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
-    OperatingSystem.Windows: ;
+    OperatingSystem.Windows: result := if Environment.OSBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
     OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result);
     OperatingSystem.macOS: Process.Run("/usr/bin/uname", ["-m"], out result);
     OperatingSystem.iOS: result := "arm64";
