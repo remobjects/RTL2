@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-interface
+{$IF ECHOES}
 
 uses
   System.Reflection,
@@ -21,6 +21,6 @@ uses
 
 [assembly: AssemblyKeyName('RemObjectsSoftware')]
 
-implementation
+{$ENDIF}
 
 end.

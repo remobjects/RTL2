@@ -158,6 +158,7 @@
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Char.Unicode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
