@@ -15,7 +15,7 @@
     <MangleTypeNames>True</MangleTypeNames>
     <CreateHeaderFile>True</CreateHeaderFile>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-    <DeploymentTargetVersion>10.10</DeploymentTargetVersion>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
     <CrossPlatform>True</CrossPlatform>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
   </PropertyGroup>

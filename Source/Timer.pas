@@ -3,90 +3,48 @@
 interface
 
 type
-TimerElapsedBlock = public block (aData: Object);
-PlatformTimer = public {$IF COOPER}java.util.Timer{$ELSEIF TOFFEE}NSTimer{$ELSEIF ECHOES}System.Timers.Timer{$ELSEIF ISLAND}RemObjects.Elements.System.Timer{$ENDIF};
+  PlatformTimer = public {$IF COOPER}java.util.Timer{$ELSEIF TOFFEE}NSTimer{$ELSEIF ECHOES}System.Timers.Timer{$ELSEIF ISLAND}RemObjects.Elements.System.Timer{$ENDIF};
 
-Timer = public class
-private
-  fTimer: PlatformTimer;
-  fElapsed: TimerElapsedBlock;
-  fEnabled: Boolean;
-  fInterval: Integer := 100;
-  fRepeat: Boolean := true;
-  method SetRepeat(value: Boolean);
-  method SetInterval(value: Integer);
-  method SetEnabled(value: Boolean);
-  method CheckIfEnabled;
-  method Initialize;
-  {$IF ECHOES}
-  method ElapsedEventHandler(Sender: Object; e: System.Timers.ElapsedEventArgs);
-  {$ENDIF}
-public
-  constructor;
-  constructor(aInterval: Integer);
-  constructor(aInterval: Integer; aRepeat: Boolean);
-  method Start;
-  method Stop;
-  property Enabled: Boolean read fEnabled write SetEnabled;
-  property Interval: Integer read fInterval write SetInterval;
-  property &Repeat: Boolean read fRepeat write SetRepeat;
-  property Elapsed: TimerElapsedBlock read fElapsed write fElapsed;
-  property Data: Object;
-end;
+  Timer = public class
+  private
+    fTimer: PlatformTimer;
+    fEnabled: Boolean;
+    fInterval: Integer;
+    fRepeat: Boolean;
+    fCallback: block(aTimer: Timer);
+    method CheckIfEnabled;
+  public
+    constructor(aInterval: Integer; aCallback: block(aTimer: Timer));
+    constructor(aInterval: Integer; aRepeat: Boolean; aCallback: block(aTimer: Timer));
+    method Start;
+    method Stop;
+    property Interval: Integer read fInterval;
+    property &Repeat: Boolean read fRepeat;
+    property Enabled: Boolean read fEnabled;
+  end;
 
 implementation
 
-method Timer.Initialize;
+constructor Timer(aInterval: Integer; aCallback: block(aTimer: Timer));
 begin
+  constructor (aInterval, false, aCallback);
+end;
+
+constructor Timer(aInterval: Integer; aRepeat: Boolean; aCallback: block(aTimer: Timer));
+begin
+  fInterval := aInterval;
+  fRepeat := aRepeat;
+  fCallback := aCallback;
+
   {$IF NOT TOFFEE}
   fTimer := new PlatformTimer();
   {$ENDIF}
   {$IF ECHOES}
-  fTimer.Elapsed += ElapsedEventHandler;
+  fTimer.Elapsed += () -> fCallback(self);
   {$ENDIF}
   {$IF ISLAND AND NOT TOFFEE}
-  fTimer.Elapsed := () -> begin
-    Elapsed(Data);
-    end;
+  fTimer.Elapsed := () -> fCallback(self);
   {$ENDIF}
-end;
-
-constructor Timer;
-begin
-  Initialize;
-end;
-
-constructor Timer(aInterval: Integer);
-begin
-  constructor;
-  fInterval := aInterval;
-end;
-
-constructor Timer(aInterval: Integer; aRepeat: Boolean);
-begin
-  constructor;
-  fInterval := aInterval;
-  fRepeat := aRepeat;
-end;
-
-method Timer.SetEnabled(value: Boolean);
-begin
-  if value <> fEnabled then begin
-    if fEnabled then Start
-    else Stop;
-  end;
-end;
-
-method Timer.SetInterval(value: Integer);
-begin
-  CheckIfEnabled;
-  fInterval := value;
-end;
-
-method Timer.SetRepeat(value: Boolean);
-begin
-  CheckIfEnabled;
-  fRepeat := value;
 end;
 
 method Timer.Start;
@@ -98,7 +56,7 @@ begin
   else
     fTimer.schedule(new FixedTimerTask(self), fInterval);
   {$ELSEIF TOFFEE}
-  fTimer := PlatformTimer.scheduledTimerWithTimeInterval(fInterval / 1000) repeats(fRepeat) &block(() -> begin Elapsed(Data); end);
+  fTimer := PlatformTimer.scheduledTimerWithTimeInterval(fInterval / 1000) repeats(fRepeat) &block(() -> fCallback(Self));
   {$ELSEIF ECHOES}
   fTimer.AutoReset := fRepeat;
   fTimer.Interval := fInterval;
@@ -148,13 +106,6 @@ type
       fTimer.Elapsed(fTimer.Data);
     end;
   end;
-{$ENDIF}
-
-{$IF ECHOES}
-method Timer.ElapsedEventHandler(Sender: Object; e: System.Timers.ElapsedEventArgs);
-begin
-  Elapsed(Data);
-end;
 {$ENDIF}
 
 end.
