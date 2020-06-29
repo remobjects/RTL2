@@ -11,7 +11,7 @@ type
     fEnabled: Boolean;
     fInterval: Integer;
     fRepeat: Boolean;
-    fCallback: block(aTimer: Timer);
+    fCallback: block(aTimer: Timer); unit;
     method CheckIfEnabled;
   public
     constructor(aInterval: Integer; aCallback: block(aTimer: Timer));
@@ -103,7 +103,7 @@ type
 
     method run; override;
     begin
-      fTimer.Elapsed(fTimer.Data);
+      fTimer.fCallback(fTimer);
     end;
   end;
 {$ENDIF}
