@@ -8,6 +8,7 @@
 interface
 
 type
+  CurlException = public class(Exception) end;
   CURLCode = public enum (
     CURLE_OK = 0, CURLE_UNSUPPORTED_PROTOCOL, CURLE_FAILED_INIT, CURLE_URL_MALFORMAT, CURLE_NOT_BUILT_IN,
     CURLE_COULDNT_RESOLVE_PROXY, CURLE_COULDNT_RESOLVE_HOST, CURLE_COULDNT_CONNECT, CURLE_FTP_WEIRD_SERVER_REPLY,
@@ -200,7 +201,8 @@ end;
 class constructor CurlHelper;
 begin
   fLib := rtl.dlopen(@LibCurl.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
-
+  if fLib = nil then
+    raise new CurlException('libcurl.so is missing');
   GlobalInit := CurlGlobalInitFunc(GetSymbol('curl_global_init'));
   GlobalCleanup := CurlGlobalCleanupFunc(GetSymbol('curl_global_cleanup'));
   EasyPerform := CurlEasyPerform(GetSymbol('curl_easy_perform'));
