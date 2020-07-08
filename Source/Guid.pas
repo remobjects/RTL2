@@ -30,6 +30,14 @@ type
     constructor(aValue: not nullable String);
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     constructor (aGuid: PlatformGuid);
+    property PlatformGuid: PlatformGuid read fGuid;
+    {$ELSE}
+    property PlatformGuid: PlatformGuid read self as PlatformGuid;
+    {$ENDIF}
+
+    {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
+    operator Implicit(aGuid: PlatformGuid): Guid;
+    operator Implicit(aGuid: Guid): PlatformGuid;
     {$ENDIF}
 
     {$IF NOT (COOPER OR TOFFEE)}
@@ -51,6 +59,7 @@ type
     method ToByteArray: array of Byte;
     method ToString: String; {$IF ISLAND OR ECHOES}override;{$ENDIF}
     method ToString(Format: GuidFormat): String;
+
   end;
 
 
@@ -288,6 +297,19 @@ begin
   Value[Index1] := Value[Index2];
   Value[Index2] := Temp;
 end;
+{$ENDIF}
+
+{$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
+operator Guid.Implicit(aGuid: PlatformGuid): Guid;
+begin
+  result := new Guid(aGuid);
+end;
+
+operator Guid.Implicit(aGuid: Guid): PlatformGuid;
+begin
+  result := aGuid.fGuid;
+end;
+
 {$ENDIF}
 
 end.
