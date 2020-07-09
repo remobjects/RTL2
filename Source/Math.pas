@@ -122,7 +122,7 @@ type
   Math2 = public extension class(Math)
   public
 
-    method BankersRound(aValue: Single): Int64; inline;
+    class method BankersRound(aValue: Single): Int64; inline;
     begin
       //.0 - .4 -> round to zero
       //.6 - .9 -> round away from zero
@@ -140,7 +140,7 @@ type
       end;
     end;
 
-    method BankersRound(aValue: Double): Int64;
+    class method BankersRound(aValue: Double): Int64;
     begin
       //.0 - .4 -> round to zero
       //.6 - .9 -> round away from zero
