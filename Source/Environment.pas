@@ -75,22 +75,22 @@ type
     property CurrentDirectory: String read GetCurrentDirectory;
   end;
 
-  macOS nested in Environment = public class
-  public
-    class property IsHighSierraOrAbove: Boolean read GetIsHighSierraOrAbove;
-  private
-    class method GetIsHighSierraOrAbove: Boolean;
-    begin
-      if Environment.OS ≠ OperatingSystem.macOS then exit false;
-      {$IF ECHOES}
-      var v := Environment.OSVersion.Split(".");
-      result := (v.Count > 0) and (Convert.TryToInt32(v[0]) ≥ 17);
-      {$ENDIF}
-      {$IF TOFFEE AND MACOS AND NOT UIKITFORMAC}
-      result := rint(AppKit.NSAppKitVersionNumber) >  1504;//AppKit.NSAppKitVersionNumber10_12;
-      {$ENDIF}
-    end;
-  end;
+  //macOS nested in Environment = public class
+  //public
+    //class property IsHighSierraOrAbove: Boolean read GetIsHighSierraOrAbove;
+  //private
+    //class method GetIsHighSierraOrAbove: Boolean;
+    //begin
+      //if Environment.OS ≠ OperatingSystem.macOS then exit false;
+      //{$IF ECHOES}
+      //var v := Environment.OSVersion.Split(".");
+      //result := (v.Count > 0) and (Convert.TryToInt32(v[0]) ≥ 17);
+      //{$ENDIF}
+      //{$IF TOFFEE AND MACOS AND NOT UIKITFORMAC}
+      //result := rint(AppKit.NSAppKitVersionNumber) >  1504;//AppKit.NSAppKitVersionNumber10_12;
+      //{$ENDIF}
+    //end;
+  //end;
 
 implementation
 
