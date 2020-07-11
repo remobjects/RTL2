@@ -75,6 +75,20 @@ type
     property CurrentDirectory: String read GetCurrentDirectory;
   end;
 
+  {$IF ECHOES}
+  macOS nested in Environment = assembly class
+  public
+    class property IsHighSierraOrAbove: Boolean read GetIsHighSierraOrAbove;
+  private
+    class method GetIsHighSierraOrAbove: Boolean;
+    begin
+      if Environment.OS ≠ OperatingSystem.macOS then exit false;
+      var v := Environment.OSVersion.Split(".");
+      result := (v.Count > 0) and (Convert.TryToInt32(v[0]) ≥ 17);
+    end;
+  end;
+  {$ENDIF}
+
 implementation
 
 method Environment.GetEnvironmentVariable(aName: String): String;
@@ -133,7 +147,7 @@ begin
   {$ELSEIF COOPER}
   result := System.getProperty("user.name");
   {$ELSEIF TOFFEE}
-    {$IF OSX}
+    {$IF OSX OR UIKITFORMAC}
     result := Foundation.NSUserName;
     {$ELSEIF IOS}
     exit "iOS User";
@@ -155,7 +169,7 @@ method Environment.GetFullUserName: String;
 begin
   {$HINT Implement for other platforms}
   {$IF TOFFEE}
-    {$IF OSX}
+    {$IF OSX OR UIKITFORMAC}
     result := Foundation.NSFullUserName;
     {$ELSE}
     result := GetUserName();
@@ -364,7 +378,7 @@ begin
   end
   else exit OperatingSystem.Unknown;
   {$ELSEIF TOFFEE}
-    {$IF OSX}
+    {$IF OSX OR UIKITFORMAC}
     exit OperatingSystem.macOS;
     {$ELSEIF IOS}
     exit OperatingSystem.iOS;
@@ -402,7 +416,17 @@ begin
     {$ELSEIF WEBASSEMBLY}
     exit OperatingSystem.Browser;
     {$ELSEIF DARWIN}
-    exit OperatingSystem.macOS; // for now
+      {$IF OSX OR UIKITFORMAC}
+      exit OperatingSystem.macOS;
+      {$ELSEIF IOS}
+      exit OperatingSystem.iOS;
+      {$ELSEIF WATCHOS}
+      exit OperatingSystem.watchOS;
+      {$ELSEIF TVOS}
+      exit OperatingSystem.tvOS;
+      {$ELSE}
+        {$ERROR Unsupported Cocoa platform}
+      {$ENDIF}
     {$ELSE}
     exit OperatingSystem.Windows;
       {$ERROR Unsupported Island platform}
@@ -434,7 +458,7 @@ begin
   {$IF COOPER}
   exit System.getProperty("os.name");
   {$ELSEIF TOFFEE}
-    {$IF OSX}
+    {$IF OSX OR UIKITFORMAC}
     exit "macOS";
     {$ELSEIF IOS}
     exit "iOS";
@@ -475,7 +499,7 @@ begin
   {$IF COOPER}
   result := 0;
   {$ELSEIF TOFFEE}
-    {$IF OSX}
+    {$IF OSX OR UIKITFORMAC}
     result := 64;
     {$ELSEIF IOS}
     result := 0;
@@ -498,7 +522,7 @@ begin
   {$IF COOPER}
   result := System.getenv("PROCESSOR_ARCHITECTURE");
   {$ELSEIF DARWIN}
-    {$IF OSX}
+    {$IF OSX OR UIKITFORMAC}
     result := {$IF __arm64__}"arm64"{$ELSE}"x86_64"{$ENDIF};
     {$ELSEIF IOS}
     result := "arm64";

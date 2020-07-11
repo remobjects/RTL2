@@ -97,7 +97,7 @@ begin
   if not NSFileManager.defaultManager.copyItemAtPath(mapped) toPath(lNewFile) error(var lError) then
     raise new NSErrorException(lError);
   {$ELSEIF ECHOES}
-  if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and available("macOS 10.13") then begin
+  if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
     if lNewFile.Exists then
       Delete(lNewFile);
     if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
