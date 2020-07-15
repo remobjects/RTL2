@@ -119,6 +119,29 @@ type
   end;
   {$ENDIF}
 
+  Math_Extensions = public extension class(Math)
+  public
+
+    class method BankersRound(aValue: Double): Int64;
+    begin
+      //.0 - .4 -> round to zero
+      //.6 - .9 -> round away from zero
+      //.5 on an even integer part: round away zero
+      //.5 on an odd integer part: round to from zero
+
+      var lInteger := Int64(aValue);
+      var lDirection := if aValue > 0 then 1 else -1;
+      var lEven := (lInteger mod 2) = 0;
+      var lLastDigit := Abs(Int64(aValue*10) mod 10);
+      result := case lLastDigit of
+        0,1,2,3,4: lInteger;
+        5: if lEven then lInteger else lInteger+lDirection;
+        6,7,8,9: lInteger+lDirection;
+      end;
+    end;
+
+  end;
+
 
   Consts = public static class
   public

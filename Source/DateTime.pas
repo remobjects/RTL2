@@ -149,7 +149,7 @@ type
   public
     method GetComponent(aSelf: NSDate; Component: NSCalendarUnit): Integer;
     method AdjustDate(aSelf: NSDate; Component: NSCalendarUnit; Value: NSInteger): DateTime;
-    class property LocalTimezone: NSTimeZone := NSTimeZone.localTimeZone;
+    class property LocalTimezone: NSTimeZone read NSTimeZone.localTimeZone;
   end;
 {$ENDIF}
 

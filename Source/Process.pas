@@ -2,7 +2,7 @@
 
 interface
 
-{$IF ECHOES OR MACOS OR WINDOWS} // OR LINUX
+{$IF (ECHOES OR MACOS OR WINDOWS) AND NOT MACCATALYST} // OR LINUX
 
 type
   {$IF JAVA}
@@ -63,7 +63,7 @@ type
 
 implementation
 
-{$IF ECHOES OR MACOS OR WINDOWS} // OR LINUX
+{$IF (ECHOES OR MACOS OR WINDOWS) AND NOT MACCATALYST} // OR LINUX
 
 method Process.WaitFor;
 begin

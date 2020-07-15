@@ -1,6 +1,5 @@
-4dc4b84fcc573bc0688a73c4f0596aad749dca32fa6eb8f831dbe98d284a0fb744dbc480277d82b65377327cbf60c8c9ba78cbb6aeb5ef4caea233946102a05fe412caeb7154c9252e33f657431142fbc80a27d01180b75528aabbb52a0d201925f95b1e316a8d657bf1dd35bd50df53935bd0a7ea005f360ce9bbf90496902df4e8db4d5a171be13f57ef6e3045fef9f5fef35f7efe5658eb71a84fe5965bd44a7cf1061a514a6cc4667094d329769bee743148c7191693143e5f0c0918b3b5b6000bd3389d59b00bdbff016534786dc3a29eb631cbe4e7d364e5240aef0f99fd5e20aa79b49de320c8150731546298abe3c361ed2269c09561becef8e3896b
-88a014f245a17c1d83e5f3b13759ddcc5b1925e4098bb98f43f0ca0c97e44f3474f61b08ebf5542ec72a3650906e37cd4809547d9a2dd4d4e284987fcc8d846f2afa41226698a8e0009c3088085aab52ede31e3c53cfab706458313165d847d0f77e183db88ad2ec5749ab6b01dd949ae63483a4e8d4a6309f7f46ef5d3e6255
-
+24dd0d790b790027c1f603a3c14809a971323996f5501af3d492fe8e49dc8ac99ce3b970e60ed3b6507784393ed6e4c87b4f45afcb52ec3fe4106edc91cf13b81cd86dcc98ca83752c5fb35a684f83dd7ff5a215ca4fddcd8935184354b708d36b61f2ad3fc5357a0907c30524cffa004a1efb5fa7af08164153dab76c1b0c1a084b463c1a5a4549c8579d16af28fd51241602ec32ec93dcd5cbb778e0d37ac6c6dca76baaf6caf630a999c821248068f2bcdd87360dee78ec411c6c469a8188bcf3bd1989fba195ace5d51f7fea3ea54ad397c57e27dacbd6bf5b70578c23125edbfc57954b54b76cf243578669656c203eab7f9227cf91444d3a5e1493b8a8
+095cff98e88cca7972623f0574a1dca4fb609a96d45799b7905b6471ab005fc87801e45980af939b6e1d0ddbf204531983f8525197f58efdeab82b54166c9c71067770c4ff8dcb88e127bfcb3aa4ac7e73b1ec4bdef9cb1e98ff116bbcd3318294244cec7ba9ace8743f0f9d75a83efa28941642659e61002f11ce27fc844c2e
 [License]
 LicenseType=Project
 Product=Hydrogene
@@ -53,7 +52,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Echoes
 ProjectName=Elements.RTL.Echoes
 ProjectFileName=Elements.RTL.Echoes.elements
-ProjectGuid=a0b2bf66-f2b1-4ef9-a9ce-792ab3094233
+ProjectGuid={a0b2bf66-f2b1-4ef9-a9ce-792ab3094233}
 ProjectAssemblyName=Elements
 ProjectOutputType=Library
 
@@ -67,7 +66,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Echoes
 ProjectName=Elements.RTL.Echoes
 ProjectFileName=Elements.RTL.Echoes.elements
-ProjectGuid=a0b2bf66-f2b1-4ef9-a9ce-792ab3094233
+ProjectGuid={a0b2bf66-f2b1-4ef9-a9ce-792ab3094233}
 ProjectAssemblyName=Elements
 ProjectOutputType=Library
 
@@ -81,7 +80,49 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Echoes
 ProjectName=Elements.RTL.Echoes
 ProjectFileName=Elements.RTL.Echoes.elements
-ProjectGuid=a0b2bf66-f2b1-4ef9-a9ce-792ab3094233
+ProjectGuid={a0b2bf66-f2b1-4ef9-a9ce-792ab3094233}
+ProjectAssemblyName=Elements
+ProjectOutputType=Library
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Echoes
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Echoes
+ProjectName=Elements.RTL.Echoes.Standard
+ProjectFileName=Elements.RTL.Echoes.Standard.elements
+ProjectGuid={b42bf0fd-e746-4a64-a0df-af8fff55dae5}
+ProjectAssemblyName=Elements
+ProjectOutputType=Library
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Echoes
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Echoes
+ProjectName=Elements.RTL.Echoes.Standard
+ProjectFileName=Elements.RTL.Echoes.Standard.elements
+ProjectGuid={b42bf0fd-e746-4a64-a0df-af8fff55dae5}
+ProjectAssemblyName=Elements
+ProjectOutputType=Library
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Echoes
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Echoes
+ProjectName=Elements.RTL.Echoes.Standard
+ProjectFileName=Elements.RTL.Echoes.Standard.elements
+ProjectGuid={b42bf0fd-e746-4a64-a0df-af8fff55dae5}
 ProjectAssemblyName=Elements
 ProjectOutputType=Library
 
@@ -135,6 +176,174 @@ AllowBeta=1
 AllowFull=1
 
 DisplayName=RTL2 Contributor License, Hydrogene/Island
+ProjectName=Elements.RTL.Island.Darwin.iOS
+ProjectFileName=Elements.RTL.Island.Darwin.iOS.elements
+ProjectGuid=0723254e-06ea-46f9-b67f-4d143810a08e
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Island
+ProjectName=Elements.RTL.Island.Darwin.iOS
+ProjectFileName=Elements.RTL.Island.Darwin.iOS.elements
+ProjectGuid=0723254e-06ea-46f9-b67f-4d143810a08e
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Island
+ProjectName=Elements.RTL.Island.Darwin.iOS
+ProjectFileName=Elements.RTL.Island.Darwin.iOS.elements
+ProjectGuid=0723254e-06ea-46f9-b67f-4d143810a08e
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Island
+ProjectName=Elements.RTL.Island.Darwin.macOS
+ProjectFileName=Elements.RTL.Island.Darwin.macOS.elements
+ProjectGuid=731df15e-9ee5-452a-a74d-bcbc95afaa23
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Island
+ProjectName=Elements.RTL.Island.Darwin.macOS
+ProjectFileName=Elements.RTL.Island.Darwin.macOS.elements
+ProjectGuid=731df15e-9ee5-452a-a74d-bcbc95afaa23
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Island
+ProjectName=Elements.RTL.Island.Darwin.macOS
+ProjectFileName=Elements.RTL.Island.Darwin.macOS.elements
+ProjectGuid=731df15e-9ee5-452a-a74d-bcbc95afaa23
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Island
+ProjectName=Elements.RTL.Island.Darwin.tvOS
+ProjectFileName=Elements.RTL.Island.Darwin.tvOS.elements
+ProjectGuid={7be9facf-063c-4230-a4da-d9f9d08cfcf8}
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Island
+ProjectName=Elements.RTL.Island.Darwin.tvOS
+ProjectFileName=Elements.RTL.Island.Darwin.tvOS.elements
+ProjectGuid={7be9facf-063c-4230-a4da-d9f9d08cfcf8}
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Island
+ProjectName=Elements.RTL.Island.Darwin.tvOS
+ProjectFileName=Elements.RTL.Island.Darwin.tvOS.elements
+ProjectGuid={7be9facf-063c-4230-a4da-d9f9d08cfcf8}
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Island
+ProjectName=Elements.RTL.Island.Darwin.watchOS
+ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
+ProjectGuid=28817723-bb33-4c5f-8705-a7b3dff15174
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Island
+ProjectName=Elements.RTL.Island.Darwin.watchOS
+ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
+ProjectGuid=28817723-bb33-4c5f-8705-a7b3dff15174
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Island
+ProjectName=Elements.RTL.Island.Darwin.watchOS
+ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
+ProjectGuid=28817723-bb33-4c5f-8705-a7b3dff15174
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Island
 ProjectName=Elements.RTL.Island.Linux
 ProjectFileName=Elements.RTL.Island.Linux.elements
 ProjectGuid=163f84dc-dc6b-4535-994f-0865d3a84d20
@@ -166,6 +375,48 @@ DisplayName=RTL2 Contributor License, Silver/Island
 ProjectName=Elements.RTL.Island.Linux
 ProjectFileName=Elements.RTL.Island.Linux.elements
 ProjectGuid=163f84dc-dc6b-4535-994f-0865d3a84d20
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Island
+ProjectName=Elements.RTL.Island.WebAssembly
+ProjectFileName=Elements.RTL.Island.WebAssembly.elements
+ProjectGuid=e663418d-2453-4c69-8362-02cc6abeafa7
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Island
+ProjectName=Elements.RTL.Island.WebAssembly
+ProjectFileName=Elements.RTL.Island.WebAssembly.elements
+ProjectGuid=e663418d-2453-4c69-8362-02cc6abeafa7
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Island
+ProjectName=Elements.RTL.Island.WebAssembly
+ProjectFileName=Elements.RTL.Island.WebAssembly.elements
+ProjectGuid=e663418d-2453-4c69-8362-02cc6abeafa7
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -221,8 +472,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Cooper
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -235,8 +486,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Echoes
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -249,8 +500,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Island
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -263,8 +514,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Toffee
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -277,8 +528,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Cooper
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -291,8 +542,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Echoes
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -305,8 +556,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Island
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -319,8 +570,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Toffee
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -333,8 +584,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Cooper
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -347,8 +598,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Echoes
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -361,8 +612,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Island
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -375,8 +626,8 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Toffee
 ProjectName=Elements.RTL.Shared
 ProjectFileName=Elements.RTL.Shared.elements
-ProjectGuid=abec8acc-b076-406c-871b-581e8af0a453
-ProjectAssemblyName=Elements.RTL.Shared
+ProjectGuid={abec8acc-b076-406c-871b-581e8af0a453}
+ProjectAssemblyName=(null)
 ProjectOutputType=Shared
 
 [License]
@@ -431,7 +682,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Toffee
 ProjectName=Elements.RTL.Toffee.macOS
 ProjectFileName=Elements.RTL.Toffee.macOS.elements
-ProjectGuid=58d52fe5-e87e-4d9c-8fbb-280980f6762b
+ProjectGuid={58d52fe5-e87e-4d9c-8fbb-280980f6762b}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -445,7 +696,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Toffee
 ProjectName=Elements.RTL.Toffee.macOS
 ProjectFileName=Elements.RTL.Toffee.macOS.elements
-ProjectGuid=58d52fe5-e87e-4d9c-8fbb-280980f6762b
+ProjectGuid={58d52fe5-e87e-4d9c-8fbb-280980f6762b}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -459,7 +710,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Toffee
 ProjectName=Elements.RTL.Toffee.macOS
 ProjectFileName=Elements.RTL.Toffee.macOS.elements
-ProjectGuid=58d52fe5-e87e-4d9c-8fbb-280980f6762b
+ProjectGuid={58d52fe5-e87e-4d9c-8fbb-280980f6762b}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -544,15 +795,183 @@ DisplayName=RTL2 Contributor License, Silver/Toffee
 ProjectName=Elements.RTL.Toffee.watchOS
 ProjectFileName=Elements.RTL.Toffee.watchOS.elements
 ProjectGuid=e1e9cb29-553d-4ea9-b9d1-62a5195bdd10
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Toffee
+ProjectName=Elements.RTL.ToffeeV2.iOS
+ProjectFileName=Elements.RTL.ToffeeV2.iOS.elements
+ProjectGuid=af81ab1e-118d-4443-9704-ed8cb0c74144
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Toffee
+ProjectName=Elements.RTL.ToffeeV2.iOS
+ProjectFileName=Elements.RTL.ToffeeV2.iOS.elements
+ProjectGuid=af81ab1e-118d-4443-9704-ed8cb0c74144
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Toffee
+ProjectName=Elements.RTL.ToffeeV2.iOS
+ProjectFileName=Elements.RTL.ToffeeV2.iOS.elements
+ProjectGuid=af81ab1e-118d-4443-9704-ed8cb0c74144
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Toffee
+ProjectName=Elements.RTL.ToffeeV2.macOS
+ProjectFileName=Elements.RTL.ToffeeV2.macOS.elements
+ProjectGuid=81d69900-fed5-4a87-841b-575ff5653840
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Toffee
+ProjectName=Elements.RTL.ToffeeV2.macOS
+ProjectFileName=Elements.RTL.ToffeeV2.macOS.elements
+ProjectGuid=81d69900-fed5-4a87-841b-575ff5653840
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Toffee
+ProjectName=Elements.RTL.ToffeeV2.macOS
+ProjectFileName=Elements.RTL.ToffeeV2.macOS.elements
+ProjectGuid=81d69900-fed5-4a87-841b-575ff5653840
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Toffee
+ProjectName=Elements.RTL.ToffeeV2.tvOS
+ProjectFileName=Elements.RTL.ToffeeV2.tvOS.elements
+ProjectGuid=1b12e76c-4171-46a5-ad85-fd80c335299d
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Toffee
+ProjectName=Elements.RTL.ToffeeV2.tvOS
+ProjectFileName=Elements.RTL.ToffeeV2.tvOS.elements
+ProjectGuid=1b12e76c-4171-46a5-ad85-fd80c335299d
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Toffee
+ProjectName=Elements.RTL.ToffeeV2.tvOS
+ProjectFileName=Elements.RTL.ToffeeV2.tvOS.elements
+ProjectGuid=1b12e76c-4171-46a5-ad85-fd80c335299d
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Hydrogene/Toffee
+ProjectName=Elements.RTL.ToffeeV2.watchOS
+ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
+ProjectGuid=686655b4-6e7a-40e4-98d1-b44700641d87
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Oxygene/Toffee
+ProjectName=Elements.RTL.ToffeeV2.watchOS
+ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
+ProjectGuid=686655b4-6e7a-40e4-98d1-b44700641d87
+ProjectAssemblyName=Elements
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Silver
+Platform=Toffee
+AllowBeta=1
+AllowFull=1
+
+DisplayName=RTL2 Contributor License, Silver/Toffee
+ProjectName=Elements.RTL.ToffeeV2.watchOS
+ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
+ProjectGuid=686655b4-6e7a-40e4-98d1-b44700641d87
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
 
 [SignatureInfo]
-LicenseFileStartDate=2017-01-23
-LicenseFileEndDate=2018-01-25
-P1=5760189656773032764
-P2=8066032667860652609
-P3=2759279636
-P4=1549701035
+LicenseFileStartDate=2020-06-30
+LicenseFileEndDate=2021-07-02
+P1=7396262985112521818
+P2=9702105996208564076
+P3=4231599805
+P4=68214018
 
