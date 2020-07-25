@@ -280,11 +280,11 @@ begin
   {$ELSEIF TOFFEE}
   var lFormatter := new NSDateFormatter();
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
-  if not String.IsNullOrEmpty(Culture) then begin
-    var Locale := new NSLocale withLocaleIdentifier(Culture);
-    lFormatter.locale := Locale;
-  end;
-  lFormatter.setDateFormat(DateFormatter.Format(Format));
+  lFormatter.locale := if not String.IsNullOrEmpty(Culture) then
+    new NSLocale withLocaleIdentifier(Culture)
+  else
+    NSLocale.localeWithLocaleIdentifier("en_US_POSIX"); // without this, i sometimes get rogue AM/PMs
+  lFormatter.dateFormat := DateFormatter.Format(Format);
   result := lFormatter.stringFromDate(mapped);
   {$ELSEIF ECHOES}
   if Format = "" then
