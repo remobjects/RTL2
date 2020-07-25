@@ -184,7 +184,7 @@ begin
     numberFormatter.minimumFractionDigits := aDigitsAfterDecimalPoint;
   end
   else begin
-    numberFormatter.maximumFractionDigits := 00;
+    numberFormatter.maximumFractionDigits := 20;
     numberFormatter.minimumFractionDigits := 0;
   end;
   result := numberFormatter.stringFromNumber(aValue) as not nullable;
