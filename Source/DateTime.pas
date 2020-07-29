@@ -22,6 +22,8 @@ type
   PlatformDateTime = public RemObjects.Elements.System.DateTime;
   {$ENDIF}
 
+  ISO8601Format = public enum(Standard, DateOnly, StandardWithTimeZone, Full) of Integer;
+
   DateTime = public partial class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
   private
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
@@ -78,6 +80,8 @@ type
     method ToShortPrettyDateAndTimeString(aTimeZone: TimeZone := nil): String;
     method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
     method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
+
+    method ToISO8601String(aFormat: ISO8601Format := ISO8601Format.Standard; aTimeZone: TimeZone := nil): String;
 
     class method ToOADate(aDateTime: DateTime): Double;
     class method FromOADate(aOADate: Double): DateTime;
@@ -302,6 +306,30 @@ end;
 method DateTime.ToString(aTimeZone: TimeZone := nil): String;
 begin
   result := ToString(DEFAULT_FORMAT, nil, aTimeZone);
+end;
+
+method DateTime.ToISO8601String(aFormat: ISO8601Format := ISO8601Format.Standard; aTimeZone: TimeZone := nil): String;
+begin
+  var lFormat: String;
+  {$IF COOPER OR TOFFEE}
+  case aFormat of
+    ISO8601Format.Standard: lFormat := "yyyy-MM-dd'T'HH:mm:ss";
+    ISO8601Format.DateOnly: lFormat := 'yyyy-MM-dd';
+    ISO8601Format.StandardWithTimeZone: lFormat := "yyyy-MM-dd'T'HH:mm:ssZ";
+    ISO8601Format.Full: lFormat := "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ";
+  end;
+  {$ELSEIF ECHOES}
+  case aFormat of
+    ISO8601Format.Standard: lFormat := 'yyyy-MM-ddTHH:mm:ss';
+    ISO8601Format.DateOnly: lFormat := 'yyyy-MM-dd';
+    ISO8601Format.StandardWithTimeZone: lFormat := 'yyyy-MM-ddTHH:mm:sszzz';
+    ISO8601Format.Full: lFormat := 'yyyy-MM-ddTHH:mm:ss.fffffffzzz';
+  end;
+  {$ELSEIF ISLAND}
+  // Not supported yet
+  lFormat := DEFAULT_FORMAT;
+  {$ENDIF}
+  result := ToString(lFormat, aTimeZone);
 end;
 
 method DateTime.ToShortDateString(aTimeZone: TimeZone := nil): String;
