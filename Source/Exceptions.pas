@@ -54,7 +54,7 @@ type
 
   end;
 
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR (TOFFEE AND NOT ISLAND)}
   InvalidCastException = public class(RTLException)
   end;
   {$ENDIF}
