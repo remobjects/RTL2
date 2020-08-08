@@ -17,6 +17,7 @@ type
     property Url: not nullable Url;
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
+    property UserAgent: String;
 
     property Timeout: Double := 10.0; // Seconds
 
@@ -598,6 +599,8 @@ begin
     {$IF NOT NETFX_CORE}
     webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     {$ENDIF}
+    if assigned(aRequest.UserAgent) then
+      webRequest.UserAgent := aRequest.UserAgent;
     webRequest.Method := StringForRequestType(aRequest.Mode);
     webRequest.Timeout := Integer(aRequest.Timeout*1000);
 
@@ -731,6 +734,8 @@ begin
     {$IF NOT NETFX_CORE}
     webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     {$ENDIF}
+    if assigned(aRequest.UserAgent) then
+      webRequest.UserAgent := aRequest.UserAgent;
     webRequest.Method := StringForRequestType(aRequest.Mode);
     webRequest.Timeout := Integer(aRequest.Timeout*1000);
 
