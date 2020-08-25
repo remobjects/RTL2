@@ -17,8 +17,9 @@ type
     method GetOSName: String;
     method GetOSVersion: String;
     method GetOSBitness: Int32;
-    method GetArchitecture: String;
+    method GetOSArchitecture: String;
     method GetProcessBitness: Int32;
+    method GetProcessArchitecture: String;
     method GetEnvironmentVariable(aName: String): String;
     method SetEnvironmentVariable(aName: String; aValue: String);
     method GetCurrentDirectory: String;
@@ -60,8 +61,12 @@ type
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
     property OSBitness: Int32 read GetOSBitness;
-    property Architecture: String read GetArchitecture;
     property ProcessBitness: Int32 read GetProcessBitness;
+
+    [Obsolete]
+    property Architecture: String read GetOSArchitecture;
+    property OSArchitecture: String read GetOSArchitecture;
+    property ProcessArchitecture: String read GetProcessArchitecture;
 
     property ApplicationContext: ApplicationContext read write;
 
@@ -502,7 +507,7 @@ begin
     {$IF OSX OR UIKITFORMAC}
     result := 64;
     {$ELSEIF IOS}
-    result := 0;
+    result := sizeof(IntPtr)*8;
     {$ELSEIF WATCHOS}
     result := 32;
     {$ELSEIF TVOS}
@@ -517,10 +522,10 @@ begin
   {$ENDIF}
 end;
 
-method Environment.GetArchitecture: String;
+method Environment.GetProcessArchitecture: String;
 begin
   {$IF COOPER}
-  result := System.getenv("PROCESSOR_ARCHITECTURE");
+  result := "jvm";
   {$ELSEIF DARWIN}
     {$IF OSX OR UIKITFORMAC}
     result := {$IF __arm64__}"arm64"{$ELSE}"x86_64"{$ENDIF};
@@ -535,9 +540,9 @@ begin
     {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
-    OperatingSystem.Windows: result := if Environment.OSBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
-    OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result);
-    OperatingSystem.macOS: Process.Run("/usr/bin/uname", ["-m"], out result);
+    OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
+    OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result); {$HINT WRONG, returns OS Architecture}
+    OperatingSystem.macOS: Process.Run("/usr/bin/uname", ["-m"], out result); {$HINT WRONG, returns OS Architecture}
     OperatingSystem.iOS: result := "arm64";
     OperatingSystem.tvOS: result := "arm64";
     OperatingSystem.watchOS: result := nil;
@@ -549,6 +554,33 @@ begin
     OperatingSystem.Windows: result := {$IF i386}"i386"{$ELSEIF x86_64}"x86_64"{$ELSE}nil{$ENDIF};
     OperatingSystem.Linux: result := {$IF x86_64}"x86_64"{$ELSEIF aarch64}"aarch64"{$ELSEIF armv7}"armv7"{$ELSE}nil{$ENDIF};
     OperatingSystem.Android: result := {$IF arm64_v8a}"arm64-v8a"{$ELSEIF armeabi}"armeabi"{$ELSEIF armeabi_v7a}"armeabi-v7a"{$ELSEIF x86}"x86"{$ELSEIF x86_64}"x86_64"{$ELSE}nil{$ENDIF}
+    OperatingSystem.Browser: result := "wasm32";
+  end;
+  {$ENDIF}
+end;
+
+method Environment.GetOSArchitecture: String;
+begin
+  {$IF COOPER}
+  result := System.getenv("PROCESSOR_ARCHITECTURE");
+  {$ELSEIF DARWIN}
+  Process.Run("/bin/uname", ["-m"], out result);
+  {$ELSEIF ECHOES}
+  case Environment.OS of
+    OperatingSystem.Windows: result := if Environment.OSBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
+    OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result);
+    OperatingSystem.macOS: Process.Run("/usr/bin/uname", ["-m"], out result);
+    OperatingSystem.iOS: result := "arm64";
+    OperatingSystem.tvOS: result := "arm64";
+    OperatingSystem.watchOS: result := nil;
+    OperatingSystem.Android: result := nil;
+  end;
+  result := result:Trim();
+  {$ELSEIF ISLAND}
+  case Environment.OS of
+    OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
+    OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result);
+    OperatingSystem.Android: Process.Run("/bin/uname", ["-m"], out result);
     OperatingSystem.Browser: result := "wasm32";
   end;
   {$ENDIF}
