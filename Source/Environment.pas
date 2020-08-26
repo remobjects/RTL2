@@ -564,7 +564,17 @@ begin
   {$IF COOPER}
   result := System.getenv("PROCESSOR_ARCHITECTURE");
   {$ELSEIF DARWIN}
-  Process.Run("/bin/uname", ["-m"], out result);
+    {$IF OSX OR UIKITFORMAC}
+    Process.Run("/bin/uname", ["-m"], out result);
+    {$ELSEIF IOS}
+    result := "arm64";
+    {$ELSEIF WATCHOS}
+    result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF};
+    {$ELSEIF TVOS}
+    result := "arm64";
+    {$ELSE}
+      {$ERROR Unsupported Toffee platform}
+    {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
     OperatingSystem.Windows: result := if Environment.OSBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
