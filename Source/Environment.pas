@@ -564,7 +564,9 @@ begin
   {$IF COOPER}
   result := System.getenv("PROCESSOR_ARCHITECTURE");
   {$ELSEIF DARWIN}
-    {$IF OSX OR UIKITFORMAC}
+    {$IF UIKITFORMAC}
+    result := nil;
+    {$ELSEIF OSX}
     Process.Run("/bin/uname", ["-m"], out result);
     {$ELSEIF IOS}
     result := "arm64";
@@ -589,10 +591,11 @@ begin
   {$ELSEIF ISLAND}
   case Environment.OS of
     OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
-    OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result);
-    OperatingSystem.Android: Process.Run("/bin/uname", ["-m"], out result);
+    OperatingSystem.Linux: result := nil;//Process.Run("/bin/uname", ["-m"], out result);
+    OperatingSystem.Android: result := nil;
     OperatingSystem.Browser: result := "wasm32";
   end;
+  result := result:Trim();
   {$ENDIF}
 end;
 
