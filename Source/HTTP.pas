@@ -81,7 +81,7 @@ type
     property Headers: not nullable Dictionary<String,String>; readonly; //todo: list itself should be read-only
     property Code: Int32; readonly;
     property Success: Boolean read (Exception = nil) and (Code < 300);
-    property Exception: Exception public read unit write;
+    property Exception: nullable Exception public read unit write;
 
     method GetContentAsString(aEncoding: Encoding := nil; contentCallback: not nullable HttpContentResponseBlock<String>);
     method GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
@@ -114,9 +114,9 @@ type
 
   HttpResponseContent<T> = public class
   public
-    property Content: T public read unit write;
+    property Content: nullable T public read unit write;
     property Success: Boolean read self.Exception = nil;
-    property Exception: Exception public read unit write;
+    property Exception: nullable Exception public read unit write;
   end;
 
   HttpResponseBlock = public block (Response: HttpResponse);
