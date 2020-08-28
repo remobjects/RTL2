@@ -567,7 +567,7 @@ begin
     {$IF UIKITFORMAC}
     result := nil;
     {$ELSEIF OSX}
-    Process.Run("/bin/uname", ["-m"], out result);
+    Process.Run("/usr/bin/uname", ["-m"], out result);
     {$ELSEIF IOS}
     result := "arm64";
     {$ELSEIF WATCHOS}
