@@ -568,6 +568,7 @@ begin
     result := nil;
     {$ELSEIF OSX}
     Process.Run("/usr/bin/uname", ["-m"], out result);
+    result := result:Trim();
     {$ELSEIF IOS}
     result := "arm64";
     {$ELSEIF WATCHOS}
