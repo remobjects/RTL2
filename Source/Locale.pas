@@ -48,9 +48,9 @@ type
     method SetLongTimePattern(aValue: String);
     method SetShortDatePattern(aValue: String);
     method SetLongDatePattern(aValue: String);
-    method CheckReadOnly;
+    method CheckReadOnly; inline;
   public
-    constructor(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
+    constructor(aIsReadonly: Boolean := false);
     property ShortDayNames: array of String read fShortDayNames write SetShortDayNames;
     property LongDayNames: array of String read fLongDayNames write SetLongDayNames;
     property ShortMonthNames: array of String read fShortMonthNames write SetShortMonthNames;
@@ -63,7 +63,7 @@ type
     property LongTimePattern: String read fLongTimePattern write SetLongTimePattern;
     property ShortDatePattern: String read fShortDatePattern write SetShortDatePattern;
     property LongDatePattern: String read fLongDatePattern write SetLongDatePattern;
-    property IsReadOnly: Boolean read fIsReadOnly;
+    property IsReadOnly: Boolean read fIsReadOnly unit write fIsReadOnly;
   end;
 
   PlatformLocale = {$IF ECHOES}System.Globalization.CultureInfo{$ELSEIF COOPER}java.util.Locale{$ELSEIF TOFFEE}Foundation.NSLocale{$ELSEIF ISLAND}RemObjects.Elements.System.Locale{$ENDIF};
@@ -122,7 +122,7 @@ constructor Locale(aLocaleID: PlatformLocale);
 begin
   fLocaleID := aLocaleID;
   fNumberFormat := new NumberFormatInfo();
-  fDateTimeFormat := new DateTimeFormatInfo(aLocaleID);
+  fDateTimeFormat := new DateTimeFormatInfo(false);
   {$IF COOPER}
   var lFormat := java.text.SimpleDateFormat(java.text.DateFormat.getDateInstance(java.text.DateFormat.LONG, aLocaleID));
   fDateTimeFormat.LongDatePattern := lFormat.toPattern;
@@ -225,6 +225,7 @@ begin
   fNumberFormat.DecimalSeparator := aLocaleID.NumberFormat.DecimalSeparator;
   fNumberFormat.ThousandsSeparator := aLocaleID.NumberFormat.ThousandsSeparator;
   {$ENDIF}
+  fDateTimeFormat.IsReadOnly := true;
 end;
 
 class method Locale.GetInvariant: not nullable Locale;
@@ -274,70 +275,83 @@ end;
 
 method DateTimeFormatInfo.SetShortDayNames(aValue: array of String);
 begin
+  CheckReadOnly();
   fShortDayNames := aValue;
 end;
 
 method DateTimeFormatInfo.SetLongDayNames(aValue: array of String);
 begin
+  CheckReadOnly();
   fLongDayNames := aValue;
 end;
 
 method DateTimeFormatInfo.SetShortMonthNames(aValue: array of String);
 begin
+  CheckReadOnly();
   fShortMonthNames := aValue;
 end;
 
 method DateTimeFormatInfo.SetLongMonthNames(aValue: array of String);
 begin
+  CheckReadOnly();
   fLongMonthNames := aValue;
 end;
 
 method DateTimeFormatInfo.SetDateSeparator(aValue: String);
 begin
+  CheckReadOnly();
   fDateSeparator := aValue;
 end;
 
 method DateTimeFormatInfo.SetTimeSeparator(aValue: String);
 begin
+  CheckReadOnly();
   fTimeSeparator := aValue;
 end;
 
 method DateTimeFormatInfo.SetAMString(aValue: String);
 begin
+  CheckReadOnly();
   fAMString := aValue;
 end;
 
 method DateTimeFormatInfo.SetPMString(aValue: String);
 begin
+  CheckReadOnly();
   fPMString := aValue;
 end;
 
 method DateTimeFormatInfo.SetShortTimePattern(aValue: String);
 begin
+  CheckReadOnly();
   fShortTimePattern := aValue;
 end;
 
 method DateTimeFormatInfo.SetLongTimePattern(aValue: String);
 begin
+  CheckReadOnly();
   fLongTimePattern := aValue;
 end;
 
 method DateTimeFormatInfo.SetShortDatePattern(aValue: String);
 begin
+  CheckReadOnly();
   fShortDatePattern := aValue;
 end;
 
 method DateTimeFormatInfo.SetLongDatePattern(aValue: String);
 begin
+  CheckReadOnly();
   fLongDatePattern := aValue;
 end;
 
 method DateTimeFormatInfo.CheckReadOnly;
 begin
-
+  if fIsReadOnly then
+    raise new Exception("Cannot modify this DateTimeFormatInfo instance");
 end;
 
-constructor DateTimeFormatInfo(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
+constructor DateTimeFormatInfo(aIsReadonly: Boolean := false);
 begin
   fIsReadOnly := aIsReadonly;
 end;
