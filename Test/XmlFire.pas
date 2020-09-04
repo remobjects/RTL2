@@ -63,6 +63,25 @@ type
       Check.AreEqual(lXml.ToString, '<Test Condition="''$(Platform)'' == ''''"/>');
     end;
 
+    method DeleteHintPath;
+    begin
+      var lXml := XmlDocument.FromString('<ItemGroup>'#13#10#9'<Reference Include="atk">'#13#10#9#9'<HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Linux\x86_64\atk.fx</HintPath>'#13#10#9'</Reference>#13#10</ItemGroup>');
+      var r := lXml.Root.FirstElementWithName("Reference");
+      r.RemoveElement(r.FirstElementWithName("HintPath"));
+
+      var XmlStyleVisualStudio := new XmlFormattingOptions();
+      XmlStyleVisualStudio.WhitespaceStyle := XmlWhitespaceStyle.PreserveWhitespaceAroundText;
+      XmlStyleVisualStudio.EmptyTagSyle := XmlTagStyle.PreferSingleTag;
+      XmlStyleVisualStudio.Indentation := '  ';
+      XmlStyleVisualStudio.NewLineForElements := true;
+      XmlStyleVisualStudio.NewLineForAttributes := false;
+      XmlStyleVisualStudio.NewLineSymbol := XmlNewLineSymbol.CRLF;
+      XmlStyleVisualStudio.SpaceBeforeSlashInEmptyTags := true;
+      XmlStyleVisualStudio.WriteNewLineAtEnd := false;
+      XmlStyleVisualStudio.WriteBOM := true;
+      Check.AreEqual(lXml.ToString(),'<ItemGroup>'#13#10#9'<Reference Include="atk">'#13#10#9#9#13#10#9'</Reference>#13#10</ItemGroup>');
+      Check.AreEqual(lXml.ToString(XmlStyleVisualStudio), '<ItemGroup>'#13#10#9'<Reference Include="atk" />#13#10</ItemGroup>');
+    end;
   end;
 
 end.

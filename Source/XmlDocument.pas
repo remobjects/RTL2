@@ -291,6 +291,7 @@ type
   public
     constructor (aParent: XmlElement := nil);
     property Value: String read GetValue write SetValue;
+    property IsWhitespaceValue: Boolean read String.IsNullOrWhiteSpace(fValue);
   end;
 
   XmlDocumentType = public class(XmlNode)
@@ -1453,7 +1454,8 @@ begin
       Sb.Append(' ');
     Sb.Append(str);
   end;
-  if IsEmpty then begin
+  var lOnlyWhitespaceInside := fNodes.Where(a -> (a.NodeType =NodeType.Text) and (XmlText(a).IsWhitespaceValue)).Count = fNodes.Count;
+  if IsEmpty or (aFormatInsideTags and lOnlyWhitespaceInside) then begin
     if (Document <> nil) then begin
       if (aFormatInsideTags) then begin
         if (aFormatOptions.EmptyTagSyle <> XmlTagStyle.PreferOpenAndCloseTag) and aFormatOptions.SpaceBeforeSlashInEmptyTags and
@@ -1469,8 +1471,8 @@ begin
       end;
     end else
       Sb.Append("/>");
-  end;
-  if fNodes.count > 0 then Sb.Append('>');
+  end else
+    {if fNodes.count > 0 then }Sb.Append('>');
   /********/
   var CloseTagIndent := false;
   var lEmptyLines := "";
@@ -1537,7 +1539,7 @@ begin
   else
     for each aNode in fNodes do
       Sb.Append(aNode.ToString(aSaveFormatted, aFormatInsideTags, aFormatOptions));
-  if IsEmpty = false then begin
+  if (IsEmpty = false) and (not aFormatInsideTags or (aFormatInsideTags and not lOnlyWhitespaceInside)) then begin
     if (fNodes.Count = 0) and (aFormatInsideTags) and (aFormatOptions.EmptyTagSyle = XmlTagStyle.PreferSingleTag) then
       if aFormatOptions.SpaceBeforeSlashInEmptyTags and not (CharIsWhitespace(Sb.Substring(Sb.Length-1,1))) then
         Sb.Append(" />")
