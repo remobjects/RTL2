@@ -75,9 +75,9 @@ type
     property IsRosetta2: nullable Boolean read begin
       {$IF OSX OR UIKITFORMAC}
       var ret: Integer := 0;
-      var size: size_t := sizeOf(ret);
-      if sysctlbyname("sysctl.proc_translated", @ret, @size, nil, 0) = -1 then begin
-        if errno = ENOENT then
+      var size: rtl.size_t := sizeOf(ret);
+      if rtl.sysctlbyname("sysctl.proc_translated", @ret, @size, nil, 0) = -1 then begin
+        if rtl.errno = rtl.ENOENT then
           exit false;
         exit nil;
       end;
