@@ -72,6 +72,19 @@ type
 
     property IsMono: Boolean read GetIsMono;
 
+    property IsRosetta2: nullable Boolean read begin
+      {$IF OSX OR UIKITFORMAC}
+      var ret: Integer := 0;
+      var size: size_t := sizeOf(ret);
+      if sysctlbyname("sysctl.proc_translated", @ret, @size, nil, 0) = -1 then begin
+        if errno = ENOENT then
+          exit false;
+        exit nil;
+      end;
+      exit ret = 1;
+      {$ENDIF}
+    end;
+
     {$IF COOPER}
     property EnvironmentVariable[aName: String]: String read GetEnvironmentVariable;
     {$ELSE}
@@ -542,7 +555,7 @@ begin
   case Environment.OS of
     OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
     OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result); {$HINT WRONG, returns OS Architecture}
-    OperatingSystem.macOS: Process.Run("/usr/bin/uname", ["-m"], out result); {$HINT WRONG, returns OS Architecture}
+    OperatingSystem.macOS: Process.Run("/usr/bin/uname", ["-m"], out result); // uname returns x86_64 when run from an x86_64 process, even omn arm,. so we're good.
     OperatingSystem.iOS: result := "arm64";
     OperatingSystem.tvOS: result := "arm64";
     OperatingSystem.watchOS: result := nil;
@@ -564,15 +577,16 @@ begin
   {$IF COOPER}
   result := System.getenv("PROCESSOR_ARCHITECTURE");
   {$ELSEIF DARWIN}
-    {$IF UIKITFORMAC}
-    result := nil;
-    {$ELSEIF OSX}
-    Process.Run("/usr/bin/uname", ["-m"], out result);
-    result := result:Trim();
+    {$IF OSX OR UIKITFORMAC}
+      {$IF __ARM64__}
+      result := "arm64";
+      {$ELSE}
+      result := if IsRosetta2 then "arm64" else "x86_64";
+      {$ENDIF}
     {$ELSEIF IOS}
-    result := "arm64";
+    result := "arm64"; // technically imprecise for arm running on VERY old deviced
     {$ELSEIF WATCHOS}
-    result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF};
+    result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF}; // tecnically impreccise
     {$ELSEIF TVOS}
     result := "arm64";
     {$ELSE}
