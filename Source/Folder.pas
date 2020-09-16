@@ -4,7 +4,7 @@ interface
 
 uses
   {$IF COOPER}
-  com.remobjects.elements.linq,
+  remobjects.elements.linq,
   {$ENDIF}
   RemObjects.Elements;
 
