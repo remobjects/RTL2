@@ -2,13 +2,13 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
-    <ProjectGuid>F9717E15-88BC-4853-8D07-8DBAD8C0B2A9</ProjectGuid>
+    <ProjectGuid>{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <AllowLegacyCreate>False</AllowLegacyCreate>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
     <CrossPlatform>True</CrossPlatform>
-    <DefaultUses>com.remobjects.elements.linq</DefaultUses>
+    <DefaultUses>remobjects.elements.linq</DefaultUses>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
     <AssemblyName>elements</AssemblyName>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>

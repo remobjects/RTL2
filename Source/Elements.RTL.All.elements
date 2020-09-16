@@ -37,7 +37,7 @@
   <PropertyGroup Condition=" '$(Target)' == 'Cooper' ">
     <Mode>Cooper</Mode>
     <SubMode>Java</SubMode>
-    <DefaultUses>com.remobjects.elements.linq</DefaultUses>
+    <DefaultUses>remobjects.elements.linq</DefaultUses>
     <BinaryName>elements</BinaryName>
     <OutputType>Library</OutputType>
   </PropertyGroup>
