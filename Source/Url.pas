@@ -142,6 +142,8 @@ type
     method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
     method UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 
+    method FilePathRelativeToUrlIfPossible(aUrl: not nullable Url): nullable String;
+
     /* Needed for fire
 
     * Url.fileURLWithPath(_hintPath) relativeToURL(project.baseURL);
@@ -530,6 +532,12 @@ begin
 
     result := RemovePercentEncodingsFromPath(RemObjects.Elements.RTL.Path.CombineUnixPath(relative, local));
   end;
+end;
+
+method Url.FilePathRelativeToUrlIfPossible(aUrl: not nullable Url): nullable String;
+begin
+  if CanGetPathRelativeToUrl(aUrl) then
+    result := coalesce(FilePathRelativeToUrl(aUrl) Threshold(Consts.MaxInt32), FilePath)
 end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
