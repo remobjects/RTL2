@@ -11,6 +11,9 @@ type
     method TryParseInt64(aValue: not nullable String): nullable Int64;
     method ParseInt32(aValue: not nullable String): Int32;
     method ParseInt64(aValue: not nullable String): Int64;
+
+    property fCachedInvariantNumberFormatters := new Dictionary<Integer,NSNumberFormatter>; lazy;
+    property fCachedCurrentNumberFormatters := new Dictionary<Integer,NSNumberFormatter>; lazy;
     {$ENDIF}
 
     method TrimLeadingZeros(aValue: not nullable String): not nullable String; inline;
@@ -48,9 +51,9 @@ type
     method ToDouble(aValue: Byte): Double;
     method ToDouble(aValue: Int32): Double;
     method ToDouble(aValue: Int64): Double;
-    method TryToDouble(aValue: nullable String; aLocale: Locale): nullable Double;
+    method TryToDouble(aValue: nullable String; aLocale: Locale := Locale.Current): nullable Double;
     method TryToDoubleInvariant(aValue: nullable String): nullable Double; inline;
-    method ToDouble(aValue: not nullable String; aLocale: Locale): Double;
+    method ToDouble(aValue: not nullable String; aLocale: Locale := Locale.Current): Double;
     method ToDoubleInvariant(aValue: not nullable String): Double; inline;
 
     method MilisecondsToTimeString(aMS: Double): String;
@@ -167,33 +170,63 @@ begin
   if Consts.IsNaN(aValue) then
     exit "NaN";
 
-  if aLocale = nil then aLocale := Locale.Current;
   {$IF COOPER}
+  if aLocale = nil then aLocale := Locale.Current;
   var DecFormat := java.text.DecimalFormat(java.text.DecimalFormat.getInstance(aLocale));
   var FloatPattern := if aDigitsAfterDecimalPoint < 0 then "#.###############" else if aDigitsAfterDecimalPoint = 0 then "0" else "0."+new String('0', aDigitsAfterDecimalPoint);
   DecFormat.applyPattern(FloatPattern);
   result := DecFormat.format(aValue) as not nullable;
   {$ELSEIF TOFFEE}
-  var numberFormatter := new NSNumberFormatter();
-  numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
-  numberFormatter.locale := aLocale;
-  if aLocale = Locale.Invariant then numberFormatter.usesGroupingSeparator := false;
-  numberFormatter.usesSignificantDigits := false;
-  if aDigitsAfterDecimalPoint ≥ 0 then begin
-    numberFormatter.maximumFractionDigits := aDigitsAfterDecimalPoint;
-    numberFormatter.minimumFractionDigits := aDigitsAfterDecimalPoint;
+
+  var numberFormatter: NSNumberFormatter;
+
+  method SetupNumberFormatter;
+  begin
+    numberFormatter.numberStyle := NSNumberFormatterStyle.DecimalStyle;
+    numberFormatter.usesSignificantDigits := false;
+    if aDigitsAfterDecimalPoint ≥ 0 then begin
+      numberFormatter.maximumFractionDigits := aDigitsAfterDecimalPoint;
+      numberFormatter.minimumFractionDigits := aDigitsAfterDecimalPoint;
+    end
+    else begin
+      numberFormatter.maximumFractionDigits := 20;
+      numberFormatter.minimumFractionDigits := 0;
+    end;
+  end;
+
+  if aLocale = nil then begin
+    numberFormatter := fCachedCurrentNumberFormatters[aDigitsAfterDecimalPoint];
+    if not assigned(numberFormatter) then begin
+      numberFormatter := new NSNumberFormatter();
+      SetupNumberFormatter();
+      numberFormatter.locale := Locale.Current;
+      fCachedCurrentNumberFormatters[aDigitsAfterDecimalPoint] := numberFormatter;
+    end;
+  end
+  else if aLocale = Locale.Invariant then begin
+    numberFormatter := fCachedInvariantNumberFormatters[aDigitsAfterDecimalPoint];
+    if not assigned(numberFormatter) then begin
+      numberFormatter := new NSNumberFormatter();
+      SetupNumberFormatter();
+      numberFormatter.locale := Locale.Invariant;
+      numberFormatter.usesGroupingSeparator := false; // only for invariant
+      fCachedCurrentNumberFormatters[aDigitsAfterDecimalPoint] := numberFormatter;
+    end;
   end
   else begin
-    numberFormatter.maximumFractionDigits := 20;
-    numberFormatter.minimumFractionDigits := 0;
+    numberFormatter := new NSNumberFormatter();
+    SetupNumberFormatter();
   end;
+
   result := numberFormatter.stringFromNumber(aValue) as not nullable;
   {$ELSEIF ECHOES}
+  if aLocale = nil then aLocale := Locale.Current;
   if aDigitsAfterDecimalPoint < 0 then
     result := System.Convert.ToString(aValue, aLocale) as not nullable
   else
     result := aValue.ToString("0."+new String('0', aDigitsAfterDecimalPoint), aLocale) as not nullable
   {$ELSEIF ISLAND}
+  if aLocale = nil then aLocale := Locale.Current;
   if aDigitsAfterDecimalPoint < 0 then
     result := aValue.ToString(aLocale) as not nullable
   else
