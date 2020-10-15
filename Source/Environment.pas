@@ -35,6 +35,8 @@ type
     method GetSystemApplicationSupportFolder: Folder;
 
     {$IF ECHOES}
+    var fProcessArchitecture: String;
+    var fOSArchitecture: String;
     [System.Runtime.InteropServices.DllImport("libc")]
     method uname(buf: IntPtr): Integer; external;
     method unameWrapper: String;
@@ -553,9 +555,17 @@ begin
     {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
-    OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
-    OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result); {$HINT WRONG, returns OS Architecture}
-    OperatingSystem.macOS: Process.Run("/usr/bin/uname", ["-m"], out result); // uname returns x86_64 when run from an x86_64 process, even omn arm,. so we're good.
+    OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover Windows/ARM yet}
+    OperatingSystem.Linux: begin {$HINT WRONG, returns OS Architecture}
+        if not assigned(fProcessArchitecture) then
+          Process.Run("/bin/uname", ["-m"], out fProcessArchitecture);
+        result := fProcessArchitecture;
+      end;
+    OperatingSystem.macOS: begin // uname returns x86_64 when run from an x86_64 process, even omn arm,. so we're good.
+        if not assigned(fProcessArchitecture) then
+          Process.Run("/usr/bin/uname", ["-m"], out fProcessArchitecture);
+        result := fProcessArchitecture;
+      end;
     OperatingSystem.iOS: result := "arm64";
     OperatingSystem.tvOS: result := "arm64";
     OperatingSystem.watchOS: result := nil;
@@ -595,8 +605,16 @@ begin
   {$ELSEIF ECHOES}
   case Environment.OS of
     OperatingSystem.Windows: result := if Environment.OSBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
-    OperatingSystem.Linux: Process.Run("/bin/uname", ["-m"], out result);
-    OperatingSystem.macOS: Process.Run("/usr/bin/uname", ["-m"], out result);
+    OperatingSystem.Linux: begin
+        if not assigned(fOSArchitecture) then
+          Process.Run("/bin/uname", ["-m"], out fOSArchitecture);
+        result := fOSArchitecture;
+      end;
+    OperatingSystem.macOS: begin {$HINT WRONG, since uname returns x86_64 when run from an x86_64 process}
+        if not assigned(fOSArchitecture) then
+          Process.Run("/usr/bin/uname", ["-m"], out fOSArchitecture);
+        result := fOSArchitecture;
+      end;
     OperatingSystem.iOS: result := "arm64";
     OperatingSystem.tvOS: result := "arm64";
     OperatingSystem.watchOS: result := nil;
