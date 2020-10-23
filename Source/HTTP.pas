@@ -572,6 +572,8 @@ begin
   async try
     var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
+    if aRequest.Mode = HttpRequestMode.Post then
+      lConnection.DoOutput := true;
     lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
     lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
     for each k in aRequest.Headers.Keys do
@@ -713,6 +715,8 @@ begin
   {$IF COOPER}
   var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
+  if aRequest.Mode = HttpRequestMode.Post then
+    lConnection.DoOutput := true;
   lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
   lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
   for each k in aRequest.Headers.Keys do
