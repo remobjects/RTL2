@@ -25,6 +25,7 @@ type
     method CopyTo(Destination: not nullable Folder; NewName: not nullable String; aCloneIfPossible: Boolean := true): not nullable File;
     method Delete;
     method Exists: Boolean; inline;
+    method IsReadOnly: Boolean; inline;
     method Move(NewPathAndName: not nullable File): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
     method Open(Mode: FileOpenMode): not nullable FileHandle;
@@ -33,8 +34,9 @@ type
     class method CopyTo(aFileName: not nullable File; NewPathAndName: not nullable File; aCloneIfPossible: Boolean := true): not nullable File;
     class method Move(aFileName: not nullable File; NewPathAndName: not nullable File): not nullable File;
     class method Rename(aFileName: not nullable File; NewName: not nullable String): not nullable File;
-    class method Exists(aFileName: nullable File): Boolean; inline;
     class method Delete(aFileName: not nullable File); inline;
+    class method Exists(aFileName: nullable File): Boolean; inline;
+    class method IsReadOnly(aFileName: nullable File): Boolean; inline;
 
     method ReadText(Encoding: Encoding := nil): String;
     method ReadBytes: array of Byte;
@@ -159,6 +161,37 @@ end;
 class method File.Exists(aFileName: nullable File): Boolean;
 begin
   result := aFileName:Exists;
+end;
+
+{$IF ISLAND}[Error("This method is not implemented for Islanbd")]{$ENDIF}
+method File.IsReadOnly: Boolean;
+begin
+  if not Exists then
+    exit false;
+  if length(mapped) = 0 then
+    exit false;
+  {$IF COOPER}
+  result := not JavaFile.canWrite;
+  {$ELSEIF TOFFEE}
+  var isDirectory := false;
+  result := NSFileManager.defaultManager.isWritableFileAtPath(mapped);
+  {$ELSEIF ECHOES}
+  if mapped.Contains("*") or mapped.Contains("?") then
+    exit false;
+  result := System.IO.File.GetAttributes(mapped) and System.IO.FileAttributes.ReadOnly = System.IO.FileAttributes.ReadOnly;
+  {$ELSEIF ISLAND}
+  raise new NotImplementedException("File.IsReadOnly is not implemented for Island")
+  {$ENDIF}
+end;
+
+{$IF ISLAND}[Error("This method is not implemented for Islanbd")]{$ENDIF}
+class method File.IsReadOnly(aFileName: nullable File): Boolean;
+begin
+  {$IF ISLAND}
+  raise new NotImplementedException("File.IsReadOnly is not implemented for Island")
+  {$ELSE}
+  result := aFileName:IsReadOnly;
+  {$ENDIF}
 end;
 
 method File.Move(NewPathAndName: not nullable File): not nullable File;
