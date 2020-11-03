@@ -174,7 +174,7 @@ begin
   result := not JavaFile.canWrite;
   {$ELSEIF TOFFEE}
   var isDirectory := false;
-  result := NSFileManager.defaultManager.isWritableFileAtPath(mapped);
+  result := not NSFileManager.defaultManager.isWritableFileAtPath(mapped);
   {$ELSEIF ECHOES}
   if mapped.Contains("*") or mapped.Contains("?") then
     exit false;
