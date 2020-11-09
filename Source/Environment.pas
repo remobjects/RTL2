@@ -610,9 +610,15 @@ begin
           Process.Run("/bin/uname", ["-m"], out fOSArchitecture);
         result := fOSArchitecture;
       end;
-    OperatingSystem.macOS: begin {$HINT WRONG, since uname returns x86_64 when run from an x86_64 process}
-        if not assigned(fOSArchitecture) then
-          Process.Run("/usr/bin/uname", ["-m"], out fOSArchitecture);
+    OperatingSystem.macOS: begin
+        if not assigned(fOSArchitecture) then begin
+          RemObjects.Elements.RTL.Process.Run("/usr/bin/arch", ["-arm64e", "/usr/bin/uname", "-m"], out var lTryArm, out var e1);
+          lTryArm := lTryArm.Trim;
+          if lTryArm.Trim = "arm64" then
+            fOSArchitecture := "arm64"
+          else
+            Process.Run("/usr/bin/uname", ["-m"], out fOSArchitecture);
+        end;
         result := fOSArchitecture;
       end;
     OperatingSystem.iOS: result := "arm64";
