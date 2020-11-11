@@ -29,7 +29,7 @@ type
     method FindIndex(StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
 
     method Find(Match: Predicate<T>): T;
-    method FindAll(Match: Predicate<T>): sequence of T;
+    method FindAll(Match: Predicate<T>): not nullable sequence of T;
     method TrueForAll(Match: Predicate<T>): Boolean;
     method ForEach(Action: Action<T>);
 
@@ -43,7 +43,7 @@ type
     end;
     {$ENDIF}
 
-    method ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
+    method ToSortedList(Comparison: Comparison<T>): not nullable ImmutableList<T>;
     {$IFDEF COOPER}
     method ToArray: not nullable array of T; inline;
     {$ELSE}
@@ -55,8 +55,8 @@ type
     method UniqueMutableCopy: not nullable List<T>;
     method MutableVersion: not nullable List<T>;
 
-    method SubList(aStartIndex: Int32): ImmutableList<T>; inline;
-    method SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>; inline;
+    method SubList(aStartIndex: Int32): not nullable ImmutableList<T>; inline;
+    method SubList(aStartIndex: Int32; aLength: Int32): not nullable ImmutableList<T>; inline;
     //method Partition<K>(aKeyBlock: block (aItem: T): K): ImmutableDictionary<K,ImmutableList<T>>; where K is IEquatable<K>;
 
     method JoinedString(aSeparator: nullable String := nil): not nullable String;
@@ -121,10 +121,10 @@ type
     method InsertRange(&Index: Integer; Items: array of T);
 
     method Sort(Comparison: Comparison<T>);
-    method ToList<U>: List<U>; {$IF TOFFEE}where U is class;{$ENDIF} reintroduce;
+    method ToList<U>: not nullable List<U>; {$IF TOFFEE}where U is class;{$ENDIF} reintroduce;
 
-    method SubList(aStartIndex: Int32): List<T>; reintroduce; inline;
-    method SubList(aStartIndex: Int32; aLength: Int32): List<T>; reintroduce; inline;
+    method SubList(aStartIndex: Int32): not nullable List<T>; reintroduce; inline;
+    method SubList(aStartIndex: Int32; aLength: Int32): not nullable List<T>; reintroduce; inline;
 
     property Item[i: Integer]: T read GetItem write SetItem; default;
   end;
@@ -158,7 +158,7 @@ type
     method Find<T>(aSelf: ImmutableList<T>;Match: Predicate<T>): T;
     method ForEach<T>(aSelf: ImmutableList<T>;Action: Action<T>);
     method TrueForAll<T>(aSelf: ImmutableList<T>;Match: Predicate<T>): Boolean;
-    method FindAll<T>(aSelf: ImmutableList<T>;Match: Predicate<T>): sequence of T; iterator;
+    method FindAll<T>(aSelf: ImmutableList<T>;Match: Predicate<T>): not nullable sequence of T; iterator;
     method InsertRange<T>(aSelf: List<T>; &Index: Integer; Items: array oF T);
     {$IFDEF TOFFEE}
     method LastIndexOf<T>(aSelf: NSArray; aItem: T): Integer;
@@ -392,7 +392,7 @@ begin
   exit ListHelpers.Find(self, Match);
 end;
 
-method ImmutableList<T>.FindAll(Match: Predicate<T>): sequence of T;
+method ImmutableList<T>.FindAll(Match: Predicate<T>): not nullable sequence of T;
 begin
   exit ListHelpers.FindAll(self, Match);
 end;
@@ -551,10 +551,10 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableList<T>.ToSortedList(Comparison: Comparison<T>): ImmutableList<T>;
+method ImmutableList<T>.ToSortedList(Comparison: Comparison<T>): not nullable ImmutableList<T>;
 begin
   {$IF COOPER}
-  result := self.ToList();
+  result := self.ToList() as not nullable;
   java.util.Collections.sort(result, new class java.util.Comparator<T>(compare := (x, y) -> Comparison(x, y)));
   {$ELSEIF TOFFEE}
   result := mapped.sortedArrayUsingComparator((x, y) -> begin
@@ -565,9 +565,9 @@ begin
            NSComparisonResult.NSOrderedSame
          else
            NSComparisonResult.NSOrderedDescending;
-  end);
+  end) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := self.ToList();
+  result := self.ToList() as not nullable;
   (result as PlatformList<T>).Sort((x, y) -> Comparison(x, y));
   {$ENDIF}
 end;
@@ -591,36 +591,38 @@ end;
 method ImmutableList<T>.ToList<U>: not nullable ImmutableList<U>;
 begin
   {$IF NOT TOFFEE}
-  result := self.Select(x -> x as U).ToList() as not nullable;
+  var lResult := new List<U> withCapacity(Count);
+  for each i in self do
+    lResult.Add(i as U);
+  result := lResult;
   {$ELSE}
   result :=  self as ImmutableList<U>;
   {$ENDIF}
 end;
 
-method List<T>.ToList<U>: List<U>;
+method List<T>.ToList<U>: not nullable List<U>;
 begin
   {$IF NOT TOFFEE}
-  //77062: Cannot call named .ctor on mapped class
-  //result := new List<U> withCapacity(Count); // E407 No overloaded constructor with these parameters for type "List<T>", best matching overload is "constructor (Items: List<T>): List<T>"
-  //for each i in self do
-  //  result.Add(i as U);
-  result := self.Select(x -> x as U).ToList(); {$HINT largely inefficient. rewrite}
+  result := new List<U> withCapacity(Count);
+  for each i in self do
+    result.Add(i as U);
+  //result := self.Select(x -> x as U).ToList(); {$HINT largely inefficient. rewrite}
   {$ELSE}
   result := self as Object as List<U>;
   {$ENDIF}
 end;
 
-method ImmutableList<T>.SubList(aStartIndex: Int32): ImmutableList<T>;
+method ImmutableList<T>.SubList(aStartIndex: Int32): not nullable ImmutableList<T>;
 begin
   result := SubList(aStartIndex, Count-aStartIndex);
 end;
 
-method ImmutableList<T>.SubList(aStartIndex: Int32; aLength: Int32): ImmutableList<T>;
+method ImmutableList<T>.SubList(aStartIndex: Int32; aLength: Int32): not nullable ImmutableList<T>;
 begin
   {$IF COOPER}
-  result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
+  result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList() as not nullable;
   {$ELSEIF TOFFEE}
-  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength));
+  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength)) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   var lArray := new T[aLength];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
@@ -628,17 +630,17 @@ begin
   {$ENDIF}
 end;
 
-method List<T>.SubList(aStartIndex: Int32): List<T>;
+method List<T>.SubList(aStartIndex: Int32): not nullable List<T>;
 begin
   result := SubList(aStartIndex, Count-aStartIndex);
 end;
 
-method List<T>.SubList(aStartIndex: Int32; aLength: Int32): List<T>;
+method List<T>.SubList(aStartIndex: Int32; aLength: Int32): not nullable List<T>;
 begin
   {$IF COOPER}
-  result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList();
+  result := mapped.subList(aStartIndex, aStartIndex+aLength).ToList() as not nullable;
   {$ELSEIF TOFFEE}
-  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength)).mutableCopy;
+  result := mapped.subarrayWithRange(NSMakeRange(aStartIndex, aLength)).mutableCopy as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   var lArray := new T[aLength];
   mapped.CopyTo(aStartIndex, lArray, 0, aLength);
@@ -686,7 +688,7 @@ begin
   end;
   result := lResult.ToString() as not nullable;
   {$ELSEIF TOFFEE}
-  result := mapped.componentsJoinedByString(aSeparator);
+  result := mapped.componentsJoinedByString(aSeparator) as not nullable;
   {$ENDIF}
 end;
 
@@ -782,7 +784,7 @@ begin
   exit &default(T);
 end;
 
-method ListHelpers.FindAll<T>(aSelf: ImmutableList<T>; Match: Predicate<T>): sequence of T;
+method ListHelpers.FindAll<T>(aSelf: ImmutableList<T>; Match: Predicate<T>): not nullable sequence of T;
 begin
   if Match = nil then
     raise new ArgumentNullException("Match");
