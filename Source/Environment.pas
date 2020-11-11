@@ -35,6 +35,7 @@ type
     method GetSystemApplicationSupportFolder: Folder;
 
     {$IF ECHOES}
+    var fOS: nullable OperatingSystem;
     var fProcessArchitecture: String;
     var fOSArchitecture: String;
     [System.Runtime.InteropServices.DllImport("libc")]
@@ -412,20 +413,23 @@ begin
   {$ELSEIF NETFX_CORE}
   exit OperatingSystem.Windows
   {$ELSEIF ECHOES}
-  case System.Environment.OSVersion.Platform of
-    PlatformID.WinCE,
-    PlatformID.Win32NT,
-    PlatformID.Win32S,
-    PlatformID.Win32Windows: exit OperatingSystem.Windows;
-    PlatformID.Xbox: exit OperatingSystem.Xbox;
-    PlatformID.MacOSX: exit OperatingSystem.macOS;
-    PlatformID.Unix: case unameWrapper() of
-                       "Linux": exit OperatingSystem.Linux;
-                       "Darwin": exit OperatingSystem.macOS;
-                       else exit OperatingSystem.Unknown;
-                     end;
-    else exit OperatingSystem.Unknown;
+  if not assigned(fOS) then begin
+    fOS := case System.Environment.OSVersion.Platform of
+      PlatformID.WinCE,
+      PlatformID.Win32NT,
+      PlatformID.Win32S,
+      PlatformID.Win32Windows: OperatingSystem.Windows;
+      PlatformID.Xbox: OperatingSystem.Xbox;
+      PlatformID.MacOSX: OperatingSystem.macOS;
+      PlatformID.Unix: case unameWrapper() of
+                         "Linux": OperatingSystem.Linux;
+                         "Darwin": OperatingSystem.macOS;
+                         else OperatingSystem.Unknown;
+                       end;
+      else OperatingSystem.Unknown;
+    end;
   end;
+  result := fOS;
   {$ELSEIF ISLAND}
     {$IF LINUX}
     exit OperatingSystem.Linux;
