@@ -51,6 +51,16 @@ type
     {$ENDIF}
   end;
 
+  WriteLnLogger = partial class(ILogger)
+  protected
+
+    method Log(aMessage: String);
+    begin
+      writeLn(aMessage);
+    end;
+
+  end;
+
   {$IF JAVA}
   IAndroidLogger = public interface
     property AppName: String;
