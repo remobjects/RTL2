@@ -182,6 +182,7 @@ type
     method AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
+    method AddElement(aElements: not nullable sequence of Object);
     method AddElements(aElements: not nullable sequence of XmlElement);
     method RemoveElement(aElement: not nullable XmlElement);
     method RemoveElementsWithName(aName: not nullable String; aNamespace: nullable XmlNamespace := nil);
@@ -1018,6 +1019,15 @@ begin
   else fNodes.Add(aElement);
   fElements.Add(aElement);
   //fIsEmpty := false;
+end;
+
+method XmlElement.AddElement(aElements: not nullable sequence of Object);
+begin
+  for each e in aElements do
+    if e is XmlElement then
+      AddElement(XmlElement(e))
+    else
+      raise new Exception('Not yet supported');
 end;
 
 method XmlElement.AddElements(aElements: not nullable sequence of XmlElement);
