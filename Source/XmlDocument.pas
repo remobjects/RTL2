@@ -178,11 +178,20 @@ type
     method RemoveAttribute(aAttribute: not nullable XmlAttribute);
     method RemoveAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlAttribute;
 
+    method &Add(aData: not nullable sequence of Object);
+    method &Add(aElement: not nullable XmlElement);
+    method &Add(aCData: not nullable XmlCData);
+    method &Add(aComment: not nullable XmlComment);
+    method &Add(aAttribute: not nullable XmlAttribute);
+    method &Add(aString: not nullable String);
+    method &Add(aInteger: not nullable Integer);
+    method &Add(aFloat: not nullable Double);
+    method &Add(aDateTime: not nullable DateTime);
+
     method AddElement(aElement: not nullable XmlElement);
     method AddElement(aElement: not nullable XmlElement) atIndex(aIndex: Integer);
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil): not nullable XmlElement;
     method AddElement(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: nullable String := nil) atIndex(aIndex: Integer): not nullable XmlElement;
-    method AddElement(aElements: not nullable sequence of Object);
     method AddElements(aElements: not nullable sequence of XmlElement);
     method RemoveElement(aElement: not nullable XmlElement);
     method RemoveElementsWithName(aName: not nullable String; aNamespace: nullable XmlNamespace := nil);
@@ -989,6 +998,64 @@ begin
     end;
 end;
 
+method XmlElement.&Add(aData: not nullable sequence of Object);
+begin
+  for each lData in aData do begin
+    case typeOf(lData) of
+      XmlElement: AddElement(lData as XmlElement);
+      XmlCData: &Add(lData as XmlCData);
+      XmlComment: &Add(lData as XmlComment);
+      XmlAttribute: AddAttribute(lData as XmlAttribute);
+      String: &Add(lData as String);
+      Integer: &Add(lData as Integer);
+      Double: &Add(lData as Double);
+      DateTime: &Add(lData as DateTime)
+      else
+        raise new Exception("Can not add data to XML element");
+    end;
+  end;
+end;
+
+method XmlElement.Add(aElement: not nullable XmlElement);
+begin
+  AddElement(aElement);
+end;
+
+method XmlElement.&Add(aCData: not nullable XmlCData);
+begin
+  AddNode(aCData);
+end;
+
+method XmlElement.&Add(aComment: not nullable XmlComment);
+begin
+  AddNode(aComment);
+end;
+
+method XmlElement.&Add(aAttribute: not nullable XmlAttribute);
+begin
+  AddAttribute(aAttribute);
+end;
+
+method XmlElement.&Add(aString: not nullable String);
+begin
+  Value := Value + aString;
+end;
+
+method XmlElement.&Add(aInteger: not nullable Integer);
+begin
+  Value := Value + aInteger.ToString;
+end;
+
+method XmlElement.&Add(aFloat: not nullable Double);
+begin
+  Value := Value + aFloat.ToString;
+end;
+
+method XmlElement.&Add(aDateTime: not nullable DateTime);
+begin
+  Value := Value + aDateTime.ToString;
+end;
+
 method XmlElement.AddElement(aElement: not nullable XmlElement);
 begin
   aElement.fParent := self;
@@ -1019,15 +1086,6 @@ begin
   else fNodes.Add(aElement);
   fElements.Add(aElement);
   //fIsEmpty := false;
-end;
-
-method XmlElement.AddElement(aElements: not nullable sequence of Object);
-begin
-  for each e in aElements do
-    if e is XmlElement then
-      AddElement(XmlElement(e))
-    else
-      raise new Exception('Not yet supported');
 end;
 
 method XmlElement.AddElements(aElements: not nullable sequence of XmlElement);
