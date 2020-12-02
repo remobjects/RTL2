@@ -36,6 +36,7 @@ type
 
     {$IF ECHOES}
     var fOS: nullable OperatingSystem;
+    var fOSVersion: nullable String;
     var fProcessArchitecture: String;
     var fOSArchitecture: String;
     [System.Runtime.InteropServices.DllImport("libc")]
@@ -507,11 +508,23 @@ begin
   {$IF COOPER}
   exit System.getProperty("os.version");
   {$ELSEIF TOFFEE}
-  exit NSProcessInfo.processInfo.operatingSystemVersionString;
+  exit $"{CocoaVersion[0].CocoaVersion[1].CocoaVersion[2]}"
   {$ELSEIF NETFX_CORE}
   exit "6.2";
   {$ELSEIF ECHOES}
-  exit System.Environment.OSVersion.Version.ToString;
+  case OS of
+    OperatingSystem.macOS: begin
+        if not assigned(fOSVersion) then begin
+          Process.Run("/usr/bin/sw_vers", ["-productVersion"], out fOSVersion);
+          fOSVersion := fOSVersion.Trim;
+        end;
+        exit fOSVersion;
+      end;
+    else begin
+      exit System.Environment.OSVersion.Version.ToString;
+    end;
+  end;
+
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Environment.OSVersion;
   {$ENDIF}
@@ -561,13 +574,17 @@ begin
   case Environment.OS of
     OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover Windows/ARM yet}
     OperatingSystem.Linux: begin {$HINT WRONG, returns OS Architecture}
-        if not assigned(fProcessArchitecture) then
+        if not assigned(fProcessArchitecture) then begin
           Process.Run("/bin/uname", ["-m"], out fProcessArchitecture);
+          fProcessArchitecture := fProcessArchitecture:Trim;
+        end;
         result := fProcessArchitecture;
       end;
     OperatingSystem.macOS: begin // uname returns x86_64 when run from an x86_64 process, even omn arm,. so we're good.
-        if not assigned(fProcessArchitecture) then
+        if not assigned(fProcessArchitecture) then begin
           Process.Run("/usr/bin/uname", ["-m"], out fProcessArchitecture);
+          fProcessArchitecture := fProcessArchitecture:Trim;
+        end;
         result := fProcessArchitecture;
       end;
     OperatingSystem.iOS: result := "arm64";
@@ -610,8 +627,10 @@ begin
   case Environment.OS of
     OperatingSystem.Windows: result := if Environment.OSBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
     OperatingSystem.Linux: begin
-        if not assigned(fOSArchitecture) then
+        if not assigned(fOSArchitecture) then begin
           Process.Run("/bin/uname", ["-m"], out fOSArchitecture);
+          fOSArchitecture := fOSArchitecture:Trim;
+        end;
         result := fOSArchitecture;
       end;
     OperatingSystem.macOS: begin
@@ -620,8 +639,10 @@ begin
           lTryArm := lTryArm.Trim;
           if lTryArm.Trim = "arm64" then
             fOSArchitecture := "arm64"
-          else
+          else begin
             Process.Run("/usr/bin/uname", ["-m"], out fOSArchitecture);
+            fOSArchitecture := fOSArchitecture:Trim;
+          end;
         end;
         result := fOSArchitecture;
       end;
