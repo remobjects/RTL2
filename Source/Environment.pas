@@ -507,8 +507,8 @@ method Environment.GetOSVersion: String;
 begin
   {$IF COOPER}
   exit System.getProperty("os.version");
-  {$ELSEIF TOFFEE}
-  exit $"{CocoaVersion[0].CocoaVersion[1].CocoaVersion[2]}"
+  {$ELSEIF TOFFEEV1}
+  exit $"{CocoaVersion[0]}.{CocoaVersion[1]}.{CocoaVersion[2]}"
   {$ELSEIF NETFX_CORE}
   exit "6.2";
   {$ELSEIF ECHOES}
