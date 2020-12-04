@@ -184,8 +184,8 @@ type
     method &Add(aComment: not nullable XmlComment);
     method &Add(aAttribute: not nullable XmlAttribute);
     method &Add(aString: not nullable String);
-    method &Add(aInteger: not nullable Integer);
-    method &Add(aFloat: not nullable Double);
+    //method &Add(aInteger: not nullable Integer);
+    //method &Add(aFloat: not nullable Double);
     method &Add(aDateTime: not nullable DateTime);
 
     method AddElement(aElement: not nullable XmlElement);
@@ -1007,8 +1007,8 @@ begin
       XmlComment: &Add(lData as XmlComment);
       XmlAttribute: AddAttribute(lData as XmlAttribute);
       String: &Add(lData as String);
-      Integer: &Add(lData as Integer);
-      Double: &Add(lData as Double);
+      //Integer: &Add(lData as Integer);
+      //Double: &Add(lData as Double);
       DateTime: &Add(lData as DateTime)
       else
         raise new Exception("Can not add data to XML element");
@@ -1041,15 +1041,15 @@ begin
   Value := Value + aString;
 end;
 
-method XmlElement.&Add(aInteger: not nullable Integer);
-begin
-  Value := Value + aInteger.ToString;
-end;
+//method XmlElement.&Add(aInteger: not nullable Integer);
+//begin
+  //Value := Value + aInteger.ToString;
+//end;
 
-method XmlElement.&Add(aFloat: not nullable Double);
-begin
-  Value := Value + aFloat.ToString;
-end;
+//method XmlElement.&Add(aFloat: not nullable Double);
+//begin
+  //Value := Value + aFloat.ToString;
+//end;
 
 method XmlElement.&Add(aDateTime: not nullable DateTime);
 begin
