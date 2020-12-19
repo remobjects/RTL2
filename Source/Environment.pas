@@ -89,6 +89,26 @@ type
       {$ENDIF}
     end;
 
+    class property IsWow64Process: Boolean read begin
+      if defined("WINDOWS") then begin
+        var lProcessMachine, lNativeMachine: UInt16;
+        rtl.IsWow64Process2(rtl.GetCurrentProcess(), @lProcessMachine, @lNativeMachine);
+        result := lProcessMachine ≠ 0;
+      end
+      else if defined("ECHOES") and (OS = OperatingSystem.Windows) then begin
+        IsWow64Process2(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lProcessMachine, out var lNativeMachine);
+        result := lProcessMachine ≠ 0;
+      end
+      else begin
+        result := false;
+      end;
+    end;
+
+    {$IF ECHOES}
+    [System.Runtime.InteropServices.DllImport('kernel32.dll'/*, true*/)]
+    class method IsWow64Process2(process: IntPtr; out processMachine: UInt16; out nativeMachine: UInt16): Boolean; external; private;
+    {$ENDIF}
+
     {$IF COOPER}
     property EnvironmentVariable[aName: String]: String read GetEnvironmentVariable;
     {$ELSE}
@@ -572,7 +592,15 @@ begin
     {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
-    OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover Windows/ARM yet}
+    OperatingSystem.Windows: begin
+      IsWow64Process2(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lProcessMachine, out var lNativeMachine);
+        if (lProcessMachine = $aa64) or (lProcessMachine = 0) and (lNativeMachine = $aa64) then
+          result := "arm64"
+        else if (lProcessMachine = $14c) or (lProcessMachine = 0) and (lNativeMachine = $14c) then
+          result := "i386"
+        else // for now
+          result := "x86_64";
+      end;
     OperatingSystem.Linux: begin {$HINT WRONG, returns OS Architecture}
         if not assigned(fProcessArchitecture) then begin
           Process.Run("/bin/uname", ["-m"], out fProcessArchitecture);
@@ -625,7 +653,14 @@ begin
     {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
-    OperatingSystem.Windows: result := if Environment.OSBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
+    OperatingSystem.Windows: begin
+        IsWow64Process2(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lProcessMachine, out var lNativeMachine);
+        case lNativeMachine of
+          $aa64: result := "arm64";
+          $14c: result := "i386";
+          else result := "x86_64";
+        end;
+      end;
     OperatingSystem.Linux: begin
         if not assigned(fOSArchitecture) then begin
           Process.Run("/bin/uname", ["-m"], out fOSArchitecture);
