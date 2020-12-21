@@ -91,13 +91,13 @@ type
 
     class property IsWow64Process: Boolean read begin
       if defined("WINDOWS") then begin
-        var lProcessMachine, lNativeMachine: UInt16;
-        rtl.IsWow64Process2(rtl.GetCurrentProcess(), @lProcessMachine, @lNativeMachine);
-        result := lProcessMachine ≠ 0;
+        var lIsWow64: rtl.BOOL;
+        rtl.IsWow64Process(rtl.GetCurrentProcess(), @lIsWow64);
+        result := lIsWow64;
       end
       else if defined("ECHOES") and (OS = OperatingSystem.Windows) then begin
-        IsWow64Process2(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lProcessMachine, out var lNativeMachine);
-        result := lProcessMachine ≠ 0;
+        IsWow64Process(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lIsWow64);
+        result := lIsWow64;
       end
       else begin
         result := false;
@@ -105,6 +105,9 @@ type
     end;
 
     {$IF ECHOES}
+    [System.Runtime.InteropServices.DllImport('kernel32.dll'/*, true*/)]
+    class method IsWow64Process(process: IntPtr; out isWow64Process: Boolean): Boolean; external; private;
+
     [System.Runtime.InteropServices.DllImport('kernel32.dll'/*, true*/)]
     class method IsWow64Process2(process: IntPtr; out processMachine: UInt16; out nativeMachine: UInt16): Boolean; external; private;
     {$ENDIF}
