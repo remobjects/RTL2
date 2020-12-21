@@ -595,14 +595,16 @@ begin
     {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
-    OperatingSystem.Windows: begin
-      IsWow64Process2(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lProcessMachine, out var lNativeMachine);
+    OperatingSystem.Windows: try
+        IsWow64Process2(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lProcessMachine, out var lNativeMachine);
         if (lProcessMachine = $aa64) or (lProcessMachine = 0) and (lNativeMachine = $aa64) then
           result := "arm64"
         else if (lProcessMachine = $14c) or (lProcessMachine = 0) and (lNativeMachine = $14c) then
           result := "i386"
         else // for now
           result := "x86_64";
+      except
+        result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover Windows/ARM yet}
       end;
     OperatingSystem.Linux: begin {$HINT WRONG, returns OS Architecture}
         if not assigned(fProcessArchitecture) then begin
@@ -656,13 +658,15 @@ begin
     {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
-    OperatingSystem.Windows: begin
+    OperatingSystem.Windows: try
         IsWow64Process2(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lProcessMachine, out var lNativeMachine);
         case lNativeMachine of
           $aa64: result := "arm64";
           $14c: result := "i386";
           else result := "x86_64";
         end;
+      except
+        result := if Environment.OSBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
       end;
     OperatingSystem.Linux: begin
         if not assigned(fOSArchitecture) then begin
