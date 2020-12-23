@@ -159,6 +159,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Char.Unicode.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)CaseInsensitiveString.pas">
+      <VirtualFolder>String</VirtualFolder>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
