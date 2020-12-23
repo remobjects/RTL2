@@ -92,24 +92,31 @@ type
     class property IsWow64Process: Boolean read begin
       if defined("WINDOWS") then begin
         var lIsWow64: rtl.BOOL;
-        rtl.IsWow64Process(rtl.GetCurrentProcess(), @lIsWow64);
-        result := lIsWow64;
+        if rtl.IsWow64Process(rtl.GetCurrentProcess(), @lIsWow64) then
+          result := lIsWow64;
       end
       else if defined("ECHOES") and (OS = OperatingSystem.Windows) then begin
-        IsWow64Process(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lIsWow64);
-        result := lIsWow64;
-      end
-      else begin
-        result := false;
+        if System.Environment.Is64BitOperatingSystem then
+          if ((System.Environment.OSVersion.Version.Major = 5) and (System.Environment.OSVersion.Version.Minor ≥ 1)) or (System.Environment.OSVersion.Version.Major ≥ 6) then
+            using lProcess := System.Diagnostics.Process.GetCurrentProcess do
+              if IsWow64Process(lProcess.Handle, out var lIsWow64) then
+                result := lIsWow64;
       end;
     end;
 
     {$IF ECHOES}
     [System.Runtime.InteropServices.DllImport('kernel32.dll'/*, true*/)]
-    class method IsWow64Process(process: IntPtr; out isWow64Process: Boolean): Boolean; external; private;
+    class method IsWow64Process(aProcess: IntPtr; out aIsWow64Process: Boolean): Boolean; external; private;
 
     [System.Runtime.InteropServices.DllImport('kernel32.dll'/*, true*/)]
-    class method IsWow64Process2(process: IntPtr; out processMachine: UInt16; out nativeMachine: UInt16): Boolean; external; private;
+    class method IsWow64Process2(aProcess: IntPtr; out aProcessMachine: UInt16; out aNativeMachine: UInt16): Boolean; external; private;
+
+    [System.Runtime.InteropServices.DllImport("kernel32")]
+    class method GetSystemInfo(var lpSystemInfo: SYSTEM_INFO); external; private;
+
+    class const PROCESSOR_ARCHITECTURE_AMD64: Integer = 9;
+    class const PROCESSOR_ARCHITECTURE_INTEL: Integer = 0;
+    class const PROCESSOR_ARCHITECTURE_ARM64: Integer = 12;
     {$ENDIF}
 
     {$IF COOPER}
@@ -131,6 +138,22 @@ type
       var v := Environment.OSVersion.Split(".");
       result := (v.Count > 0) and (Convert.TryToInt32(v[0]) ≥ 17);
     end;
+  end;
+
+  [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+  SYSTEM_INFO = unit record
+  public
+    var wProcessorArchitecture: Int16;
+    var wReserved: Int16;
+    var dwPageSize: Integer;
+    var lpMinimumApplicationAddress: IntPtr;
+    var lpMaximumApplicationAddress: IntPtr;
+    var dwActiveProcessorMask: IntPtr;
+    var dwNumberOfProcessors: Integer;
+    var dwProcessorType: Integer;
+    var dwAllocationGranularity: Integer;
+    var wProcessorLevel: Int16;
+    var wProcessorRevision: Int16;
   end;
   {$ENDIF}
 
@@ -596,13 +619,13 @@ begin
   {$ELSEIF ECHOES}
   case Environment.OS of
     OperatingSystem.Windows: try
-        IsWow64Process2(System.Diagnostics.Process.GetCurrentProcess().Handle, out var lProcessMachine, out var lNativeMachine);
-        if (lProcessMachine = $aa64) or (lProcessMachine = 0) and (lNativeMachine = $aa64) then
-          result := "arm64"
-        else if (lProcessMachine = $14c) or (lProcessMachine = 0) and (lNativeMachine = $14c) then
-          result := "i386"
-        else // for now
-          result := "x86_64";
+        var si := new SYSTEM_INFO();
+        GetSystemInfo(var si);
+        case si.wProcessorArchitecture of
+          PROCESSOR_ARCHITECTURE_INTEL: result := "i386";
+          PROCESSOR_ARCHITECTURE_AMD64: result := "x86_64";
+          PROCESSOR_ARCHITECTURE_ARM64: result := "arm64";
+        end;
       except
         result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover Windows/ARM yet}
       end;
