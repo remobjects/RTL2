@@ -52,7 +52,8 @@ type
     class method UrlWithString(aUrlString: not nullable String): not nullable Url;
     class method TryUrlWithString(aUrlString: nullable String): nullable Url;
     class method UrlWithComponents(aScheme: String; aHost: String; aPort: Integer; aPath: String; aQueryString: String; aFragment: String; aUser: String): not nullable Url;
-    class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
+    class method UrlWithFilePath(aPath: not nullable String): not nullable Url; inline;
+    class method UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean): not nullable Url;
     class method UrlWithFilePath(aPath: not nullable String) relativeToUrl(aUrl: not nullable Url) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
     class method UrlWithWindowsPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
     class method UrlWithUnixPath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
@@ -233,7 +234,13 @@ begin
   result := new Url(aScheme, aHost, aPort, aPath, aQueryString, aFragment, aUser);
 end;
 
-class method Url.UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean := false): not nullable Url;
+class method Url.UrlWithFilePath(aPath: not nullable String): not nullable Url;
+begin
+  result := UrlWithFilePath(aPath) isDirectory(false);
+end;
+
+
+class method Url.UrlWithFilePath(aPath: not nullable String) isDirectory(aIsDirectory: Boolean): not nullable Url;
 begin
   {$IF NOT KNOWN_UNIX}
   if RemObjects.Elements.RTL.Path.DirectorySeparatorChar ≠ '/' then
