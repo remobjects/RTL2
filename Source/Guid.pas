@@ -54,7 +54,7 @@ type
     //class property EmptyGuid: not nullable Guid := CreateEmptyGuid(); lazy;
     class property EmptyGuid: not nullable Guid read CreateEmptyGuid;
 
-    class method TryParse(aValue: String): nullable Guid;
+    class method TryParse(aValue: nullable String): nullable Guid;
 
     method ToByteArray: array of Byte;
     method ToString: String; {$IF ISLAND OR ECHOES}override;{$ENDIF}
