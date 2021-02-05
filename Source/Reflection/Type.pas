@@ -138,7 +138,6 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
 class method &Type.GetType(aName: not nullable String): nullable &Type;
 begin
   {$IF COOPER}
@@ -153,19 +152,16 @@ begin
   {$ELSEIF ECHOES}
   result := PlatformType.GetType(aName);
   {$ELSEIF ISLAND}
-  raise new NotImplementedException("Type.GetType");
+  result := &Type.AllTypes.FirstOrDefault(a -> a.Name = aName);
   {$ENDIF}
 end;
 
-{$IF ISLAND AND NOT TOFFEE}[Warning("Not Implemented for Island")]{$ENDIF}
 constructor &Type withPlatformType(aType: PlatformType);
 begin
-  {$IF ECHOES OR COOPER}
+  {$IF ECHOES OR COOPER OR ISLAND}
   result := aType as &Type;
   {$ELSEIF TOFFEE AND NOT ISLAND}
   constructor withClass(aType);
-  {$ELSE}
-  raise new NotImplementedException("Type withPlatformType");
   {$ENDIF}
 end;
 
