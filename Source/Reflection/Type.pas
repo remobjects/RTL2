@@ -32,6 +32,7 @@ type
     method Get_Interfaces: ImmutableList<&Type>;
     method Get_Methods: ImmutableList<&Method>;
     method Get_Properties: ImmutableList<&Property>;
+    method Get_Fields: ImmutableList<Field>;
     {$ENDIF}
     {$IF NETFX_CORE}
     method Get_Interfaces: ImmutableList<&Type>;
@@ -46,6 +47,7 @@ type
     {$IF COOPER}
     property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
     property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
+    property MethodFields: ImmutableList<Field> read mapped.getFields().ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.getSuperclass();
@@ -63,6 +65,7 @@ type
     property Interfaces: ImmutableList<&Type> read Get_Interfaces();
     property Methods: ImmutableList<&Method> read Get_Methods();
     property Properties: ImmutableList<&Property> read get_Properties();
+    property Fields: ImmutableList<Field> read get_Fields();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     //operator Explicit(aClass: rtl.Class): &Type;
     //operator Explicit(aProtocol: Protocol): &Type;
@@ -89,6 +92,7 @@ type
     property Interfaces: ImmutableList<&Type> read mapped.GetInterfaces().ToList();
     property Methods: ImmutableList<&Method> read mapped.GetMethods().ToList();
     property Properties: ImmutableList<&Property> read mapped.GetProperties().ToList();
+    property Fields: ImmutableList<Field> read mapped.GetFields().ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.BaseType;
@@ -101,6 +105,7 @@ type
     property Interfaces: ImmutableList<&Type> read sequence of &Type(mapped.Interfaces).ToList();
     property Methods: ImmutableList<&Method> read sequence of &Method(mapped.Methods).ToList();
     property Properties: ImmutableList<&Property> read sequence of &Property(mapped.Properties).ToList();
+    property Fields: ImmutableList<&Property> read sequence of &Property(mapped.Fields).ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.BaseType;
@@ -257,6 +262,17 @@ begin
   result := NSMutableArray<&Property>.arrayWithCapacity(propCount);
   for i: Int32 := 0 to propCount-1 do
     NSMutableArray<&Property>(result).addObject(new &Property withClass(self) &property(propInfos[i]));
+end;
+
+method &Type.Get_Fields: ImmutableList<Field>;
+begin
+  raise new NotImplementedException("Reflection for Fields is not implemented yet for Cocoa")
+  //var propInfos: ^rtl.Method;
+  //var propCount: UInt32;
+  //propInfos := class_copyPropertyList(fClass, var propCount);
+  //result := NSMutableArray<&Property>.arrayWithCapacity(propCount);
+  //for i: Int32 := 0 to propCount-1 do
+    //NSMutableArray<&Property>(result).addObject(new &Property withClass(self) &property(propInfos[i]));
 end;
 
 method &Type.IsSubclassOf(aType: &Type): Boolean;
