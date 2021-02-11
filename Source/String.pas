@@ -15,15 +15,21 @@ type
 
   String = public partial class mapped to PlatformString
   public
-    constructor(Value: array of Byte; Encoding: Encoding := nil);
+    constructor(aBytes: array of Byte; aEncoding: Encoding := nil);
     begin
-      if Value = nil then
-        raise new ArgumentNullException("Value");
+      if not assigned(aBytes) then
+        exit "";
 
-      if Encoding = nil then
-        Encoding := Encoding.Default;
+      if assigned(aEncoding) then begin
+        result := aEncoding.GetString(aBytes);
+      end
+      else begin
+        aEncoding := Encoding.DetectFromBytes(aBytes);
+        if not assigned(aEncoding) then
+          aEncoding := Encoding.Default;
+        result := aEncoding.GetString(aBytes);
+      end;
 
-      exit Encoding.GetString(Value);
     end;
 
     constructor(Value: array of Char);

@@ -17,6 +17,12 @@ type
   private
     method GetName: not nullable String;
     method GetIsUTF8: Boolean;
+    method GetIsUTF16BE: Boolean;
+    method GetIsUTF16LE: Boolean;
+    method GetIsUTF32BE: Boolean;
+    method GetIsUTF32LE: Boolean;
+    method SkipBOM(aValue: not nullable array of Byte; var aOffset: Integer; var aCount: Integer): Boolean;
+
   public
     method GetBytes(aValue: String): not nullable array of Byte; inline;
     method GetBytes(aValue: String) includeBOM(aIncludeBOM: Boolean): not nullable array of Byte;
@@ -32,6 +38,10 @@ type
     class method GetEncoding(aName: not nullable String): nullable Encoding;
     property Name: not nullable String read GetName;
     property isUTF8: Boolean read GetIsUTF8;
+    property isUTF16BE: Boolean read GetIsUTF16BE;
+    property isUTF16LE: Boolean read GetIsUTF16LE;
+    property isUTF32BE: Boolean read GetIsUTF32BE;
+    property isUTF32LE: Boolean read GetIsUTF32LE;
 
     class property ASCII: not nullable Encoding read GetEncoding("US-ASCII") as not nullable;
     class property UTF8: not nullable Encoding read GetEncoding("UTF-8") as not nullable;
@@ -41,6 +51,24 @@ type
     class property UTF32BE: not nullable Encoding read GetEncoding("UTF-32BE") as not nullable;
 
     class property &Default: not nullable Encoding read UTF8;
+
+    class method DetectFromBytes(aBytes: array of Byte): nullable Encoding;
+    begin
+      var len := length(aBytes);
+      if len < 2 then
+        exit nil;
+
+      if (aBytes[0] = #$EF) and (aBytes[1] = #$BB) and (len ≥ 3) and (aBytes[2] = #$BF) then
+        exit UTF16BE;
+      if (aBytes[0] = #$FE) and (aBytes[1] = #$FF)  then
+        exit UTF16BE;
+      if (aBytes[0] = #$FF) and (aBytes[1] = #$FE)  then
+        exit UTF16LE;
+      if (aBytes[0] = #$00) and (aBytes[1] = #$00) and (len ≥ 5) and (aBytes[2] = #$FE) and (aBytes[3] = #$FF) then
+        exit UTF32BE;
+      if (aBytes[0] = #$00) and (aBytes[1] = #$00) and (len ≥ 5) and (aBytes[2] = #$EF) and (aBytes[3] = #$FE) then
+        exit UTF32BE;
+    end;
 
     {$IF TOFFEE}
     method AsNSStringEncoding: NSStringEncoding;
@@ -107,14 +135,40 @@ begin
   if not assigned(result) then
     raise new FormatException("Unable to convert input data");
   {$ELSEIF ECHOES}
-  if isUTF8 and (length(aValue) >= aOffset+3) and (aValue[aOffset] = $EF) and (aValue[aOffset+1] = $BB) and (aValue[aOffset+2] = $BF) then begin
-    inc(aOffset, 3);
-    dec(aCount, 3);
-  end;
+  SkipBOM(aValue, var aOffset, var aCount);
   result := mapped.GetString(aValue, aOffset, aCount);
   {$ELSEIF ISLAND}
   result := mapped.GetString(aValue, aOffset, aCount);
   {$ENDIF}
+end;
+
+method Encoding.SkipBOM(aValue: not nullable array of Byte; var aOffset: Integer; var aCount: Integer): Boolean;
+begin
+  if isUTF8 and (length(aValue) >= aOffset+3) and (aValue[aOffset] = $EF) and (aValue[aOffset+1] = $BB) and (aValue[aOffset+2] = $BF) then begin
+    inc(aOffset, 3);
+    dec(aCount, 3);
+    result := true;
+  end
+  else if isUTF16BE and (length(aValue) >= aOffset+2) and (aValue[aOffset] = $FE) and (aValue[aOffset+1] = $FF) then begin
+    inc(aOffset, 2);
+    dec(aCount, 2);
+    result := true;
+  end
+  else if isUTF16LE and (length(aValue) >= aOffset+2) and (aValue[aOffset] = $FF) and (aValue[aOffset+1] = $FE) then begin
+    inc(aOffset, 2);
+    dec(aCount, 2);
+    result := true;
+  end
+  else if isUTF16BE and (length(aValue) >= aOffset+4) and (aValue[aOffset] = $00) and (aValue[aOffset+1] = $00) and (aValue[aOffset+2] = $FE) and (aValue[aOffset+3] = $FF) then begin
+    inc(aOffset, 4);
+    dec(aCount, 4);
+    result := true;
+  end
+  else if isUTF16LE and (length(aValue) >= aOffset+4) and (aValue[aOffset] = $00) and (aValue[aOffset+1] = $00) and (aValue[aOffset+2] = $FF) and (aValue[aOffset+3] = $FE) then begin
+    inc(aOffset, 4);
+    dec(aCount, 4);
+    result := true;
+  end
 end;
 
 method Encoding.GetString(aValue: not nullable ImmutableBinary): String;
@@ -214,6 +268,58 @@ begin
   result := mapped.WebName.ToLower = "utf-8";
   {$ELSEIF ISLAND}
   result := mapped.Name.ToUpper.Replace("-", "") = "UTF8";
+  {$ENDIF}
+end;
+
+method Encoding.GetIsUTF16BE: Boolean;
+begin
+  {$IF COOPER}
+  //exit mapped.name;
+  {$ELSEIF TOFFEE}
+  result := AsNSStringEncoding = NSStringEncoding.UTF16BigEndianStringEncoding;
+  {$ELSEIF ECHOES}
+  result := mapped.WebName.ToLower = "utf-16be";
+  {$ELSEIF ISLAND}
+  result := mapped.Name.ToUpper.Replace("-", "") = "UTF16BE";
+  {$ENDIF}
+end;
+
+method Encoding.GetIsUTF16LE: Boolean;
+begin
+  {$IF COOPER}
+  //exit mapped.name;
+  {$ELSEIF TOFFEE}
+  result := AsNSStringEncoding = NSStringEncoding.UTF16LittleEndianStringEncoding;
+  {$ELSEIF ECHOES}
+  result := mapped.WebName.ToLower = "utf-16le";
+  {$ELSEIF ISLAND}
+  result := mapped.Name.ToUpper.Replace("-", "") = "UTF16LE";
+  {$ENDIF}
+end;
+
+method Encoding.GetIsUTF32BE: Boolean;
+begin
+  {$IF COOPER}
+  //exit mapped.name;
+  {$ELSEIF TOFFEE}
+  result := AsNSStringEncoding = NSStringEncoding.UTF32BigEndianStringEncoding;
+  {$ELSEIF ECHOES}
+  result := mapped.WebName.ToLower = "utf-32be";
+  {$ELSEIF ISLAND}
+  result := mapped.Name.ToUpper.Replace("-", "") = "UTF32BE";
+  {$ENDIF}
+end;
+
+method Encoding.GetIsUTF32LE: Boolean;
+begin
+  {$IF COOPER}
+  //exit mapped.name;
+  {$ELSEIF TOFFEE}
+  result := AsNSStringEncoding = NSStringEncoding.UTF32LittleEndianStringEncoding;
+  {$ELSEIF ECHOES}
+  result := mapped.WebName.ToLower = "utf-32le";
+  {$ELSEIF ISLAND}
+  result := mapped.Name.ToUpper.Replace("-", "") = "UTF32LE";
   {$ENDIF}
 end;
 

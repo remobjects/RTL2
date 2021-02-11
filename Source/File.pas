@@ -42,8 +42,8 @@ type
     method ReadBytes: array of Byte;
     method ReadBinary: ImmutableBinary;
 
-    class method ReadText(aFileName: String; Encoding: Encoding := nil): String;
-    class method ReadLines(aFileName: String; Encoding: Encoding := nil): ImmutableList<String>;
+    class method ReadText(aFileName: String; aEncoding: Encoding := nil): String;
+    class method ReadLines(aFileName: String; aEncoding: Encoding := nil): ImmutableList<String>;
     class method ReadBytes(aFileName: String): array of Byte;
     class method ReadBinary(aFileName: String): ImmutableBinary;
     class method WriteBytes(aFileName: String; Content: array of Byte);
@@ -327,14 +327,14 @@ end;
 //
 //
 
-class method File.ReadText(aFileName: String; Encoding: Encoding := nil): String;
+class method File.ReadText(aFileName: String; aEncoding: Encoding := nil): String;
 begin
-  exit new String(ReadBytes(aFileName), Encoding);
+  exit new String(ReadBytes(aFileName), aEncoding);
 end;
 
-class method File.ReadLines(aFileName: String; Encoding: Encoding := nil): ImmutableList<String>;
+class method File.ReadLines(aFileName: String; aEncoding: Encoding := nil): ImmutableList<String>;
 begin
-  var lText := ReadText(aFileName, Encoding);
+  var lText := ReadText(aFileName, aEncoding);
   result := lText.Split(#10).Select(s -> s.Trim([#13])).ToList();
 end;
 
