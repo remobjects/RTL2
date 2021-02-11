@@ -59,7 +59,7 @@ type
         exit nil;
 
       if (aBytes[0] = #$EF) and (aBytes[1] = #$BB) and (len ≥ 3) and (aBytes[2] = #$BF) then
-        exit UTF16BE;
+        exit UTF8;
       if (aBytes[0] = #$FE) and (aBytes[1] = #$FF)  then
         exit UTF16BE;
       if (aBytes[0] = #$FF) and (aBytes[1] = #$FE)  then
