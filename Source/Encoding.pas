@@ -58,15 +58,16 @@ type
       if len < 2 then
         exit nil;
 
-      if (aBytes[0] = #$EF) and (aBytes[1] = #$BB) and (len ≥ 3) and (aBytes[2] = #$BF) then
+      if (aBytes[0] = $EF) and (aBytes[1] = $BB) and (len ≥ 3) and (aBytes[2] = $BF) then
         exit UTF8;
-      if (aBytes[0] = #$FE) and (aBytes[1] = #$FF)  then
+      if (aBytes[0] = $FE) and (aBytes[1] = $FF)  then
         exit UTF16BE;
-      if (aBytes[0] = #$FF) and (aBytes[1] = #$FE)  then
+      if (aBytes[0] = $FF) and (aBytes[1] = $FE)  then begin
+        if (len ≥ 5) and (aBytes[2] = $00) and (aBytes[3] = $00) then
+          exit UTF32BE;
         exit UTF16LE;
-      if (aBytes[0] = #$00) and (aBytes[1] = #$00) and (len ≥ 5) and (aBytes[2] = #$FE) and (aBytes[3] = #$FF) then
-        exit UTF32BE;
-      if (aBytes[0] = #$00) and (aBytes[1] = #$00) and (len ≥ 5) and (aBytes[2] = #$EF) and (aBytes[3] = #$FE) then
+      end;
+      if (aBytes[0] = $00) and (aBytes[1] = $00) and (len ≥ 5) and (aBytes[2] = $FE) and (aBytes[3] = $FF) then
         exit UTF32BE;
     end;
 
@@ -164,7 +165,7 @@ begin
     dec(aCount, 4);
     result := true;
   end
-  else if isUTF16LE and (length(aValue) >= aOffset+4) and (aValue[aOffset] = $00) and (aValue[aOffset+1] = $00) and (aValue[aOffset+2] = $FF) and (aValue[aOffset+3] = $FE) then begin
+  else if isUTF16LE and (length(aValue) >= aOffset+4) and (aValue[aOffset] = $FF) and (aValue[aOffset+1] = $FE) and (aValue[aOffset+2] = $00) and (aValue[aOffset+3] = $00) then begin
     inc(aOffset, 4);
     dec(aCount, 4);
     result := true;
