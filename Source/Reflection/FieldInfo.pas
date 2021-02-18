@@ -38,7 +38,7 @@ type
     property DeclaringClass: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringClass);
     method GetValue(aInstance: Object; aArgs: array of Object): Object; mapped to get(aInstance);
     method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to &set(aInstance, aValue);
-    {$ELSEIF ECHOES OR ISLAND}
+    {$ELSEIF ECHOES OR (ISLAND AND NOT TOFFEE)}
     property Name: String read mapped.Name;
     property &Type: &Type read mapped.GetType;
     property IsStatic: Boolean read mapped.IsStatic;
