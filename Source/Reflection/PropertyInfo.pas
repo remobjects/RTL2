@@ -12,7 +12,7 @@ type
   PlatformProperty = public RemObjects.Elements.System.PropertyInfo;
   {$ENDIF}
 
-  &Property = public class {$IF ECHOES OR (ISLAND AND NOT TOFFEE)} mapped to PlatformProperty {$ENDIF}
+  &Property = public class {$IF ECHOES OR (ISLAND AND NOT TOFFEEV1)} mapped to PlatformProperty {$ENDIF}
   private
     {$IF TOFFEE AND NOT ISLAND}
     fProperty: ^Void;
@@ -39,8 +39,8 @@ type
     property &Type: &Type read mapped.GetType;
     property IsStatic: Boolean read mapped.IsStatic;
     property DeclaringClass: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
-    method GetValue(aInstance: Object; aArgs: array of Object): Object; mapped to GetValue(aInstance, aArgs);
-    method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
+    method GetValue(aInstance: IslandObject; aArgs: array of IslandObject): Object; mapped to GetValue(aInstance, aArgs);
+    method SetValue(aInstance: IslandObject; aArgs: array of IslandObject; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
     {$ENDIF}
   end;
 

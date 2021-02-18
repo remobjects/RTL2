@@ -14,7 +14,7 @@ type
   PlatformField = public RemObjects.Elements.System.FieldInfo;
   {$ENDIF}
 
-  Field = public class {$IF COOPER OR ECHOES OR (ISLAND AND NOT TOFFEE)} mapped to PlatformField {$ENDIF}
+  Field = public class {$IF COOPER OR ECHOES OR (ISLAND AND NOT TOFFEEV1)} mapped to PlatformField {$ENDIF}
   private
     {$IF TOFFEE AND NOT ISLAND}
     fField: ^Void;
@@ -25,8 +25,8 @@ type
   public
     {$IF TOFFEE AND NOT ISLAND}
     constructor withClass(aClass: &Type) field(aField: ^Void);
-    method GetValue(aInstance: Object; aArgs: array of Object): Object;
-    method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object);
+    method GetValue(aInstance: Object): Object;
+    method SetValue(aInstance: Object; aValue: Object);
     property Name: String read raise new NotImplementedException("Reflection for Fields is not implemented yet for Cocoa");//NSString.stringWithUTF8String(rtl.property_getName(fField));
     property &Type: &Type read get_Type;
     property DeclaringClass: &Type read fClass;
