@@ -39,8 +39,8 @@ type
     property &Type: &Type read mapped.GetType;
     property IsStatic: Boolean read mapped.IsStatic;
     property DeclaringClass: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
-    method GetValue(aInstance: IslandObject; aArgs: array of IslandObject): Object; mapped to GetValue(aInstance, aArgs);
-    method SetValue(aInstance: IslandObject; aArgs: array of IslandObject; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
+    method GetValue(aInstance: System.Object; aArgs: array of System.Object): Object; mapped to GetValue(aInstance, aArgs);
+    method SetValue(aInstance: System.Object; aArgs: array of System.Object; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
     {$ENDIF}
   end;
 
