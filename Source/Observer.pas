@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT JAVA15_0}
+
 uses
   {$IF ECHOES}
   System.ComponentModel
@@ -140,5 +142,7 @@ type
 
   end;
   {$ENDIF}
+
+{$ENDIF}
 
 end.
