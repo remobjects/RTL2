@@ -25,8 +25,8 @@ type
   public
     {$IF TOFFEE AND NOT ISLAND}
     constructor withClass(aClass: &Type) field(aField: ^Void);
-    method GetValue(aInstance: Object; aArgs: array of Object): Object;
-    method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object);
+    method GetValue(aInstance: Object): Object;
+    method SetValue(aInstance: Object; aValue: Object);
     property Name: String read raise new NotImplementedException("Reflection for Fields is not implemented yet for Cocoa");//NSString.stringWithUTF8String(rtl.property_getName(fField));
     property &Type: &Type read get_Type;
     property DeclaringClass: &Type read fClass;
@@ -38,7 +38,7 @@ type
     property DeclaringClass: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringClass);
     method GetValue(aInstance: Object; aArgs: array of Object): Object; mapped to get(aInstance);
     method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to &set(aInstance, aValue);
-    {$ELSEIF ECHOES OR ISLAND}
+    {$ELSEIF ECHOES OR (ISLAND AND NOT TOFFEE)}
     property Name: String read mapped.Name;
     property &Type: &Type read mapped.GetType;
     property IsStatic: Boolean read mapped.IsStatic;

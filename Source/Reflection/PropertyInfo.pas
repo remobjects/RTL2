@@ -34,7 +34,7 @@ type
     property &Type: &Type read mapped.GetType;
     method GetValue(aInstance: Object; aArgs: array of Object): Object; mapped to GetValue(aInstance, aArgs);
     method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to SetValue(aInstance, aValue, aArgs);
-    {$ELSEIF ISLAND}
+    {$ELSEIF ISLAND AND NOT TOFFEE}
     property Name: String read mapped.Name;
     property &Type: &Type read mapped.GetType;
     property IsStatic: Boolean read mapped.IsStatic;
