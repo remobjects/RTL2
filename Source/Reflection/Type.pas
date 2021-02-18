@@ -105,7 +105,7 @@ type
     property Interfaces: ImmutableList<&Type> read sequence of &Type(mapped.Interfaces).ToList();
     property Methods: ImmutableList<&Method> read sequence of &Method(mapped.Methods).ToList();
     property Properties: ImmutableList<&Property> read sequence of &Property(mapped.Properties).ToList();
-    property Fields: ImmutableList<&Property> read sequence of &Property(mapped.Fields).ToList();
+    property Fields: ImmutableList<Field> read sequence of Field(mapped.Fields).ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.BaseType;
