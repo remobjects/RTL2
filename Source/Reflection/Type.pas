@@ -114,6 +114,8 @@ type
     property IsArray: Boolean read mapped.Flags = IslandTypeFlags.Array;
     property IsEnum: Boolean read mapped.Flags = IslandTypeFlags.Enum;
     property IsValueType: Boolean read mapped.IsValueType;
+
+    property ObjectModel: ObjectModel read ObjectModel.Island; // for now
     {$ENDIF}
   end;
 

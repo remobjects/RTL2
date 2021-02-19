@@ -27,20 +27,27 @@ type
     method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object);
     property Name: String read NSString.stringWithUTF8String(rtl.property_getName(fProperty));
     property &Type: &Type read get_Type;
-    property DeclaringClass: &Type read fClass;
+    property DeclaringType: &Type read fClass;
     property PropertyClass: ^Void read fProperty;
     {$ELSEIF ECHOES}
     property Name: String read mapped.Name;
     property &Type: &Type read mapped.GetType;
     method GetValue(aInstance: Object; aArgs: array of Object): Object; mapped to GetValue(aInstance, aArgs);
     method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to SetValue(aInstance, aValue, aArgs);
-    {$ELSEIF ECHOES OR ISLAND}
+    {$ELSEIF ECHOES}
     property Name: String read mapped.Name;
     property &Type: &Type read mapped.GetType;
     property IsStatic: Boolean read mapped.IsStatic;
-    property DeclaringClass: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
-    method GetValue(aInstance: System.Object; aArgs: array of System.Object): Object; mapped to GetValue(aInstance, aArgs);
-    method SetValue(aInstance: System.Object; aArgs: array of System.Object; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
+    property DeclaringType: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
+    method GetValue(aInstance: Object; aArgs: array of Object): Object; mapped to GetValue(aInstance, aArgs);
+    method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
+    {$ELSEIF ISLAND}
+    property Name: String read mapped.Name;
+    property &Type: &Type read mapped.GetType;
+    property IsStatic: Boolean read mapped.IsStatic;
+    property DeclaringType: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
+    method GetValue(aInstance: Object; aArgs: array of System.Object): Object; mapped to GetValue(aInstance, aArgs);
+    method SetValue(aInstance: Object; aArgs: array of System.Object; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
     {$ENDIF}
   end;
 
