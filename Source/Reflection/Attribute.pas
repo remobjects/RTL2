@@ -12,8 +12,8 @@ type
   PlatformAttribute = public RemObjects.Elements.System.CustomAttribute;
   {$ENDIF}
 
-  //Attribute = public class {$IF ECHOES OR (ISLAND AND NOT TOFFEEV1)} mapped to PlatformAttribute {$ENDIF}
-  //private
-  //end;
+  Attribute = public class {$IF ECHOES OR (ISLAND AND NOT TOFFEEV1)} mapped to PlatformAttribute {$ENDIF}
+  private
+  end;
 
 end.
