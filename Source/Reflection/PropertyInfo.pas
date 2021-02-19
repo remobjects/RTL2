@@ -32,22 +32,23 @@ type
     {$ELSEIF ECHOES}
     property Name: String read mapped.Name;
     property &Type: &Type read mapped.GetType;
+    //property IsStatic: Boolean read mapped.IsStatic;
+    property DeclaringType: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
+    property GetterVisibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeEchoesVisibiliy(mapped.GetGetMethod(true));
+    property SetterVisibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeEchoesVisibiliy(mapped.GetSetMethod(true));
     method GetValue(aInstance: Object; aArgs: array of Object): Object; mapped to GetValue(aInstance, aArgs);
     method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to SetValue(aInstance, aValue, aArgs);
-    {$ELSEIF ECHOES}
-    property Name: String read mapped.Name;
-    property &Type: &Type read mapped.GetType;
-    property IsStatic: Boolean read mapped.IsStatic;
-    property DeclaringType: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
-    method GetValue(aInstance: Object; aArgs: array of Object): Object; mapped to GetValue(aInstance, aArgs);
-    method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
+    property Attributes: ImmutableList<RemObjects.Elements.RTL.Reflection.Attribute> read sequence of RemObjects.Elements.RTL.Reflection.Attribute(mapped.Attributes).ToList();
     {$ELSEIF ISLAND}
     property Name: String read mapped.Name;
     property &Type: &Type read mapped.GetType;
     property IsStatic: Boolean read mapped.IsStatic;
     property DeclaringType: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
+    //property GetterVisibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeIslandVisibiliy(mapped.Read:MemberAccess);
+    //property SetterVisibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeEchoesVisibiliy(mapped.Write:MemberAccess);
     method GetValue(aInstance: Object; aArgs: array of System.Object): Object; mapped to GetValue(aInstance, aArgs);
     method SetValue(aInstance: Object; aArgs: array of System.Object; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
+    property Attributes: ImmutableList<RemObjects.Elements.RTL.Reflection.Attribute> read sequence of RemObjects.Elements.RTL.Reflection.Attribute(mapped.Attributes).ToList();
     {$ENDIF}
   end;
 

@@ -20,6 +20,8 @@ type
   PlatformType = public RemObjects.Elements.System.Type;
   {$ENDIF}
 
+  Visibility = public enum(&Private, &Unit, UnitAndProtected, UnitOrProtected, &Assembly, AssemblyAndProtected, AssemblyOrProtected, &Protected, &Public, &Published);
+
   &Type = public class {$IF NOT TOFFEE OR ISLAND} mapped to PlatformType {$ENDIF}
   private
     {$IF COOPER}
