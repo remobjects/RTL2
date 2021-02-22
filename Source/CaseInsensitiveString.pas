@@ -30,6 +30,20 @@ type
       result := a:fString.ToLowerInvariant = b:fString.ToLowerInvariant;
     end;
 
+    operator &In(aLeft: CaseInsensitiveString; aRight: array of String): Boolean;
+    begin
+      for i: Integer := 0 to length(aRight)-1 do
+        if aLeft = aRight[i] then
+          exit true;
+    end;
+
+    operator &In(aLeft: CaseInsensitiveString; aRight: sequence of String): Boolean;
+    begin
+      for each i in aRight do
+        if aLeft = a then
+          exit true;
+    end;
+
   unit
     constructor(aString: not nullable String);
     begin
