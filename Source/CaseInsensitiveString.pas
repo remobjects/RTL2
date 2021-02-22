@@ -40,7 +40,7 @@ type
     operator &In(aLeft: CaseInsensitiveString; aRight: sequence of String): Boolean;
     begin
       for each i in aRight do
-        if aLeft = a then
+        if aLeft = i then
           exit true;
     end;
 
