@@ -20,6 +20,8 @@ type
   PlatformType = public RemObjects.Elements.System.Type;
   {$ENDIF}
 
+  Visibility = public enum(&Private, &Unit, UnitAndProtected, UnitOrProtected, &Assembly, AssemblyAndProtected, AssemblyOrProtected, &Protected, &Public, &Published);
+
   &Type = public class {$IF NOT TOFFEE OR ISLAND} mapped to PlatformType {$ENDIF}
   private
     {$IF COOPER}
@@ -105,7 +107,7 @@ type
     property Interfaces: ImmutableList<&Type> read sequence of &Type(mapped.Interfaces).ToList();
     property Methods: ImmutableList<&Method> read sequence of &Method(mapped.Methods).ToList();
     property Properties: ImmutableList<&Property> read sequence of &Property(mapped.Properties).ToList();
-    property Fields: ImmutableList<&Property> read sequence of &Property(mapped.Fields).ToList();
+    property Fields: ImmutableList<Field> read sequence of Field(mapped.Fields).ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.BaseType;
@@ -114,6 +116,8 @@ type
     property IsArray: Boolean read mapped.Flags = IslandTypeFlags.Array;
     property IsEnum: Boolean read mapped.Flags = IslandTypeFlags.Enum;
     property IsValueType: Boolean read mapped.IsValueType;
+
+    property ObjectModel: ObjectModel read ObjectModel.Island; // for now
     {$ENDIF}
   end;
 

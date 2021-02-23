@@ -68,7 +68,15 @@ type
   JsonNullValue = public class(JsonValue<Boolean>)
   public
     method ToJson: String; override;
-    class property Null: JsonNullValue := new JsonNullValue(false); lazy;
+    class property Null: JsonNullValue := new JsonNullValue; lazy;
+
+  private
+
+    constructor;
+    begin
+      inherited constructor(false);
+    end;
+
   end;
 
 implementation
