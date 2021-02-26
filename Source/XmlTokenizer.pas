@@ -390,7 +390,7 @@ begin
   if (fData.Length > lPosition+1) and (fData[lPosition+1] <> '>') then begin
     Token := XmlTokenKind.SyntaxError;
     fPos := lPosition;
-    Value := "Comment couldn't contain '--'";
+    Value := "For compatibility, ""--"" must not occur within comments.";
   end
   else begin
     fLength := lPosition - fPos+2;
