@@ -44,8 +44,8 @@ type
     property &Type: &Type read mapped.GetType;
     property IsStatic: Boolean read mapped.IsStatic;
     property DeclaringType: &Type read RemObjects.Elements.RTL.Reflection.Type(mapped.DeclaringType);
-    //property GetterVisibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeIslandVisibiliy(mapped.Read:MemberAccess);
-    //property SetterVisibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeEchoesVisibiliy(mapped.Write:MemberAccess);
+    property GetterVisibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeIslandVisibiliy(mapped.Read:Access);
+    property SetterVisibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeIslandVisibiliy(mapped.Write:Access);
     method GetValue(aInstance: Object; aArgs: array of System.Object): Object; mapped to GetValue(aInstance, aArgs);
     method SetValue(aInstance: Object; aArgs: array of System.Object; aValue: Object); mapped to SetValue(aInstance, aArgs, aValue);
     property Attributes: ImmutableList<RemObjects.Elements.RTL.Reflection.Attribute> read sequence of RemObjects.Elements.RTL.Reflection.Attribute(mapped.Attributes).ToList();
