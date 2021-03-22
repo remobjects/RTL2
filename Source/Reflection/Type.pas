@@ -119,10 +119,24 @@ type
 
     property ObjectModel: ObjectModel read ObjectModel.Island; // for now
     {$ENDIF}
+
+    method Instantiate: Object;
+    begin
+      {$IF COOPER}
+      result := mapped.newInstance()
+      {$ELSEIF TOFFEE AND NOT ISLAND}
+      result := fClass.alloc.init;
+      {$ELSEIF ECHOES}
+      result := Activator.CreateInstance(mapped);
+      {$ELSEIF ISLAND}
+      result := mapped.Instantiate();
+      {$ENDIF}
+    end;
   end;
 
 implementation
 
+{$IF COOPER}[Warning("Type.GetAllTypes is not supported for Java")]{$ENDIF}
 class method &Type.GetAllTypes: ImmutableList<&Type>;
 begin
   {$IF COOPER}
