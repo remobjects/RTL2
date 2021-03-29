@@ -22,7 +22,7 @@ type
 
   Visibility = public enum(&Private, &Unit, UnitAndProtected, UnitOrProtected, &Assembly, AssemblyAndProtected, AssemblyOrProtected, &Protected, &Public, &Published);
 
-  [assembly:DefaultReflectionType("RemObjects.Elements.RTL.Reflection", typeOf(RemObjects.Elements.RTL.Reflection.Type))]
+  [assembly:DefaultTypeOverride("Type", "RemObjects.Elements.RTL.Reflection", typeOf(RemObjects.Elements.RTL.Reflection.Type))]
 
   &Type = public class {$IF NOT TOFFEE OR ISLAND} mapped to PlatformType {$ENDIF}
   private
