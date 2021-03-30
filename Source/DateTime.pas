@@ -24,6 +24,8 @@ type
 
   ISO8601Format = public enum(Standard, DateOnly, StandardWithTimeZone, Full) of Integer;
 
+  [assembly:DefaultTypeOverride("DateTime", "RemObjects.Elements.RTL", typeOf(RemObjects.Elements.RTL.DateTime))]
+
   DateTime = public partial class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
   private
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}

@@ -11,7 +11,7 @@ type
   PlatformString = public RemObjects.Elements.System.String;
   {$ENDIF}
 
-  [assembly:DefaultStringType("RemObjects.Elements.RTL", typeOf(RemObjects.Elements.RTL.String))]
+  [assembly:DefaultTypeOverride("String", "RemObjects.Elements.RTL", typeOf(RemObjects.Elements.RTL.String))]
 
   String = public partial class mapped to PlatformString
   public
