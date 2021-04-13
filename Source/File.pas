@@ -48,7 +48,7 @@ type
     class method ReadBinary(aFileName: String): ImmutableBinary;
     class method WriteBytes(aFileName: String; Content: array of Byte);
     class method WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
-    class method WriteLines(aFileName: String; Content: ImmutableList<String>; aEncoding: Encoding := nil);
+    class method WriteLines(aFileName: String; Content: sequence of String; aEncoding: Encoding := nil);
     class method WriteBinary(aFileName: String; Content: ImmutableBinary);
     class method AppendText(aFileName: String; Content: String);
     class method AppendBytes(aFileName: String; Content: array of Byte);
@@ -376,7 +376,7 @@ begin
   WriteBytes(aFileName, Content.ToByteArray(aEncoding));
 end;
 
-class method File.WriteLines(aFileName: String; Content: ImmutableList<String>; aEncoding: Encoding := nil);
+class method File.WriteLines(aFileName: String; Content: sequence of String; aEncoding: Encoding := nil);
 begin
   WriteText(aFileName, Content.JoinedString(Environment.LineBreak));
 end;
