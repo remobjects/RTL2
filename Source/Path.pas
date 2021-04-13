@@ -15,6 +15,7 @@ type
     method CombineUnixPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
     method CombineWindowsPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
 
+    {$IF NOT WEBASSEMBLY}
     method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: sequence of String): nullable String;
     begin
       for each f in aSubFolderOptions do
@@ -30,6 +31,7 @@ type
           exit p;
       end;
     end;
+    {$ENDIF}
 
     method GetParentDirectory(aFileName: not nullable String) FolderSeparator(aFolderSeparator: Char): nullable String;
     method GetParentDirectory(aFileName: not nullable String) FolderSeparators(aFolderSeparators: array of Char): nullable String; private;
