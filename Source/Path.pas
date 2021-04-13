@@ -15,6 +15,22 @@ type
     method CombineUnixPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
     method CombineWindowsPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
 
+    method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: sequence of String): nullable String;
+    begin
+      for each f in aSubFolderOptions do
+        if Path.Combine(aFolder, f).FolderExists then
+          exit Path.Combine(aFolder, f);
+    end;
+
+    method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: sequence of String; aBuildPath: block(aFolder, aSubFolder: String): String): nullable String;
+    begin
+      for each f in aSubFolderOptions do begin
+        var p := aBuildPath(aFolder, f);
+        if p:FolderExists then
+          exit p;
+      end;
+    end;
+
     method GetParentDirectory(aFileName: not nullable String) FolderSeparator(aFolderSeparator: Char): nullable String;
     method GetParentDirectory(aFileName: not nullable String) FolderSeparators(aFolderSeparators: array of Char): nullable String; private;
 
