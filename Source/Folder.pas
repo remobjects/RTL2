@@ -50,6 +50,16 @@ type
     method GetFiles(aRecursive: Boolean): not nullable ImmutableList<String>;
     method GetSubfolders: not nullable List<String>;
 
+    method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: sequence of String): nullable String;
+    begin
+      result := Path.FirstMatchingSubfolder(aFolder, aSubFolderOptions);
+    end;
+
+    method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: sequence of String; aBuildPath: block(aFolder, aSubFolder: String): String): nullable String;
+    begin
+      result := Path.FirstMatchingSubfolder(aFolder, aSubFolderOptions, aBuildPath);
+    end;
+
     class method Create(aFolderName: Folder; FailIfExists: Boolean := false): Folder;
     class method Delete(aFolderName: Folder);
     class method Exists(aFolderName: nullable Folder): Boolean;
