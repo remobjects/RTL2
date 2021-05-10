@@ -402,7 +402,7 @@ begin
   {$ELSEIF ECHOES}
   result := ToShortDateString();
   {$ELSEIF ISLAND}
-  result := ToShortPrettyDateString();
+  result := fDateTime.ToShortPrettyDateString();
   {$ENDIF}
 end;
 
@@ -419,9 +419,9 @@ begin
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
   result := lFormatter.stringFromDate(mapped);
   {$ELSEIF ECHOES}
-  result := fDateTime.ToShortDateString;
+  result := fDateTime.ToLongDateString;
   {$ELSEIF ISLAND}
-  result := ToShortPrettyDateString();{$HINT NEEDS ISLAND}//result := fDateTime.ToLongPrettyDateString();
+  result := fDateTime.ToShortPrettyDateString();{$HINT NEEDS ISLAND}//result := fDateTime.ToLongPrettyDateString();
   {$ENDIF}
 end;
 
