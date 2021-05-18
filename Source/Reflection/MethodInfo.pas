@@ -66,6 +66,7 @@ type
     [Obsolete("Use Visibility")] property IsPrivate: Boolean read mapped.IsPrivate;
     {$ELSEIF ISLAND}
     property Name: String read mapped.Name;
+    property ReturnType: &Type read mapped.Type;
     property IsStatic: Boolean read mapped.IsStatic;
     property IsFinal: Boolean read (mapped.Flags and MethodFlags.Static) = MethodFlags.Static;
     property IsAbstract: Boolean read (mapped.Flags and MethodFlags.Abstract) = MethodFlags.Abstract;
