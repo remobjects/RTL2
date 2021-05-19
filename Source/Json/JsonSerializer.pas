@@ -120,7 +120,9 @@ method JsonSerializer.VisitName(Value: not nullable String);
 begin
   AppendOffset;
   VisitString(Value);
-  Builder.Append(JsonConsts.NAME_SEPARATOR).Append(" ");
+  Builder.Append(JsonConsts.NAME_SEPARATOR);
+  if fFormat = JsonFormat.HumanReadable then
+    Builder.Append(" ");
 end;
 
 method JsonSerializer.Visit(Value: JsonNode);
@@ -152,7 +154,8 @@ end;
 
 method JsonSerializer.AppendOffset;
 begin
-  Builder.Append(' ', Offset);
+  if fFormat = JsonFormat.HumanReadable then
+    Builder.Append(' ', Offset);
 end;
 
 end.
