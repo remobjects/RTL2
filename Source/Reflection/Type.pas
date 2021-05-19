@@ -96,7 +96,7 @@ type
     property Interfaces: ImmutableList<&Type> read mapped.GetInterfaces().ToList();
     property Methods: ImmutableList<&Method> read mapped.GetMethods().ToList();
     property Properties: ImmutableList<&Property> read mapped.GetProperties().ToList();
-    property Fields: ImmutableList<Field> read mapped.GetFields().ToList();
+    property Fields: ImmutableList<Field> read mapped.GetFields(BindingFlags.Public or BindingFlags.NonPublic or BindingFlags.Instance or BindingFlags.Static).ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
     property BaseType: nullable &Type read mapped.BaseType;
