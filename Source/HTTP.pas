@@ -624,7 +624,7 @@ begin
     end;
 
     try
-      var lResponse := if lConnection.ResponseCode >= 300 then new HttpResponse withException(new HttpException(lConnection.responseCode)) else new HttpResponse(lConnection);
+      var lResponse := if lConnection.ResponseCode >= 300 then new HttpResponse withException(new HttpException(lConnection.responseCode, aRequest)) else new HttpResponse(lConnection);
       responseCallback(lResponse);
     except
       on E: Exception do
@@ -675,7 +675,7 @@ begin
       try
         var webResponse := webRequest.EndGetResponse(ar) as HttpWebResponse;
         if webResponse.StatusCode >= 300 then begin
-          ResponseCallback(new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer)));
+          ResponseCallback(new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer, aRequest)));
           (webResponse as IDisposable).Dispose;
         end
         else begin
@@ -720,7 +720,7 @@ begin
 
       var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
       if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
-        var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new HttpException(nsHttpUrlResponse.statusCode)) else new HttpResponse(data, nsHttpUrlResponse);
+        var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new HttpException(nsHttpUrlResponse.statusCode, aRequest)) else new HttpResponse(data, nsHttpUrlResponse);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
       end else if assigned(error) then begin
         var response := new HttpResponse withException(new RTLException withError(error));
@@ -771,7 +771,7 @@ begin
   result := new HttpResponse(lConnection);
   if lConnection.ResponseCode >= 300 then begin
     if not aThrowOnError then exit nil;
-    raise new HttpException(String.Format("Unable to complete request. Error code: {0}", lConnection.responseCode), result)
+    raise new HttpException(String.Format("Unable to complete request. Error code: {0}", lConnection.responseCode), aRequest, result)
   end;
 
   {$ELSEIF ECHOES}
@@ -816,9 +816,9 @@ begin
         end
         else begin
           if E.Response is HttpWebResponse then
-            raise new HttpException(E.Message, new HttpResponse(E.Response as HttpWebResponse))
+            raise new HttpException(E.Message, aRequest, new HttpResponse(E.Response as HttpWebResponse))
           else
-            raise new HttpException(E.Message);
+            raise new HttpException(E.Message, aRequest);
         end;
       end;
     end;
@@ -1009,20 +1009,20 @@ begin
     result := new HttpResponse(data, nsHttpUrlResponse);
     if nsHttpUrlResponse.statusCode >= 300 then begin
       if not aThrowOnError then exit nil;
-      raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), result)
+      raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, result)
     end;
   end
   else if assigned(error) then begin
     if not aThrowOnError then exit nil;
     if assigned(nsHttpUrlResponse) then
-      raise new HttpException(error.description, new HttpResponse(nil, nsHttpUrlResponse))
+      raise new HttpException(error.description, aRequest, new HttpResponse(nil, nsHttpUrlResponse))
     else
-      raise new RTLException withError(error);
+      raise new RTLException withError(error, aRequest);
   end
   else begin
     if not aThrowOnError then exit nil;
     if assigned(nsHttpUrlResponse) then
-      raise new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), new HttpResponse(nil, nsHttpUrlResponse))
+      raise new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, new HttpResponse(nil, nsHttpUrlResponse))
     else
       raise new RTLException("Request failed without providing an error.");
   end;
