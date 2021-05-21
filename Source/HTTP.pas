@@ -10,6 +10,8 @@ interface
 
 type
   HttpRequest = public class
+  unit
+    method ApplyAuthehtication;
   public
     property Mode: HttpRequestMode := HttpRequestMode.Get;
     property Headers: not nullable Dictionary<String,String> := new Dictionary<String,String>; readonly;
@@ -18,6 +20,8 @@ type
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
     property UserAgent: String;
+
+    property Authentication: IHttpAuthentication;
 
     property Timeout: Double := 10.0; // Seconds
 
@@ -30,6 +34,19 @@ type
   end;
 
   HttpRequestMode = public enum (Get, Post, Head, Put, Delete, Patch, Options, Trace);
+
+  IHttpAuthentication = public interface
+    method ApplyToRequest(aRequest: HttpRequest);
+  end;
+
+  HttpBasicAuthentication = public class(IHttpAuthentication)
+  private
+    method ApplyToRequest(aRequest: HttpRequest);
+  public
+    property Username: String;
+    property Password: String;
+    constructor(aUsername, aPassword: not nullable String);
+  end;
 
   IHttpRequestContent = assembly interface
     method GetContentAsBinary(): ImmutableBinary;
@@ -185,6 +202,26 @@ end;
 method HttpRequest.ToString: String;
 begin
   result := Url.ToString();
+end;
+
+method HttpRequest.ApplyAuthehtication;
+begin
+  Authentication:ApplyToRequest(self);
+end;
+
+{ HttpBasicAuthentication }
+
+constructor HttpBasicAuthentication(aUsername, aPassword: not nullable String);
+begin
+  Username := aUsername;
+  Password := aPassword;
+end;
+
+method HttpBasicAuthentication.ApplyToRequest(aRequest: HttpRequest);
+begin
+  var lBytes := Encoding.UTF8.GetBytes(Username+":"+Password) includeBOM(false);
+  var lBase64 := Convert.ToBase64String(lBytes);
+  aRequest.Headers["Authorization"] := "Basic "+lBase64;
 end;
 
 { HttpRequestContent }
@@ -568,6 +605,8 @@ end;
 
 method Http.ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
 begin
+  aRequest.ApplyAuthehtication;
+
   {$IF COOPER}
   async try
     var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
@@ -712,6 +751,8 @@ end;
 
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
 begin
+  aRequest.ApplyAuthehtication;
+
   {$IF COOPER}
   var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
