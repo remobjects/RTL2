@@ -1017,7 +1017,7 @@ begin
     if assigned(nsHttpUrlResponse) then
       raise new HttpException(error.description, aRequest, new HttpResponse(nil, nsHttpUrlResponse))
     else
-      raise new RTLException withError(error, aRequest);
+      raise new RTLException withError(error);
   end
   else begin
     if not aThrowOnError then exit nil;
