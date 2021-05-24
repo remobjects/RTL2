@@ -8,6 +8,7 @@ type
     Builder: StringBuilder := new StringBuilder();
     JValue: JsonNode;
     Offset: Integer;
+    fFormat: JsonFormat;
 
     method IncOffset;
     method DecOffset;
@@ -23,16 +24,17 @@ type
     method VisitName(Value: not nullable String);
     method Visit(Value: JsonNode);
   public
-    constructor (Value: not nullable JsonNode);
+    constructor (Value: not nullable JsonNode; aFormat: JsonFormat);
 
     method Serialize: String;
   end;
 
 implementation
 
-constructor JsonSerializer(Value: not nullable JsonNode);
+constructor JsonSerializer(Value: not nullable JsonNode; aFormat: JsonFormat);
 begin
   JValue := Value;
+  fFormat := aFormat;
 end;
 
 method JsonSerializer.Serialize: String;
@@ -45,7 +47,10 @@ end;
 
 method JsonSerializer.VisitObject(Value: JsonObject);
 begin
-  Builder.AppendLine(JsonConsts.OBJECT_START);
+  Builder.Append(JsonConsts.OBJECT_START);
+  if fFormat = JsonFormat.HumanReadable then
+    Builder.AppendLine;
+
   IncOffset;
 
   var lCount := 0;
@@ -54,10 +59,11 @@ begin
     inc(lCount);
     VisitName(Key);
     Visit(Value[Key]);
-    if lCount = Value.Count then
+
+    if lCount < Value.Count then
+      Builder.Append(JsonConsts.VALUE_SEPARATOR);
+    if fFormat = JsonFormat.HumanReadable then
       Builder.AppendLine
-    else
-      Builder.AppendLine(JsonConsts.VALUE_SEPARATOR);
   end;
   DecOffset;
   AppendOffset;
@@ -66,15 +72,17 @@ end;
 
 method JsonSerializer.VisitArray(Value: JsonArray);
 begin
-  Builder.AppendLine(JsonConsts.ARRAY_START);
+  Builder.Append(JsonConsts.ARRAY_START);
+  if fFormat = JsonFormat.HumanReadable then
+    Builder.AppendLine();
   IncOffset;
 
   for i: Int32 := 0 to Value.Count-1 do begin
     AppendOffset;
     Visit(Value[i]);
     if i < Value.Count - 1 then
-      Builder.AppendLine(JsonConsts.VALUE_SEPARATOR)
-    else
+      Builder.Append(JsonConsts.VALUE_SEPARATOR);
+    if fFormat = JsonFormat.HumanReadable then
       Builder.AppendLine;
   end;
 
@@ -112,7 +120,9 @@ method JsonSerializer.VisitName(Value: not nullable String);
 begin
   AppendOffset;
   VisitString(Value);
-  Builder.Append(JsonConsts.NAME_SEPARATOR).Append(" ");
+  Builder.Append(JsonConsts.NAME_SEPARATOR);
+  if fFormat = JsonFormat.HumanReadable then
+    Builder.Append(" ");
 end;
 
 method JsonSerializer.Visit(Value: JsonNode);
@@ -144,7 +154,8 @@ end;
 
 method JsonSerializer.AppendOffset;
 begin
-  Builder.Append(' ', Offset);
+  if fFormat = JsonFormat.HumanReadable then
+    Builder.Append(' ', Offset);
 end;
 
 end.

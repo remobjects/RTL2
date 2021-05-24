@@ -41,7 +41,7 @@ type
     method SetValue(aInstance: Object; aArgs: array of Object; aValue: Object); mapped to &set(aInstance, aValue);
     {$ELSEIF ECHOES}
     property Name: String read mapped.Name;
-    property &Type: &Type read mapped.GetType;
+    property &Type: &Type read mapped.FieldType;
     property IsStatic: Boolean read mapped.IsStatic;
     property IsReadOnly: Boolean read mapped.IsInitOnly; // closest match?
     property Visibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeEchoesVisibiliy(mapped);
@@ -51,7 +51,7 @@ type
     property Attributes: ImmutableList<RemObjects.Elements.RTL.Reflection.Attribute> read sequence of RemObjects.Elements.RTL.Reflection.Attribute(mapped.Attributes).ToList();
     {$ELSEIF ISLAND}
     property Name: String read mapped.Name;
-    property &Type: &Type read mapped.GetType;
+    property &Type: &Type read mapped.Type;
     property IsStatic: Boolean read mapped.IsStatic;
     property IsReadOnly: Boolean read mapped.Flags and FieldFlags.ReadOnly ≠ 0;
     property Visibility: Visibility read RemObjects.Elements.RTL.Reflection.Helpers.DecodeIslandVisibiliy(mapped.Access);

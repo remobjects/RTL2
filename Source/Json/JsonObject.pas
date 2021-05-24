@@ -25,7 +25,7 @@ type
     method ContainsKey(aKey: not nullable String): Boolean; // will return false for non-exist-ent keys and for JsonNullValue!
     method ContainsExplicitJsonNullValueForKey(aKey: not nullable String): Boolean; // will return false for non-exist-ent keys and values other than JsonNullValue!
 
-    method ToJson: String; override;
+    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
 
     [&Sequence]
     method GetSequence: sequence of tuple of (String, JsonNode); iterator;
@@ -138,9 +138,9 @@ begin
   exit fItems.Keys as not nullable;
 end;
 
-method JsonObject.ToJson: String;
+method JsonObject.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
 begin
-  var Serializer := new JsonSerializer(self);
+  var Serializer := new JsonSerializer(self, aFormat);
   result := Serializer.Serialize;
 end;
 

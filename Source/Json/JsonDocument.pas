@@ -39,7 +39,7 @@ type
     method Save(aFile: File; Version: String; Encoding: String; Standalone: Boolean);}
     [ToString]
     method ToString: String; override;
-    method ToJson: String;
+    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
 
     [Obsolete("Use Root: JsonNode, instead")] property RootObject: not nullable JsonObject read fRootNode as JsonObject;
     [Obsolete("Use Root: JsonNode, instead")] property Item[Key: String]: nullable JsonNode read GetRootObjectItem write SetRootObjectItem; default; virtual;
@@ -69,7 +69,7 @@ type
   public
     [ToString]
     method ToString: String; override;
-    method ToJson: String; virtual; abstract;
+    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; virtual; abstract;
 
     property Count: Integer read 1; virtual;
     property Item[Key: not nullable String]: nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
@@ -92,6 +92,8 @@ type
     class method Create(aValue: nullable Int64): nullable JsonIntegerValue;
     class method Create(aValue: nullable Boolean): nullable JsonBooleanValue;
   end;
+
+  JsonFormat = public enum (HumanReadable, Minimal);
 
 implementation
 
@@ -206,9 +208,9 @@ begin
   result := fRootNode.ToJson();
 end;
 
-method JsonDocument.ToJson: String;
+method JsonDocument.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
 begin
-  result := fRootNode.ToJson();
+  result := fRootNode.ToJson(aFormat);
 end;
 
 method JsonDocument.GetRootObjectItem(Key: String): nullable JsonNode;

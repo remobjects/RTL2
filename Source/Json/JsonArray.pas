@@ -30,7 +30,7 @@ type
     method ToStrings: not nullable sequence of String;
     method ToStringList: not nullable ImmutableList<String>;
 
-    method ToJson: String; override;
+    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
 
     [&Sequence]
     method GetSequence: sequence of JsonNode; iterator;
@@ -170,9 +170,9 @@ begin
   result := lValue as JsonArray as not nullable;
 end;
 
-method JsonArray.ToJson: String;
+method JsonArray.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
 begin
-  var Serializer := new JsonSerializer(self);
+  var Serializer := new JsonSerializer(self, aFormat);
   exit Serializer.Serialize;
 end;
 
