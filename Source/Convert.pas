@@ -547,8 +547,8 @@ begin
     x := b shl (6 - a);
     sb.Append(Codes64[x]);
   end;
-  var lRemainder := sb.Length mod 3;
-  if lRemainder <> 0 then
+  var lRemainder := sb.Length mod 4;
+  if lRemainder > 0 then
     sb.Append('=', (4-lRemainder));
   result := sb.ToString as not nullable;
 end;
