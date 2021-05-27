@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF (ECHOES AND NOT NETSTANDARD) OR WINDOWS}
+{$IF ECHOES OR WINDOWS}
 
 type
   RegistryHive = public {$IF ECHOES}Microsoft.Win32.RegistryHive{$ELSE}String{$ENDIF};
