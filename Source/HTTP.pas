@@ -20,6 +20,7 @@ type
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
     property UserAgent: String;
+    property Accept: String;
 
     property Authentication: IHttpAuthentication;
 
@@ -617,6 +618,8 @@ begin
     lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
     for each k in aRequest.Headers.Keys do
       lConnection.setRequestProperty(k, aRequest.Headers[k]);
+    if assigned(aRequest.Accept) then
+      lConnection.setRequestProperty("Accept", aRequest.Accept);
 
     if assigned(aRequest.Content) then begin
       lConnection.getOutputStream().write((aRequest.Content as IHttpRequestContent).GetContentAsArray());
@@ -644,6 +647,8 @@ begin
       webRequest.UserAgent := aRequest.UserAgent;
     webRequest.Method := StringForRequestType(aRequest.Mode);
     webRequest.Timeout := Integer(aRequest.Timeout*1000);
+    if assigned(aRequest.Accept) then
+      webRequest.Accept := aRequest.Accept;
 
     for each k in aRequest.Headers.Keys do
       webRequest.Headers[k] := aRequest.Headers[k];
@@ -715,6 +720,8 @@ begin
 
     for each k in aRequest.Headers.Keys do
       nsUrlRequest.setValue(aRequest.Headers[k]) forHTTPHeaderField(k);
+    if assigned(aRequest.Accept) then
+      nsUrlRequest.setValue(aRequest.Accept) forHTTPHeaderField("Accept");
 
     var lRequest := Session.dataTaskWithRequest(nsUrlRequest) completionHandler((data, nsUrlResponse, error) -> begin
 
@@ -762,6 +769,8 @@ begin
   lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
   for each k in aRequest.Headers.Keys do
     lConnection.setRequestProperty(k, aRequest.Headers[k]);
+  if assigned(aRequest.Accept) then
+    lConnection.setRequestProperty("Accept", aRequest.Accept);
 
   if assigned(aRequest.Content) then begin
     lConnection.getOutputStream().write((aRequest.Content as IHttpRequestContent).GetContentAsArray());
@@ -783,6 +792,8 @@ begin
       webRequest.UserAgent := aRequest.UserAgent;
     webRequest.Method := StringForRequestType(aRequest.Mode);
     webRequest.Timeout := Integer(aRequest.Timeout*1000);
+    if assigned(aRequest.Accept) then
+      webRequest.Accept := aRequest.Accept;
 
     for each k in aRequest.Headers.Keys do
       webRequest.Headers[k] := aRequest.Headers[k];
@@ -933,6 +944,11 @@ begin
     lHeaderBytes := lHeader.ToAnsiChars(true);
     lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
   end;
+  if assigned(aRequest.Accept) then begin
+    lHeader := 'Accept:' + aRequest.Accept;
+    lHeaderBytes := lHeader.ToAnsiChars(true);
+    lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
+  end;
 
   var lTotalLength := 0;
   var lData: array of Byte;
@@ -996,6 +1012,8 @@ begin
 
   for each k in aRequest.Headers.Keys do
     nsUrlRequest.setValue(aRequest.Headers[k]) forHTTPHeaderField(k);
+  if assigned(aRequest.Accept) then
+    nsUrlRequest.setValue(aRequest.Accept) forHTTPHeaderField("Accept");
 
   var nsUrlResponse : NSURLResponse;
   var error: NSError;

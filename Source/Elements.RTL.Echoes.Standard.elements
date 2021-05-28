@@ -56,6 +56,7 @@
   </PropertyGroup>
   <ItemGroup>
     <NuGetReference Include="NETStandard.Library:2.0.0" />
+    <NuGetReference Include="Microsoft.Win32.Registry:*" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.pas" />
