@@ -417,7 +417,7 @@ begin
   {$ELSEIF ECHOES}
   result := fDateTime.ToLongDateString;
   {$ELSEIF ISLAND}
-  result := fDateTime.ToShortPrettyDateString();{$HINT NEEDS ISLAND}//result := fDateTime.ToLongPrettyDateString();
+  result := fDateTime.ToLongPrettyDateString();
   {$ENDIF}
 end;
 
