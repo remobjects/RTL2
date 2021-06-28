@@ -40,6 +40,13 @@ type
       result := aValue as OtherString as PlatformString /*as String*/;
     end;
 
+    {$IF ISLAND AND NOT TOFFEEV2}
+    class operator Implicit(aValue: nullable String): nullable id;
+    begin
+      result := aValue as PlatformString as NSString;
+    end;
+    {$ENDIF}
+
     //
     // Equality
     //
