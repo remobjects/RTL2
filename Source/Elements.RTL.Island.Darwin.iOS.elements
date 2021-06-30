@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-    <ProjectGuid>0723254e-06ea-46f9-b67f-4d143810a08e</ProjectGuid>
+    <ProjectGuid>{0723254E-06EA-46F9-B67F-4D143810A08E}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -19,6 +19,7 @@
     <KnownConditionalDefines>DEBUG;TRACE</KnownConditionalDefines>
     <SDK>iOS</SDK>
     <SupportUIKitForMac>True</SupportUIKitForMac>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>

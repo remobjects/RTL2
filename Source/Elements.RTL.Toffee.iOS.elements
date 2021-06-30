@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-    <ProjectGuid>EC0982C8-700B-4085-A401-59460E394DAA</ProjectGuid>
+    <ProjectGuid>{EC0982C8-700B-4085-A401-59460E394DAA}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -46,6 +46,9 @@
     <Reference Include="libToffee" />
     <Reference Include="CoreFoundation" />
     <Reference Include="UIKit" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Json\JsonExceptions.pas" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />

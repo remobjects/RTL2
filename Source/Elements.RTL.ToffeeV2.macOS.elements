@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-    <ProjectGuid>81d69900-fed5-4a87-841b-575ff5653840</ProjectGuid>
+    <ProjectGuid>{81D69900-FED5-4A87-841B-575FF5653840}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -15,7 +15,7 @@
     <MangleTypeNames>True</MangleTypeNames>
     <CreateHeaderFile>True</CreateHeaderFile>
     <DefaultUses>Foundation</DefaultUses>
-    <DeploymentTargetVersion>10.10</DeploymentTargetVersion>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
     <CrossPlatform>True</CrossPlatform>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
