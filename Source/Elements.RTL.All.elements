@@ -60,7 +60,7 @@
     <SubMode>Darwin</SubMode>
     <SDK>iOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
-    <SupportUIKitForMac>True</SupportUIKitForMac>
+    <SupportMacCatalyst>True</SupportMacCatalyst>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.tvOS' ">
     <Mode>Island</Mode>
@@ -82,14 +82,14 @@
     <Mode>Toffee</Mode>
     <SDK>iOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
-    <SupportUIKitForMac>True</SupportUIKitForMac>
+    <SupportMacCatalyst>True</SupportMacCatalyst>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.iOS' ">
     <Mode>Toffee</Mode>
     <SDK>iOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
-    <SupportUIKitForMac>True</SupportUIKitForMac>
+    <SupportMacCatalyst>True</SupportMacCatalyst>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
