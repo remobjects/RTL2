@@ -227,17 +227,23 @@ begin
       if not (lType in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt, Double, Single]) then
         new FormatException(RTLErrorMessages.FORMAT_ERROR);
       var lStr: String;
+      var lTotal := if lDigits > 0 then lDigits else 2;
       if lType in [Double, Single] then begin
         var lDouble := Double(aArg) * 100;
-
+        lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
       end
       else begin
         var lInt := Int64(aArg) * 100;
         lStr := Convert.ToString(lInt);
-        var lTotal := if lDigits > 0 then lDigits else 2;
         lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
-        lStr := lStr.PadEnd(lDigits, '0');
+        lStr := lStr.PadEnd(lTotal, '0');
       end;
+      lStr := lStr + ' %';
+      exit lStr;
+    end;
+
+    'f', 'F': begin
+
     end;
   end;
 end;
