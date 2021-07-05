@@ -47,6 +47,8 @@ type
     class method ParseFormatSpecifier(aString: String; var ptr: Int32; out n: Int32; out width: Int32; out left_align: Boolean; out aFormat: String);
     class method ProcessFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
     class method ProcessStandardNumericFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
+
+    class method NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
   public
     class method FormatString(aFormat: String; params args: array of Object): not nullable String;
     class method FormatString(aLocale: Locale; aFormat: String; params args: array of Object): not nullable String;
@@ -193,6 +195,26 @@ begin
   exit {$IF TOFFEE}aArg.description{$ELSE}aArg.ToString{$ENDIF};
 end;
 
+class method StringFormatter.NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
+begin
+  var lType := typeOf(aArg);
+  if not (lType in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt, Double, Single]) then
+    new FormatException(RTLErrorMessages.FORMAT_ERROR);
+
+  var lTotal := if aDigits > 0 then aDigits else 2;
+  var lStr := '';
+  if lType in [Double, Single] then begin
+    var lDouble := Double(aArg);
+    lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
+  end
+  else begin
+    var lInt := Int64(aArg);
+    lStr := Convert.ToString(lInt);
+    lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
+    lStr := lStr.PadEnd(lTotal, '0');
+  end;
+end;
+
 class method StringFormatter.ProcessStandardNumericFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
 begin
   var lDigits := 0;
@@ -243,23 +265,26 @@ begin
     end;
 
     'f', 'F': begin
-      var lType := typeOf(aArg);
-      if not (lType in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt, Double, Single]) then
-        new FormatException(RTLErrorMessages.FORMAT_ERROR);
+      exit NumberValueToString(aArg, lDigits, aLocale);
+    end;
 
-      var lTotal := if lDigits > 0 then lDigits else 2;
-      var lStr := '';
-      if lType in [Double, Single] then begin
-        var lDouble := Double(aArg);
-        lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
-      end
-      else begin
-        var lInt := Int64(aArg);
-        lStr := Convert.ToString(lInt);
-        lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
-        lStr := lStr.PadEnd(lTotal, '0');
+    'n', 'N': begin
+      var lStr := NumberValueToString(aArg, lDigits, aLocale);
+      // number formatted, now add group separator
+      var lPos := lStr.IndexOf(aLocale.NumberFormat.DecimalSeparator);
+      var lStart := if lPos ≠ 0 then lPos - 1 else lStr.Length - 1;
+      var lResult := new StringBuilder;
+      for i: Integer := lStart downto 0 do begin
+        if (i > 0) and not ((i = 1) and (lStr[i] = '-'))  and (((lStart - i + 1) mod 3) = 0) then begin
+          lResult.Insert(0, lStr[i]);
+          lResult.Insert(0, aLocale.NumberFormat.ThousandsSeparator);
+        end
+        else
+          lResult.Insert(0, lStr[i]);
       end;
-      exit lStr;
+      if lPos ≠ 0 then
+        lResult.Append(lStr.Substring(lPos));
+      exit lResult.ToString;
     end;
   end;
 end;
