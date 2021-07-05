@@ -243,7 +243,23 @@ begin
     end;
 
     'f', 'F': begin
+      var lType := typeOf(aArg);
+      if not (lType in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt, Double, Single]) then
+        new FormatException(RTLErrorMessages.FORMAT_ERROR);
 
+      var lTotal := if lDigits > 0 then lDigits else 2;
+      var lStr := '';
+      if lType in [Double, Single] then begin
+        var lDouble := Double(aArg);
+        lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
+      end
+      else begin
+        var lInt := Int64(aArg);
+        lStr := Convert.ToString(lInt);
+        lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
+        lStr := lStr.PadEnd(lTotal, '0');
+      end;
+      exit lStr;
     end;
   end;
 end;
