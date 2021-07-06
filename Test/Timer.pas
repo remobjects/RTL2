@@ -13,11 +13,11 @@ type
   public
     method TestBasicTimer;
     begin
-      var lTimer := new RemObjects.Elements.RTL.Timer(100);
       var lTest := 0;
-      lTimer.Elapsed := (aData) -> begin
-        inc(lTest, 1);
-      end;
+      var lTimer := new RemObjects.Elements.RTL.Timer(100, (aData) -> begin inc(lTest, 1); end);
+      //lTimer.Elapsed := (aData) -> begin
+        //inc(lTest, 1);
+      //end;
       lTimer.Start;
       Thread.Sleep(350);
       lTimer.Stop;
@@ -26,12 +26,13 @@ type
 
     method TestNoRepeatTimer;
     begin
-      var lTimer := new RemObjects.Elements.RTL.Timer(100);
       var lTest := 0;
-      lTimer.Repeat := false;
-      lTimer.Elapsed := (aData) -> begin
-        inc(lTest, 1);
-      end;
+      var lTimer := new RemObjects.Elements.RTL.Timer(100, false, (aData) -> begin inc(lTest, 1); end);
+
+      //lTimer.Repeat := false;
+      //lTimer.Elapsed := (aData) -> begin
+        //inc(lTest, 1);
+      //end;
       lTimer.Start;
       Thread.Sleep(500);
       lTimer.Stop;
