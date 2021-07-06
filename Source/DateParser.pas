@@ -14,11 +14,11 @@ type
     class method GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer; aMaxLength: Integer): Boolean;
     class method GetNextSepOrStringToken(var aFormat: String): String;
     class method SkipToNextToken(var aFormat: String; var aDateTime: String): Boolean;
-    class method SkipToken(aToken: String; var aFormat: string): Boolean;
+    class method SkipToken(aToken: String; var aFormat: String): Boolean;
     class method StandardToInternalPattern(aFormat: String; aLocale: Locale; var output: String): Boolean;
     class method CheckIfAny(aToken: String; aValues: array of String): Boolean;
     class method NormalizeChar(aChar: Char): Char;
-    class method ParseSecondFraction(aFormat: string; var aDateTime: string; var aMilliseconds: Integer): Boolean;
+    class method ParseSecondFraction(aFormat: String; var aDateTime: String; var aMilliseconds: Integer): Boolean;
     class method CheckAndSetDateTime(aYear, aMonth, aDay, aHour, aMin, aSecond, aMSec: Integer; aOptions: DateParserOptions := []): DateTime;
     class method InternalParse(aDateTime: String; aFormat: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions): Boolean;
   public
@@ -491,7 +491,7 @@ begin
   lFormats[4] := aLocale.DateTimeFormat.LongDatePattern; // long date
   lFormats[5] := aLocale.DateTimeFormat.ShortDatePattern; // short date
   lFormats[6] := aLocale.DateTimeFormat.LongTimePattern; // long time
-  lFormats[7] := aLocale.DateTimeFormat.shortTimePattern; // short time
+  lFormats[7] := aLocale.DateTimeFormat.ShortTimePattern; // short time
   for each lFormat in lFormats do
     if InternalParse(aDateTime, lFormat, aLocale, out  output, aOptions) then
       exit true;

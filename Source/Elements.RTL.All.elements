@@ -53,22 +53,26 @@
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>macOS</SDK>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.iOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>iOS</SDK>
-    <SupportUIKitForMac>True</SupportUIKitForMac>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
+    <SupportMacCatalyst>True</SupportMacCatalyst>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.tvOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>tvOS</SDK>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.watchOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>watchOS</SDK>
+    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
     <Mode>Island</Mode>
@@ -77,29 +81,56 @@
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.iOS' ">
     <Mode>Toffee</Mode>
     <SDK>iOS</SDK>
-    <SupportUIKitForMac>True</SupportUIKitForMac>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
+    <SupportMacCatalyst>True</SupportMacCatalyst>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.iOS' ">
+    <Mode>Toffee</Mode>
+    <SDK>iOS</SDK>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
+    <SupportMacCatalyst>True</SupportMacCatalyst>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.macOS' ">
     <Mode>Toffee</Mode>
     <SDK>macOS</SDK>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.macOS' ">
     <Mode>Toffee</Mode>
     <SDK>macOS</SDK>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.tvOS' ">
     <Mode>Toffee</Mode>
     <SDK>tvOS</SDK>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.tvOS' ">
+    <Mode>Toffee</Mode>
+    <SDK>tvOS</SDK>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.watchOS' ">
     <Mode>Toffee</Mode>
     <SDK>watchOS</SDK>
+    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.watchOS' ">
+    <Mode>Toffee</Mode>
+    <SDK>watchOS</SDK>
+    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>

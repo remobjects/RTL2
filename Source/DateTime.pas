@@ -311,7 +311,7 @@ begin
   else
     result := lDateInTimeZone.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture));
   {$ELSEIF ISLAND}
-  result := fDateTime.ToString; {$HINT incomplete, as it does not use Format, Culture or TimeZone yet}
+  result := fDateTime.ToString(Format, Culture, aTimeZone);
   {$ENDIF}
 end;
 
@@ -356,9 +356,7 @@ begin
   lFormatter.dateStyle := NSDateFormatterStyle.ShortStyle;
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
   result := lFormatter.stringFromDate(mapped);
-  {$ELSEIF ISLAND}
-  {$HINT NEEDS ISLAND}//result := fDateTime.ToShortDateString;
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND }
   result := fDateTime.ToShortDateString;
   {$ENDIF}
 end;
@@ -375,10 +373,8 @@ begin
   lFormatter.dateStyle := NSDateFormatterStyle.NoStyle;
   lFormatter.timeStyle := NSDateFormatterStyle.ShortStyle;
   result := lFormatter.stringFromDate(mapped);
-  {$ELSEIF ECHOES}
+  {$ELSEIF ECHOES OR ISLAND}
   result := fDateTime.ToShortTimeString();
-  {$ELSEIF ISLAND}
-  {$HINT NEEDS ISLAND}//result := fDateTime.ToShortTimeString;
   {$ENDIF}
 end;
 
@@ -421,7 +417,7 @@ begin
   {$ELSEIF ECHOES}
   result := fDateTime.ToLongDateString;
   {$ELSEIF ISLAND}
-  result := fDateTime.ToShortPrettyDateString();{$HINT NEEDS ISLAND}//result := fDateTime.ToLongPrettyDateString();
+  result := fDateTime.ToLongPrettyDateString();
   {$ENDIF}
 end;
 
