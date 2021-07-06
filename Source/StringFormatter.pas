@@ -153,8 +153,9 @@ begin
 
   // F = argument format (string)
   if (ptr < max) and (aString[ptr] = ':') then begin
-    var start := ptr;
+    //var start := ptr;
     inc(ptr);
+    var start := ptr;
     while (ptr < max) and (aString[ptr] ≠ '}') do inc(ptr);
     aFormat := aFormat + aString.Substring(start, ptr - start);
   end
@@ -195,29 +196,43 @@ begin
   exit {$IF TOFFEE}aArg.description{$ELSE}aArg.ToString{$ENDIF};
 end;
 
+class method ObjectToInt(aArg: Object): Int64;
+begin
+  var lType := typeOf(aArg);
+  case lType of
+    Int64, UInt64: exit Int64(aArg);
+    Integer, UInt32, Byte, SByte, Int16, UInt16: exit Integer(aArg);
+    else
+      exit Integer(aArg);
+  end;
+end;
+
 class method StringFormatter.NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
 begin
   var lType := typeOf(aArg);
   if not (lType in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt, Double, Single]) then
     new FormatException(RTLErrorMessages.FORMAT_ERROR);
 
-  var lTotal := if aDigits > 0 then aDigits else 2;
+  var lTotal := if aDigits >= 0 then aDigits else 2;
   var lStr := '';
   if lType in [Double, Single] then begin
     var lDouble := Double(aArg);
     lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
   end
   else begin
-    var lInt := Int64(aArg);
+    var lInt := ObjectToInt(aArg);
     lStr := Convert.ToString(lInt);
-    lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
-    lStr := lStr.PadEnd(lTotal, '0');
+    if lTotal > 0 then begin
+      lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
+      lStr := lStr + new String('0', lTotal);
+    end;
   end;
+  exit lStr;
 end;
 
 class method StringFormatter.ProcessStandardNumericFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
 begin
-  var lDigits := 0;
+  var lDigits := -1;
   if aFormat.Length > 1 then begin
     var lNumber := Convert.TryToInt32(aFormat.Substring(1));
     if (lNumber = nil) then
@@ -233,7 +248,7 @@ begin
 
       var lStr := Convert.ToString(aArg);
       if (lDigits > 0) and (lDigits > lStr.Length) then
-        lStr := lStr.PadStart(lDigits - lStr.Length, '0');
+        lStr := lStr.PadStart(lDigits, '0');
       exit lStr;
     end;
 
@@ -249,16 +264,18 @@ begin
       if not (lType in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt, Double, Single]) then
         new FormatException(RTLErrorMessages.FORMAT_ERROR);
       var lStr: String;
-      var lTotal := if lDigits > 0 then lDigits else 2;
+      var lTotal := if lDigits >= 0 then lDigits else 2;
       if lType in [Double, Single] then begin
         var lDouble := Double(aArg) * 100;
         lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
       end
       else begin
-        var lInt := Int64(aArg) * 100;
+        var lInt := ObjectToInt(aArg) * 100;
         lStr := Convert.ToString(lInt);
-        lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
-        lStr := lStr.PadEnd(lTotal, '0');
+        if lTotal > 0 then begin
+          lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
+          lStr := lStr.PadEnd(lTotal, '0');
+        end;
       end;
       lStr := lStr + ' %';
       exit lStr;
