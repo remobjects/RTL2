@@ -255,7 +255,9 @@ begin
     'x', 'X': begin
       if not (typeOf(aArg) in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt]) then
         new FormatException(RTLErrorMessages.FORMAT_ERROR);
-      var lStr := Convert.ToHexString(UInt64(aArg), lDigits);
+      var lStr := Convert.ToHexString(ObjectToInt(aArg), 0);
+      if lDigits > lStr.Length then
+        lStr := new String('0', lDigits - lStr.Length) + lStr;
       exit lStr;
     end;
 
@@ -292,7 +294,7 @@ begin
       var lStart := if lPos ≠ 0 then lPos - 1 else lStr.Length - 1;
       var lResult := new StringBuilder;
       for i: Integer := lStart downto 0 do begin
-        if (i > 0) and not ((i = 1) and (lStr[i] = '-'))  and (((lStart - i + 1) mod 3) = 0) then begin
+        if (i > 0) and not ((i = 1) and (lStr[0] = '-'))  and (((lStart - i + 1) mod 3) = 0) then begin
           lResult.Insert(0, lStr[i]);
           lResult.Insert(0, aLocale.NumberFormat.ThousandsSeparator);
         end
