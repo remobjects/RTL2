@@ -49,6 +49,7 @@ type
     class method ProcessStandardNumericFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
 
     class method NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
+    class method CheckIsNumberType(aType: RemObjects.Elements.RTL.Reflection.PlatformType; aIncludeFloat: Boolean);
   public
     class method FormatString(aFormat: String; params args: array of Object): not nullable String;
     class method FormatString(aLocale: Locale; aFormat: String; params args: array of Object): not nullable String;
@@ -137,7 +138,7 @@ begin
   if (ptr < max) and (aString[ptr] = ',') then begin
     // White space between ',' and number or sign.
     inc(ptr);
-    while (ptr < max) and (String.CharacterIsWhiteSpace(aString[ptr])) do inc(ptr);
+    while (ptr < max) and aString[ptr].IsWhitespace do inc(ptr);
     var start := ptr;
     aFormat := aString.Substring(start, ptr - start);
     left_align := ((ptr < max) and (aString[ptr] = '-'));
@@ -207,11 +208,22 @@ begin
   end;
 end;
 
+class method StringFormatter.CheckIsNumberType(aType: RemObjects.Elements.RTL.Reflection.PlatformType; aIncludeFloat: Boolean);
+begin
+  if aIncludeFloat then begin
+    if not (aType in [Integer, Int64, Int32, UInt32, UInt64, Byte, SByte, Int16, UInt16, Double, Single]) then
+      new FormatException(RTLErrorMessages.FORMAT_ERROR);
+  end
+  else begin
+    if not (aType in [Integer, Int64, Int32, UInt32, UInt64, Byte, SByte, Int16, UInt16]) then
+      new FormatException(RTLErrorMessages.FORMAT_ERROR);
+  end;
+end;
+
 class method StringFormatter.NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
 begin
   var lType := typeOf(aArg);
-  if not (lType in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt, Double, Single]) then
-    new FormatException(RTLErrorMessages.FORMAT_ERROR);
+  CheckIsNumberType(lType, true);
 
   var lTotal := if aDigits >= 0 then aDigits else 2;
   var lStr := '';
@@ -243,8 +255,7 @@ begin
 
   case aFormat[0] of
     'd', 'D': begin
-      if not (typeOf(aArg) in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt]) then
-        new FormatException(RTLErrorMessages.FORMAT_ERROR);
+      CheckIsNumberType(typeOf(aArg), false);
 
       var lStr := Convert.ToString(aArg);
       if (lDigits > 0) and (lDigits > lStr.Length) then
@@ -253,8 +264,7 @@ begin
     end;
 
     'x', 'X': begin
-      if not (typeOf(aArg) in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt]) then
-        new FormatException(RTLErrorMessages.FORMAT_ERROR);
+      CheckIsNumberType(typeOf(aArg), false);
       var lStr := Convert.ToHexString(ObjectToInt(aArg), 0);
       if lDigits > lStr.Length then
         lStr := new String('0', lDigits - lStr.Length) + lStr;
@@ -263,8 +273,7 @@ begin
 
     'p', 'P': begin
       var lType := typeOf(aArg);
-      if not (lType in [Integer, Int64, UInt32, UInt64, Byte, SByte, Int16, UInt16, NativeInt, NativeUInt, Double, Single]) then
-        new FormatException(RTLErrorMessages.FORMAT_ERROR);
+      CheckIsNumberType(lType, true);
       var lStr: String;
       var lTotal := if lDigits >= 0 then lDigits else 2;
       if lType in [Double, Single] then begin
