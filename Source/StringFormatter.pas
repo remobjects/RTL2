@@ -87,7 +87,7 @@ begin
 
       // format argument
       var arg := args[n];
-      var str := if not assigned(arg) then '' else if arg_format ≠ '' then ProcessFormat(arg_format, arg, aLocale) else {$IF TOFFEE}arg.description{$ELSE}arg.ToString{$ENDIF};
+      var str := if not assigned(arg) then '' else if (arg_format ≠ nil) and (arg_format ≠ '') then ProcessFormat(arg_format, arg, aLocale) else {$IF TOFFEE}arg.description{$ELSE}arg.ToString{$ENDIF};
 
       // pad formatted string and append to sb
       if width > length(str) then begin
