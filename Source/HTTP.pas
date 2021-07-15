@@ -16,6 +16,7 @@ type
     property Mode: HttpRequestMode := HttpRequestMode.Get;
     property Headers: not nullable Dictionary<String,String> := new Dictionary<String,String>; readonly;
     property Content: nullable HttpRequestContent;
+    property ContentType: nullable String;
     property Url: not nullable Url;
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
@@ -620,6 +621,10 @@ begin
       lConnection.setRequestProperty(k, aRequest.Headers[k]);
     if assigned(aRequest.Accept) then
       lConnection.setRequestProperty("Accept", aRequest.Accept);
+    if assigned(aRequest.UserAgent) then
+      lConnection.setRequestProperty("User-Agent", aRequest.UserAgent);
+    if assigned(aRequest.ContentType) then
+      lConnection.setRequestProperty("Content-Type", aRequest.ContentType);
 
     if assigned(aRequest.Content) then begin
       lConnection.getOutputStream().write((aRequest.Content as IHttpRequestContent).GetContentAsArray());
@@ -645,6 +650,8 @@ begin
     {$ENDIF}
     if assigned(aRequest.UserAgent) then
       webRequest.UserAgent := aRequest.UserAgent;
+    if assigned(aRequest.ContentType) then
+      webRequest.ContentType := aRequest.ContentType;
     webRequest.Method := StringForRequestType(aRequest.Mode);
     webRequest.Timeout := Integer(aRequest.Timeout*1000);
     if assigned(aRequest.Accept) then
@@ -722,6 +729,10 @@ begin
       nsUrlRequest.setValue(aRequest.Headers[k]) forHTTPHeaderField(k);
     if assigned(aRequest.Accept) then
       nsUrlRequest.setValue(aRequest.Accept) forHTTPHeaderField("Accept");
+    if assigned(aRequest.UserAgent) then
+      nsUrlRequest.setValue(aRequest.UserAgent) forHTTPHeaderField("User-Agent");
+    if assigned(aRequest.ContentType) then
+      nsUrlRequest.setValue(aRequest.ContentType) forHTTPHeaderField("Content-Type");
 
     var lRequest := Session.dataTaskWithRequest(nsUrlRequest) completionHandler((data, nsUrlResponse, error) -> begin
 
@@ -771,6 +782,10 @@ begin
     lConnection.setRequestProperty(k, aRequest.Headers[k]);
   if assigned(aRequest.Accept) then
     lConnection.setRequestProperty("Accept", aRequest.Accept);
+  if assigned(aRequest.UserAgent) then
+    lConnection.setRequestProperty("User-Agent", aRequest.UserAgent);
+  if assigned(aRequest.ContentType) then
+    lConnection.setRequestProperty("Content-Type", aRequest.ContentType);
 
   if assigned(aRequest.Content) then begin
     lConnection.getOutputStream().write((aRequest.Content as IHttpRequestContent).GetContentAsArray());
@@ -790,6 +805,8 @@ begin
     {$ENDIF}
     if assigned(aRequest.UserAgent) then
       webRequest.UserAgent := aRequest.UserAgent;
+    if assigned(aRequest.ContentType) then
+      webRequest.ContentType := aRequest.ContentType;
     webRequest.Method := StringForRequestType(aRequest.Mode);
     webRequest.Timeout := Integer(aRequest.Timeout*1000);
     if assigned(aRequest.Accept) then
@@ -1014,6 +1031,10 @@ begin
     nsUrlRequest.setValue(aRequest.Headers[k]) forHTTPHeaderField(k);
   if assigned(aRequest.Accept) then
     nsUrlRequest.setValue(aRequest.Accept) forHTTPHeaderField("Accept");
+  if assigned(aRequest.UserAgent) then
+    nsUrlRequest.setValue(aRequest.UserAgent) forHTTPHeaderField("User-Agent");
+  if assigned(aRequest.ContentType) then
+    nsUrlRequest.setValue(aRequest.ContentType) forHTTPHeaderField("Content-Type");
 
   var nsUrlResponse : NSURLResponse;
   var error: NSError;

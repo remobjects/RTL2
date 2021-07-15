@@ -45,13 +45,19 @@ type
   private
     class method ParseDecimal(aString: String; var ptr: Int32): Int32;
     class method ParseFormatSpecifier(aString: String; var ptr: Int32; out n: Int32; out width: Int32; out left_align: Boolean; out aFormat: String);
+    class method ProcessFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
+    class method ProcessStandardNumericFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
+
+    class method NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
+    class method CheckIsNumberType(aType: RemObjects.Elements.RTL.Reflection.PlatformType; aIncludeFloat: Boolean);
   public
     class method FormatString(aFormat: String; params args: array of Object): not nullable String;
+    class method FormatString(aLocale: Locale; aFormat: String; params args: array of Object): not nullable String;
   end;
 
 implementation
 
-class method StringFormatter.FormatString(aFormat: String; params args: array of Object): not nullable String;
+class method StringFormatter.FormatString(aLocale: Locale; aFormat: String; params args: array of Object): not nullable String;
 begin
   if aFormat = nil then raise new ArgumentNullException('aFormat');
   if args = nil then raise new ArgumentNullException('args');
@@ -81,7 +87,7 @@ begin
 
       // format argument
       var arg := args[n];
-      var str := if not assigned(arg) then '' else {$IF TOFFEE}arg.description{$ELSE}arg.ToString{$ENDIF};
+      var str := if not assigned(arg) then '' else if (arg_format ≠ nil) and (arg_format ≠ '') then ProcessFormat(arg_format, arg, aLocale) else {$IF TOFFEE}arg.description{$ELSE}arg.ToString{$ENDIF};
 
       // pad formatted string and append to sb
       if width > length(str) then begin
@@ -111,6 +117,11 @@ begin
   end;
   if start < aFormat.Length then sb.Append(aFormat, start, aFormat.Length - start);
   exit sb.ToString() as not nullable;
+end;
+
+class method StringFormatter.FormatString(aFormat: String; params args: array of Object): not nullable String;
+begin
+  exit FormatString(Locale.Current, aFormat, args);
 end;
 
 class method StringFormatter.ParseFormatSpecifier(aString: String; var ptr: Int32; out n: Int32; out width: Int32; out left_align: Boolean; out aFormat: String);
@@ -143,8 +154,9 @@ begin
 
   // F = argument format (string)
   if (ptr < max) and (aString[ptr] = ':') then begin
-    var start := ptr;
+    //var start := ptr;
     inc(ptr);
+    var start := ptr;
     while (ptr < max) and (aString[ptr] ≠ '}') do inc(ptr);
     aFormat := aFormat + aString.Substring(start, ptr - start);
   end
@@ -170,6 +182,139 @@ begin
   if (p = ptr) or (p = max) then  exit -1;
   ptr := p;
   exit n;
+end;
+
+class method StringFormatter.ProcessFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
+begin
+  case aFormat[0] of
+    'c','C', 'd', 'D', 'e', 'E', 'f', 'F', 'g', 'G', 'n', 'N', 'p', 'P', 'r', 'R', 'x', 'X': begin
+      if (aFormat.Length = 1) or ((aFormat.Length > 1) and (aFormat[1].IsNumber)) then
+        exit ProcessStandardNumericFormat(aFormat, aArg, aLocale);
+    end;
+
+  end;
+
+  exit {$IF TOFFEE}aArg.description{$ELSE}aArg.ToString{$ENDIF};
+end;
+
+class method ObjectToInt(aArg: Object): Int64;
+begin
+  var lType := typeOf(aArg);
+  case lType of
+    Int64, UInt64: exit Int64(aArg);
+    Integer, UInt32, Byte, SByte, Int16, UInt16: exit Integer(aArg);
+    else
+      exit Integer(aArg);
+  end;
+end;
+
+class method StringFormatter.CheckIsNumberType(aType: RemObjects.Elements.RTL.Reflection.PlatformType; aIncludeFloat: Boolean);
+begin
+  if aIncludeFloat then begin
+    if not (aType in [Integer, Int64, Int32, UInt32, UInt64, Byte, SByte, Int16, UInt16, Double, Single]) then
+      new FormatException(RTLErrorMessages.FORMAT_ERROR);
+  end
+  else begin
+    if not (aType in [Integer, Int64, Int32, UInt32, UInt64, Byte, SByte, Int16, UInt16]) then
+      new FormatException(RTLErrorMessages.FORMAT_ERROR);
+  end;
+end;
+
+class method StringFormatter.NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
+begin
+  var lType := typeOf(aArg);
+  CheckIsNumberType(lType, true);
+
+  var lTotal := if aDigits >= 0 then aDigits else 2;
+  var lStr := '';
+  if lType in [Double, Single] then begin
+    var lDouble := Double(aArg);
+    lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
+  end
+  else begin
+    var lInt := ObjectToInt(aArg);
+    lStr := Convert.ToString(lInt);
+    if lTotal > 0 then begin
+      lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
+      lStr := lStr + new String('0', lTotal);
+    end;
+  end;
+  exit lStr;
+end;
+
+class method StringFormatter.ProcessStandardNumericFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
+begin
+  var lDigits := -1;
+  if aFormat.Length > 1 then begin
+    var lNumber := Convert.TryToInt32(aFormat.Substring(1));
+    if (lNumber = nil) then
+      raise new FormatException(RTLErrorMessages.FORMAT_ERROR)
+    else
+      lDigits := lNumber;
+  end;
+
+  case aFormat[0] of
+    'd', 'D': begin
+      CheckIsNumberType(typeOf(aArg), false);
+
+      var lStr := Convert.ToString(aArg);
+      if (lDigits > 0) and (lDigits > lStr.Length) then
+        lStr := lStr.PadStart(lDigits, '0');
+      exit lStr;
+    end;
+
+    'x', 'X': begin
+      CheckIsNumberType(typeOf(aArg), false);
+      var lStr := Convert.ToHexString(ObjectToInt(aArg), 0);
+      if lDigits > lStr.Length then
+        lStr := new String('0', lDigits - lStr.Length) + lStr;
+      exit lStr;
+    end;
+
+    'p', 'P': begin
+      var lType := typeOf(aArg);
+      CheckIsNumberType(lType, true);
+      var lStr: String;
+      var lTotal := if lDigits >= 0 then lDigits else 2;
+      if lType in [Double, Single] then begin
+        var lDouble := Double(aArg) * 100;
+        lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
+      end
+      else begin
+        var lInt := ObjectToInt(aArg) * 100;
+        lStr := Convert.ToString(lInt);
+        if lTotal > 0 then begin
+          lStr := lStr + aLocale.NumberFormat.DecimalSeparator;
+          lStr := lStr.PadEnd(lTotal, '0');
+        end;
+      end;
+      lStr := lStr + ' %';
+      exit lStr;
+    end;
+
+    'f', 'F': begin
+      exit NumberValueToString(aArg, lDigits, aLocale);
+    end;
+
+    'n', 'N': begin
+      var lStr := NumberValueToString(aArg, lDigits, aLocale);
+      // number formatted, now add group separator
+      var lPos := lStr.IndexOf(aLocale.NumberFormat.DecimalSeparator);
+      var lStart := if lPos ≠ 0 then lPos - 1 else lStr.Length - 1;
+      var lResult := new StringBuilder;
+      for i: Integer := lStart downto 0 do begin
+        if (i > 0) and not ((i = 1) and (lStr[0] = '-'))  and (((lStart - i + 1) mod 3) = 0) then begin
+          lResult.Insert(0, lStr[i]);
+          lResult.Insert(0, aLocale.NumberFormat.ThousandsSeparator);
+        end
+        else
+          lResult.Insert(0, lStr[i]);
+      end;
+      if lPos ≠ 0 then
+        lResult.Append(lStr.Substring(lPos));
+      exit lResult.ToString;
+    end;
+  end;
 end;
 
 end.

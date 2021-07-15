@@ -4,9 +4,8 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>9EAFE57A-81AB-42B5-A0FA-2FD186093D91</SharedGUID>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration">
     <Import_RootNamespace>Elements.RTL2.Tests.Shared</Import_RootNamespace>
+    <ProjectGuid>{9EAFE57A-81AB-42B5-A0FA-2FD186093D91}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)DateTime.pas" />
@@ -27,5 +26,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Unicode.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Strings.Formatter.pas" />
   </ItemGroup>
 </Project>
