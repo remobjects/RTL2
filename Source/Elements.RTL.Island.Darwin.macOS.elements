@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-    <ProjectGuid>731df15e-9ee5-452a-a74d-bcbc95afaa23</ProjectGuid>
+    <ProjectGuid>{731DF15E-9EE5-452A-A74D-BCBC95AFAA23}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -17,6 +17,7 @@
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <KnownConditionalDefines>DEBUG;TRACE</KnownConditionalDefines>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
