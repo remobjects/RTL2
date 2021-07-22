@@ -25,8 +25,8 @@ type
   public
     {$IF TOFFEE OR ECHOES}constructor; mapped to constructor();{$ENDIF}
     {$IF NOT (TOFFEE OR ECHOES)}constructor; empty;{$ENDIF}
-    constructor(anArray: array of Byte);
-    constructor(Bin: ImmutableBinary);
+    constructor(anArray: not nullable array of Byte);
+    constructor(Bin: not nullable ImmutableBinary);
 
     method &Read(Range: Range): array of Byte;
     method &Read(aStartIndex: Integer; aCount: Integer): array of Byte;
@@ -47,6 +47,7 @@ type
     {$ENDIF}
     {$IF ISLAND AND DARWIN AND NOT TOFFEE}
     method ToNSData: Foundation.NSData;
+    constructor(aData: not nullable NSData);
     {$ENDIF}
     property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
   end;
@@ -117,11 +118,8 @@ implementation
 
 { Binary }
 
-constructor ImmutableBinary(anArray: array of Byte);
+constructor ImmutableBinary(anArray: not nullable array of Byte);
 begin
-  if anArray = nil then
-    raise new ArgumentNullException("Array");
-
   {$IF COOPER}
   fData.Write(anArray, 0, anArray.Length);
   {$ELSEIF TOFFEE}
@@ -138,9 +136,8 @@ begin
   {$ENDIF}
 end;
 
-constructor ImmutableBinary(Bin: ImmutableBinary);
+constructor ImmutableBinary(Bin: not nullable ImmutableBinary);
 begin
-  ArgumentNullException.RaiseIfNil(Bin, "Bin");
   {$IF COOPER}
   if Bin <> nil then
     fData.Write(Bin.ToArray, 0, Bin.Length);
@@ -356,6 +353,13 @@ method ImmutableBinary.ToNSData: Foundation.NSData;
 begin
   var lArray := mapped.ToArray();
   result := new Foundation.NSData withBytes(@lArray[0]) length(RemObjects.Elements.System.length(lArray));
+end;
+
+constructor ImmutableBinary(aData: not nullable NSData);
+begin
+  var ms := new ImmutablePlatformBinary();
+  ms.Write(aData.bytes, aData.length);
+  exit ms;
 end;
 {$ENDIF}
 
