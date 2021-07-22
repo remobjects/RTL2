@@ -97,7 +97,7 @@ type
     {$ENDIF}
 
   public
-    property Headers: not nullable ImmutableDictionary<String,String>; readonly; //todo: list itself should be read-only
+    property Headers: not nullable ImmutableDictionary<String,String>; readonly;
     property Code: Int32; readonly;
     property Success: Boolean read (Exception = nil) and (Code < 300);
     property Exception: nullable Exception public read unit write;
@@ -289,13 +289,15 @@ begin
   Code := Connection.getResponseCode;
   Headers := new Dictionary<String,String>();
   var i := 0;
+  var lHeaders := new Dictionary<String,String>;
   loop begin
     var lKey := Connection.getHeaderFieldKey(i);
     if not assigned(lKey) then break;
     var lValue := Connection.getHeaderField(i);
-    Headers[lKey] := lValue;
+    lHeaders[lKey] := lValue;
     inc(i);
   end;
+  Headers := lHeaders;
 end;
 {$ELSEIF DARWIN}
 constructor HttpResponse(aData: NSData; aResponse: NSHTTPURLResponse);
@@ -318,13 +320,10 @@ begin
   Response := aResponse;
   Code := Int32(aResponse.StatusCode);
   Headers := new Dictionary<String,String>();
-  {$IF NETSTANDARD}
+  var lHeaders := new Dictionary<String,String>;
   for each k: String in aResponse.Headers:AllKeys do
-    Headers[k.ToString] := aResponse.Headers[k];
-  {$ELSE}
-  for each k: String in aResponse.Headers:Keys do
-    Headers[k.ToString] := aResponse.Headers[k];
-  {$ENDIF}
+    lHeaders[k.ToString] := aResponse.Headers[k];
+  Headers := lHeaders;
 end;
 {$ELSEIF ISLAND}
 {$IF WINDOWS}
