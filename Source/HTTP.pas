@@ -347,7 +347,7 @@ begin
           var lValue := k.Substring(lPos + 1).Trim;
           // Allow multiple Set-Cookie
           if (lKey = 'Set-Cookie') and Headers.ContainsKey(lKey) then
-            lHeaders[lKey] := Headers[lKey]+','+lValue
+            lH  eaders[lKey] := Headers[lKey]+','+lValue
           else
             lHeaders[lKey] := lValue;
         end;
