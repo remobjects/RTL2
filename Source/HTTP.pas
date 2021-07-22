@@ -338,8 +338,8 @@ begin
   if lSize > 0 then begin
     var lChars := new Char[lSize / sizeOf(Char)];
     if rtl. WinHttpQueryHeaders(Request, rtl.WINHTTP_QUERY_RAW_HEADERS_CRLF, nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lChars[0], @lSize, nil {WINHTTP_NO_HEADER_INDEX}) then begin
-      var lHeaders := new String(lChars);
-      var lArray := lHeaders.Split(Environment.LineBreak);
+      var lHeaders := new Dictionary<String,String>;
+      var lArray := new String(lChars).Split(Environment.LineBreak);
       for each k: String in lArray do begin
         var lPos := k.IndexOf(':');
         if lPos > 0 then begin
@@ -347,11 +347,12 @@ begin
           var lValue := k.Substring(lPos + 1).Trim;
           // Allow multiple Set-Cookie
           if (lKey = 'Set-Cookie') and Headers.ContainsKey(lKey) then
-              Headers[lKey] := Headers[lKey]+','+lValue
+            leaders[lKey] := Headers[lKey]+','+lValue
           else
-              Headers[lKey] := lValue;
+            lHeaders[lKey] := lValue;
         end;
       end;
+      Headers := lHeaders;
     end;
   end;
 end;
