@@ -170,8 +170,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND AND NOT TOFFEE}[Warning("Not Implemented for Island")]{$ENDIF}
-class method Guid.TryParse(aValue: String): nullable Guid;
+class method Guid.TryParse(aValue: nullable String): nullable Guid;
 begin
   if length(aValue) not in [36, 38] then
     exit nil;
@@ -192,14 +191,11 @@ begin
   if aValue.StartsWith("{") and aValue.EndsWith("}") then
     aValue := aValue.Substring(1,length(aValue)-2);
   result := new NSUUID withUUIDString(aValue);
-  {$ELSEIF ECHOES}// OR ISLAND}
+  {$ELSEIF ECHOES OR ISLAND}
   var lGuid: PlatformGuid;
   if not PlatformGuid.TryParse(aValue, out lGuid) then
     exit nil;
   result := new Guid(lGuid);
-  {$ELSEIF ISLAND}
-  {$WARNING Not Implemented for Island yet}
-  raise new NotImplementedException("Guid.TryParse() is not implemented for Island yet.");
   {$ENDIF}
 end;
 
