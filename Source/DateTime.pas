@@ -25,6 +25,15 @@ type
   ISO8601Format = public enum(Standard, DateOnly, StandardWithTimeZone, Full) of Integer;
 
   [assembly:DefaultTypeOverride("DateTime", "RemObjects.Elements.RTL", typeOf(RemObjects.Elements.RTL.DateTime))]
+  {$IFDEF ISLAND AND NOT TOFFEE}
+  DateTime = public partial class(IComparable)
+  public
+    method CompareTo(other: Object): Integer;
+    begin 
+      exit fDateTime.CompareTo(DateTime(other).fDateTime);
+    end;
+  end;
+  {$ENDIF}
 
   DateTime = public partial class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
   private

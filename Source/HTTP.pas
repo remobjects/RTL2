@@ -80,7 +80,7 @@ type
     {$IF COOPER}
     var Connection: java.net.HttpURLConnection;
     constructor(aConnection: java.net.HttpURLConnection);
-    {$ELSEIF TOFFEE}
+    {$ELSEIF DARWIN}
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
     {$ELSEIF ECHOES}
@@ -97,7 +97,7 @@ type
     {$ENDIF}
 
   public
-    property Headers: not nullable Dictionary<String,String>; readonly; //todo: list itself should be read-only
+    property Headers: not nullable ImmutableDictionary<String,String>; readonly;
     property Code: Int32; readonly;
     property Success: Boolean read (Exception = nil) and (Code < 300);
     property Exception: nullable Exception public read unit write;
@@ -106,7 +106,7 @@ type
     method GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
     {$IF XML}method GetContentAsXml(contentCallback: not nullable HttpContentResponseBlock<XmlDocument>);{$ENDIF}
     {$IF JSON}method GetContentAsJson(contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);{$ENDIF}
-    method SaveContentAsFile(aTargetFile: File; contentCallback: not nullable HttpContentResponseBlock<File>);
+    method SaveContentAsFile(aTargetFile: not nullable String; contentCallback: not nullable HttpContentResponseBlock<File>);
 
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
     method GetContentAsBinarySynchronous: not nullable ImmutableBinary;
@@ -138,19 +138,18 @@ type
     property Exception: nullable Exception public read unit write;
   end;
 
-  HttpResponseBlock = public block (Response: HttpResponse);
-  HttpContentResponseBlock<T> = public block (ResponseContent: HttpResponseContent<T>);
+  HttpResponseBlock = public block (Response: not nullable HttpResponse);
+  HttpContentResponseBlock<T> = public block (ResponseContent: not nullable HttpResponseContent<T>);
 
   Http = public static class
   private
-    {$IF TOFFEE}
+    {$IF DARWIN}
     property Session := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration); lazy;
+    {$ELSEIF ISLAND AND WINDOWS}
+    property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
     {$ENDIF}
     method StringForRequestType(aMode: HttpRequestMode): String;
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
-    {$IF ISLAND AND WINDOWS}
-    property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
-    {$ENDIF}
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
@@ -290,20 +289,30 @@ begin
   Code := Connection.getResponseCode;
   Headers := new Dictionary<String,String>();
   var i := 0;
+  var lHeaders := new Dictionary<String,String>;
   loop begin
     var lKey := Connection.getHeaderFieldKey(i);
     if not assigned(lKey) then break;
     var lValue := Connection.getHeaderField(i);
-    Headers[lKey] := lValue;
+    lHeaders[lKey] := lValue;
     inc(i);
   end;
+  Headers := lHeaders;
 end;
-{$ELSEIF TOFFEE}
+{$ELSEIF DARWIN}
 constructor HttpResponse(aData: NSData; aResponse: NSHTTPURLResponse);
 begin
   Data := aData;
   Code := aResponse.statusCode;
-  Headers := aResponse.allHeaderFields as not nullable Dictionary<String,String>; // why is this cast needed?
+  if defined("TOFFEE") then begin
+    Headers := aResponse.allHeaderFields as PlatformDictionary<String,String> as not nullable ImmutableDictionary<String,String>;
+  end
+  else begin
+    var lHeaders := new Dictionary<String,String>;
+    for each k in aResponse.allHeaderFields.allKeys do
+       lHeaders[k] := aResponse.allHeaderFields[k];
+    Headers := lHeaders;
+  end;
 end;
 {$ELSEIF ECHOES}
 constructor HttpResponse(aResponse: HttpWebResponse);
@@ -311,13 +320,10 @@ begin
   Response := aResponse;
   Code := Int32(aResponse.StatusCode);
   Headers := new Dictionary<String,String>();
-  {$IF NETSTANDARD}
+  var lHeaders := new Dictionary<String,String>;
   for each k: String in aResponse.Headers:AllKeys do
-    Headers[k.ToString] := aResponse.Headers[k];
-  {$ELSE}
-  for each k: String in aResponse.Headers:Keys do
-    Headers[k.ToString] := aResponse.Headers[k];
-  {$ENDIF}
+    lHeaders[k.ToString] := aResponse.Headers[k];
+  Headers := lHeaders;
 end;
 {$ELSEIF ISLAND}
 {$IF WINDOWS}
@@ -332,8 +338,8 @@ begin
   if lSize > 0 then begin
     var lChars := new Char[lSize / sizeOf(Char)];
     if rtl. WinHttpQueryHeaders(Request, rtl.WINHTTP_QUERY_RAW_HEADERS_CRLF, nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lChars[0], @lSize, nil {WINHTTP_NO_HEADER_INDEX}) then begin
-      var lHeaders := new String(lChars);
-      var lArray := lHeaders.Split(Environment.LineBreak);
+      var lHeaders := new Dictionary<String,String>;
+      var lArray := new String(lChars).Split(Environment.LineBreak);
       for each k: String in lArray do begin
         var lPos := k.IndexOf(':');
         if lPos > 0 then begin
@@ -341,11 +347,12 @@ begin
           var lValue := k.Substring(lPos + 1).Trim;
           // Allow multiple Set-Cookie
           if (lKey = 'Set-Cookie') and Headers.ContainsKey(lKey) then
-              Headers[lKey] := Headers[lKey]+','+lValue
+            lHeaders[lKey] := Headers[lKey]+','+lValue
           else
-              Headers[lKey] := lValue;
+            lHeaders[lKey] := lValue;
         end;
       end;
+      Headers := lHeaders;
     end;
   end;
 end;
@@ -369,7 +376,7 @@ begin
     else
       contentCallback(new HttpResponseContent<String>(Exception := content.Exception))
   end);
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
   var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
   if assigned(s) then
     contentCallback(new HttpResponseContent<String>(Content := s))
@@ -403,7 +410,7 @@ begin
     end;
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
   contentCallback(new HttpResponseContent<ImmutableBinary>(Content := Data.mutableCopy));
   {$ELSEIF ECHOES}
   async begin
@@ -460,7 +467,7 @@ begin
 end;
 {$ENDIF}
 
-method HttpResponse.SaveContentAsFile(aTargetFile: File; contentCallback: not nullable HttpContentResponseBlock<File>);
+method HttpResponse.SaveContentAsFile(aTargetFile: not nullable String; contentCallback: not nullable HttpContentResponseBlock<File>);
 begin
   {$IF COOPER}
   async begin
@@ -474,10 +481,10 @@ begin
     end;
     contentCallback(new HttpResponseContent<File>(Content := aTargetFile));
   end;
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
   async begin
     var error: NSError;
-    if Data.writeToFile(aTargetFile) options(NSDataWritingOptions.NSDataWritingAtomic) error(var error) then
+    if Data.writeToFile(aTargetFile as NSString) options(NSDataWritingOptions.NSDataWritingAtomic) error(var error) then
       contentCallback(new HttpResponseContent<File>(Content := aTargetFile))
     else
       contentCallback(new HttpResponseContent<File>(Exception := new RTLException withError(error)));
@@ -514,7 +521,7 @@ begin
   if aEncoding = nil then aEncoding := Encoding.Default;
   {$IF COOPER}
   result := new String(GetContentAsBinarySynchronous().ToArray, aEncoding);
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
   var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
   if assigned(s) then
     exit s as not nullable
@@ -539,7 +546,7 @@ begin
     len := stream.read(data);
   end;
   result := allData as not nullable;
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
   result := Data.mutableCopy as not nullable;
   {$ELSEIF ECHOES}
   var allData := new System.IO.MemoryStream();
@@ -703,17 +710,7 @@ begin
     on E: Exception do
       ResponseCallback(new HttpResponse withException(E));
   end;
-  {$ELSEIF ISLAND}
-  async begin
-    try
-      var lResponse := ExecuteRequestSynchronous(aRequest, true);
-      ResponseCallback(lResponse);
-    except
-      on E: Exception do
-        ResponseCallback(new HttpResponse withException(E));
-    end;
-  end;
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
   try
     var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
 
@@ -722,8 +719,12 @@ begin
     nsUrlRequest.HTTPMethod := StringForRequestType(aRequest.Mode);
     nsUrlRequest.timeoutInterval := aRequest.Timeout;
 
-    if assigned(aRequest.Content) then
-      nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary();
+    if assigned(aRequest.Content) then begin
+      if defined("TOFFEE") then
+        nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary()
+      else
+        nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary().ToNSData; {$HINT OPTIMIZE?}
+    end;
 
     for each k in aRequest.Headers.Keys do
       nsUrlRequest.setValue(aRequest.Headers[k]) forHTTPHeaderField(k);
@@ -754,12 +755,26 @@ begin
     on E: Exception do
       ResponseCallback(new HttpResponse withException(E));
   end;
+  {$ELSEIF ISLAND}
+  async begin
+    try
+      var lResponse := ExecuteRequestSynchronous(aRequest, true);
+      Log($"lResponse {lResponse}");
+      Log($"assigned(lResponse) {assigned(lResponse)}");
+      ResponseCallback(lResponse);
+    except
+      on E: Exception do
+        ResponseCallback(new HttpResponse withException(E));
+    end;
+  end;
   {$ENDIF}
 end;
 
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 begin
   result := ExecuteRequestSynchronous(aRequest, true) as not nullable;
+  Log($"lresult {result}");
+  Log($"assigned(result) {assigned(result)}");
 end;
 
 method Http.TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
@@ -1016,7 +1031,7 @@ begin
     if not aThrowOnError then exit nil;
     raise new RTLException(String.Format("Unable to complete request. LibCurl Error code: {0}", lResult), result);
   end;
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
   var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
 
   //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
@@ -1024,8 +1039,12 @@ begin
   nsUrlRequest.HTTPMethod := StringForRequestType(aRequest.Mode);
   nsUrlRequest.timeoutInterval := aRequest.Timeout;
 
-  if assigned(aRequest.Content) then
-    nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary();
+  if assigned(aRequest.Content) then begin
+    if defined("TOFFEE") then
+      nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary()
+    else
+      nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary().ToNSData; {$HINT OPTIMIZE?}
+  end;
 
   for each k in aRequest.Headers.Keys do
     nsUrlRequest.setValue(aRequest.Headers[k]) forHTTPHeaderField(k);
@@ -1045,7 +1064,10 @@ begin
 
   var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
   if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
-    result := new HttpResponse(data, nsHttpUrlResponse);
+    if defined("TOFFEE") then
+      result := new HttpResponse(data, nsHttpUrlResponse)
+    else
+      result := new HttpResponse(data, nsHttpUrlResponse);
     if nsHttpUrlResponse.statusCode >= 300 then begin
       if not aThrowOnError then exit nil;
       raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, result)
@@ -1065,6 +1087,8 @@ begin
     else
       raise new RTLException("Request failed without providing an error.");
   end;
+  {$ELSE}
+  raise new NotImplementedException("Http.ExecuteRequestSynchronous is not implemented for this platform")
   {$ENDIF}
 end;
 

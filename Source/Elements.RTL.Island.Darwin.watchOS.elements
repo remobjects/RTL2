@@ -19,6 +19,7 @@
     <KnownConditionalDefines>DEBUG;TRACE</KnownConditionalDefines>
     <SDK>watchOS</SDK>
     <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
+    <DefaultUses>Foundation</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
