@@ -773,8 +773,6 @@ end;
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 begin
   result := ExecuteRequestSynchronous(aRequest, true) as not nullable;
-  Log($"lresult {result}");
-  Log($"assigned(result) {assigned(result)}");
 end;
 
 method Http.TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
