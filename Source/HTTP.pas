@@ -348,12 +348,12 @@ begin
   fOriginalRequest := aRequest;
   Code := aRequest.status;
   var lHeaders := new Dictionary<String,String>;
-  writeLn($"fOriginalRequest.getAllResponseHeaders {fOriginalRequest.getAllResponseHeaders}");
-  for each h: String in fOriginalRequest.getAllResponseHeaders:Split(#10) do begin
-    var lSplit := h.SplitAtFirstOccurrenceof("=");
-    if lSplit.Count = 2 then
-      lHeaders[lSplit[0].Trim] := lSplit[1].Trim;
-  end;
+  {$HINT TODO, needs E25286: Wasm: support for ByteString}
+  //for each h: String in fOriginalRequest.getAllResponseHeaders:Split(#10) do begin
+    //var lSplit := h.SplitAtFirstOccurrenceof("=");
+    //if lSplit.Count = 2 then
+      //lHeaders[lSplit[0].Trim] := lSplit[1].Trim;
+  //end;
   Headers := lHeaders;
 end;
 {$ELSEIF ISLAND}
