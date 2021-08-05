@@ -73,7 +73,7 @@ type
 
   HttpResponse = public class({$IF ECHOES OR ISLAND}IDisposable{$ENDIF})
   unit
-    constructor withException(anException: Exception);
+    constructor withException(aException: Exception);
 
     {$IF COOPER}
     var Connection: java.net.HttpURLConnection;
@@ -293,9 +293,9 @@ end;
 
 { HttpResponse }
 
-constructor HttpResponse withException(anException: Exception);
+constructor HttpResponse withException(aException: Exception);
 begin
-  self.Exception := anException;
+  Exception := aException;
   Headers := new Dictionary<String,String>();
 end;
 
@@ -347,7 +347,14 @@ constructor HttpResponse(aRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRe
 begin
   fOriginalRequest := aRequest;
   Code := aRequest.status;
-  Headers := new Dictionary<String, String>(); // todo
+  var lHeaders := new Dictionary<String,String>;
+  writeLn($"fOriginalRequest.getAllResponseHeaders {fOriginalRequest.getAllResponseHeaders}");
+  for each h: String in fOriginalRequest.getAllResponseHeaders:Split(#10) do begin
+    var lSplit := h.SplitAtFirstOccurrenceof("=");
+    if lSplit.Count = 2 then
+      lHeaders[lSplit[0].Trim] := lSplit[1].Trim;
+  end;
+  Headers := lHeaders;
 end;
 {$ELSEIF ISLAND}
 {$IF WINDOWS}
@@ -857,15 +864,15 @@ begin
     //writeLn("Wasm HTTP Success");
     if assigned(lRequest.status) then
       responseCallback(new HttpResponse(lRequest))
-    else if assigned(lRequest.statusText) then
+    else if length(String(lRequest.statusText)) > 0 then
       responseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
     else
-      responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")))
+      responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")));
   end;
 
   lRequest.onerror := method begin
     //writeLn("Wasm HTTP Error");
-    if assigned(lRequest.statusText) then
+    if length(String(lRequest.statusText)) > 0 then
       responseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
     else
       responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")))
@@ -875,8 +882,6 @@ begin
   async begin
     try
       var lResponse := ExecuteRequestSynchronous(aRequest, true);
-      Log($"lResponse {lResponse}");
-      Log($"assigned(lResponse) {assigned(lResponse)}");
       ResponseCallback(lResponse);
     except
       on E: Exception do
@@ -886,14 +891,24 @@ begin
   {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 begin
+  {$IF ISLAND AND WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
+  {$ELSE}
   result := ExecuteRequestSynchronous(aRequest, true) as not nullable;
+  {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
 begin
+  {$IF ISLAND AND WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
+  {$ELSE}
   result := ExecuteRequestSynchronous(aRequest, false);
+  {$ENDIF}
 end;
 
 {$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
@@ -1227,8 +1242,12 @@ begin
   end);
 end;
 
+{$IF WEBASSEMBLY}[Warning("Binary data is not supported on WebAssembly")]{$ENDIF}
 method Http.ExecuteRequestAsBinary(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
 begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Binary Data is not supported on WebAssembkly")
+  {$ELSE}
   Http.ExecuteRequest(aRequest, (response) -> begin
     if response.Success then begin
       response.GetContentAsBinary( (content) -> begin
@@ -1238,6 +1257,7 @@ begin
       contentCallback(new HttpResponseContent<ImmutableBinary>(Exception := response.Exception));
     end;
   end);
+  {$ENDIF}
 end;
 
 {$IF XML}
@@ -1275,8 +1295,7 @@ method Http.ExecuteRequestAndSaveAsFile(aRequest: not nullable HttpRequest; aTar
 begin
   {$IF WEBASSEMBLY}
   raise new NotImplementedException("File Access is not supported on WebAssembkly")
-  {$ENDIF}
-
+  {$ELSE}
   Http.ExecuteRequest(aRequest, (response) -> begin
     if response.Success then begin
       response.SaveContentAsFile(aTargetFile, (content) -> begin
@@ -1286,52 +1305,77 @@ begin
       contentCallback(new HttpResponseContent<File>(Exception := response.Exception));
     end;
   end);
+  {$ENDIF}
 end;
 
 {$IF NOT NETFX_CORE}
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.GetString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest): not nullable String;
 begin
-  using lResponse := ExecuteRequestSynchronous(aRequest) do begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembkly")
+  {$ELSE}
+  using lResponse := ExecuteRequestSynchronous(aRequest) do
     result := lResponse.GetContentAsStringSynchronous(aEncoding);
-  end;
+  {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.GetBinary(aRequest: not nullable HttpRequest): not nullable ImmutableBinary;
 begin
-  using lResponse := ExecuteRequestSynchronous(aRequest) do begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembkly")
+  {$ELSE}
+  using lResponse := ExecuteRequestSynchronous(aRequest) do
     result := lResponse.GetContentAsBinarySynchronous;
-  end;
+  {$ENDIF}
 end;
 
 {$IF XML}
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.GetXml(aRequest: not nullable HttpRequest): not nullable XmlDocument;
 begin
-  using lResponse := ExecuteRequestSynchronous(aRequest) do begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembkly")
+  {$ELSE}
+  using lResponse := ExecuteRequestSynchronous(aRequest) do
     result := lResponse.GetContentAsXmlSynchronous;
-  end;
+  {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.TryGetXml(aRequest: not nullable HttpRequest): nullable XmlDocument;
 begin
-  using lResponse := TryExecuteRequestSynchronous(aRequest) do begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembkly")
+  {$ELSE}
+  using lResponse := TryExecuteRequestSynchronous(aRequest) do
     result := lResponse:TryGetContentAsXmlSynchronous;
-  end;
+  {$ENDIF}
 end;
 {$ENDIF}
 
 {$IF JSON}
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.GetJson(aRequest: not nullable HttpRequest): not nullable JsonDocument;
 begin
-  using lResponse := ExecuteRequestSynchronous(aRequest) do begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembkly")
+  {$ELSE}
+  using lResponse := ExecuteRequestSynchronous(aRequest) do
     result := lResponse.GetContentAsJsonSynchronous;
-  end;
+  {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.TryGetJson(aRequest: not nullable HttpRequest): nullable JsonDocument;
 begin
-  using lResponse := TryExecuteRequestSynchronous(aRequest) do begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembkly")
+  {$ELSE}
+  using lResponse := TryExecuteRequestSynchronous(aRequest) do
     result := lResponse:TryGetContentAsJsonSynchronous;
-  end;
+  {$ENDIF}
 end;
 {$ENDIF}
 {$ENDIF}
