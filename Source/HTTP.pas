@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT WEBASSEMBLY}
-
 interface
 
 {$DEFINE XML}{$DEFINE JSON}
@@ -27,8 +25,8 @@ type
 
     property Timeout: Double := 10.0; // Seconds
 
-    constructor(aUrl: not nullable Url); // log
-    constructor(aUrl: not nullable Url; aMode: HttpRequestMode); // log  := HttpRequestMode.Ge
+    constructor(aUrlString: not nullable String; aMode: HttpRequestMode := HttpRequestMode.Get);
+    constructor(aUrl: not nullable Url; aMode: HttpRequestMode := HttpRequestMode.Get);
     operator Implicit(aUrl: not nullable Url): HttpRequest;
 
     [ToString]
@@ -86,14 +84,17 @@ type
     {$ELSEIF ECHOES}
     var Response: HttpWebResponse;
     constructor(aResponse: HttpWebResponse);
+    {$ELSEIF WEBASSEMBLY}
+    var fOriginalRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest; private;
+    constructor(aRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest);
     {$ELSEIF ISLAND}
-      var Data: MemoryStream; readonly;
-      {$IF WINDOWS}
-      var Request: rtl.HINTERNET;
-      constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
-      {$ELSEIF LINUX}
-      constructor(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
-      {$ENDIF}
+    var Data: MemoryStream; readonly;
+    {$IF WINDOWS}
+    var Request: rtl.HINTERNET;
+    constructor(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
+    {$ELSEIF LINUX}
+    constructor(aCode: Integer; aData: MemoryStream; aHeaders: not nullable Dictionary<String, String>);
+    {$ENDIF}
     {$ENDIF}
 
   public
@@ -173,6 +174,8 @@ type
     {$ENDIF}
   end;
 
+extension method HttpRequestMode.ToHttpString: String; public;
+
 implementation
 
 uses
@@ -181,15 +184,29 @@ uses
   {$ENDIF}
   RemObjects.Elements;
 
-{ HttpRequest }
-
-constructor HttpRequest(aUrl: not nullable Url);
+extension method HttpRequestMode.ToHttpString: String;
 begin
-  Url := aUrl;
-  Mode := HttpRequestMode.Get;
+  result := case self of
+    HttpRequestMode.Delete: "DELETE";
+    HttpRequestMode.Get: "GET";
+    HttpRequestMode.Head: "HEAD";
+    HttpRequestMode.Options: "OPTIONS";
+    HttpRequestMode.Patch: "PATCH";
+    HttpRequestMode.Post: "POST";
+    HttpRequestMode.Put: "PUT";
+    HttpRequestMode.Trace: "TRACE";
+  end;
 end;
 
-constructor HttpRequest(aUrl: not nullable Url; aMode: HttpRequestMode);
+{ HttpRequest }
+
+constructor HttpRequest(aUrlString: not nullable String; aMode: HttpRequestMode := HttpRequestMode.Get);
+begin
+  Url := Url.UrlWithString(aUrlString);
+  Mode := aMode;
+end;
+
+constructor HttpRequest(aUrl: not nullable Url; aMode: HttpRequestMode := HttpRequestMode.Get);
 begin
   Url := aUrl;
   Mode := aMode;
@@ -325,6 +342,13 @@ begin
     lHeaders[k.ToString] := aResponse.Headers[k];
   Headers := lHeaders;
 end;
+{$ELSEIF WEBASSEMBLY}
+constructor HttpResponse(aRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest);
+begin
+  fOriginalRequest := aRequest;
+  Code := aRequest.status;
+  Headers := new Dictionary<String, String>(); // todo
+end;
 {$ELSEIF ISLAND}
 {$IF WINDOWS}
 constructor HttpResponse(aRequest: rtl.HINTERNET; aCode: Int16; aData: MemoryStream);
@@ -387,6 +411,8 @@ begin
     var responseString := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd();
     contentCallback(new HttpResponseContent<String>(Content := responseString))
   end;
+  {$ELSEIF WEBASSEMBLY}
+  contentCallback(new HttpResponseContent<String>(Content := fOriginalRequest.responseText));
   {$ELSEIF ISLAND}
   async begin
     var lResponseString := aEncoding.GetString(Data.ToArray);
@@ -395,6 +421,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Binary data is not supported on WebAssembkly")]{$ENDIF}
 method HttpResponse.GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
 begin
   // maybe delegsate to GetContentAsBinarySynchronous?
@@ -418,6 +445,8 @@ begin
     Response.GetResponseStream().CopyTo(allData);
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
+  {$ELSEIF WEBASSEMBLY}
+  raise new NotImplementedException("Binary data is not supported on WebAssembly")
   {$ELSEIF ISLAND}
   async begin
     var allData := new Binary(Data.ToArray);
@@ -429,6 +458,15 @@ end;
 {$IF XML}
 method HttpResponse.GetContentAsXml(contentCallback: not nullable HttpContentResponseBlock<XmlDocument>);
 begin
+  {$IF WEBASSEMBLY}
+  try
+    var document := XmlDocument.FromString(fOriginalRequest.responseText);
+    contentCallback(new HttpResponseContent<XmlDocument>(Content := document))
+  except
+    on E: Exception do
+      contentCallback(new HttpResponseContent<XmlDocument>(Exception := E));
+  end;
+  {$ELSE}
   GetContentAsBinary((content) -> begin
     if content.Success then begin
       try
@@ -436,7 +474,7 @@ begin
         if assigned(document) then
           contentCallback(new HttpResponseContent<XmlDocument>(Content := document))
         else
-        contentCallback(new HttpResponseContent<XmlDocument>(Exception := new RTLException("Could not parse result as XML.")));
+          contentCallback(new HttpResponseContent<XmlDocument>(Exception := new RTLException("Could not parse result as XML.")));
       except
         on E: Exception do
           contentCallback(new HttpResponseContent<XmlDocument>(Exception := E));
@@ -445,12 +483,26 @@ begin
       contentCallback(new HttpResponseContent<XmlDocument>(Exception := content.Exception));
     end;
   end);
+  {$ENDIF}
 end;
 {$ENDIF}
 
 {$IF JSON}
 method HttpResponse.GetContentAsJson(contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);
 begin
+  {$IF WEBASSEMBLY}
+  try
+    writeLn($"assigned(fOriginalRequest) {assigned(fOriginalRequest)}");
+    writeLn($"fOriginalRequest {fOriginalRequest}");
+    writeLn($"assigned(fOriginalRequest.responseText) {assigned(fOriginalRequest.responseText)}");
+    writeLn($"fOriginalRequest.responseText {fOriginalRequest.responseText}");
+    var document :=  JsonDocument.FromString(fOriginalRequest.responseText);
+    contentCallback(new HttpResponseContent<JsonDocument>(Content := document))
+  except
+    on E: Exception do
+      contentCallback(new HttpResponseContent<JsonDocument>(Exception := E));
+  end;
+  {$ELSE}
   GetContentAsBinary((content) -> begin
     if content.Success then begin
       try
@@ -464,9 +516,11 @@ begin
       contentCallback(new HttpResponseContent<JsonDocument>(Exception := content.Exception));
     end;
   end);
+  {$ENDIF}
 end;
 {$ENDIF}
 
+{$IF WEBASSEMBLY}[Warning("File Access is not supported on WebAssembly")]{$ENDIF}
 method HttpResponse.SaveContentAsFile(aTargetFile: not nullable String; contentCallback: not nullable HttpContentResponseBlock<File>);
 begin
   {$IF COOPER}
@@ -501,6 +555,8 @@ begin
         contentCallback(new HttpResponseContent<File>(Exception := E));
     end;
   end;
+  {$ELSEIF WEBASSEMBLY}
+  raise new NotImplementedException("File Access is not supported on WebAssembly")
   {$ELSEIF ISLAND}
   async begin
     try
@@ -516,6 +572,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembkly")]{$ENDIF}
 method HttpResponse.GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
 begin
   if aEncoding = nil then aEncoding := Encoding.Default;
@@ -529,11 +586,14 @@ begin
     raise new RTLException("Invalid Encoding");
   {$ELSEIF ECHOES}
   result := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd() as not nullable;
+  {$ELSEIF ISLAND AND WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSEIF ISLAND}
   result := aEncoding.GetString(Data.ToArray) as not nullable;
   {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembkly")]{$ENDIF}
 method HttpResponse.GetContentAsBinarySynchronous: not nullable ImmutableBinary;
 begin
   {$IF COOPER}
@@ -552,48 +612,74 @@ begin
   var allData := new System.IO.MemoryStream();
   Response.GetResponseStream().CopyTo(allData);
   result := allData as not nullable;
+  {$ELSEIF ISLAND AND WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSEIF ISLAND}
   result := new Binary(Data.ToArray);
   {$ENDIF}
 end;
 
 {$IF XML}
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembkly")]{$ENDIF}
 method HttpResponse.GetContentAsXmlSynchronous: not nullable XmlDocument;
 begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
+  {$ELSE}
   result := XmlDocument.FromBinary(GetContentAsBinarySynchronous()) as not nullable;
   if not assigned(result) then
     raise new RTLException("Could not parse result as XML.");
+  {$ENDIF}
 end;
 
 method HttpResponse.TryGetContentAsXmlSynchronous: nullable XmlDocument;
 begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
+  {$ELSE}
   var lBinary := GetContentAsBinarySynchronous(); // try?
   if assigned(lBinary) then begin
     //var lError: XmlErrorInfo;
     //result := XmlDocument.TryFromBinary(lBinary, out lError) as not nullable;
     result := XmlDocument.TryFromBinary(lBinary, true) as not nullable;
   end;
+  {$ENDIF}
 end;
 {$ENDIF}
 
 {$IF JSON}
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembkly")]{$ENDIF}
 method HttpResponse.GetContentAsJsonSynchronous: not nullable JsonDocument;
 begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
+  {$ELSE}
   result := JsonDocument.FromBinary(GetContentAsBinarySynchronous());
+  {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembkly")]{$ENDIF}
 method HttpResponse.TryGetContentAsJsonSynchronous: nullable JsonDocument;
 begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
+  {$ELSE}
   var lBinary := GetContentAsBinarySynchronous(); // try?
   if assigned(lBinary) then
     result := JsonDocument.TryFromBinary(lBinary);
+  {$ENDIF}
 end;
 {$ENDIF}
 
+{$IF WEBASSEMBLY}[Warning("File Access is not supported on WebAssembly")]{$ENDIF}
 method HttpResponse.SaveContentAsFileSynchronous(aTargetFile: File);
 begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("File Access is not supported on WebAssembly")
+  {$ELSE}
   File.WriteBinary(aTargetFile, GetContentAsBinarySynchronous());
   {$HINT implement more efficiently}
+  {$ENDIF}
 end;
 
 { Http }
@@ -755,6 +841,36 @@ begin
     on E: Exception do
       ResponseCallback(new HttpResponse withException(E));
   end;
+  {$ELSEIF WEBASSEMBLY}
+  var lRequest := RemObjects.Elements.WebAssembly.Browser.NewXMLHttpRequest();
+  lRequest.open(aRequest.Mode.ToHttpString, aRequest.Url.ToAbsoluteString, true);
+  for each k in aRequest.Headers.Keys do
+    lRequest.setRequestHeader(k, aRequest.Headers[k]);
+  if assigned(aRequest.Accept) then
+    lRequest.setRequestHeader("Accept", aRequest.Accept);
+  if assigned(aRequest.UserAgent) then
+    lRequest.setRequestHeader("User-Agent", aRequest.UserAgent);
+  if assigned(aRequest.ContentType) then
+    lRequest.setRequestHeader("Content-Type", aRequest.ContentType);
+
+  lRequest.onload := method begin
+    //writeLn("Wasm HTTP Success");
+    if assigned(lRequest.status) then
+      responseCallback(new HttpResponse(lRequest))
+    else if assigned(lRequest.statusText) then
+      responseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
+    else
+      responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")))
+  end;
+
+  lRequest.onerror := method begin
+    //writeLn("Wasm HTTP Error");
+    if assigned(lRequest.statusText) then
+      responseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
+    else
+      responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")))
+  end;
+  lRequest.send();
   {$ELSEIF ISLAND}
   async begin
     try
@@ -780,6 +896,7 @@ begin
   result := ExecuteRequestSynchronous(aRequest, false);
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
 begin
   aRequest.ApplyAuthehtication;
@@ -949,6 +1066,8 @@ begin
       raise new RTLException(E.Message);
     end;
   end;
+  {$ELSEIF ISLAND AND WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSEIF ISLAND AND LINUX}
   var lRequest := CurlHelper.EasyInit();
   var lStream := new MemoryStream();
@@ -1151,8 +1270,13 @@ begin
 end;
 {$ENDIF}
 
+{$IF WEBASSEMBLY}[Warning("File Access is not supported on WebAssembkly")]{$ENDIF}
 method Http.ExecuteRequestAndSaveAsFile(aRequest: not nullable HttpRequest; aTargetFile: not nullable File; contentCallback: not nullable HttpContentResponseBlock<File>);
 begin
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("File Access is not supported on WebAssembkly")
+  {$ENDIF}
+
   Http.ExecuteRequest(aRequest, (response) -> begin
     if response.Success then begin
       response.SaveContentAsFile(aTargetFile, (content) -> begin
@@ -1319,7 +1443,5 @@ begin
   end;
 end;
 *)
-
-{$ENDIF}
 
 end.
