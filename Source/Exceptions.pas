@@ -175,7 +175,6 @@ type
 
   IOException = public class(RTLException);
 
-  {$IF NOT WEBASSEMBLY}
   HttpException = public class(RTLException)
   assembly
 
@@ -201,7 +200,6 @@ type
     property Response: nullable HttpResponse; readonly;
     property Code: Integer read coalesce(Response:Code, fCode);
   end;
-  {$ENDIF}
 
   FileNotFoundException = public class (RTLException)
   public
