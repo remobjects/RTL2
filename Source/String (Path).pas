@@ -102,9 +102,6 @@ type
     property QuotedIfNeeded: String read if IndexOf(" ") > -1 then String('"'+self+'"') else self;
     
     class operator Implicit(aVal: String): Folder; inline; begin exit Folder(aVal); end;
-    class operator Implicit(aVal: String): File; inline; begin exit File(aVal); end;
-    class operator Implicit(aVal: Folder): String; inline; begin exit String(aVal); end;
-    class operator Implicit(aVal: File): String; inline; begin exit String(aVal); end;
   end;
 
 end.
