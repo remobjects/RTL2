@@ -87,7 +87,7 @@ end;
 method ImmutableStack<T>.MutableVersion: Stack<T>;
 begin
   {$IF NOT TOFFEE}
-  result := self;
+  result := Stack<T>(self);
   {$ELSEIF TOFFEE}
   if self is NSMutableArray then
     result := self as NSMutableArray

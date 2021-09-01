@@ -94,7 +94,7 @@ end;
 method ImmutableQueue<T>.MutableVersion: Queue<T>;
 begin
   {$IF NOT TOFFEE}
-  result := self;
+  result := Queue<T>(self);
   {$ELSEIF TOFFEE}
   if self is NSMutableArray then
     result := self as NSMutableArray<T>

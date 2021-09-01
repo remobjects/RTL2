@@ -320,7 +320,7 @@ begin
   {$IF COOPER}
   result := new Binary(self);
   {$ELSEIF ECHOES OR ISLAND}
-  result := self;
+  result := Binary(self);
   {$ELSEIF TOFFEE}
   if self is NSMutableData then
     result := self as NSMutableData

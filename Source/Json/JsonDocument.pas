@@ -118,7 +118,7 @@ end;
 class method JsonDocument.FromUrl(aUrl: not nullable Url): not nullable JsonDocument;
 begin
   if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then begin
-    result := FromFile(aUrl.FilePath);
+    result := FromFile(File(aUrl.FilePath));
   end
   else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
     result := Http.GetJson(new HttpRequest(aUrl))

@@ -540,13 +540,13 @@ begin
       allData.write(data, 0, len);
       len := stream.read(data);
     end;
-    contentCallback(new HttpResponseContent<File>(Content := aTargetFile));
+    contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)));
   end;
   {$ELSEIF DARWIN}
   async begin
     var error: NSError;
     if Data.writeToFile(aTargetFile as NSString) options(NSDataWritingOptions.NSDataWritingAtomic) error(var error) then
-      contentCallback(new HttpResponseContent<File>(Content := aTargetFile))
+      contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
     else
       contentCallback(new HttpResponseContent<File>(Exception := new RTLException withError(error)));
   end;
@@ -556,7 +556,7 @@ begin
       using responseStream := Response.GetResponseStream() do
         using fileStream := System.IO.File.OpenWrite(aTargetFile) do
           responseStream.CopyTo(fileStream);
-      contentCallback(new HttpResponseContent<File>(Content := aTargetFile));
+      contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)));
     except
       on E: Exception do
         contentCallback(new HttpResponseContent<File>(Exception := E));
@@ -570,7 +570,7 @@ begin
       var lStream := new FileStream(aTargetFile, FileOpenMode.Create or FileOpenMode.ReadWrite);
       Data.CopyTo(lStream);
       Data.Flush;
-      contentCallback(new HttpResponseContent<File>(Content := aTargetFile))
+      contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
     except
       on E: Exception do
         contentCallback(new HttpResponseContent<File>(Exception := E));
@@ -684,7 +684,7 @@ begin
   {$IF WEBASSEMBLY}
   raise new NotImplementedException("File Access is not supported on WebAssembly")
   {$ELSE}
-  File.WriteBinary(aTargetFile, GetContentAsBinarySynchronous());
+  File.WriteBinary(String(aTargetFile), GetContentAsBinarySynchronous());
   {$HINT implement more efficiently}
   {$ENDIF}
 end;
@@ -1298,7 +1298,7 @@ begin
   {$ELSE}
   Http.ExecuteRequest(aRequest, (response) -> begin
     if response.Success then begin
-      response.SaveContentAsFile(aTargetFile, (content) -> begin
+      response.SaveContentAsFile(String(aTargetFile), (content) -> begin
         contentCallback(content)
       end);
     end else begin

@@ -84,7 +84,7 @@ begin
   ArgumentNullException.RaiseIfNil(Destination, "Destination");
   ArgumentNullException.RaiseIfNil(NewName, "NewName");
 
-  var lNewFile := File(Path.Combine(Destination, NewName));
+  var lNewFile := File(Path.Combine(String(Destination), NewName));
 
   {$IF COOPER}
   new java.io.File(lNewFile).createNewFile;
@@ -102,7 +102,7 @@ begin
   if aCloneIfPossible and (Environment.OS = OperatingSystem.macOS) and (Environment.macOS.IsHighSierraOrAbove) then begin
     if lNewFile.Exists then
       Delete(lNewFile);
-    if Foundation.copyfile(mapped, lNewFile, 0, Foundation.COPYFILE_CLONE) ≠ 0 then
+    if Foundation.copyfile(mapped, String(lNewFile), 0, Foundation.COPYFILE_CLONE) ≠ 0 then
       raise new RTLException("Failed to copy file");
   end
   else

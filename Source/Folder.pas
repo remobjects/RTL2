@@ -156,27 +156,27 @@ end;
 
 method Folder.DoGetFiles(aFolder: Folder; aList: List<File>);
 begin
-  aList.Add(aFolder.GetFiles);
+  aList.Add(aFolder.GetFiles as ImmutableList<File>);
   for each f in aFolder.GetSubFolders() do
-    DoGetFiles(f, aList);
+    DoGetFiles(Folder(f), aList);
 end;
 
 method Folder.GetFiles(aRecursive: Boolean): not nullable ImmutableList<String>;
 begin
   if not aRecursive then exit GetFiles();
-  var lResult := new List<String>() as not nullable;
+  var lResult := new List<File>() as not nullable;
   DoGetFiles(self, lResult);
-  result := lResult;
+  result := List<String>(lResult);
 end;
 
 method Folder.CopyContentsTo(aNewFolder: Folder; aRecursive: Boolean := true);
 begin
   aNewFolder.Create();
   for each f in GetFiles() do
-    File(f).CopyTo(Path.Combine(aNewFolder, Path.GetFileName(f)));
+    File(f).CopyTo(File(Path.Combine(String(aNewFolder), Path.GetFileName(f))));
   if aRecursive then
     for each f in GetSubfolders() do
-      Folder(f).CopyContentsTo(Path.Combine(aNewFolder, Path.getFileName(f)));
+      Folder(f).CopyContentsTo(Folder(Path.Combine(String(aNewFolder), Path.getFileName(f))));
 end;
 
 method Folder.CreateFile(FileName: String; FailIfExists: Boolean := false): File;
@@ -336,11 +336,11 @@ begin
   for i: Integer := 0 to Items.count - 1 do begin
     var item := Combine(mapped, String(Items.objectAtIndex(i)));
     if not FolderHelper.IsDirectory(item) then
-      lResult.Add(File(item));
+      lResult.Add(String(item));
   end;
   result := lResult;
   {$ELSEIF ECHOES}
-  result := new ImmutableList<File>(System.IO.Directory.GetFiles(mapped));
+  result := new ImmutableList<String>(System.IO.Directory.GetFiles(mapped));
   {$ELSEIF ISLAND}
   result := IslandFolder.GetFiles().Select(f -> f.FullName).ToList() as not nullable;
   {$ENDIF}
@@ -351,7 +351,7 @@ begin
   {$IF COOPER}
   result := JavaFile.listFiles( (f,n) -> new java.io.File(f, n).isDirectory).Select(f -> f.Path).ToList() as not nullable;
   {$ELSEIF TOFFEE}
-  result := new List<Folder>();
+  result := new List<String>();
   var Items := NSFileManager.defaultManager.contentsOfDirectoryAtPath(mapped) error(nil);
   if Items = nil then
     exit;
@@ -359,10 +359,10 @@ begin
   for i: Integer := 0 to Items.count - 1 do begin
     var item := Combine(mapped, String(Items.objectAtIndex(i)));
     if FolderHelper.IsDirectory(item) then
-      result.Add(Folder(item));
+      result.Add(String(item));
   end;
   {$ELSEIF ECHOES}
-  result := new List<Folder>(System.IO.Directory.GetDirectories(mapped));
+  result := new List<String>(System.IO.Directory.GetDirectories(mapped));
   {$ELSEIF ISLAND}
   result := IslandFolder.GetSubFolders().Select(f -> f.FullName).ToList() as not nullable;
   {$ENDIF}
@@ -379,7 +379,7 @@ begin
   if not lFile.renameTo(NewFolder) then
     raise new IOException(RTLErrorMessages.IO_RENAME_ERROR, mapped, NewName);
 
-  result := NewName;
+  result := Folder(NewName);
   {$ELSEIF TOFFEE}
   var RootFolder := mapped.stringByDeletingLastPathComponent;
   var NewFolderName := Combine(RootFolder, NewName);
@@ -392,7 +392,7 @@ begin
   if not Manager.moveItemAtPath(mapped) toPath(NewFolderName) error(var lError) then
     raise new NSErrorException(lError);
 
-  result := NewFolderName;
+  result := Folder(NewFolderName);
   {$ELSEIF ECHOES}
   var TopLevel := System.IO.Path.GetDirectoryName(mapped);
   var FolderName := System.IO.Path.Combine(TopLevel, NewName);

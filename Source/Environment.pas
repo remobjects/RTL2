@@ -326,10 +326,10 @@ begin
     rtl.SHGetSpecialFolderLocation(nil, rtl.CSIDL_DESKTOPDIRECTORY, @lDir);
     rtl.SHGetPathFromIDList(lDir, @lTmp[0]);
     lAllocator.Free(lDir);
-    result := new String(lTmp).TrimEnd([Chr(0)]);
+    result := Folder(new String(lTmp).TrimEnd([Chr(0)]));
   end
   else
-    result := '';
+    result := Folder('');
   {$ELSEIF ISLAND AND POSIX}
   {$WARNING Not Implemented for Island yet}
   {$ENDIF}
@@ -355,8 +355,8 @@ method Environment.GetUserApplicationSupportFolder: Folder;
 begin
   {$IF ECHOES}
   case OS of
-    OperatingSystem.macOS: result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType);
-    OperatingSystem.Windows: result := System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
+    OperatingSystem.macOS: result := Folder(MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType));
+    OperatingSystem.Windows: result := Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData));
   end;
   {$ELSEIF TOFFEE}
   result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
@@ -373,7 +373,7 @@ method Environment.GetSystemApplicationSupportFolder: Folder;
 begin
   {$IF ECHOES}
   case OS of
-    OperatingSystem.macOS: result := MacFolders.GetFolder(MacDomains.kLocalDomain, MacFolderTypes.kApplicationSupportFolderType);
+    OperatingSystem.macOS: result := Folder(MacFolders.GetFolder(MacDomains.kLocalDomain, MacFolderTypes.kApplicationSupportFolderType));
     //OperatingSystem.Windows: result := System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
   end;
   {$ELSEIF TOFFEE}
@@ -389,7 +389,7 @@ method Environment.GetUserLibraryFolder: Folder;
 begin
   {$IF ECHOES}
   if OS = OperatingSystem.macOS then
-    result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
+    result := Folder(MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType));
   {$ELSEIF TOFFEE}
   result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ENDIF}
@@ -407,7 +407,7 @@ begin
   case OS of
     OperatingSystem.macOS: begin
         //result := MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kDomainLibraryFolderType);
-        result := Path.Combine(GetUserApplicationSupportFolder, "Downloads");
+        result := Folder(Path.Combine(String(GetUserApplicationSupportFolder), "Downloads"));
       end;
     OperatingSystem.Windows: begin
         var lFolder: IntPtr;

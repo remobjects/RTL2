@@ -13,9 +13,9 @@ type
   public
 
     {$IF NOT WEBASSEMBLY}
-    property FileExists: Boolean read File.Exists(self); inline;
-    property FolderExists: Boolean read Folder.Exists(self); inline;
-    property FileOrFolderExists: Boolean read File.Exists(self) or Folder.Exists(self); inline;
+    property FileExists: Boolean read File.Exists(File(self)); inline;
+    property FolderExists: Boolean read Folder.Exists(Folder(self)); inline;
+    property FileOrFolderExists: Boolean read File.Exists(File(self)) or Folder.Exists(Folder(self)); inline;
     {$ENDIF}
 
     property LastPathComponent: String read Path.GetFileName(self); inline;                                 // uses the platform-specific folder separator

@@ -254,7 +254,7 @@ begin
   {$ELSEIF ISLAND}
   result := coalesce(Dictionary<T,U>(self), new PlatformDictionary<T,U>(self)) as not nullable;
   {$ELSE}
-  result := self;
+  result := not nullable Dictionary<T, U>(self);
   {$ENDIF}
 end;
 
