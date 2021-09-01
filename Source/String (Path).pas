@@ -100,11 +100,12 @@ type
 
     property ToPathWithLocalFolderPrefixIfRelative: String read if not StartsWith(".") and not StartsWith(Path.DirectorySeparatorChar) then "."+Path.DirectorySeparatorChar+self else self;
     property QuotedIfNeeded: String read if IndexOf(" ") > -1 then String('"'+self+'"') else self;
-    
+    {$IFDEF STRICTMAPPED}
     class operator Implicit(aVal: String): Folder; inline; begin exit PlatformString(aVal); end;
     class operator Implicit(aVal: String): File; inline; begin exit PlatformString(aVal); end;
     class operator Implicit(aVal: Folder): String; inline; begin exit PlatformString(aVal); end;
     class operator Implicit(aVal: File): String; inline; begin exit PlatformString(aVal); end;
+    {$ENDIF}
   end;
 
 end.
