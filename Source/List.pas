@@ -673,7 +673,7 @@ begin
   {$ELSEIF ISLAND}
   result := coalesce(List<T>(self), new List<T>(self)) as not nullable;
   {$ELSE}
-  result := self;
+  result := List<T>(self);
   {$ENDIF}
 end;
 

@@ -29,7 +29,7 @@ type
   DateTime = public partial class(IComparable)
   public
     method CompareTo(other: Object): Integer;
-    begin 
+    begin
       exit fDateTime.CompareTo(DateTime(other).fDateTime);
     end;
   end;
@@ -332,7 +332,7 @@ end;
 method DateTime.ToISO8601String(aFormat: ISO8601Format := ISO8601Format.Standard; aTimeZone: TimeZone := nil): String;
 begin
   var lFormat: String;
-  {$IF COOPER OR TOFFEE}
+  {$IF COOPER OR TOFFEE OR DARWIN}
   case aFormat of
     ISO8601Format.Standard: lFormat := "yyyy-MM-dd'T'HH:mm:ss";
     ISO8601Format.DateOnly: lFormat := 'yyyy-MM-dd';

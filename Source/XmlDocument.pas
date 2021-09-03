@@ -374,7 +374,7 @@ end;
 class method XmlDocument.FromFile(aFileName: not nullable File): not nullable XmlDocument;
 begin
   if not aFileName.Exists then
-    raise new FileNotFoundException(aFileName);
+    raise new FileNotFoundException(String(aFileName));
   var lXMl := TryFromFile(aFileName, true);
   if assigned(lXMl:ErrorInfo) then
     if lXMl.ErrorInfo.Row = -1 then
@@ -419,7 +419,7 @@ begin
   raise new NotImplementedException("Not implemented for WebAssemlbly yet");
   {$ELSE}
   if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then begin
-    result := FromFile(aUrl.FilePath);
+    result := FromFile(File(aUrl.FilePath));
     if assigned(result:ErrorInfo) then
       if result.ErrorInfo.Row = -1 then
         raise new XmlException(result.ErrorInfo.Message)
@@ -446,7 +446,7 @@ begin
   {$ELSE}
     try
   if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then
-    result := TryFromFile(aUrl.FilePath, aAllowBrokenDocument)
+    result := TryFromFile(File(aUrl.FilePath), aAllowBrokenDocument)
   else if aUrl.Scheme in ["http", "https"] then //try
     {$IFDEF ISLAND}
     raise new NotImplementedException;

@@ -13,9 +13,9 @@ type
   public
 
     {$IF NOT WEBASSEMBLY}
-    property FileExists: Boolean read File.Exists(self); inline;
-    property FolderExists: Boolean read Folder.Exists(self); inline;
-    property FileOrFolderExists: Boolean read File.Exists(self) or Folder.Exists(self); inline;
+    property FileExists: Boolean read File.Exists(File(self)); inline;
+    property FolderExists: Boolean read Folder.Exists(Folder(self)); inline;
+    property FileOrFolderExists: Boolean read File.Exists(File(self)) or Folder.Exists(Folder(self)); inline;
     {$ENDIF}
 
     property LastPathComponent: String read Path.GetFileName(self); inline;                                 // uses the platform-specific folder separator
@@ -100,6 +100,12 @@ type
 
     property ToPathWithLocalFolderPrefixIfRelative: String read if not StartsWith(".") and not StartsWith(Path.DirectorySeparatorChar) then "."+Path.DirectorySeparatorChar+self else self;
     property QuotedIfNeeded: String read if IndexOf(" ") > -1 then String('"'+self+'"') else self;
+    {$IFDEF STRICTMAPPED}
+    class operator Implicit(aVal: String): Folder; inline; begin exit PlatformString(aVal); end;
+    class operator Implicit(aVal: String): File; inline; begin exit PlatformString(aVal); end;
+    class operator Implicit(aVal: Folder): String; inline; begin exit PlatformString(aVal); end;
+    class operator Implicit(aVal: File): String; inline; begin exit PlatformString(aVal); end;
+    {$ENDIF}
   end;
 
 end.
