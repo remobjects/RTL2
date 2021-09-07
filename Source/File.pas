@@ -183,14 +183,9 @@ begin
   {$ENDIF}
 end;
 
-{$IF ISLAND}[Error("This method is not implemented for Islanbd")]{$ENDIF}
 class method File.IsReadOnly(aFileName: nullable File): Boolean;
 begin
-  {$IF ISLAND}
-  raise new NotImplementedException("File.IsReadOnly is not implemented for Island")
-  {$ELSE}
   result := aFileName:IsReadOnly;
-  {$ENDIF}
 end;
 
 method File.Move(NewPathAndName: not nullable File): not nullable File;
