@@ -163,7 +163,6 @@ begin
   result := aFileName:Exists;
 end;
 
-{$IF ISLAND}[Error("This method is not implemented for Islanbd")]{$ENDIF}
 method File.IsReadOnly: Boolean;
 begin
   if not Exists then
@@ -180,7 +179,7 @@ begin
     exit false;
   result := System.IO.File.GetAttributes(mapped) and System.IO.FileAttributes.ReadOnly = System.IO.FileAttributes.ReadOnly;
   {$ELSEIF ISLAND}
-  raise new NotImplementedException("File.IsReadOnly is not implemented for Island")
+  result := IslandFile.IsReadOnly;
   {$ENDIF}
 end;
 
