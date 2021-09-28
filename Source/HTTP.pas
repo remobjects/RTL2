@@ -445,7 +445,7 @@ begin
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
   {$ELSEIF DARWIN}
-  contentCallback(new HttpResponseContent<ImmutableBinary>(Content := Data.mutableCopy));
+  contentCallback(new HttpResponseContent<ImmutableBinary>(Content := new ImmutableBinary(Data)));
   {$ELSEIF ECHOES}
   async begin
     var allData := new System.IO.MemoryStream();

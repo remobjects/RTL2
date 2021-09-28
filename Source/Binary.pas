@@ -47,6 +47,7 @@ type
     {$ENDIF}
     {$IF ISLAND AND DARWIN AND NOT TOFFEE}
     method ToNSData: Foundation.NSData;
+    method ToNSMutableData: Foundation.NSMutableData;
     constructor(aData: not nullable NSData);
     {$ENDIF}
     property Length: Integer read {$IF COOPER}fData.size{$ELSEIF ECHOES OR ISLAND}mapped.Length{$ELSEIF TOFFEE}mapped.length{$ENDIF};
@@ -355,8 +356,15 @@ begin
   result := new Foundation.NSData withBytes(@lArray[0]) length(RemObjects.Elements.System.length(lArray));
 end;
 
+method ImmutableBinary.ToNSMutableData: Foundation.NSMutableData;
+begin
+  var lArray := mapped.ToArray();
+  result := new Foundation.NSMutableData withBytes(@lArray[0]) length(RemObjects.Elements.System.length(lArray));
+end;
+
 constructor ImmutableBinary(aData: not nullable NSData);
 begin
+  {$HINT implement more efficiently with a custom MemoryStream oveerload?}
   var ms := new ImmutablePlatformBinary();
   ms.Write(aData.bytes, aData.length);
   exit ms;
