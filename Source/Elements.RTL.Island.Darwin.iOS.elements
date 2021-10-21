@@ -20,7 +20,7 @@
     <SDK>iOS</SDK>
     <SupportUIKitForMac>True</SupportUIKitForMac>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
-    <DefaultUses>Foundation</DefaultUses>
+    <DefaultUses>Foundation;System</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
