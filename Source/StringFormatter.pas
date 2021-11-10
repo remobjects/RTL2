@@ -42,6 +42,8 @@ interface
 
 {$IF TOFFEE AND NOT TOFFEEV2}
 type NativePlatformObject = Foundation.NSObject;
+{$ELSEIF DARWIN}
+type NativePlatformObject = RemObjects.Elements.System.Object;
 {$ELSE}
 type NativePlatformObject = Object;
 {$ENDIF}
