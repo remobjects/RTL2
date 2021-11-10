@@ -40,15 +40,21 @@ namespace RemObjects.Elements.RTL;
 
 interface
 
+{$IF TOFFEE AND NOT TOFFEEV2}
+type NativePlatformObject = Foundation.NSObject;
+{$ELSE}
+type NativePlatformObject = Object;
+{$ENDIF}
+
 type
   StringFormatter = public static class
   private
     class method ParseDecimal(aString: String; var ptr: Int32): Int32;
     class method ParseFormatSpecifier(aString: String; var ptr: Int32; out n: Int32; out width: Int32; out left_align: Boolean; out aFormat: String);
     class method ProcessFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
-    class method ProcessStandardNumericFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
+    class method ProcessStandardNumericFormat(aFormat: String; aArg: NativePlatformObject; aLocale: Locale): String;
 
-    class method NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
+    class method NumberValueToString(aArg: NativePlatformObject; aDigits: Integer; aLocale: Locale): String;
     class method CheckIsNumberType(aType: RemObjects.Elements.RTL.Reflection.PlatformType; aIncludeFloat: Boolean);
   public
     class method FormatString(aFormat: String; params args: array of Object): not nullable String;
@@ -197,7 +203,7 @@ begin
   exit {$IF TOFFEE}aArg.description{$ELSE}aArg.ToString{$ENDIF};
 end;
 
-class method ObjectToInt(aArg: Object): Int64;
+class method ObjectToInt(aArg: NativePlatformObject): Int64;
 begin
   var lType := typeOf(aArg);
   case lType of
@@ -220,7 +226,7 @@ begin
   end;
 end;
 
-class method StringFormatter.NumberValueToString(aArg: Object; aDigits: Integer; aLocale: Locale): String;
+class method StringFormatter.NumberValueToString(aArg: NativePlatformObject; aDigits: Integer; aLocale: Locale): String;
 begin
   var lType := typeOf(aArg);
   CheckIsNumberType(lType, true);
@@ -242,7 +248,7 @@ begin
   exit lStr;
 end;
 
-class method StringFormatter.ProcessStandardNumericFormat(aFormat: String; aArg: Object; aLocale: Locale): String;
+class method StringFormatter.ProcessStandardNumericFormat(aFormat: String; aArg: NativePlatformObject; aLocale: Locale): String;
 begin
   var lDigits := -1;
   if aFormat.Length > 1 then begin
