@@ -18,7 +18,7 @@
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <KnownConditionalDefines>DEBUG;TRACE</KnownConditionalDefines>
     <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
-    <DefaultUses>Foundation;System</DefaultUses>
+    <DefaultUses>;Foundation</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
