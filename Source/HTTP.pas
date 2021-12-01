@@ -348,12 +348,11 @@ begin
   fOriginalRequest := aRequest;
   Code := aRequest.status;
   var lHeaders := new Dictionary<String,String>;
-  {$HINT TODO, needs E25286: Wasm: support for ByteString}
-  //for each h: String in fOriginalRequest.getAllResponseHeaders:Split(#10) do begin
-    //var lSplit := h.SplitAtFirstOccurrenceof("=");
-    //if lSplit.Count = 2 then
-      //lHeaders[lSplit[0].Trim] := lSplit[1].Trim;
-  //end;
+  for each h: String in fOriginalRequest.getAllResponseHeaders:Split(#10) do begin
+    var lSplit := h.SplitAtFirstOccurrenceof("=");
+    if lSplit.Count = 2 then
+      lHeaders[lSplit[0].Trim] := lSplit[1].Trim;
+  end;
   Headers := lHeaders;
 end;
 {$ELSEIF ISLAND}
@@ -499,10 +498,6 @@ method HttpResponse.GetContentAsJson(contentCallback: not nullable HttpContentRe
 begin
   {$IF WEBASSEMBLY}
   try
-    writeLn($"assigned(fOriginalRequest) {assigned(fOriginalRequest)}");
-    writeLn($"fOriginalRequest {fOriginalRequest}");
-    writeLn($"assigned(fOriginalRequest.responseText) {assigned(fOriginalRequest.responseText)}");
-    writeLn($"fOriginalRequest.responseText {fOriginalRequest.responseText}");
     var document :=  JsonDocument.FromString(fOriginalRequest.responseText);
     contentCallback(new HttpResponseContent<JsonDocument>(Content := document))
   except
@@ -862,12 +857,8 @@ begin
 
   lRequest.onload := method begin
     //writeLn("Wasm HTTP Success");
-    if assigned(lRequest.status) then
-      responseCallback(new HttpResponse(lRequest))
-    else if length(String(lRequest.statusText)) > 0 then
-      responseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
-    else
-      responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")));
+    responseCallback(new HttpResponse(lRequest));
+    SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lRequest)));
   end;
 
   lRequest.onerror := method begin
@@ -875,9 +866,11 @@ begin
     if length(String(lRequest.statusText)) > 0 then
       responseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
     else
-      responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")))
+      responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")));
+    SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lRequest)));
   end;
   lRequest.send();
+  SimpleGC.ForceAddRef(IntPtr(InternalCalls.Cast(lRequest)));
   {$ELSEIF ISLAND}
   async begin
     try
