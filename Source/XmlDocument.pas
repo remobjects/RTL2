@@ -179,6 +179,7 @@ type
     method RemoveAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil): nullable XmlAttribute;
 
     method &Add(aData: not nullable sequence of Object);
+    method &Add(aData: not nullable sequence of XmlElement);
     method &Add(aElement: not nullable XmlElement);
     method &Add(aCData: not nullable XmlCData);
     method &Add(aComment: not nullable XmlComment);
@@ -1016,6 +1017,12 @@ begin
   end;
 end;
 
+method XmlElement.&Add(aData: not nullable sequence of XmlElement);
+begin
+  for each lData in aData do
+    AddElement(lData);
+end;
+
 method XmlElement.Add(aElement: not nullable XmlElement);
 begin
   AddElement(aElement);
@@ -1367,8 +1374,8 @@ end;
 
 method XmlElement.GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
 begin
-  result := Attributes.Where(a -> (a.LocalName = aName) and 
-    (((aNamespace = nil) and (a.Namespace = nil)) or 
+  result := Attributes.Where(a -> (a.LocalName = aName) and
+    (((aNamespace = nil) and (a.Namespace = nil)) or
       ((aNamespace <> nil) and (a.Namespace.Prefix = aNamespace.Prefix) and (a.Namespace.Uri = aNamespace.Uri)))).FirstOrDefault;
 end;
 
