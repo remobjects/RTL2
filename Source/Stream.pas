@@ -51,7 +51,7 @@ type
   PlatformStream = public RemObjects.Elements.System.Stream;
   {$ENDIF}
 
-  WrappedPlatformStream = public abstract class(Stream)
+  WrappedPlatformStream = public class(Stream)
   protected
     fPlatformStream: PlatformStream;
   public
@@ -62,11 +62,21 @@ type
     method SetLength(Value: Int64);
     method SetPosition(Value: Int64); override;
     method GetPosition: Int64; override;
+    method Close; override;
+    method Flush; override;
+
+    operator Implicit(aStream: WrappedPlatformStream): PlatformStream;
 
     property Length: Int64 read GetLength; override;
     property Position: Int64 read GetPosition write SetPosition; override;
+    property CanRead: Boolean read fPlatformStream.CanRead; override;
+    property CanSeek: Boolean read fPlatformStream.CanSeek; override;
+    property CanWrite: Boolean read fPlatformStream.CanWrite; override;
 
-    operator Implicit(aStream: WrappedPlatformStream): PlatformStream;
+    constructor(aStream: PlatformStream);
+    begin
+      fPlatformStream := aStream;
+    end;
   end;
   {$ENDIF}
 
@@ -291,6 +301,16 @@ begin
   result := fPlatformStream.Position;
 end;
 
+method WrappedPlatformStream.Close;
+begin
+  fPlatformStream.Close;
+end;
+
+method WrappedPlatformStream.Flush;
+begin
+  fPlatformStream.Flush;
+end;
+
 method WrappedPlatformStream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   {$IF ECHOES}
@@ -404,9 +424,9 @@ begin
   fInternalStream := new NSMutableData();
   fPosition := 0;
   {$ELSEIF ECHOES}
-  fPlatformStream := new System.IO.MemoryStream()
+  inherited constructor(new System.IO.MemoryStream());
   {$ELSEIF ISLAND}
-  fPlatformStream := new RemObjects.Elements.System.MemoryStream();
+  inherited constructor(new RemObjects.Elements.System.MemoryStream());
   {$ENDIF}
 end;
 
@@ -418,9 +438,9 @@ begin
   fInternalStream := NSMutableData.dataWithCapacity(aCapacity);
   fPosition := 0;
   {$ELSEIF ECHOES}
-  fPlatformStream := new System.IO.MemoryStream(aCapacity)
+  inherited constructor(new System.IO.MemoryStream(aCapacity));
   {$ELSEIF ISLAND}
-  fPlatformStream := new RemObjects.Elements.System.MemoryStream(aCapacity);
+  inherited constructor(new RemObjects.Elements.System.MemoryStream(aCapacity));
   {$ENDIF}
 end;
 
@@ -633,7 +653,7 @@ begin
                                          FileOpenMode.Create: PlatformFileMode.Create;
                                          else PlatformFileMode.OpenOrCreate;
                                        end;
-  fPlatformStream := new PlatformFileStream(FileName, lMode, lAccess, PlatformFileShare.Read);
+  inherited constructor(new PlatformFileStream(FileName, lMode, lAccess, PlatformFileShare.Read));
   {$ENDIF}
 end;
 
