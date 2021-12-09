@@ -55,6 +55,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Island" />
+    <Reference Include="gc" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.WebAssembly.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
