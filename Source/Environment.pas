@@ -20,6 +20,8 @@ type
     method GetOSArchitecture: String;
     method GetProcessBitness: Int32;
     method GetProcessArchitecture: String;
+    method GetMode: String;
+    method GetPlatform: String;
     method GetEnvironmentVariable(aName: String): String;
     method SetEnvironmentVariable(aName: String; aValue: String);
     method GetCurrentDirectory: String;
@@ -66,6 +68,8 @@ type
     property OSVersion: String read GetOSVersion;
     property OSBitness: Int32 read GetOSBitness;
     property ProcessBitness: Int32 read GetProcessBitness;
+    property Mode: String read GetMode;
+    property Platform: String read GetPlatform;
 
     [Obsolete]
     property Architecture: String read GetOSArchitecture;
@@ -734,6 +738,34 @@ begin
   result := Convert.TryToInt32(System.getProperty("sun.arch.data.model"));
   {$ELSE}
   result := sizeOf(IntPtr)*8;
+  {$ENDIF}
+end;
+
+method Environment.GetMode: String;
+begin
+  {$IF COOPER}
+  result := "Echoes";
+  {$ELSEIF ISLAND}
+  result := "Island";
+  {$ELSEIF ECHOES}
+  result := "Echoes";
+  {$ELSEIF TOFFEE}
+  result := "Toffee";
+  {$ENDIF}
+end;
+
+method Environment.GetPlatform: String;
+begin
+  {$IF COOPER}
+  result := "Java";
+  {$ELSEIF TOFFEEV2}
+  result := "Island/Cocoa";
+  {$ELSEIF ISLAND}
+  result := "Island";
+  {$ELSEIF ECHOES}
+  result := ".NET";
+  {$ELSEIF TOFFEE}
+  result := "Cocoa";
   {$ENDIF}
 end;
 

@@ -844,7 +844,8 @@ begin
       ResponseCallback(new HttpResponse withException(E));
   end;
   {$ELSEIF WEBASSEMBLY}
-  var lRequest := RemObjects.Elements.WebAssembly.Browser.NewXMLHttpRequest();
+  var lRequestHandle := GCHandle.Allocate(RemObjects.Elements.WebAssembly.Browser.NewXMLHttpRequest());
+  var lRequest := RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest(lRequestHandle.Target);
   lRequest.open(aRequest.Mode.ToHttpString, aRequest.Url.ToAbsoluteString, true);
   for each k in aRequest.Headers.Keys do
     lRequest.setRequestHeader(k, aRequest.Headers[k]);
@@ -858,7 +859,7 @@ begin
   lRequest.onload := method begin
     //writeLn("Wasm HTTP Success");
     responseCallback(new HttpResponse(lRequest));
-    SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lRequest)));
+    lRequestHandle.Dispose();
   end;
 
   lRequest.onerror := method begin
@@ -867,10 +868,9 @@ begin
       responseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
     else
       responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")));
-    SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lRequest)));
+    lRequestHandle.Dispose();
   end;
   lRequest.send();
-  SimpleGC.ForceAddRef(IntPtr(InternalCalls.Cast(lRequest)));
   {$ELSEIF ISLAND}
   async begin
     try
