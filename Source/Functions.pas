@@ -26,6 +26,11 @@ begin
   RemObjects.Elements.System.writeLn(aMessage);
 end;
 
+method writeLn(aMessage: Object); public; inline;
+begin
+  RemObjects.Elements.System.writeLn(aMessage);
+end;
+
 method writeLn(); public; inline;
 begin
   RemObjects.Elements.System.writeLn();
