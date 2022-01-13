@@ -1,5 +1,5 @@
-24dd0d790b790027c1f603a3c14809a971323996f5501af3d492fe8e49dc8ac99ce3b970e60ed3b6507784393ed6e4c87b4f45afcb52ec3fe4106edc91cf13b81cd86dcc98ca83752c5fb35a684f83dd7ff5a215ca4fddcd8935184354b708d36b61f2ad3fc5357a0907c30524cffa004a1efb5fa7af08164153dab76c1b0c1a084b463c1a5a4549c8579d16af28fd51241602ec32ec93dcd5cbb778e0d37ac6c6dca76baaf6caf630a999c821248068f2bcdd87360dee78ec411c6c469a8188bcf3bd1989fba195ace5d51f7fea3ea54ad397c57e27dacbd6bf5b70578c23125edbfc57954b54b76cf243578669656c203eab7f9227cf91444d3a5e1493b8a8
-095cff98e88cca7972623f0574a1dca4fb609a96d45799b7905b6471ab005fc87801e45980af939b6e1d0ddbf204531983f8525197f58efdeab82b54166c9c71067770c4ff8dcb88e127bfcb3aa4ac7e73b1ec4bdef9cb1e98ff116bbcd3318294244cec7ba9ace8743f0f9d75a83efa28941642659e61002f11ce27fc844c2e
+505580a2a09bc034f0413c41f52eeac543725cb18dd8e685af69ae01612a9c28534172e16a6edadbd83d9ba1b8f44f454e9eb4e0117c93760c57da4db1bd875d2179dad6615238fced51a54e19d167d416f6453bf1a9b9ca376bf7221e4346ce8bb84b0271f0018f2726a15096b7ff354f53c00d2cb36468d8895b6707e7ac89412c47ab7ef611d26ba7bba4a4d1d3000363012cfc803cc3041e05943291dd17b78bce4c715ca3a27565431fec85e2145b22e0da24683cd03a2bbe2f5c35400960d1311476484387781333b0a406f0f0854944966c0b616b15881c3a2069507140538d84e4f4f307c681b70b0fedecb7fe81b53e77466ea388346f51e2c37490
+147a127cfe42ef3caf0750bf56dff6a9bae14f990dbaa4e68878a3a11a3d595a836997a3652f4267c002d711299b94e2c06e7c16e62eca1187aabeda3af952d0e3fa997feac7bc29137449992a9e90ec4bdbb071a00f169f64ea0e73c0344e58e539286e8de542be7b189937fd0ead894360db3ceb4c18526815ae573b3377eb
 [License]
 LicenseType=Project
 Product=Hydrogene
@@ -10,7 +10,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Cooper
 ProjectName=Elements.RTL.Cooper
 ProjectFileName=Elements.RTL.Cooper.elements
-ProjectGuid=f9717e15-88bc-4853-8d07-8dbad8c0b2a9
+ProjectGuid={f9717e15-88bc-4853-8d07-8dbad8c0b2a9}
 ProjectAssemblyName=elements
 ProjectOutputType=Library
 
@@ -24,7 +24,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Cooper
 ProjectName=Elements.RTL.Cooper
 ProjectFileName=Elements.RTL.Cooper.elements
-ProjectGuid=f9717e15-88bc-4853-8d07-8dbad8c0b2a9
+ProjectGuid={f9717e15-88bc-4853-8d07-8dbad8c0b2a9}
 ProjectAssemblyName=elements
 ProjectOutputType=Library
 
@@ -38,7 +38,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Cooper
 ProjectName=Elements.RTL.Cooper
 ProjectFileName=Elements.RTL.Cooper.elements
-ProjectGuid=f9717e15-88bc-4853-8d07-8dbad8c0b2a9
+ProjectGuid={f9717e15-88bc-4853-8d07-8dbad8c0b2a9}
 ProjectAssemblyName=elements
 ProjectOutputType=Library
 
@@ -178,7 +178,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Island
 ProjectName=Elements.RTL.Island.Darwin.iOS
 ProjectFileName=Elements.RTL.Island.Darwin.iOS.elements
-ProjectGuid=0723254e-06ea-46f9-b67f-4d143810a08e
+ProjectGuid={0723254e-06ea-46f9-b67f-4d143810a08e}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -192,7 +192,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Island
 ProjectName=Elements.RTL.Island.Darwin.iOS
 ProjectFileName=Elements.RTL.Island.Darwin.iOS.elements
-ProjectGuid=0723254e-06ea-46f9-b67f-4d143810a08e
+ProjectGuid={0723254e-06ea-46f9-b67f-4d143810a08e}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -206,7 +206,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Island
 ProjectName=Elements.RTL.Island.Darwin.iOS
 ProjectFileName=Elements.RTL.Island.Darwin.iOS.elements
-ProjectGuid=0723254e-06ea-46f9-b67f-4d143810a08e
+ProjectGuid={0723254e-06ea-46f9-b67f-4d143810a08e}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -220,7 +220,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Island
 ProjectName=Elements.RTL.Island.Darwin.macOS
 ProjectFileName=Elements.RTL.Island.Darwin.macOS.elements
-ProjectGuid=731df15e-9ee5-452a-a74d-bcbc95afaa23
+ProjectGuid={731df15e-9ee5-452a-a74d-bcbc95afaa23}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -234,7 +234,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Island
 ProjectName=Elements.RTL.Island.Darwin.macOS
 ProjectFileName=Elements.RTL.Island.Darwin.macOS.elements
-ProjectGuid=731df15e-9ee5-452a-a74d-bcbc95afaa23
+ProjectGuid={731df15e-9ee5-452a-a74d-bcbc95afaa23}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -248,7 +248,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Island
 ProjectName=Elements.RTL.Island.Darwin.macOS
 ProjectFileName=Elements.RTL.Island.Darwin.macOS.elements
-ProjectGuid=731df15e-9ee5-452a-a74d-bcbc95afaa23
+ProjectGuid={731df15e-9ee5-452a-a74d-bcbc95afaa23}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -304,7 +304,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Island
 ProjectName=Elements.RTL.Island.Darwin.watchOS
 ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid=28817723-bb33-4c5f-8705-a7b3dff15174
+ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -318,7 +318,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Island
 ProjectName=Elements.RTL.Island.Darwin.watchOS
 ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid=28817723-bb33-4c5f-8705-a7b3dff15174
+ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -332,7 +332,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Island
 ProjectName=Elements.RTL.Island.Darwin.watchOS
 ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid=28817723-bb33-4c5f-8705-a7b3dff15174
+ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -640,7 +640,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Toffee
 ProjectName=Elements.RTL.Toffee.iOS
 ProjectFileName=Elements.RTL.Toffee.iOS.elements
-ProjectGuid=ec0982c8-700b-4085-a401-59460e394daa
+ProjectGuid={ec0982c8-700b-4085-a401-59460e394daa}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -654,7 +654,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Toffee
 ProjectName=Elements.RTL.Toffee.iOS
 ProjectFileName=Elements.RTL.Toffee.iOS.elements
-ProjectGuid=ec0982c8-700b-4085-a401-59460e394daa
+ProjectGuid={ec0982c8-700b-4085-a401-59460e394daa}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -668,7 +668,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Toffee
 ProjectName=Elements.RTL.Toffee.iOS
 ProjectFileName=Elements.RTL.Toffee.iOS.elements
-ProjectGuid=ec0982c8-700b-4085-a401-59460e394daa
+ProjectGuid={ec0982c8-700b-4085-a401-59460e394daa}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -850,7 +850,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Hydrogene/Toffee
 ProjectName=Elements.RTL.ToffeeV2.macOS
 ProjectFileName=Elements.RTL.ToffeeV2.macOS.elements
-ProjectGuid=81d69900-fed5-4a87-841b-575ff5653840
+ProjectGuid={81d69900-fed5-4a87-841b-575ff5653840}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -864,7 +864,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Oxygene/Toffee
 ProjectName=Elements.RTL.ToffeeV2.macOS
 ProjectFileName=Elements.RTL.ToffeeV2.macOS.elements
-ProjectGuid=81d69900-fed5-4a87-841b-575ff5653840
+ProjectGuid={81d69900-fed5-4a87-841b-575ff5653840}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -878,7 +878,7 @@ AllowFull=1
 DisplayName=RTL2 Contributor License, Silver/Toffee
 ProjectName=Elements.RTL.ToffeeV2.macOS
 ProjectFileName=Elements.RTL.ToffeeV2.macOS.elements
-ProjectGuid=81d69900-fed5-4a87-841b-575ff5653840
+ProjectGuid={81d69900-fed5-4a87-841b-575ff5653840}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
@@ -965,13 +965,12 @@ ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
 ProjectGuid=686655b4-6e7a-40e4-98d1-b44700641d87
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
-
 
 [SignatureInfo]
-LicenseFileStartDate=2020-06-30
-LicenseFileEndDate=2021-07-02
-P1=7396262985112521818
-P2=9702105996208564076
-P3=4231599805
-P4=68214018
+LicenseFileStartDate=2022-01-03
+LicenseFileEndDate=2023-01-05
+P1=2241470999782571674
+P2=4547314002280257967
+P3=3853673922
+P4=496742013
 
