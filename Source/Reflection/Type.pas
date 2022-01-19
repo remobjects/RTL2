@@ -19,7 +19,7 @@ type
   {$ELSEIF ISLAND}
   PlatformType = public RemObjects.Elements.System.Type;
   {$ENDIF}
-
+  {$IFNDEF TOFFEE}
   Visibility = public enum(&Private, &Unit, UnitAndProtected, UnitOrProtected, &Assembly, AssemblyAndProtected, AssemblyOrProtected, &Protected, &Public, &Published);
 
   [assembly:DefaultTypeOverride("Type", "RemObjects.Elements.RTL.Reflection", typeOf(RemObjects.Elements.RTL.Reflection.Type))]
@@ -135,9 +135,10 @@ type
       {$ENDIF}
     end;
   end;
+  {$ENDIF}
 
 implementation
-
+{$IFNDEF TOFFEE}
 {$IF COOPER}[Warning("Type.GetAllTypes is not supported for Java")]{$ENDIF}
 class method &Type.GetAllTypes: ImmutableList<&Type>;
 begin
@@ -311,5 +312,6 @@ method &Type.Get_Methods: ImmutableList<&Method>;
 begin
   exit System.Linq.Enumerable.ToArray(System.Linq.Enumerable.OfType<&Method>(mapped.GetTypeInfo().DeclaredMembers));
 end;
+{$ENDIF}
 {$ENDIF}
 end.
