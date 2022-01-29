@@ -6,7 +6,7 @@ type
   BinaryReader = public class
   public
 
-    constructor withBinary(aBinary: Binary) InitialOffset(aOffset: UInt64 := 0);
+    constructor withBinary(aBinary: ImmutableBinary) InitialOffset(aOffset: UInt64 := 0);
     begin
       constructor withBytes(aBinary.ToArray) InitialOffset(aOffset);
     end;
@@ -276,6 +276,29 @@ type
     method ReadStringWithULEB128LengthIndicator(aOffset: UInt64) Encoding(aEncoding: Encoding := Encoding.UTF8): String; /*inline;*/
     begin
       result := ReadStringWithULEB128LengthIndicator(var aOffset) Encoding(aEncoding);
+    end;
+
+    method ReadStringWithUInt32LengthIndicator(var aOffset: UInt64) Encoding(aEncoding: Encoding := Encoding.UTF8): String; /*inline;*/
+    begin
+      var lLength := ReadUInt32(var aOffset);
+      result := aEncoding.GetString(fBytes, aOffset, lLength);
+      inc(aOffset, lLength);
+    end;
+
+    method ReadStringWithUInt8ByteLengthIndicator(var aOffset: UInt64) Encoding(aEncoding: Encoding := Encoding.UTF8): String; /*inline;*/
+    begin
+      var lLength := ReadUInt8(var aOffset);
+      result := aEncoding.GetString(fBytes, aOffset, lLength);
+      inc(aOffset, lLength);
+    end;
+
+    method Read8BitStringWithZeroTerminator(var aOffset: UInt64) Encoding(aEncoding: Encoding := Encoding.UTF8): String; /*inline;*/
+    begin
+      var lZero := aOffset;
+      while fBytes[lZero] ≠ 0 do
+        inc(lZero);
+      result := aEncoding.GetString(fBytes, aOffset, lZero-aOffset);
+      aOffset := lZero+1;
     end;
 
     method ReadByteArray(var aOffset: UInt64) Length(aLength: Integer): array of Byte;
