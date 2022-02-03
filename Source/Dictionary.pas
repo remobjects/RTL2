@@ -37,10 +37,10 @@ type
     end;
 
     {$IF DARWIN AND NOT TOFFEE}
-    operator Explicit(aDictionary: NSDictionary<T, U>): ImmutableDictionary<T, U>;
-    begin
-      result := aDictionary as PlatformImmutableDictionary<T,U> as ImmutableDictionary<T, U>;
-    end;
+    //operator Explicit(aDictionary: NSDictionary<T, U>): ImmutableDictionary<T, U>;
+    //begin
+      //result := aDictionary as PlatformImmutableDictionary<T,U> as ImmutableDictionary<T, U>;
+    //end;
     {$ENDIF}
 
     //[&Sequence]

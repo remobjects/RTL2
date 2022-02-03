@@ -14,10 +14,10 @@ type
     begin
       var lBytes := new Byte[aCodePoints.Count*4];
       for each cp in aCodePoints index i do begin
-        lBytes[(i*4)+3] := cp and $000000ff;
-        lBytes[(i*4)+2] := cp and $0000ff00 shr 8;
-        lBytes[(i*4)+1] := cp and $00ff0000 shr 16;
-        lBytes[(i*4)+0] := cp and $ff000000 shr 24;
+        lBytes[(i*4)+3] := UInt32(cp) and $000000ff;
+        lBytes[(i*4)+2] := UInt32(cp) and $0000ff00 shr 8;
+        lBytes[(i*4)+1] := UInt32(cp) and $00ff0000 shr 16;
+        lBytes[(i*4)+0] := UInt32(cp) and $ff000000 shr 24;
       end;
       result := Encoding.UTF32BE.GetString(lBytes);
     end;
@@ -246,7 +246,8 @@ type
       var lCurrentChar: array of Char;
       var lCombineWithNext := false;
       var lIsRegionalIndicatorLetter := false;
-      for each ch: UInt32 in ToUnicodeCodePoints do begin
+      for each ch2 in ToUnicodeCodePoints do begin
+        var ch := UInt32(ch2);
         if IsModifierUnicodePoint(ch) or IsVariationSelectorsUnicodePoint(ch) then begin
           lCurrentChar := lCurrentChar+UnicodeCodePoint(ch).ToUTF16;
           continue;
