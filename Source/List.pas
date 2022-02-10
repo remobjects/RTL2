@@ -12,6 +12,8 @@ type
   {$ENDIF}
 
   ImmutableList<T> = public class (PlatformSequence<T>) mapped to PlatformImmutableList<T>
+  //{$IFDEF ISLAND AND NOT TOFFEV2}where T is unconstrained;{$ENDIF}
+  {$IFDEF ISLAND AND TOFFEV2}where T is NSObject;{$ENDIF}
   {$IFDEF TOFFEE} where T is class;{$ENDIF}
   private
     method GetItem(&Index: Integer): T;
@@ -40,6 +42,11 @@ type
     method GetSequence: sequence of T;
     begin
       exit RemObjects.Elements.System.INSFastEnumeration<T>(mapped).GetSequence();
+    end;
+
+    operator Implicit(aList: ImmutableList<T>): sequence of T;
+    begin
+      result := aList.GetSequence;
     end;
     {$ENDIF}
 
@@ -684,7 +691,19 @@ begin
   for each e in self index i do begin
     if (i ≠ 0) and assigned(aSeparator) then
       lResult.Append(aSeparator);
-    lResult.Append(e:ToString());
+      {$IF ISLAND}
+      case modelOf(T) of
+        "Island": lResult.Append((e as IslandObject):ToString());
+        "Cocoa": {$IF DARWIN}lResult.Append((e as CocoaObject):description());{$ENDIF}
+        "Swift": {$IF DARWIN}lResult.Append((e as SwiftObject):ToString());{$ENDIF}
+        "Delphi": raise new Exception($"This feature is not supported for Delphi Objects (yet)");
+        "COM": raise new Exception($"This feature is not supported for COM Objects");
+        "JNI": raise new Exception($"This feature is not supported for JNI Objects");
+        else raise new Exception($"Unexpected object model {modelOf(T)}");
+      end;
+      {$ELSE}
+      lResult.Append(e:ToString());
+      {$ENDIF}
   end;
   result := lResult.ToString() as not nullable;
   {$ELSEIF TOFFEE}

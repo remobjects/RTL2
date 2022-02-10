@@ -7,6 +7,9 @@ type
   PlatformQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ENDIF};
 
   ImmutableQueue<T> = public class mapped to PlatformImmutableQueue<T>
+  {$IFDEF ISLAND AND NOT TOFFEEV2}where T is unconstrained;{$ENDIF}
+  {$IFDEF ISLAND AND TOFFEV2}where T is NSObject;{$ENDIF}
+  {$IFDEF TOFFEE} where T is class;{$ENDIF}
   public
     constructor; mapped to constructor();
 
