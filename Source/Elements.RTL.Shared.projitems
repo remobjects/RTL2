@@ -117,10 +117,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Thread.pas">
       <VirtualFolder>Threading</VirtualFolder>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Reflection\MethodInfo.pas" Conditional="!TOFFEEV2"/>
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\MethodInfo.pas" Conditional="!TOFFEEV2" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\ParameterInfo.pas" Conditional="!TOFFEEV2" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
-    <Compile Include="$(MSBuildThisFileDirectory)List (Extensions).pas">
+    <Compile Include="$(MSBuildThisFileDirectory)List.Extensions.pas">
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Sequence (Extensions).pas">

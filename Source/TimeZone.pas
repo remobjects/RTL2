@@ -45,7 +45,7 @@ begin
   {$IF COOPER}
   result := java.util.TimeZone.getAvailableIDs() as not nullable;
   {$ELSEIF TOFFEE}
-  result := NSTimeZone.knownTimeZoneNames as not nullable;
+  result := NSTimeZone.knownTimeZoneNames as List<String> as not nullable;
   {$ELSEIF ECHOES}
   result := System.TimeZoneInfo.GetSystemTimeZones().Select(tz -> tz.Id) as not nullable;
   {$ELSEIF ISLAND}
