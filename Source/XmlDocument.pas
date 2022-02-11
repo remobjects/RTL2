@@ -1346,7 +1346,11 @@ end;
 
 method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
 begin
+  {$IF TOFFEEV2}
+  raise new NotImplementedException("Not implemented for ToffeV2 right now");
+  {$ELSE}
   result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Select(x -> x as XmlAttribute) as not nullable;
+  {$ENDIF}
 end;
 
 method XmlElement.GetAttribute(aName: not nullable String): nullable XmlAttribute;
