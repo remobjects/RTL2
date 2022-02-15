@@ -128,7 +128,11 @@ class method Folder.GetFilesAndFolders(aFolderName: Folder): not nullable Immuta
 begin
   var lList := new List<String> as not nullable;
   lList.Add(aFolderName.GetFiles);
+  {$IF TOFFEEV2}
+  raise new NotImplementedException("Not implemented for ToffeV2 right now");
+  {$ELSE}
   lList.Add(aFolderName.GetSubfolders.ToList<String>);
+  {$ENDIF}
   result := lList;
 end;
 

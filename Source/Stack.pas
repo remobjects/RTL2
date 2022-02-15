@@ -7,6 +7,9 @@ type
   PlatformStack<T> = public {$IF COOPER}java.util.Stack<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ELSEIF ECHOES}System.Collections.Generic.Stack<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Stack<T>{$ENDIF};
 
   ImmutableStack<T> = public class mapped to PlatformImmutableStack<T>
+  {$IFDEF ISLAND AND NOT TOFFEEV2}where T is unconstrained;{$ENDIF}
+  {$IFDEF ISLAND AND TOFFEV2}where T is NSObject;{$ENDIF}
+  {$IFDEF TOFFEE} where T is class;{$ENDIF}
   public
     constructor; mapped to constructor();
 

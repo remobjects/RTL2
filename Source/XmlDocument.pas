@@ -1346,8 +1346,11 @@ end;
 
 method XmlElement.GetAttributes: not nullable sequence of XmlAttribute;
 begin
+  {$IF TOFFEEV2}
+  raise new NotImplementedException("Not implemented for ToffeV2 right now");
+  {$ELSE}
   result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Attribute).Select(x -> x as XmlAttribute) as not nullable;
-  //result := fAttributes as not nullable;
+  {$ENDIF}
 end;
 
 method XmlElement.GetAttribute(aName: not nullable String): nullable XmlAttribute;
@@ -1386,8 +1389,11 @@ end;
 
 method XmlElement.GetNamespaces: not nullable sequence of XmlNamespace;
 begin
- // result := fNamespaces as not nullable;
+  {$IF TOFFEEV2}
+  raise new NotImplementedException("Not implemented for ToffeV2 right now");
+  {$ELSE}
   result := fAttributesAndNamespaces.Where(a -> a.NodeType = XmlNodeType.Namespace).Select(x -> x as XmlNamespace) as not nullable;
+  {$ENDIF}
 end;
 
 method XmlElement.GetNamespaceByUri(aUri: String): nullable XmlNamespace;

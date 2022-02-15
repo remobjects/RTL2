@@ -700,7 +700,7 @@ type
       {$ELSEIF TOFFEE}
       result := mapped.componentsSeparatedByString(aSeparator) as not nullable;
       if aRemoveEmptyEntries then
-        result := result.Where(p -> p:Length > 0).ToList();
+        result := result.Where(p -> RemObjects.Elements.System.length(p) > 0).ToList();
       {$ELSEIF ECHOES}
       result := mapped.Split([aSeparator], if aRemoveEmptyEntries then StringSplitOptions.RemoveEmptyEntries else StringSplitOptions.None).ToList() as not nullable;
       {$ELSEIF ISLAND}

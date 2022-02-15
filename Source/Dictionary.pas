@@ -6,7 +6,10 @@ type
   PlatformImmutableDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.ImmutableDictionary<T,U>{$ENDIF};
   PlatformDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ENDIF};
 
-  ImmutableDictionary<T, U> = public class (PlatformSequence<KeyValuePair<T,U>>) mapped to PlatformImmutableDictionary<T,U> {$IF TOFFEE} where T is class, U is class; {$ENDIF}
+  ImmutableDictionary<T, U> = public class (PlatformSequence<KeyValuePair<T,U>>) mapped to PlatformImmutableDictionary<T,U>
+  {$IFDEF ISLAND AND NOT TOFFEEV2}where T is unconstrained, U is unconstrained;{$ENDIF}
+  {$IFDEF ISLAND AND TOFFEV2}where T is NSObject, U is NSOBject;{$ENDIF}
+  {$IF TOFFEE} where T is class, U is class; {$ENDIF}
   private
     method GetKeys: not nullable ImmutableList<T>;
     method GetValues: not nullable sequence of U;
@@ -193,7 +196,7 @@ begin
   {$IF COOPER}
   exit mapped.values as not nullable;
   {$ELSEIF TOFFEE}
-  exit mapped.allValues as not nullable;
+  exit mapped.allValues as List<U> as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Values as not nullable;
   {$ENDIF}

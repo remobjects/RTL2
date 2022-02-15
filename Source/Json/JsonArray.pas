@@ -95,7 +95,11 @@ end;
 {$IF NOT COOPER}
 constructor JsonArray(aItems: not nullable ImmutableList<String>);
 begin
+  {$IF TOFFEEV2}
+  fItems := aItems.GetSequence.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
+  {$ELSE}
   fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
+  {$ENDIF
 end;
 {$ENDIF}
 
@@ -136,7 +140,11 @@ end;
 
 method JsonArray.Add(aValues: ImmutableList<String>);
 begin
+  {$IF TOFFEEV2}
+  fItems.Add(aValues.GetSequence.Select(s -> new JsonStringValue(s) as JsonNode));
+  {$ELSE}
   fItems.Add(aValues.Select(s -> new JsonStringValue(s) as JsonNode));
+  {$ENDIF}
 end;
 
 method JsonArray.Add(params aValues: array of String);
