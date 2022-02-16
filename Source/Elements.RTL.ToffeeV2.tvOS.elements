@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-    <ProjectGuid>1b12e76c-4171-46a5-ad85-fd80c335299d</ProjectGuid>
+    <ProjectGuid>{1B12E76C-4171-46A5-AD85-FD80C335299D}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -45,6 +45,8 @@
     <Reference Include="rtl" />
     <Reference Include="CoreFoundation" />
     <Reference Include="UIKit" />
+    <Reference Include="Island" />
+    <Reference Include="gc" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />

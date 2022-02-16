@@ -6,9 +6,6 @@
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
-    <AllowLegacyWith>False</AllowLegacyWith>
-    <AllowLegacyOutParams>False</AllowLegacyOutParams>
-    <AllowLegacyCreate>False</AllowLegacyCreate>
     <AllowUnsafeCode>False</AllowUnsafeCode>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <SDK>macOS</SDK>
@@ -30,7 +27,6 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>.\bin\Release</OutputPath>
     <GenerateDebugInfo>True</GenerateDebugInfo>
-    <EnableAsserts>False</EnableAsserts>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <Optimize>True</Optimize>
   </PropertyGroup>

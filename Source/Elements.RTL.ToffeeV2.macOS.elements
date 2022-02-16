@@ -42,9 +42,10 @@
   <ItemGroup>
     <Reference Include="Foundation" />
     <Reference Include="rtl" />
-    <Reference Include="libToffee" />
     <Reference Include="CoreFoundation" />
     <Reference Include="AppKit" />
+    <Reference Include="Island" />
+    <Reference Include="gc" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
