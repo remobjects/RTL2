@@ -196,7 +196,7 @@ begin
   {$IF COOPER}
   exit mapped.values as not nullable;
   {$ELSEIF TOFFEE}
-  exit mapped.allValues as List<U> as not nullable;
+  exit mapped.allValues as ImmutableList<U> as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.Values as not nullable;
   {$ENDIF}

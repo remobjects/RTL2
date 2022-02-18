@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-    <ProjectGuid>686655b4-6e7a-40e4-98d1-b44700641d87</ProjectGuid>
+    <ProjectGuid>{686655B4-6E7A-40E4-98D1-B44700641D87}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -46,6 +46,8 @@
     <Reference Include="CoreFoundation" />
     <Reference Include="UIKit" />
     <Reference Include="WatchKit" />
+    <Reference Include="gc" />
+    <Reference Include="Island" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
