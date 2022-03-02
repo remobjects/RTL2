@@ -9,7 +9,7 @@ type
     method GetLastPathComponentWithSeparatorChars(aPath:String; aSeparators: array of Char): not nullable String;
 
   public
-    method ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
+    method ChangeExtension(aFileName: not nullable String; aNewExtension: nullable String): not nullable String;
 
     method Combine(aBasePath: nullable String; params aPaths: array of String): nullable String;
     method CombineUnixPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
@@ -68,20 +68,20 @@ type
 
 implementation
 
-method Path.ChangeExtension(aFileName: not nullable String; NewExtension: nullable String): not nullable String;
+method Path.ChangeExtension(aFileName: not nullable String; aNewExtension: nullable String): not nullable String;
 begin
-  var lIndex := aFileName.LastIndexOf(".");
-
-  if lIndex <> -1 then
-    aFileName := aFileName.Substring(0, lIndex);
-
-  if length(NewExtension) = 0 then
+  if length(aNewExtension) = 0 then
     exit aFileName;
 
-  if NewExtension[0] = '.' then
-    result := aFileName + NewExtension
-  else
-    result := aFileName + "." + NewExtension as not nullable;
+  if aNewExtension[0] ≠ '.' then
+    aNewExtension := "."+aNewExtension;
+
+  var lIndex := aFileName.LastIndexOf(".");
+  var lFolderIndex := aFileName.LastIndexOfAny(['/','\']);
+
+  if (lIndex > -1) and (lFolderIndex ≤ lIndex) then
+    aFileName := aFileName.Substring(0, lIndex);
+  result := aFileName+aNewExtension as not nullable;
 end;
 
 method Path.Combine(aBasePath: nullable String; params aPaths: array of String): nullable String;
