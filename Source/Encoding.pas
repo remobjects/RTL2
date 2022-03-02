@@ -52,23 +52,37 @@ type
 
     class property &Default: not nullable Encoding read UTF8;
 
-    class method DetectFromBytes(aBytes: array of Byte): nullable Encoding;
+    class method DetectFromBytes(aBytes: array of Byte): nullable Encoding; inline;
+    begin
+      DetectFromBytes(aBytes, out var nil);
+    end;
+
+    class method DetectFromBytes(aBytes: array of Byte; out aSkipBytes: Integer): nullable Encoding;
     begin
       var len := length(aBytes);
       if len < 2 then
         exit nil;
 
-      if (aBytes[0] = $EF) and (aBytes[1] = $BB) and (len ≥ 3) and (aBytes[2] = $BF) then
+      if (aBytes[0] = $EF) and (aBytes[1] = $BB) and (len ≥ 3) and (aBytes[2] = $BF) then begin
+        aSkipBytes := 3;
         exit UTF8;
-      if (aBytes[0] = $FE) and (aBytes[1] = $FF)  then
+      end;
+      if (aBytes[0] = $FE) and (aBytes[1] = $FF)  then begin
+        aSkipBytes := 2;
         exit UTF16BE;
+      end;
       if (aBytes[0] = $FF) and (aBytes[1] = $FE)  then begin
-        if (len ≥ 5) and (aBytes[2] = $00) and (aBytes[3] = $00) then
+        if (len ≥ 4) and (aBytes[2] = $00) and (aBytes[3] = $00) then begin
+          aSkipBytes := 4;
           exit UTF32BE;
+        end;
+        aSkipBytes := 2;
         exit UTF16LE;
       end;
-      if (aBytes[0] = $00) and (aBytes[1] = $00) and (len ≥ 5) and (aBytes[2] = $FE) and (aBytes[3] = $FF) then
+      if (aBytes[0] = $00) and (aBytes[1] = $00) and (len ≥ 4) and (aBytes[2] = $FE) and (aBytes[3] = $FF) then begin
+        aSkipBytes := 4;
         exit UTF32BE;
+      end;
     end;
 
     {$IF DARWIN}
