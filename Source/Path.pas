@@ -70,18 +70,21 @@ implementation
 
 method Path.ChangeExtension(aFileName: not nullable String; aNewExtension: nullable String): not nullable String;
 begin
-  if length(aNewExtension) = 0 then
-    exit aFileName;
-
-  if aNewExtension[0] ≠ '.' then
-    aNewExtension := "."+aNewExtension;
+  if (length(aNewExtension) > 0) and (aNewExtension[0] ≠ '.') then
+    aNewExtension := "."+aNewExtension
+  else if aNewExtension = "." then
+    aNewExtension := nil;
 
   var lIndex := aFileName.LastIndexOf(".");
   var lFolderIndex := aFileName.LastIndexOfAny(['/','\']);
 
   if (lIndex > -1) and (lFolderIndex ≤ lIndex) then
     aFileName := aFileName.Substring(0, lIndex);
-  result := aFileName+aNewExtension as not nullable;
+
+  if length(aNewExtension) > 0 then
+    result := aFileName+aNewExtension as not nullable
+  else
+    result := aFileName;
 end;
 
 method Path.Combine(aBasePath: nullable String; params aPaths: array of String): nullable String;
