@@ -3,7 +3,7 @@
 interface
 
 type
-  OperatingSystem = public enum(Unknown, Windows, Linux, macOS, iOS, tvOS, watchOS, Android, WindowsPhone, Xbox, Browser);
+  OperatingSystem = public enum (Unknown, Windows, Linux, macOS, iOS, tvOS, watchOS, Android, Fuchsia, Xbox, Browser);
 
   ApplicationContext = public Object;
 
@@ -488,6 +488,8 @@ begin
     exit OperatingSystem.Android;
     {$ELSEIF WINDOWS}
     exit OperatingSystem.Windows;
+    {$ELSEIF FUCHSIA}
+    exit OperatingSystem.Fuchsia;
     {$ELSEIF WEBASSEMBLY}
     exit OperatingSystem.Browser;
     {$ELSEIF DARWIN}
@@ -574,7 +576,6 @@ begin
       exit System.Environment.OSVersion.Version.ToString;
     end;
   end;
-
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Environment.OSVersion;
   {$ENDIF}

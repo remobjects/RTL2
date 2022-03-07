@@ -15,6 +15,7 @@ type
 
   String = public partial class mapped to PlatformString
   public
+
     constructor(aBytes: array of Byte; aEncoding: Encoding := nil);
     begin
       if not assigned(aBytes) then
@@ -24,12 +25,14 @@ type
         result := aEncoding.GetString(aBytes);
       end
       else begin
-        aEncoding := Encoding.DetectFromBytes(aBytes);
+        aEncoding := Encoding.DetectFromBytes(aBytes, out var lSkipBytes);
         if not assigned(aEncoding) then
           aEncoding := Encoding.Default;
-        result := aEncoding.GetString(aBytes);
+        if lSkipBytes > 0 then
+          result := aEncoding.GetString(aBytes, lSkipBytes, aBytes.Length-lSkipBytes)
+        else
+          result := aEncoding.GetString(aBytes);
       end;
-
     end;
 
     constructor(Value: array of Char);
