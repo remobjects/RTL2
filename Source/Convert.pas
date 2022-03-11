@@ -346,6 +346,8 @@ begin
     result := result + DigitForValue(aValue shr (i*4) and $0f);
   if aWidth = 0 then
     result := TrimLeadingZeros(result);
+  if length(result) = 0 then
+    result := "0";
 end;
 
 method Convert.ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
@@ -357,6 +359,8 @@ begin
     result := result + DigitForValue(aValue shr (i*3) and $07);
   if aWidth = 0 then
     result := TrimLeadingZeros(result);
+  if length(result) = 0 then
+    result := "0";
 end;
 
 method Convert.ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
@@ -368,6 +372,8 @@ begin
     result := result + DigitForValue(aValue shr i and $01);
   if aWidth = 0 then
     result := TrimLeadingZeros(result);
+  if length(result) = 0 then
+    result := "0";
 end;
 
 method Convert.ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
