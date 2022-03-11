@@ -80,15 +80,15 @@ type
     method ToUtf8Bytes(aValue: not nullable String): array of Byte; inline;
     method Utf8BytesToString(aBytes: array of Byte; aLength: nullable Int32 := nil): String; inline;// aLength breaks when inlined (macOS).
 
-    //method ToHexString(aValue: Int32; aWidth: Integer := 1): not nullable String;
-    method ToHexString(aValue: UInt64; aWidth: Integer := 1): not nullable String;
+    //method ToHexString(aValue: Int32; aWidth: Integer := 0): not nullable String;
+    method ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
     method ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
     method ToHexString(aData: array of Byte; aCount: Integer): not nullable String;
     method ToHexString(aData: array of Byte): not nullable String;
     method ToHexString(aData: ImmutableBinary): not nullable String;
 
-    method ToOctalString(aValue: UInt64; aWidth: Integer := 1): not nullable String;
-    method ToBinaryString(aValue: UInt64; aWidth: Integer := 1): not nullable String;
+    method ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
+    method ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 
     method HexStringToUInt32(aValue: not nullable String): UInt32;
     method HexStringToUInt64(aValue: not nullable String): UInt64;
@@ -337,7 +337,7 @@ begin
   exit "";
 end;
 
-method Convert.ToHexString(aValue: UInt64; aWidth: Integer := 1): not nullable String;
+method Convert.ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 begin
   var lWidth := aWidth;
   if (lWidth < 1) or (lWidth > 64/4) then lWidth := 64/4;
@@ -348,7 +348,7 @@ begin
     result := TrimLeadingZeros(result);
 end;
 
-method Convert.ToOctalString(aValue: UInt64; aWidth: Integer := 1): not nullable String;
+method Convert.ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 begin
   var lWidth := aWidth;
   if (lWidth < 1) or (lWidth > 64/3) then lWidth := 64/3;
@@ -359,7 +359,7 @@ begin
     result := TrimLeadingZeros(result);
 end;
 
-method Convert.ToBinaryString(aValue: UInt64; aWidth: Integer := 1): not nullable String;
+method Convert.ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 begin
   var lWidth := aWidth;
   if (lWidth < 1) or (lWidth > 64) then lWidth := 64;
