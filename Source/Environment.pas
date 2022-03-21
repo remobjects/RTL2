@@ -128,6 +128,8 @@ type
     {$ELSE}
     property EnvironmentVariable[aName: String]: String read GetEnvironmentVariable write SetEnvironmentVariable;
     {$ENDIF}
+
+    {$IF WEBASSEMBLY}[Warning("Environment.CurrentDirectory is not available on WebAssebly")]{$ENDIF}
     property CurrentDirectory: String read GetCurrentDirectory;
   end;
 
@@ -779,7 +781,11 @@ begin
   {$ELSEIF ECHOES}
   exit System.Environment.CurrentDirectory;
   {$ELSEIF ISLAND}
+  {$IF WEBASSEMBLY}
+  raise new NotImplementedException("Environment.CurrentDirectory is not available on WebAssebly")
+  {$ELSE}
   exit RemObjects.Elements.System.Environment.CurrentDirectory;
+  {$ENDIF}
   {$ENDIF}
 end;
 
