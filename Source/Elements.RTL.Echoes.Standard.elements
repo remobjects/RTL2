@@ -57,6 +57,9 @@
   <ItemGroup>
     <NuGetReference Include="NETStandard.Library:2.0.0" />
     <NuGetReference Include="Microsoft.Win32.Registry:*" />
+    <Reference Include="Echoes">
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.pas" />

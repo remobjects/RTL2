@@ -164,95 +164,102 @@
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
   </PropertyGroup>
   <ItemGroup Condition="'$(Target)' == 'Cooper'">
-    <Compile Include="Cooper\EnumerationSequence.pas"></Compile>
-    <Compile Include="Cooper\LocaleUtils.pas"></Compile>
-    <Reference Include="rt"></Reference>
+    <Compile Include="Cooper\EnumerationSequence.pas" />
+    <Compile Include="Cooper\LocaleUtils.pas" />
+    <Reference Include="rt" />
     <Reference Include="cooper">
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Echoes.Full'">
-    <Reference Include="mscorlib"></Reference>
-    <Reference Include="System"></Reference>
-    <Reference Include="System.Core"></Reference>
-    <Reference Include="System.Xml.Linq"></Reference>
-    <Reference Include="System.Web"></Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="Echoes">
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Echoes.Standard'">
-    <NuGetReference Include="NETStandard.Library:2.0.0"></NuGetReference>
+    <NuGetReference Include="NETStandard.Library:2.0.0" />
+    <Reference Include="Echoes">
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Toffee.iOS'">
-    <Reference Include="Foundation"></Reference>
-    <Reference Include="CoreFoundation"></Reference>
-    <Reference Include="UIKit"></Reference>
-    <Reference Include="libToffee"></Reference>
-    <Reference Include="rtl"></Reference>
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+    <Reference Include="UIKit" />
+    <Reference Include="libToffee" />
+    <Reference Include="rtl" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Toffee.macOS'">
-    <Reference Include="Foundation"></Reference>
-    <Reference Include="AppKit"></Reference>
-    <Reference Include="CoreFoundation"></Reference>
-    <Reference Include="libToffee"></Reference>
-    <Reference Include="rtl"></Reference>
+    <Reference Include="Foundation" />
+    <Reference Include="AppKit" />
+    <Reference Include="CoreFoundation" />
+    <Reference Include="libToffee" />
+    <Reference Include="rtl" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Toffee.tvOS'">
-    <Reference Include="Foundation"></Reference>
-    <Reference Include="CoreFoundation"></Reference>
-    <Reference Include="UIKit"></Reference>
-    <Reference Include="libToffee"></Reference>
-    <Reference Include="rtl"></Reference>
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+    <Reference Include="UIKit" />
+    <Reference Include="libToffee" />
+    <Reference Include="rtl" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Toffee.watchOS'">
-    <Reference Include="Foundation"></Reference>
-    <Reference Include="CoreFoundation"></Reference>
-    <Reference Include="UIKit"></Reference>
-    <Reference Include="WatchKit"></Reference>
-    <Reference Include="libToffee"></Reference>
-    <Reference Include="rtl"></Reference>
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+    <Reference Include="UIKit" />
+    <Reference Include="WatchKit" />
+    <Reference Include="libToffee" />
+    <Reference Include="rtl" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Windows'">
-    <Reference Include="rtl"></Reference>
-    <Reference Include="gc"></Reference>
-    <Reference Include="Island"></Reference>
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
+    <Reference Include="Island" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Linux'">
-    <Reference Include="rtl"></Reference>
-    <Reference Include="gc"></Reference>
-    <Reference Include="Island"></Reference>
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
+    <Reference Include="Island" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Darwin.macOS'">
-    <Reference Include="Island"></Reference>
-    <Reference Include="rtl"></Reference>
-    <Reference Include="gc"></Reference>
+    <Reference Include="Island" />
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'ToffeeV2.macOS'">
-    <Reference Include="Foundation"></Reference>
-    <Reference Include="CoreFoundation"></Reference>
-    <Reference Include="AppKit"></Reference>
-    <Reference Include="Island"></Reference>
-    <Reference Include="rtl"></Reference>
-    <Reference Include="gc"></Reference>
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+    <Reference Include="AppKit" />
+    <Reference Include="Island" />
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Darwin.iOS'">
-    <Reference Include="Island"></Reference>
-    <Reference Include="rtl"></Reference>
-    <Reference Include="gc"></Reference>
+    <Reference Include="Island" />
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Darwin.tvOS'">
-    <Reference Include="Island"></Reference>
-    <Reference Include="rtl"></Reference>
-    <Reference Include="gc"></Reference>
+    <Reference Include="Island" />
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Darwin.watchOS'">
-    <Reference Include="Island"></Reference>
-    <Reference Include="rtl"></Reference>
-    <Reference Include="gc"></Reference>
+    <Reference Include="Island" />
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Android'">
-    <Reference Include="rtl"></Reference>
-    <Reference Include="gc"></Reference>
-    <Reference Include="Island"></Reference>
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
+    <Reference Include="Island" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
 </Project>
