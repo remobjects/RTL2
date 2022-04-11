@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
 type
-  ISequence_Extensions<T> = public extension class (ISequence<T>)
+  ISequence_Extensions<T> = public extension class(ISequence<T>)
   public
     //method ToList<U>: not nullable ImmutableList<U>; {$IF TOFFEE}where U is class;{$ENDIF}
     //begin
