@@ -49,6 +49,7 @@ type
     class method GetType(aName: not nullable String): nullable &Type;
     constructor withPlatformType(aType: PlatformType);
     {$IF COOPER}
+    //method IsSubclassOf(aType: &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
     property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
     property MethodFields: ImmutableList<Field> read mapped.getFields().ToList();
@@ -93,6 +94,7 @@ type
     property IsEnum: Boolean read mapped.GetTypeInfo().IsEnum;
     property IsValueType: Boolean read mapped.GetTypeInfo().IsValueType;
     {$ELSEIF ECHOES}
+    method IsSubclassOf(aType: &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read mapped.GetInterfaces().ToList();
     property Methods: ImmutableList<&Method> read mapped.GetMethods().ToList();
     property Properties: ImmutableList<&Property> read mapped.GetProperties().ToList();
@@ -106,6 +108,7 @@ type
     property IsEnum: Boolean read mapped.IsEnum;
     property IsValueType: Boolean read mapped.IsValueType;
     {$ELSEIF ISLAND}
+    method IsSubclassOf(aType: &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read sequence of &Type(mapped.Interfaces).ToList();
     property Methods: ImmutableList<&Method> read sequence of &Method(mapped.Methods).ToList();
     property Properties: ImmutableList<&Property> read sequence of &Property(mapped.Properties).ToList();
@@ -192,6 +195,10 @@ begin
 end;
 
 {$IF COOPER}
+//method &Type.IsSubclassOf(aType: &Type): Boolean;
+//begin
+  //result := mapped.IsSubclassOf(aType);
+//end;
 {$ELSEIF TOFFEE AND NOT ISLAND}
 constructor &Type withID;
 begin
@@ -300,6 +307,17 @@ method &Type.IsSubclassOf(aType: &Type): Boolean;
 begin
   result := fClass.isSubclassOfClass(aType.fClass);
 end;
+{$ELSEIF NETFX_CORE}
+{$ELSEIF ECHOES}
+method &Type.IsSubclassOf(aType: &Type): Boolean;
+begin
+  result := mapped.IsSubclassOf(aType);
+end;
+{$ELSEIF ISLAND}
+method &Type.IsSubclassOf(aType: &Type): Boolean;
+begin
+  result := mapped.IsSubclassOf(aType);
+end;
 {$ENDIF}
 
 {$IF NETFX_CORE}
@@ -313,5 +331,7 @@ begin
   exit System.Linq.Enumerable.ToArray(System.Linq.Enumerable.OfType<&Method>(mapped.GetTypeInfo().DeclaredMembers));
 end;
 {$ENDIF}
+
+
 {$ENDIF}
 end.
