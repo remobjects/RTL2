@@ -211,8 +211,7 @@ begin
   case lType of
     Int64, UInt64: exit Int64(aArg);
     Integer, UInt32, Byte, SByte, Int16, UInt16: exit Integer(aArg);
-    else
-      exit Integer(aArg);
+    else exit Integer(aArg);
   end;
 end;
 
