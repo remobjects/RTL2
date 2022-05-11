@@ -23,8 +23,9 @@ type
     property Last: nullable LinkedListNode<T> read;
     property Count: Integer read;
 
-    {$IF NOT TOFFEEV1}[&Sequence]{$ENDIF}
+    {$IF NOT TOFFEE}[&Sequence]
     method GetSequence: sequence of T;
+    {$ENDIF}
   end;
 
   ImmutableLinkedList<T> = public class(IImmutableLinkedList<T>)
