@@ -165,6 +165,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\FieldInfo.pas" Conditional="!TOFFEEV2" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Helpers.pas" Conditional="!TOFFEEV2" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Attribute.pas" Conditional="!TOFFEEV2" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinkedList.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
