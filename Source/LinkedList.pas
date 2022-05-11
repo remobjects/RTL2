@@ -23,7 +23,8 @@ type
     property Last: nullable LinkedListNode<T> read;
     property Count: Integer read;
 
-    {$IF NOT TOFFEE}[&Sequence]
+    {$IF NOT TOFFEE}
+    [&Sequence]
     method GetSequence: sequence of T;
     {$ENDIF}
   end;
@@ -34,7 +35,8 @@ type
     property Last: nullable LinkedListNode<T> read fLast;
     property Count: Integer read fCount;
 
-    {$IF NOT TOFFEEV1}[&Sequence]{$ENDIF}
+    {$IF NOT TOFFEE}
+    [&Sequence]
     method GetSequence: sequence of T; iterator;
     begin
       var p := First;
@@ -43,6 +45,7 @@ type
         p := p.Next;
       end;
     end;
+    {$ENDIF}
 
   unit
     fFirst: LinkedListNode<T>;
