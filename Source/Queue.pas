@@ -6,7 +6,14 @@ type
   PlatformImmutableQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ENDIF};
   PlatformQueue<T> = public {$IF COOPER}java.util.LinkedList<T>{$ELSEIF ECHOES}System.Collections.Generic.Queue<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Queue<T>{$ENDIF};
 
-  ImmutableQueue<T> = public class mapped to PlatformImmutableQueue<T>
+  IImmutableQueue<T> = public interface
+    method Contains(Item: T): Boolean;
+    method Peek: T;
+    method ToArray: array of T;
+    property Count: Integer read;
+  end;
+
+  ImmutableQueue<T> = public class(IImmutableQueue<T>) mapped to PlatformImmutableQueue<T>
   {$IFDEF ISLAND AND NOT TOFFEEV2}where T is unconstrained;{$ENDIF}
   {$IFDEF ISLAND AND TOFFEV2}where T is NSObject;{$ENDIF}
   {$IFDEF TOFFEE} where T is class;{$ENDIF}
@@ -25,7 +32,13 @@ type
     method MutableVersion: Queue<T>;
   end;
 
-  Queue<T> = public class(ImmutableQueue<T>) mapped to PlatformQueue<T>
+  IQueue<T> = public interface(IImmutableQueue<T>)
+    method Clear;
+    method Enqueue(Item: T);
+    method Dequeue: T;
+  end;
+
+  Queue<T> = public class(ImmutableQueue<T>, IQueue<T>) mapped to PlatformQueue<T>
   public
     constructor; mapped to constructor();
 
