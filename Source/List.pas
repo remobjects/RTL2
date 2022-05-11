@@ -11,7 +11,7 @@ type
   PlatformSequence<T> = public sequence of T;
   {$ENDIF}
 
-  IImmutableList<T> = public interface (PlatformSequence<T>)
+  IImmutableList<T> = public interface(PlatformSequence<T>)
     method Contains(aItem: T): Boolean;
     method IndexOf(aItem: T): Integer;
     method LastIndexOf(aItem: T): Integer;
