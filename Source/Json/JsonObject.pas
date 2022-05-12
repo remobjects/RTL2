@@ -3,7 +3,7 @@
 interface
 
 type
-  JsonObject = public class(JsonNode, sequence of tuple of (String, JsonNode))
+  JsonObject = public class(JsonNode)
   private
     fItems: Dictionary<String, JsonNode>;
     method GetItem(aKey: not nullable String): nullable JsonNode;
@@ -27,7 +27,7 @@ type
 
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
 
-    [&Sequence]
+    {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
     method GetSequence: sequence of tuple of (String, JsonNode); iterator;
     begin
       for each kv in fItems do

@@ -3,7 +3,7 @@
 interface
 
 type
-  JsonArray = public class (JsonNode, sequence of JsonNode)
+  JsonArray = public class (JsonNode)
   private
     fItems: not nullable List<JsonNode>;
     method GetItem(aIndex: Integer): not nullable JsonNode;
@@ -27,16 +27,18 @@ type
     method Clear;
     method &RemoveAt(aIndex: Integer);
 
-    method ToStrings: not nullable sequence of String;
-    method ToStringList: not nullable ImmutableList<String>;
+    //method ToStrings: not nullable sequence of String;
+    //method ToStringList: not nullable ImmutableList<String>;
 
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
 
+    {$IF NOT TOFFEE}
     [&Sequence]
     method GetSequence: sequence of JsonNode; iterator;
     begin
       yield fItems;
     end;
+    {$ENDIF}
 
     {$IF TOFFEE AND NOT TOFFEEV2}
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
@@ -70,7 +72,7 @@ type
 
     operator Implicit(aValue: JsonArray): ImmutableList<JsonNode>;
     begin
-      result := aValue.ToList();
+      result := aValue.fItems;
     end;
 
     operator Implicit(aValue: JsonArray): array of JsonNode;
@@ -96,7 +98,7 @@ end;
 constructor JsonArray(aItems: not nullable ImmutableList<String>);
 begin
   fItems := new List<JsonNode>();
-  for each el in aItems do 
+  for each el in aItems do
     fItems.Add(new JsonStringValue(el));
 end;
 {$ENDIF}
@@ -138,7 +140,7 @@ end;
 
 method JsonArray.Add(aValues: ImmutableList<String>);
 begin
-  for each el in aValues do begin 
+  for each el in aValues do begin
     fItems.Add(new JsonStringValue(el));
   end;
 end;
@@ -189,14 +191,14 @@ begin
 end;
 {$ENDIF}
 
-method JsonArray.ToStrings: not nullable sequence of String;
-begin
-  result := self.Where(i -> i is JsonStringValue).Select(i -> i.StringValue) as not nullable;
-end;
+//method JsonArray.ToStrings: not nullable sequence of String;
+//begin
+  //result := fItems.Where(i -> i is JsonStringValue).Select(i -> i.StringValue) as not nullable;
+//end;
 
-method JsonArray.ToStringList: not nullable ImmutableList<String>;
-begin
-  result := ToStrings().ToList() as not nullable;
-end;
+//method JsonArray.ToStringList: not nullable ImmutableList<String>;
+//begin
+  //result := ToStrings().ToList() as not nullable;
+//end;
 
 end.
