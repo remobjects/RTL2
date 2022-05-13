@@ -22,11 +22,6 @@ type
     property First: nullable LinkedListNode<T> read;
     property Last: nullable LinkedListNode<T> read;
     property Count: Integer read;
-
-    {$IF NOT TOFFEE}
-    [&Sequence]
-    method GetSequence: sequence of T;
-    {$ENDIF}
   end;
 
   ImmutableLinkedList<T> = public class(IImmutableLinkedList<T>)
@@ -35,8 +30,7 @@ type
     property Last: nullable LinkedListNode<T> read fLast;
     property Count: Integer read fCount;
 
-    {$IF NOT TOFFEE}
-    [&Sequence]
+    {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
     method GetSequence: sequence of T; iterator;
     begin
       var p := First;
@@ -45,7 +39,13 @@ type
         p := p.Next;
       end;
     end;
-    {$ENDIF}
+
+    //{$IF TOFFEE}
+    //method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
+    //begin
+      //result := GetSequence.countByEnumeratingWithState(aState) objects(stackbuf) count(len)
+    //end;
+    //{$ENDIF}
 
   unit
     fFirst: LinkedListNode<T>;

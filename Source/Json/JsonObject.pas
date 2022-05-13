@@ -34,9 +34,14 @@ type
         yield (kv.Key, kv.Value);
     end;
 
-    {$IF TOFFEE AND NOT TOFFEEV2}
-    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^tuple of (String,JsonNode)) count(len: NSUInteger): NSUInteger;
-    {$ENDIF}
+    //{$IF TOFFEE AND NOT TOFFEEV2}
+    //method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^tuple of (String,JsonNode)) count(len: NSUInteger): NSUInteger;
+    //begin
+      //if aState^.state <> 0 then
+        //exit 0;
+      //exit GetProperties.countByEnumeratingWithState(aState) objects(stackbuf) count(len);
+    //end;
+    //{$ENDIF}
 
     class method Load(JsonString: String): JsonObject;
 
@@ -149,15 +154,5 @@ begin
   for aKey in Keys do
     yield (aKey, Item[aKey]);
 end;
-
-{$IF TOFFEE AND NOT TOFFEEV2}
-method JsonObject.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^tuple of (String,JsonNode)) count(len: NSUInteger): NSUInteger;
-begin
-  if aState^.state <> 0 then
-    exit 0;
-
-  exit GetProperties.countByEnumeratingWithState(aState) objects(stackbuf) count(len);
-end;
-{$ENDIF}
 
 end.

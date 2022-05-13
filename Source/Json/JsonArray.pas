@@ -3,7 +3,7 @@
 interface
 
 type
-  JsonArray = public class (JsonNode, sequence of JsonNode)
+  JsonArray = public class (JsonNode{$IF NOT TOFFEEV2}, sequence of JsonNode{$ENDIF})
   private
     fItems: not nullable List<JsonNode>;
     method GetItem(aIndex: Integer): not nullable JsonNode;
@@ -38,8 +38,13 @@ type
       yield fItems;
     end;
 
-    {$IF TOFFEE AND NOT TOFFEEV2}
+    {$IF TOFFEE}
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
+    begin
+      {$HIDE CPW8}
+      exit NSArray(fItems).countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
+      {$SHOW CPW8}
+    end;
     {$ENDIF}
 
     class method Load(JsonString: String): not nullable JsonArray;
@@ -179,15 +184,6 @@ begin
   var Serializer := new JsonSerializer(self, aFormat);
   exit Serializer.Serialize;
 end;
-
-{$IF TOFFEE AND NOT TOFFEEV2}
-method JsonArray.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
-begin
-  {$HIDE CPW8}
-  exit NSArray(fItems).countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
-  {$SHOW CPW8}
-end;
-{$ENDIF}
 
 //method JsonArray.ToStrings: not nullable sequence of String;
 //begin
