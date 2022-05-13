@@ -3,7 +3,7 @@
 interface
 
 type
-  JsonArray = public class (JsonNode)
+  JsonArray = public class (JsonNode, sequence of JsonNode)
   private
     fItems: not nullable List<JsonNode>;
     method GetItem(aIndex: Integer): not nullable JsonNode;
@@ -32,13 +32,11 @@ type
 
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
 
-    {$IF NOT TOFFEE}
-    [&Sequence]
+    {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
     method GetSequence: sequence of JsonNode; iterator;
     begin
       yield fItems;
     end;
-    {$ENDIF}
 
     {$IF TOFFEE AND NOT TOFFEEV2}
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
