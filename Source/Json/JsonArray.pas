@@ -3,7 +3,7 @@
 interface
 
 type
-  JsonArray = public class (JsonNode, sequence of JsonNode)
+  JsonArray = public class (JsonNode{$IF NOT TOFFEEV2}, sequence of JsonNode{$ENDIF})
   private
     fItems: not nullable List<JsonNode>;
     method GetItem(aIndex: Integer): not nullable JsonNode;
@@ -27,19 +27,24 @@ type
     method Clear;
     method &RemoveAt(aIndex: Integer);
 
-    method ToStrings: not nullable sequence of String;
-    method ToStringList: not nullable ImmutableList<String>;
+    //method ToStrings: not nullable sequence of String;
+    //method ToStringList: not nullable ImmutableList<String>;
 
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
 
-    [&Sequence]
+    {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
     method GetSequence: sequence of JsonNode; iterator;
     begin
       yield fItems;
     end;
 
-    {$IF TOFFEE AND NOT TOFFEEV2}
+    {$IF TOFFEE}
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
+    begin
+      {$HIDE CPW8}
+      exit NSArray(fItems).countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
+      {$SHOW CPW8}
+    end;
     {$ENDIF}
 
     class method Load(JsonString: String): not nullable JsonArray;
@@ -70,7 +75,7 @@ type
 
     operator Implicit(aValue: JsonArray): ImmutableList<JsonNode>;
     begin
-      result := aValue.ToList();
+      result := aValue.fItems;
     end;
 
     operator Implicit(aValue: JsonArray): array of JsonNode;
@@ -96,7 +101,7 @@ end;
 constructor JsonArray(aItems: not nullable ImmutableList<String>);
 begin
   fItems := new List<JsonNode>();
-  for each el in aItems do 
+  for each el in aItems do
     fItems.Add(new JsonStringValue(el));
 end;
 {$ENDIF}
@@ -138,7 +143,7 @@ end;
 
 method JsonArray.Add(aValues: ImmutableList<String>);
 begin
-  for each el in aValues do begin 
+  for each el in aValues do begin
     fItems.Add(new JsonStringValue(el));
   end;
 end;
@@ -180,23 +185,14 @@ begin
   exit Serializer.Serialize;
 end;
 
-{$IF TOFFEE AND NOT TOFFEEV2}
-method JsonArray.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
-begin
-  {$HIDE CPW8}
-  exit NSArray(fItems).countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
-  {$SHOW CPW8}
-end;
-{$ENDIF}
+//method JsonArray.ToStrings: not nullable sequence of String;
+//begin
+  //result := fItems.Where(i -> i is JsonStringValue).Select(i -> i.StringValue) as not nullable;
+//end;
 
-method JsonArray.ToStrings: not nullable sequence of String;
-begin
-  result := self.Where(i -> i is JsonStringValue).Select(i -> i.StringValue) as not nullable;
-end;
-
-method JsonArray.ToStringList: not nullable ImmutableList<String>;
-begin
-  result := ToStrings().ToList() as not nullable;
-end;
+//method JsonArray.ToStringList: not nullable ImmutableList<String>;
+//begin
+  //result := ToStrings().ToList() as not nullable;
+//end;
 
 end.

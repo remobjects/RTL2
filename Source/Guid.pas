@@ -52,7 +52,9 @@ type
 
     class method NewGuid: Guid;
     //class property EmptyGuid: not nullable Guid := CreateEmptyGuid(); lazy;
-    class property EmptyGuid: not nullable Guid read CreateEmptyGuid;
+    [Obsolete("Use Guid.Empty, instead")]
+    class property EmptyGuid: not nullable Guid read &Empty;
+    class property &Empty: not nullable Guid read CreateEmptyGuid; //lazy; readonly;
 
     class method TryParse(aValue: nullable String): nullable Guid;
 
