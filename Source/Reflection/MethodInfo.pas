@@ -54,6 +54,7 @@ type
     [Obsolete("Use Visibility")] property IsPublic: Boolean read java.lang.reflect.Modifier.isPublic(mapped.getModifiers);
     [Obsolete("Use Visibility")] property IsPrivate: Boolean read java.lang.reflect.Modifier.isPrivate(mapped.getModifiers);
     {$ELSEIF ECHOES}
+    method Invoke(aInstance: Object; params aArgs: array of Object): Object; mapped to Invoke(aInstance, aArgs);
     property Name: String read mapped.Name;
     property ReturnType: &Type read mapped.ReturnType;
     property IsStatic: Boolean read mapped.IsStatic;
@@ -65,6 +66,7 @@ type
     [Obsolete("Use Visibility")] property IsPublic: Boolean read mapped.IsPublic;
     [Obsolete("Use Visibility")] property IsPrivate: Boolean read mapped.IsPrivate;
     {$ELSEIF ISLAND}
+    method Invoke(aInstance: Object; params aArgs: array of Object): Object; mapped to Invoke(aInstance, aArgs);
     property Name: String read mapped.Name;
     property ReturnType: &Type read mapped.Type;
     property IsStatic: Boolean read mapped.IsStatic;
