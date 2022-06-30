@@ -6,7 +6,7 @@ type
   PlatformImmutableList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.ImmutableList<T>{$ENDIF};
   PlatformList<T> = public {$IF COOPER}java.util.ArrayList<T>{$ELSEIF TOFFEE}Foundation.NSMutableArray<T>{$ELSEIF ECHOES}System.Collections.Generic.List<T>{$ELSEIF ISLAND}RemObjects.Elements.System.List<T>{$ENDIF};
   {$IFDEF TOFFEE and ISLAND}
-  PlatformSequence<T> = public Foundation.INSFastEnumeration;
+  PlatformSequence<T> = public INSFastEnumeration<T>;
   {$ELSE}
   PlatformSequence<T> = public sequence of T;
   {$ENDIF}
