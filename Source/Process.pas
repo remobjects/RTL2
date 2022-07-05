@@ -339,7 +339,7 @@ begin
   var lResult := new PlatformProcess();
   lResult.launchPath := aCommand;
   if assigned(aArguments) then
-    lResult.arguments := aArguments.ToList();
+    lResult.arguments := aArguments;
   if assigned(aEnvironment) then
     lResult.environment := aEnvironment;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then

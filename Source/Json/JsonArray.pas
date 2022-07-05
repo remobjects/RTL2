@@ -27,8 +27,8 @@ type
     method Clear;
     method &RemoveAt(aIndex: Integer);
 
-    //method ToStrings: not nullable sequence of String;
-    //method ToStringList: not nullable ImmutableList<String>;
+    method ToStrings: not nullable sequence of String;
+    method ToStringList: not nullable ImmutableList<String>;
 
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
 
@@ -185,14 +185,14 @@ begin
   exit Serializer.Serialize;
 end;
 
-//method JsonArray.ToStrings: not nullable sequence of String;
-//begin
-  //result := fItems.Where(i -> i is JsonStringValue).Select(i -> i.StringValue) as not nullable;
-//end;
+method JsonArray.ToStrings: not nullable sequence of String;
+begin
+  result := fItems.Where(i -> i is JsonStringValue).Select(i -> i.StringValue) as not nullable;
+end;
 
-//method JsonArray.ToStringList: not nullable ImmutableList<String>;
-//begin
-  //result := ToStrings().ToList() as not nullable;
-//end;
+method JsonArray.ToStringList: not nullable ImmutableList<String>;
+begin
+  result := ToStrings().ToList() as not nullable;
+end;
 
 end.

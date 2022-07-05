@@ -7,8 +7,9 @@ type
   private
     fRootNode: not nullable JsonNode;
 
-    method GetRootObjectItem(Key: String): nullable JsonNode;
-    method SetRootObjectItem(Key: String; Value: JsonNode);
+    method GetRootObjectItem(aKey: String): nullable JsonNode;
+    method SetRootObjectItem(aKey: String; Value: JsonNode);
+    method GetRootArrayItem(aIndex: Integer): nullable JsonNode;
     method GetRootObjectKeys: not nullable sequence of String;
 
   protected
@@ -41,19 +42,20 @@ type
     method ToString: String; override;
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
 
+    property Item[aKey: String]: nullable JsonNode read GetRootObjectItem write SetRootObjectItem; default; virtual;
+    property Item[aIndex: Integer]: nullable JsonNode read GetRootArrayItem; default; virtual;
     [Obsolete("Use Root: JsonNode, instead")] property RootObject: not nullable JsonObject read fRootNode as JsonObject;
-    [Obsolete("Use Root: JsonNode, instead")] property Item[Key: String]: nullable JsonNode read GetRootObjectItem write SetRootObjectItem; default; virtual;
     [Obsolete("Use Root: JsonNode, instead")] property Keys: not nullable sequence of String read GetRootObjectKeys; virtual;
   end;
 
   JsonNode = public abstract class
   private
-    method CantGetItem(Key: String): nullable JsonNode;
-    method CantSetItem(Key: String; Value: JsonNode);
-    method CantSetItem(Key: String; Value: String);
-    method CantSetItem(Key: String; Value: Boolean);
-    method CantSetItem(Key: String; Value: Int32);
-    method CantSetItem(Key: String; Value: Double);
+    method CantGetItem(aKey: String): nullable JsonNode;
+    method CantSetItem(aKey: String; Value: JsonNode);
+    method CantSetItem(aKey: String; Value: String);
+    method CantSetItem(aKey: String; Value: Boolean);
+    method CantSetItem(aKey: String; Value: Int32);
+    method CantSetItem(aKey: String; Value: Double);
     method CantGetItem(aIndex: Integer): not nullable JsonNode;
     method CantSetItem(aIndex: Integer; Value: not nullable JsonNode);
     method CantGetKeys: not nullable sequence of String;
@@ -72,7 +74,7 @@ type
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; virtual; abstract;
 
     property Count: Integer read 1; virtual;
-    property Item[Key: not nullable String]: nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
+    property Item[aKey: not nullable String]: nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: nullable String write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: Boolean write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: Int32 write CantSetItem; default; virtual;
@@ -213,14 +215,25 @@ begin
   result := fRootNode.ToJson(aFormat);
 end;
 
-method JsonDocument.GetRootObjectItem(Key: String): nullable JsonNode;
+method JsonDocument.GetRootObjectItem(aKey: String): nullable JsonNode;
 begin
-  result := fRootNode[Key];
+  if fRootNode is not JsonObject then
+    raise new JsonException("Root object is not an object");
+  result := fRootNode[aKey];
 end;
 
-method JsonDocument.SetRootObjectItem(Key: String; Value: JsonNode);
+method JsonDocument.SetRootObjectItem(aKey: String; Value: JsonNode);
 begin
-  fRootNode[Key] := Value;
+  if fRootNode is not JsonObject then
+    raise new JsonException("Root object is not an object");
+  fRootNode[aKey] := Value;
+end;
+
+method JsonDocument.GetRootArrayItem(aIndex: Integer): nullable JsonNode;
+begin
+  if fRootNode is not JsonArray then
+    raise new JsonException("Root object is not an array");
+  result := fRootNode[aIndex];
 end;
 
 method JsonDocument.GetRootObjectKeys: not nullable sequence of String;
@@ -235,32 +248,32 @@ begin
   result := ToJson();
 end;
 
-method JsonNode.CantGetItem(Key: String): nullable JsonNode;
+method JsonNode.CantGetItem(aKey: String): nullable JsonNode;
 begin
   raise new JsonNodeTypeException("JSON Node is not a dictionary.")
 end;
 
-method JsonNode.CantSetItem(Key: String; Value: JsonNode);
+method JsonNode.CantSetItem(aKey: String; Value: JsonNode);
 begin
   raise new JsonNodeTypeException("JSON Node is not a dictionary.")
 end;
 
-method JsonNode.CantSetItem(Key: String; Value: String);
+method JsonNode.CantSetItem(aKey: String; Value: String);
 begin
   raise new JsonNodeTypeException("JSON Node is not a dictionary.")
 end;
 
-method JsonNode.CantSetItem(Key: String; Value: Boolean);
+method JsonNode.CantSetItem(aKey: String; Value: Boolean);
 begin
   raise new JsonNodeTypeException("JSON Node is not a dictionary.")
 end;
 
-method JsonNode.CantSetItem(Key: String; Value: Int32);
+method JsonNode.CantSetItem(aKey: String; Value: Int32);
 begin
   raise new JsonNodeTypeException("JSON Node is not a dictionary.")
 end;
 
-method JsonNode.CantSetItem(Key: String; Value: Double);
+method JsonNode.CantSetItem(aKey: String; Value: Double);
 begin
   raise new JsonNodeTypeException("JSON Node is not a dictionary.")
 end;

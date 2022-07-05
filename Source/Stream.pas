@@ -12,6 +12,7 @@ type
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32; abstract;
     method &Read(Buffer: array of Byte; Count: Int32): Int32; inline;
     method &Write(Buffer: array of Byte; Count: Int32): Int32; inline;
+    method &Write(Buffer: array of Byte): Int32; inline;
     method ReadByte: Int32; virtual;
     method WriteByte(aValue: Byte); virtual;
     method GetLength: Int64; virtual;
@@ -228,6 +229,11 @@ end;
 method Stream.&Write(Buffer: array of Byte; Count: Int32): Int32;
 begin
   result := &Write(Buffer, 0, Count);
+end;
+
+method Stream.&Write(Buffer: array of Byte): Int32;
+begin
+  result := &Write(Buffer, 0, RemObjects.Elements.System.length(Buffer));
 end;
 
 method Stream.ReadByte: Int32;

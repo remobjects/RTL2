@@ -66,14 +66,14 @@ type
 
     class method Compare(Value1, Value2: DateTime): Integer;
 
-    method AddDays(Value: Integer): DateTime;
-    method AddHours(Value: Integer): DateTime;
-    method AddMinutes(Value: Integer): DateTime;
-    method AddMonths(Value: Integer): DateTime;
-    method AddSeconds(Value: Integer): DateTime;
-    method AddMilliSeconds(Value: Integer): DateTime;
-    method AddYears(Value: Integer): DateTime;
-    method &Add(Value: TimeSpan): DateTime;
+    method AddDays(Value: Integer): not nullable DateTime;
+    method AddHours(Value: Integer): not nullable DateTime;
+    method AddMinutes(Value: Integer): not nullable DateTime;
+    method AddMonths(Value: Integer): not nullable DateTime;
+    method AddSeconds(Value: Integer): not nullable DateTime;
+    method AddMilliSeconds(Value: Integer): not nullable DateTime;
+    method AddYears(Value: Integer): not nullable DateTime;
+    method &Add(Value: TimeSpan): not nullable DateTime;
 
     method CompareTo(Value: DateTime): Integer;
 
@@ -125,9 +125,9 @@ type
       {$ELSEIF TOFFEE}Int64((mapped.timeIntervalSince1970 + NSTimeZone.localTimeZone.secondsFromGMTForDate(mapped)) * TimeSpan.TicksPerSecond) + TicksTill1970
       {$ELSEIF ECHOES OR ISLAND}fDateTime.Ticks
       {$ENDIF};
-    class operator &Add(a: DateTime; b: TimeSpan): DateTime;
-    class operator Subtract(a: DateTime; b: DateTime): TimeSpan;
-    class operator Subtract(a: DateTime; b: TimeSpan): DateTime;
+    class operator &Add(a: DateTime; b: TimeSpan): not nullable DateTime;
+    class operator Subtract(a: DateTime; b: DateTime): not nullable TimeSpan;
+    class operator Subtract(a: DateTime; b: TimeSpan): not nullable DateTime;
 
     class operator Equal(a,b: DateTime): Boolean;
     class operator NotEqual(a,b: DateTime): Boolean;
@@ -434,106 +434,106 @@ end;
 // Mutating Dates
 //
 
-method DateTime.AddDays(Value: Integer): DateTime;
+method DateTime.AddDays(Value: Integer): not nullable DateTime;
 begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.DATE, Value);
   {$ELSEIF TOFFEE}
-  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.DayCalendarUnit) value(Value) toDate(self) options(0)
+  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.DayCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   result := new DateTime(fDateTime.AddDays(Value));
   {$ENDIF}
 end;
 
-method DateTime.AddHours(Value: Integer): DateTime;
+method DateTime.AddHours(Value: Integer): not nullable DateTime;
 begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.HOUR_OF_DAY, Value);
   {$ELSEIF TOFFEE}
-  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.HourCalendarUnit) value(Value) toDate(self) options(0)
+  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.HourCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   result := new DateTime(fDateTime.AddHours(Value));
   {$ENDIF}
 end;
 
-method DateTime.AddMinutes(Value: Integer): DateTime;
+method DateTime.AddMinutes(Value: Integer): not nullable DateTime;
 begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.MINUTE, Value);
   {$ELSEIF TOFFEE}
-  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.MinuteCalendarUnit) value(Value) toDate(self) options(0)
+  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.MinuteCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   result := new DateTime(fDateTime.AddMinutes(Value));
   {$ENDIF}
 end;
 
-method DateTime.AddMonths(Value: Integer): DateTime;
+method DateTime.AddMonths(Value: Integer): not nullable DateTime;
 begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.MONTH, Value);
   {$ELSEIF TOFFEE}
-  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.MonthCalendarUnit) value(Value) toDate(self) options(0)
+  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.MonthCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   result := new DateTime(fDateTime.AddMonths(Value));
   {$ENDIF}
 end;
 
-method DateTime.AddSeconds(Value: Integer): DateTime;
+method DateTime.AddSeconds(Value: Integer): not nullable DateTime;
 begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.SECOND, Value);
   {$ELSEIF TOFFEE}
-  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.SecondCalendarUnit) value(Value) toDate(self) options(0)
+  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.SecondCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   result := new DateTime(fDateTime.AddSeconds(Value));
   {$ENDIF}
 end;
 
-method DateTime.AddMilliSeconds(Value: Integer): DateTime;
+method DateTime.AddMilliSeconds(Value: Integer): not nullable DateTime;
 begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.MILLISECOND, Value);
   {$ELSEIF TOFFEE}
-  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.CalendarUnitNanosecond) value(Int64(Value)*Int64(1 000 000)) toDate(self) options(0)
+  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.CalendarUnitNanosecond) value(Int64(Value)*Int64(1 000 000)) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   result := new DateTime(fDateTime.AddMilliseconds(Value));
   {$ENDIF}
 end;
 
-method DateTime.AddYears(Value: Integer): DateTime;
+method DateTime.AddYears(Value: Integer): not nullable DateTime;
 begin
   {$IF COOPER}
   result := DateTime(mapped.clone);
   Calendar(result).add(Calendar.YEAR, Value);
   {$ELSEIF TOFFEE}
-  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.YearCalendarUnit) value(Value) toDate(self) options(0)
+  result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.YearCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   result := new DateTime(fDateTime.AddYears(Value));
   {$ENDIF}
 end;
 
-method DateTime.Add(Value: TimeSpan): DateTime;
+method DateTime.Add(Value: TimeSpan): not nullable DateTime;
 begin
   result := new DateTime(self.Ticks + Value.Ticks);
 end;
 
-operator DateTime.Add(a: DateTime; b: TimeSpan): DateTime;
+operator DateTime.Add(a: DateTime; b: TimeSpan): not nullable DateTime;
 begin
   result := new DateTime(a.Ticks + b.Ticks);
 end;
 
-operator DateTime.Subtract(a: DateTime; b: DateTime): TimeSpan;
+operator DateTime.Subtract(a: DateTime; b: DateTime): not nullable TimeSpan;
 begin
   result := new TimeSpan(a.Ticks - b.Ticks);
 end;
 
-operator DateTime.Subtract(a: DateTime; b: TimeSpan): DateTime;
+operator DateTime.Subtract(a: DateTime; b: TimeSpan): not nullable DateTime;
 begin
   result := new DateTime(a.Ticks - b.Ticks);
 end;
