@@ -242,7 +242,7 @@ begin
   Components.setMinute(aMinute);
   Components.setSecond(aSecond);
   Components.setNanosecond(aMSec * 1000000);
-  var lCalendar := NSCalendar.currentCalendar();
+  var lCalendar := NSCalendar.calendarWithIdentifier(NSGregorianCalendar);
   result := lCalendar.dateFromComponents(Components);
   {$ELSEIF ECHOES OR ISLAND}
   fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond, aMSec);
