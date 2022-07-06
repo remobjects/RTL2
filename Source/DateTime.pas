@@ -125,6 +125,22 @@ type
       {$ELSEIF TOFFEE}Int64((mapped.timeIntervalSince1970 + NSTimeZone.localTimeZone.secondsFromGMTForDate(mapped)) * TimeSpan.TicksPerSecond) + TicksTill1970
       {$ELSEIF ECHOES OR ISLAND}fDateTime.Ticks
       {$ENDIF};
+
+    {$IF NOT ISLAND}
+    property IsUTC: Boolean read
+      {$IF COOPER}mapped.TimeZone.RawOffset = 0
+      {$ELSEIF TOFFEE}True
+      {$ELSEIF ECHOES}(fDateTime.Kind = DateTimeKind.Utc) or (OffsetToUTC = 0)
+      {$ELSEIF ISLAND}raise new NotImplementedException("IsUTC is not implemented for Java")
+      {$ENDIF};
+    property OffsetToUTC: Integer read
+      {$IF COOPER}mapped.TimeZone.RawOffset/1000
+      {$ELSEIF TOFFEE}0
+      {$ELSEIF ECHOES}Int32((fDateTime.ToUniversalTime-fDateTime).TotalSeconds)
+      {$ELSEIF ISLAND}raise new NotImplementedException("OffsetToUTC is not implemented for Java")
+      {$ENDIF};
+    {$ENDIF}
+
     class operator &Add(a: DateTime; b: TimeSpan): not nullable DateTime;
     class operator Subtract(a: DateTime; b: DateTime): not nullable TimeSpan;
     class operator Subtract(a: DateTime; b: TimeSpan): not nullable DateTime;
