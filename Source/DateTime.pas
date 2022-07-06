@@ -122,7 +122,7 @@ type
 
     property Ticks: Int64 read
       {$IF COOPER}(mapped.TimeInMillis +mapped.TimeZone.getOffset(mapped.TimeInMillis)) * TimeSpan.TicksPerMillisecond + TicksTill1970
-      {$ELSEIF TOFFEE}Int64((mapped.timeIntervalSince1970) * TimeSpan.TicksPerSecond) + TicksTill1970
+      {$ELSEIF TOFFEE}Int64((mapped.timeIntervalSince1970 + NSTimeZone.localTimeZone.secondsFromGMTForDate(mapped)) * TimeSpan.TicksPerSecond) + TicksTill1970
       {$ELSEIF ECHOES OR ISLAND}fDateTime.Ticks
       {$ENDIF};
     class operator &Add(a: DateTime; b: TimeSpan): not nullable DateTime;
