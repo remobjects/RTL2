@@ -55,7 +55,7 @@ type
     constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond: Integer);
     constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond, aMSec: Integer);
     {$IF COOPER}
-    constructor(aDate: date);
+    constructor(aDate: Date);
     {$ENDIF}
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     constructor (aDateTime: PlatformDateTime);
@@ -114,7 +114,7 @@ type
     property Date: DateTime read {$IF COOPER OR TOFFEE}new DateTime(self.Year, self.Month, self.Day, 0, 0, 0){$ELSEIF ECHOES OR ISLAND}new DateTime(fDateTime.Date){$ENDIF};
 
     class property Today: DateTime read {$IF COOPER OR TOFFEE}UtcNow.Date{$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.Today){$ENDIF};
-    class property UtcNow: DateTime read {$IF COOPER}Calendar.Instance{$ELSEIF TOFFEE}new PlatformDateTime(){$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.UtcNow){$ENDIF};
+    class property UtcNow: DateTime read {$IF COOPER}Calendar.getInstance(TimeZone.Utc){$ELSEIF TOFFEE}new PlatformDateTime(){$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.UtcNow){$ENDIF};
     const TicksTill1970: Int64 = 621355968000000000;
 
     property TimeSince: TimeSpan read (UtcNow-self);
@@ -122,7 +122,7 @@ type
 
     property Ticks: Int64 read
       {$IF COOPER}(mapped.TimeInMillis +mapped.TimeZone.getOffset(mapped.TimeInMillis)) * TimeSpan.TicksPerMillisecond + TicksTill1970
-      {$ELSEIF TOFFEE}Int64((mapped.timeIntervalSince1970 + NSTimeZone.localTimeZone.secondsFromGMTForDate(mapped)) * TimeSpan.TicksPerSecond) + TicksTill1970
+      {$ELSEIF TOFFEE}Int64((mapped.timeIntervalSince1970) * TimeSpan.TicksPerSecond) + TicksTill1970
       {$ELSEIF ECHOES OR ISLAND}fDateTime.Ticks
       {$ENDIF};
 
@@ -205,7 +205,11 @@ end;
 {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
 constructor DateTime(aDateTime: PlatformDateTime);
 begin
+  {$IF ECHOES}
+  fDateTime := aDateTime.ToUniversalTime;
+  {$ELSEIF ISLAND}
   fDateTime := aDateTime;
+  {$ENDIF}
 end;
 {$ENDIF}
 
@@ -213,8 +217,10 @@ constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer);
 begin
   {$IF COOPER OR TOFFEE}
   constructor(aYear, aMonth, aDay, 0, 0, 0, 0);
-  {$ELSEIF ECHOES OR ISLAND}
-  fDateTime := new PlatformDateTime(aYear, aMonth, aDay);
+  {$ELSEIF ECHOES}
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, 0, 0, 0, 0, DateTimeKind.Utc);
+  {$ELSEIF ISLAND}
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, 0, 0, 0, 0);
   {$ENDIF}
 end;
 
@@ -222,7 +228,9 @@ constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer; anHour: Int
 begin
   {$IF COOPER OR TOFFEE}
   constructor(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0, 0, DateTimeKind.Utc);
+  {$ELSEIF ISLAND}
   fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, 0, 0);
   {$ENDIF}
 end;
@@ -231,7 +239,9 @@ constructor DateTime(aYear: Integer; aMonth: Integer; aDay: Integer; anHour: Int
 begin
   {$IF COOPER OR TOFFEE}
   constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond, 0);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond, 0, DateTimeKind.Utc);
+  {$ELSEIF ISLAND}
   fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond, 0);
   {$ENDIF}
 end;
@@ -248,6 +258,8 @@ begin
   lCalendar.set(Calendar.MINUTE, aMinute);
   lCalendar.set(Calendar.SECOND, aSecond);
   lCalendar.set(Calendar.MILLISECOND, aMSec);
+  lCalendar.set(Calendar.ZONE_OFFSET, 0);
+  lCalendar.TimeZone := TimeZone.Utc;
   result := lCalendar;
   {$ELSEIF TOFFEE}
   var Components: NSDateComponents := new NSDateComponents();
@@ -258,9 +270,12 @@ begin
   Components.setMinute(aMinute);
   Components.setSecond(aSecond);
   Components.setNanosecond(aMSec * 1000000);
-  var lCalendar := NSCalendar.calendarWithIdentifier(NSGregorianCalendar);
+  var lCalendar := NSCalendar.calendarWithIdentifier(NSCalendarIdentifierGregorian);
+  lCalendar.timeZone := TimeZone.Utc;
   result := lCalendar.dateFromComponents(Components);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}
+  fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond, aMSec, DateTimeKind.Utc);
+  {$ELSEIF ISLAND}
   fDateTime := new PlatformDateTime(aYear, aMonth, aDay, anHour, aMinute, aSecond, aMSec);
   {$ENDIF}
 end;
@@ -271,10 +286,13 @@ begin
   var lCalendar := Calendar.Instance;
   var dt := (aTicks - TicksTill1970) / TimeSpan.TicksPerMillisecond;
   lCalendar.Time := new Date(dt - lCalendar.TimeZone.getOffset(dt));
+  lCalendar.TimeZone := TimeZone.Utc;
   result := lCalendar;
   {$ELSEIF TOFFEE}
   result := NSDate.dateWithTimeIntervalSince1970(Double(aTicks - TicksTill1970) / TimeSpan.TicksPerSecond);
-  {$ELSEIF ECHOES OR ISLAND}
+  {$ELSEIF ECHOES}
+  fDateTime := new PlatformDateTime(aTicks, DateTimeKind.Utc);
+  {$ELSEIF ISLAND}
   fDateTime := new PlatformDateTime(aTicks);
   {$ENDIF}
 end;
@@ -284,6 +302,7 @@ constructor DateTime(aDate: Date);
 begin
   result := Calendar.Instance;
   (result as Calendar).Time := aDate;
+  (result as Calendar).TimeZone := TimeZone.Utc;
 end;
 {$ENDIF}
 
@@ -457,7 +476,7 @@ begin
   {$ELSEIF TOFFEE}
   result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.DayCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := new DateTime(fDateTime.AddDays(Value));
+  result := fDateTime.AddDays(Value);
   {$ENDIF}
 end;
 
@@ -469,7 +488,7 @@ begin
   {$ELSEIF TOFFEE}
   result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.HourCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := new DateTime(fDateTime.AddHours(Value));
+  result := fDateTime.AddHours(Value);
   {$ENDIF}
 end;
 
@@ -481,7 +500,7 @@ begin
   {$ELSEIF TOFFEE}
   result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.MinuteCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := new DateTime(fDateTime.AddMinutes(Value));
+  result := fDateTime.AddMinutes(Value);
   {$ENDIF}
 end;
 
@@ -493,7 +512,7 @@ begin
   {$ELSEIF TOFFEE}
   result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.MonthCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := new DateTime(fDateTime.AddMonths(Value));
+  result := fDateTime.AddMonths(Value);
   {$ENDIF}
 end;
 
@@ -505,7 +524,7 @@ begin
   {$ELSEIF TOFFEE}
   result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.SecondCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := new DateTime(fDateTime.AddSeconds(Value));
+  result := fDateTime.AddSeconds(Value);
   {$ENDIF}
 end;
 
@@ -517,7 +536,7 @@ begin
   {$ELSEIF TOFFEE}
   result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.CalendarUnitNanosecond) value(Int64(Value)*Int64(1 000 000)) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := new DateTime(fDateTime.AddMilliseconds(Value));
+  result := fDateTime.AddMilliseconds(Value);
   {$ENDIF}
 end;
 
@@ -529,7 +548,7 @@ begin
   {$ELSEIF TOFFEE}
   result := NSCalendar.currentCalendar.dateByAddingUnit(NSCalendarUnit.YearCalendarUnit) value(Value) toDate(self) options(0) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := new DateTime(fDateTime.AddYears(Value));
+  result := fDateTime.AddYears(Value);
   {$ENDIF}
 end;
 
