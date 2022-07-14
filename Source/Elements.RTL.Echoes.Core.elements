@@ -20,7 +20,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
-    <OutputPath>.\bin\Debug\NETStandard</OutputPath>
+    <OutputPath>.\bin\Debug\NETCore</OutputPath>
     <DefineConstants>DEBUG;NETSTANDARD;TRACE</DefineConstants>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
@@ -38,7 +38,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
-    <OutputPath>.\bin\Release\NETStandard</OutputPath>
+    <OutputPath>.\bin\Release\NETCore</OutputPath>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
     <EnableAsserts>False</EnableAsserts>
