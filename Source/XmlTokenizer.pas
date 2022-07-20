@@ -307,13 +307,13 @@ begin
         fRowStart := lPosition + 1;
         inc(fRow);
       end;
-      {'<' : begin
+      '<' : begin
         Token := XmlTokenKind.SyntaxError;
         ErrorMessage := "Syntax error. Symbol '<' is not allowed in attribute value";
         fLength := lPosition - fPos;
         Value :=  new String(fData, fPos, lPosition-fPos);
         exit;
-      end;}
+      end;
     end;
     inc(lPosition);
   end;
