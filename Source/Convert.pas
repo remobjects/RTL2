@@ -217,6 +217,7 @@ begin
   else begin
     numberFormatter := new NSNumberFormatter();
     SetupNumberFormatter();
+    numberFormatter.locale := aLocale;
   end;
 
   result := numberFormatter.stringFromNumber(aValue) as not nullable;
