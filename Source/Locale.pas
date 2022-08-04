@@ -16,7 +16,7 @@ type
     property DecimalSeparator: Char read fDecimalSeparator write SetDecimalSeparator;
     property ThousandsSeparator: Char read fThousandsSeparator write SetThousandsSeparator;
     property Currency: String read fCurrency write SetCurrency;
-    property IsReadOnly: Boolean read fIsReadOnly;
+    property IsReadOnly: Boolean read fIsReadOnly unit write fIsReadOnly;
     constructor(aIsReadOnly: Boolean := false);
     constructor(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String; aIsReadOnly: Boolean := false);
   end;
@@ -225,6 +225,7 @@ begin
   fNumberFormat.DecimalSeparator := aLocaleID.NumberFormat.DecimalSeparator;
   fNumberFormat.ThousandsSeparator := aLocaleID.NumberFormat.ThousandsSeparator;
   {$ENDIF}
+  fNumberFormat.IsReadOnly := true;
   fDateTimeFormat.IsReadOnly := true;
 end;
 

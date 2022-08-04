@@ -307,13 +307,13 @@ begin
         fRowStart := lPosition + 1;
         inc(fRow);
       end;
-      {'<' : begin
+      '<' : begin
         Token := XmlTokenKind.SyntaxError;
         ErrorMessage := "Syntax error. Symbol '<' is not allowed in attribute value";
         fLength := lPosition - fPos;
         Value :=  new String(fData, fPos, lPosition-fPos);
         exit;
-      end;}
+      end;
     end;
     inc(lPosition);
   end;
@@ -390,7 +390,7 @@ begin
   if (fData.Length > lPosition+1) and (fData[lPosition+1] <> '>') then begin
     Token := XmlTokenKind.SyntaxError;
     fPos := lPosition;
-    Value := "Comment couldn't contain '--'";
+    Value := "For compatibility, ""--"" must not occur within comments.";
   end
   else begin
     fLength := lPosition - fPos+2;

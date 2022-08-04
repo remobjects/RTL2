@@ -893,10 +893,10 @@ begin
   result := S.Replace('&',"&amp;");
   if (C = '''') then result := result.Replace('''',"&apos");
   if (C = '"') then result := result.Replace('"',"&quot;");
-  if not(self is XmlAttribute) then begin
+  //if not(self is XmlAttribute) then begin
     result := result.Replace('>',"&gt;");
     result := result.Replace('<',"&lt;");
-  end;
+  //end;
 
 end;
 
