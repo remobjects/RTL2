@@ -947,7 +947,7 @@ begin
     exit nil;
 
   var obj: id := Number;
-  var NumberType := CFNumberGetType(CFNumberRef(obj));
+  var NumberType := CFNumberGetType(bridge<CFNumberRef>(obj));
 
   if NumberType in [CFNumberType.kCFNumberIntType, CFNumberType.kCFNumberNSIntegerType, CFNumberType.kCFNumberSInt8Type, CFNumberType.kCFNumberSInt32Type,
                     CFNumberType.kCFNumberSInt16Type, CFNumberType.kCFNumberShortType, CFNumberType.kCFNumberSInt64Type, CFNumberType.kCFNumberCharType] then
