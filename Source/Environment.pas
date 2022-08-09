@@ -38,12 +38,13 @@ type
 
     {$IF ECHOES}
     var fOS: nullable OperatingSystem;
+    var fOSName: nullable OperatingSystem;
     var fOSVersion: nullable String;
     var fProcessArchitecture: String;
     var fOSArchitecture: String;
     [System.Runtime.InteropServices.DllImport("libc")]
     method uname(buf: IntPtr): Integer; external;
-    method unameWrapper: String;
+    method UNameWrapper: String;
     class var unameResult: String;
     [System.Runtime.InteropServices.DllImport("shell32.dll")]
     class method SHGetKnownFolderPath([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStruct)] rfid: System.Guid; dwFlags: Cardinal; hToken: IntPtr; var pszPath: IntPtr): Integer; external;
@@ -551,7 +552,23 @@ begin
   {$ELSEIF NETFX_CORE}
   exit "Microsoft Windows NT 6.2";
   {$ELSEIF ECHOES}
-  exit System.Environment.OSVersion.Platform.ToString();
+  if not assigned(fOSName) then begin
+    fOSName := case System.Environment.OSVersion.Platform of
+      PlatformID.WinCE,
+      PlatformID.Win32NT,
+      PlatformID.Win32S,
+      PlatformID.Win32Windows: "Windows";
+      PlatformID.Xbox: "Xbox";
+      PlatformID.MacOSX: "macOS";
+      PlatformID.Unix: case unameWrapper() of
+                         "Linux": "Linux";
+                         "Darwin": "macOS";
+                         else System.Environment.OSVersion.Platform.ToString;
+                       end;
+      else System.Environment.OSVersion.Platform.ToString;
+    end;
+  end;
+  result := fOSName
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Environment.OSName;
   {$ENDIF}
