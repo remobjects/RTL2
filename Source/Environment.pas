@@ -38,7 +38,7 @@ type
 
     {$IF ECHOES}
     var fOS: nullable OperatingSystem;
-    var fOSName: nullable OperatingSystem;
+    var fOSName: nullable String;
     var fOSVersion: nullable String;
     var fProcessArchitecture: String;
     var fOSArchitecture: String;
@@ -475,7 +475,7 @@ begin
       PlatformID.Win32Windows: OperatingSystem.Windows;
       PlatformID.Xbox: OperatingSystem.Xbox;
       PlatformID.MacOSX: OperatingSystem.macOS;
-      PlatformID.Unix: case unameWrapper() of
+      PlatformID.Unix: case UNameWrapper() of
                          "Linux": OperatingSystem.Linux;
                          "Darwin": OperatingSystem.macOS;
                          else OperatingSystem.Unknown;
