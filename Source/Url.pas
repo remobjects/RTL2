@@ -457,12 +457,18 @@ end;
 
 method Url.WindowsPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
-  result := coalesce(DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(false), WindowsPath).Replace("/", "\");
+  if CanGetPathRelativeToUrl(aUrl) then
+    result := coalesce(DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(false), WindowsPath).Replace("/", "\")
+  else
+    result := WindowsPath;
 end;
 
 method Url.UnixPathRelativeToUrl(aUrl: not nullable Url) Threshold(aThreshold: Integer := 3): nullable String;
 begin
-  result := coalesce(DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true), UnixPath);
+  if CanGetPathRelativeToUrl(aUrl) then
+    result := coalesce(DoUnixPathRelativeToUrl(aUrl) Threshold(aThreshold) CaseInsensitive(true), UnixPath)
+  else
+    result := FilePath;
 end;
 
 method Url.CanGetPathRelativeToUrl(aUrl: not nullable Url): Boolean;
@@ -545,6 +551,8 @@ method Url.FilePathRelativeToUrlIfPossible(aUrl: not nullable Url): nullable Str
 begin
   if CanGetPathRelativeToUrl(aUrl) then
     result := coalesce(FilePathRelativeToUrl(aUrl) Threshold(Consts.MaxInt32), FilePath)
+  else
+    result := FilePath;
 end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
