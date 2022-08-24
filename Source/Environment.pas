@@ -286,7 +286,7 @@ begin
   var lSize := 255;
   var lName := new AnsiChar[lSize];
   if rtl.gethostname(@lName[0], lSize - 1) = 0 then
-    result := RemObjects.Elements.System.String.FromPAnsiChars(@lName[0])
+    result := RemObjects.Elements.System.String.FromPAnsiChar(@lName[0])
   else
     result := GetUserName();
   {$ENDIF}
