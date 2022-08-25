@@ -635,6 +635,20 @@ type
       {$ENDIF}
     end;
 
+    {$IF NOT ECHOES}
+    method Substring(aRange: RemObjects.Elements.System.Range): not nullable String; inline;
+    begin
+      var lStart := aRange.Start.GetOffset(Length);
+      var lEnd := aRange.End.GetOffset(Length);
+      result := Substring(lStart, lEnd-lStart);
+    end;
+    {$ENDIF}
+
+    method Substring(aRange: Range): not nullable String; inline;
+    begin
+      result := Substring(aRange.Location, aRange.Length);
+    end;
+
     method SubstringToFirstOccurrenceOf(aSeparator: not nullable String): not nullable String;
     begin
       result := self;
@@ -1162,6 +1176,12 @@ type
       result := mapped[aIndex];
       {$ENDIF}
     end; default; inline;
+
+    {$IF NOT ECHOES}
+    property Chars[aIndex: &Index]: Char read Chars[aIndex.GetOffset(Length)]; default; inline;
+    property Chars[aRange: RemObjects.Elements.System.Range]: String read Substring(aRange); default; inline;
+    {$ENDIF}
+      property Chars[aRange: Range]: String read Substring(aRange); default; inline;
 
     property FirstLine: String read begin
       var p := IndexOfAny([#13, #10]);
