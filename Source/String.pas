@@ -1181,7 +1181,7 @@ type
     property Chars[aIndex: &Index]: Char read Chars[aIndex.GetOffset(Length)]; default; inline;
     property Chars[aRange: RemObjects.Elements.System.Range]: String read Substring(aRange); default; inline;
     {$ENDIF}
-      property Chars[aRange: Range]: String read Substring(aRange); default; inline;
+    property Chars[aRange: Range]: String read Substring(aRange); default; inline;
 
     property FirstLine: String read begin
       var p := IndexOfAny([#13, #10]);
