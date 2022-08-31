@@ -8,8 +8,8 @@
 interface
 
 type
-  CurlException = public class(Exception) end;
-  CURLCode = public enum (
+  CurlException = class(Exception) end;
+  CURLCode = enum (
     CURLE_OK = 0, CURLE_UNSUPPORTED_PROTOCOL, CURLE_FAILED_INIT, CURLE_URL_MALFORMAT, CURLE_NOT_BUILT_IN,
     CURLE_COULDNT_RESOLVE_PROXY, CURLE_COULDNT_RESOLVE_HOST, CURLE_COULDNT_CONNECT, CURLE_FTP_WEIRD_SERVER_REPLY,
     CURLE_REMOTE_ACCESS_DENIED, CURLE_FTP_ACCEPT_FAILED, CURLE_FTP_WEIRD_PASS_REPLY, CURLE_FTP_ACCEPT_TIMEOUT,
@@ -49,7 +49,7 @@ type
 
   type
 
-  CURLINFO = public enum (
+  CURLINFO = enum (
     CURLINFO_NONE, CURLINFO_EFFECTIVE_URL = CURLINFO_STRING + 1, CURLINFO_RESPONSE_CODE = CURLINFO_LONG + 2,
     CURLINFO_TOTAL_TIME = CURLINFO_DOUBLE + 3, CURLINFO_NAMELOOKUP_TIME = CURLINFO_DOUBLE + 4,
     CURLINFO_CONNECT_TIME = CURLINFO_DOUBLE + 5, CURLINFO_PRETRANSFER_TIME = CURLINFO_DOUBLE + 6,
@@ -75,7 +75,7 @@ type
     CURLINFO_LASTONE = 44
   );
 
-  CURLOption = public enum (
+  CURLOption = enum (
     CURLOPT_PORT = 3, CURLOPT_TIMEOUT = 13, CURLOPT_INFILESIZE = 14, CURLOPT_LOW_SPEED_LIMIT = 19, CURLOPT_LOW_SPEED_TIME = 20,
     CURLOPT_RESUME_FROM = 21, CURLOPT_CRLF = 27, CURLOPT_SSLVERSION = 32, CURLOPT_TIMECONDITION = 33, CURLOPT_TIMEVALUE = 34,
     CURLOPT_VERBOSE = 41, CURLOPT_HEADER = 42, CURLOPT_NOPROGRESS = 43, CURLOPT_NOBODY = 44, CURLOPT_FAILONERROR = 45,
@@ -143,25 +143,25 @@ type
     CURLOPT_MAX_SEND_SPEED_LARGE = 30145, CURLOPT_MAX_RECV_SPEED_LARGE = 30146, CURLOPT_LASTENTRY
   );
 
-  curl_slist = public record
+  curl_slist = record
   public
     data: ^AnsiChar;
     next: ^curl_slist;
   end;
 
   PCURL = ^void;
-  CurlGlobalInitFunc = public function(flags: Integer): CURLCode;
-  CurlGlobalCleanupFunc = public procedure;
-  CurlEasyPerform = public function(curl: PCURL): CURLCode;
-  CurlEasyGetInfo1Func = public function(curl: PCURL; info: CURLINFO; data: ^NativeInt): CURLCode;
-  CurlEasySetOptPointerFunc = public function(curl: PCURL; option: CURLOption; aData: ^void): CURLCode;
-  CurlEasySetOptIntegerFunc = public function(curl: PCURL; option: CURLOption; aData: Integer): CURLCode;
-  CurlEasyInitFunc = public function: PCURL;
-  CurlEasyCleanUp = public procedure(curl: PCURL);
-  CurlSListAppendFunc = public function(list: ^curl_slist; str: ^AnsiChar): ^curl_slist;
-  CurlSListFreeAllFunc = public procedure(list: ^curl_slist);
+  CurlGlobalInitFunc = function(flags: Integer): CURLCode;
+  CurlGlobalCleanupFunc = procedure;
+  CurlEasyPerform = function(curl: PCURL): CURLCode;
+  CurlEasyGetInfo1Func = function(curl: PCURL; info: CURLINFO; data: ^NativeInt): CURLCode;
+  CurlEasySetOptPointerFunc = function(curl: PCURL; option: CURLOption; aData: ^void): CURLCode;
+  CurlEasySetOptIntegerFunc = function(curl: PCURL; option: CURLOption; aData: Integer): CURLCode;
+  CurlEasyInitFunc = function: PCURL;
+  CurlEasyCleanUp = procedure(curl: PCURL);
+  CurlSListAppendFunc = function(list: ^curl_slist; str: ^AnsiChar): ^curl_slist;
+  CurlSListFreeAllFunc = procedure(list: ^curl_slist);
 
-  CurlHelper = public class
+  CurlHelper = class
   private
     class const LibCurl: RemObjects.Elements.System.String = 'libcurl.so';
     class var fLib: ^Void;
