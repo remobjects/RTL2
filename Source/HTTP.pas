@@ -983,8 +983,10 @@ begin
         else begin
           if E.Response is HttpWebResponse then
             raise new HttpException(E.Message, aRequest, new HttpResponse(E.Response as HttpWebResponse))
-          else
-            raise new HttpException(E.Message, aRequest);
+          else case E.Status of
+            WebExceptionStatus.NameResolutionFailure: raise new HttpException($"Could not resolve host name '{aRequest.Url.Host}'", aRequest)
+            else raise new HttpException(E.Message, aRequest);
+          end;
         end;
       end;
     end;
