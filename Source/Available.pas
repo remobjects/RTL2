@@ -65,6 +65,16 @@ begin
         if defined("COOPER") and (Environment.OS = OperatingSystem.Android) then
           exit __ElementsPlatformVersionAtLeast(aMaj, aMin, aRev);
       end;
+
+    "java", "jvm", "jdk": begin
+        if defined("COOPER") and (Environment.OS ≠ OperatingSystem.Android) then
+          exit __ElementsManagedRuntimeVersionAtLeast(aMaj, aMin, aRev);
+      end;
+
+    "net", ".net", "clr": begin
+        if defined("ECHOES") then
+          exit __ElementsManagedRuntimeVersionAtLeast(aMaj, aMin, aRev);
+      end;
   end;
 end;
 
@@ -76,6 +86,9 @@ end;
 
 
 var __ElementsPlatformVersion: array[0..3] of Integer;
+{$IFDEF ECHOES OR COOPER}
+var __ElementsManagedRuntimeVersion: array[0..3] of Integer;
+{$ENDIF}
 {$IFDEF TARGET_OS_UIKITFORMAC}
 var __ElementsUIKitForMacVersion: array[0..3] of Integer;
 {$ENDIF}
@@ -190,8 +203,26 @@ begin
     if length(lVersion) ≥ 2 then
       __ElementsPlatformVersion[2] := Convert.TryToInt32(lVersion[1]);
     if length(lVersion) ≥ 3 then
-      __ElementsPlatformVersion[3] := Convert.TryToInt32(lVersion[02]);
+      __ElementsPlatformVersion[3] := Convert.TryToInt32(lVersion[2]);
 
+  {$ENDIF}
+
+  {$IF ECHOES OR COOPER}
+    {$IF ECHOES}
+      {$IF NETCOREAPP OR NETSTANDARD}
+      lVersion := String(System.Reflection.Assembly.GetEntryAssembly:GetCustomAttribute<System.Runtime.Versioning.TargetFrameworkAttribute>:FrameworkName):SubstringFromLastOccurrenceOf("=v"):Split(".");;
+      {$ELSE}
+      lVersion := String(typeOf(System.String).Assembly.GetName.Version.ToString):Split(".");
+      {$ENDIF}
+    {$ELSE}
+    lVersion := Environment.JavaSystemProperty["java.version"]:Split(".");
+    {$ENDIF}
+    if length(lVersion) ≥ 1 then
+      __ElementsManagedRuntimeVersion[1] := Convert.TryToInt32(lVersion[0]);
+    if length(lVersion) ≥ 2 then
+      __ElementsManagedRuntimeVersion[2] := Convert.TryToInt32(lVersion[1]);
+    if length(lVersion) ≥ 3 then
+      __ElementsManagedRuntimeVersion[3] := Convert.TryToInt32(lVersion[2]);
   {$ENDIF}
 end;
 
@@ -208,6 +239,20 @@ begin
   exit true;
 end;
 
+{$IF ECHOES OR COOPER}
+method __ElementsManagedRuntimeVersionAtLeast(aMaj, aMin: Integer; aRev: Integer := 0): Boolean;
+begin
+  if (aMaj > __ElementsManagedRuntimeVersion[1]) then exit false;
+  if (aMaj = __ElementsManagedRuntimeVersion[1]) then begin
+    if (aMin > __ElementsManagedRuntimeVersion[2]) then exit false;
+    if (aMin = __ElementsManagedRuntimeVersion[2]) then begin
+      if (aRev > __ElementsManagedRuntimeVersion[3]) then exit false;
+    end;
+  end;
+  exit true;
+end;
+{$ENDIF}
+
 {$IF DARWIN AND TARGET_OS_UIKITFORMAC}
 method __ElementsUIKitForMacVersionAtLeast(aMaj, aMin: Integer; aRev: Integer := 0): Boolean;
 begin
@@ -222,5 +267,7 @@ begin
   exit true;
 end;
 {$ENDIF}
+
+
 
 end.
