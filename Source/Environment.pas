@@ -22,8 +22,8 @@ type
     method GetProcessArchitecture: String;
     method GetMode: String;
     method GetPlatform: String;
-    method GetEnvironmentVariable(aName: String): String;
-    method SetEnvironmentVariable(aName: String; aValue: String);
+    method GetEnvironmentVariable(aName: not nullable String): nullable String;
+    method SetEnvironmentVariable(aName: not nullable String; aValue: nullable String);
     method GetCurrentDirectory: String;
 
     method GetIsMono: Boolean;
@@ -44,10 +44,14 @@ type
     var fOSArchitecture: String;
     [System.Runtime.InteropServices.DllImport("libc")]
     method uname(buf: IntPtr): Integer; external;
-    method UNameWrapper: String;
+    method unameWrapper: String;
     class var unameResult: String;
     [System.Runtime.InteropServices.DllImport("shell32.dll")]
     class method SHGetKnownFolderPath([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStruct)] rfid: System.Guid; dwFlags: Cardinal; hToken: IntPtr; var pszPath: IntPtr): Integer; external;
+    {$ENDIF}
+
+    {$IF COOPER}
+    method GetJavaSystemProperty(aName: not nullable String): nullable String;
     {$ENDIF}
   public
     property LineBreak: String read GetNewLine;
@@ -126,6 +130,7 @@ type
 
     {$IF COOPER}
     property EnvironmentVariable[aName: String]: String read GetEnvironmentVariable;
+    property JavaSystemProperty[aName: String]: String read GetJavaSystemProperty;
     {$ELSE}
     property EnvironmentVariable[aName: String]: String read GetEnvironmentVariable write SetEnvironmentVariable;
     {$ENDIF}
@@ -166,7 +171,7 @@ type
 
 implementation
 
-method Environment.GetEnvironmentVariable(aName: String): String;
+method Environment.GetEnvironmentVariable(aName: not nullable String): nullable String;
 begin
   {$IF COOPER}
   exit System.getenv(aName);
@@ -180,7 +185,7 @@ begin
 end;
 
 {$IF COOPER}[Error("This method is not supported for Java")]{$ENDIF}
-method Environment.SetEnvironmentVariable(aName: String; aValue: String);
+method Environment.SetEnvironmentVariable(aName: not nullable String; aValue: nullable String);
 begin
   {$IF COOPER}
   raise new NotImplementedException("Setting ebvironment variables is not supported on Java.")
@@ -192,6 +197,15 @@ begin
   RemObjects.Elements.System.Environment.SetEnvironmentVariable(aName, aValue);
   {$ENDIF}
 end;
+
+{$IF COOPER}
+method Environment.GetJavaSystemProperty(aName: not nullable String): nullable String;
+begin
+  var p := System.Properties;
+  if p.containsKey(aName) then
+    result := p.get(aName):ToString;
+end;
+{$ENDIF}
 
 method Environment.GetNewLine: String;
 begin
@@ -231,8 +245,6 @@ begin
     {$ELSEIF TVOS}
     exit "Apple TV User";
     {$ENDIF}
-  {$ELSEIF NETFX_CORE}
-  result := Windows.System.UserProfile.UserInformation.GetDisplayNameAsync.Await;
   {$ELSEIF ECHOES}
   result := System.Environment.UserName;
   {$ELSEIF ISLAND}
@@ -464,8 +476,6 @@ begin
     {$ELSE}
       {$ERROR Unsupported Cocoa platform}
     {$ENDIF}
-  {$ELSEIF NETFX_CORE}
-  exit OperatingSystem.Windows
   {$ELSEIF ECHOES}
   if not assigned(fOS) then begin
     fOS := case System.Environment.OSVersion.Platform of
@@ -475,7 +485,7 @@ begin
       PlatformID.Win32Windows: OperatingSystem.Windows;
       PlatformID.Xbox: OperatingSystem.Xbox;
       PlatformID.MacOSX: OperatingSystem.macOS;
-      PlatformID.Unix: case UNameWrapper() of
+      PlatformID.Unix: case unameWrapper() of
                          "Linux": OperatingSystem.Linux;
                          "Darwin": OperatingSystem.macOS;
                          else OperatingSystem.Unknown;
@@ -537,7 +547,7 @@ method Environment.GetOSName: String;
 begin
   {$IF COOPER}
   exit System.getProperty("os.name");
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
     {$IF OSX OR UIKITFORMAC}
     exit "macOS";
     {$ELSEIF IOS}
@@ -549,8 +559,6 @@ begin
     {$ELSE}
       {$ERROR Unsupported Cocoa platform}
     {$ENDIF}
-  {$ELSEIF NETFX_CORE}
-  exit "Microsoft Windows NT 6.2";
   {$ELSEIF ECHOES}
   if not assigned(fOSName) then begin
     fOSName := case System.Environment.OSVersion.Platform of
@@ -576,28 +584,7 @@ end;
 
 method Environment.GetOSVersion: String;
 begin
-  {$IF COOPER}
-  exit System.getProperty("os.version");
-  {$ELSEIF TOFFEEV1}
-  exit $"{CocoaVersion[0]}.{CocoaVersion[1]}.{CocoaVersion[2]}"
-  {$ELSEIF NETFX_CORE}
-  exit "6.2";
-  {$ELSEIF ECHOES}
-  case OS of
-    OperatingSystem.macOS: begin
-        if not assigned(fOSVersion) then begin
-          Process.Run("/usr/bin/sw_vers", ["-productVersion"], out fOSVersion);
-          fOSVersion := fOSVersion.Trim;
-        end;
-        exit fOSVersion;
-      end;
-    else begin
-      exit System.Environment.OSVersion.Version.ToString;
-    end;
-  end;
-  {$ELSEIF ISLAND}
-  exit RemObjects.Elements.System.Environment.OSVersion;
-  {$ENDIF}
+  result := __ElementsPlatformVersionString;
 end;
 
 method Environment.GetOSBitness: Int32;

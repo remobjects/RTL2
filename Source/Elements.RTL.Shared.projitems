@@ -168,6 +168,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinkedList.pas">
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Available.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
