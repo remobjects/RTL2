@@ -635,14 +635,12 @@ type
       {$ENDIF}
     end;
 
-    {$IF NOT ECHOES}
     method Substring(aRange: RemObjects.Elements.System.Range): not nullable String; inline;
     begin
       var lStart := aRange.Start.GetOffset(Length);
       var lEnd := aRange.End.GetOffset(Length);
       result := Substring(lStart, lEnd-lStart);
     end;
-    {$ENDIF}
 
     method Substring(aRange: Range): not nullable String; inline;
     begin
@@ -1177,10 +1175,9 @@ type
       {$ENDIF}
     end; default; inline;
 
-    {$IF NOT ECHOES}
     property Chars[aIndex: &Index]: Char read Chars[aIndex.GetOffset(Length)]; default; inline;
     property Chars[aRange: RemObjects.Elements.System.Range]: String read Substring(aRange); default; inline;
-    {$ENDIF}
+
     property Chars[aRange: Range]: String read Substring(aRange); default; inline;
 
     property FirstLine: String read begin
