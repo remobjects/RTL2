@@ -84,6 +84,25 @@ begin
   result := $"{__ElementsPlatformVersion[1]}.{__ElementsPlatformVersion[2]},{__ElementsPlatformVersion[3]}";
 end;
 
+{$IFDEF ECHOES}
+method __ElementsNetFrameworkVersionString: String; public;
+begin
+  __ElementsLoadPlatformVersion;
+  result := $"{__ElementsManagedRuntimeVersion[1]}.{__ElementsManagedRuntimeVersion[2]},{__ElementsManagedRuntimeVersion[3]}";
+end;
+{$ENDIF}
+
+{$IFDEF COOPER}
+method __ElementsJavaRuntimeVersionString: String; public;
+begin
+  __ElementsLoadPlatformVersion;
+  result := $"{__ElementsManagedRuntimeVersion[1]}.{__ElementsManagedRuntimeVersion[2]},{__ElementsManagedRuntimeVersion[3]}";
+end;
+{$ENDIF}
+
+//
+//
+//
 
 var __ElementsPlatformVersion: array[0..3] of Integer;
 {$IFDEF ECHOES OR COOPER}
