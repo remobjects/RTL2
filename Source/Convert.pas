@@ -56,7 +56,7 @@ type
     method ToDouble(aValue: not nullable String; aLocale: Locale := Locale.Current): Double;
     method ToDoubleInvariant(aValue: not nullable String): Double; inline;
 
-    method MilisecondsToTimeString(aMS: Double): String;
+    method MillisecondsToTimeString(aMS: Double): String;
 
     method ToByte(aValue: Boolean): Byte;
     method ToByte(aValue: Double): Byte;
@@ -745,7 +745,7 @@ begin
   {$ENDIF}
 end;
 
-method Convert.MilisecondsToTimeString(aMS: Double): String;
+method Convert.MillisecondsToTimeString(aMS: Double): String;
 begin
   var lValue := aMS as Int64;
   var lMilliSeconds := lValue mod 1000;
