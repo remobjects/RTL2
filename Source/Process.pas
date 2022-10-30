@@ -58,6 +58,7 @@ type
   public
     class method JoinAndQuoteArgumentsForCommandLine(aArguments: not nullable ImmutableList<String>): not nullable String;
     class method SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
+    class method SplitQuotedCEscapedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
     class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable ImmutableList<String>): not nullable String;
   end;
 
@@ -396,6 +397,53 @@ begin
       else begin
           lCurrent := lCurrent+ch;
         end;
+    end;
+  end;
+
+  lCurrent := lCurrent.Trim();
+  if length(lCurrent) > 0 then
+    lResult.Add(lCurrent);
+
+  result := lResult;
+end;
+
+class method Process.SplitQuotedCEscapedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
+begin
+  var lResult := new List<String>;
+  var lCurrent: String := ""; // why is this needed for lCurrent to not become an NSString?
+  var lInQuotes := false;
+  var lEscaped := false;
+  for i: Integer := 0 to length(aArgumentString)-1 do begin
+    var ch := aArgumentString[i];
+    if lEscaped then begin
+      lCurrent := lCurrent+ch;
+    end
+    else begin
+      case ch of
+        ' ': begin
+            if lInQuotes then begin
+              lCurrent := lCurrent+ch;
+            end
+            else begin
+              lCurrent := lCurrent.Trim();
+              if length(lCurrent) > 0 then
+                lResult.Add(lCurrent);
+              lCurrent := "";
+            end;
+          end;
+        '\': begin
+            if lInQuotes then begin
+              lEscaped := true;
+            end
+            else begin
+              lCurrent := lCurrent+ch;
+            end;
+          end;
+        '"': lInQuotes := not lInQuotes;
+        else begin
+            lCurrent := lCurrent+ch;
+          end;
+      end;
     end;
   end;
 
