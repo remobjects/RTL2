@@ -81,21 +81,24 @@ type
     [ToString]
     method ToString: PlatformString; override;
     {$ENDIF}
-    method ToString(aTimeZone: TimeZone := nil): String;
-    method ToString(Format: String; aTimeZone: TimeZone := nil): String;
-    method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
+    method ToString(aTimeZone: TimeZone := nil): not nullable String;
+    method ToString(Format: String; aTimeZone: TimeZone := nil): not nullable String;
+    method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): not nullable String;
 
-    method ToShortDateString(aTimeZone: TimeZone := nil): String;
-    method ToShortTimeString(aTimeZone: TimeZone := nil): String;
+    method ToShortDateString(aTimeZone: TimeZone := nil): not nullable String;
+    method ToShortTimeString(aTimeZone: TimeZone := nil): not nullable String;
 
-    method ToShortPrettyDateAndTimeString(aTimeZone: TimeZone := nil): String;
-    method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
-    method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
+    method ToShortPrettyDateAndTimeString(aTimeZone: TimeZone := nil): not nullable String;
+    method ToShortPrettyDateString(aTimeZone: TimeZone := nil): not nullable String;
+    method ToLongPrettyDateString(aTimeZone: TimeZone := nil): not nullable String;
 
-    method ToISO8601String(aFormat: ISO8601Format := ISO8601Format.Standard; aTimeZone: TimeZone := nil): String;
+    method ToISO8601String(aFormat: ISO8601Format := ISO8601Format.Standard; aTimeZone: TimeZone := nil): not nullable String;
 
     class method ToOADate(aDateTime: DateTime): Double;
     class method FromOADate(aOADate: Double): DateTime;
+
+    class method ToUnixDate(aDateTime: DateTime): Integer;
+    class method FromUnixDate(aUnixDate: Integer): DateTime;
 
     class method TryParse(aDateTime: String; aOptions: DateParserOptions := []): nullable DateTime;
     class method TryParse(aDateTime: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
@@ -318,12 +321,12 @@ begin
 end;
 {$ENDIF}
 
-method DateTime.ToString(Format: String; aTimeZone: TimeZone := nil): String;
+method DateTime.ToString(Format: String; aTimeZone: TimeZone := nil): not nullable String;
 begin
   result := ToString(Format, nil, aTimeZone);
 end;
 
-method DateTime.ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
+method DateTime.ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): not nullable String;
 begin
   {$IF COOPER}
   var lFormatter := if String.IsNullOrEmpty(Culture) then
@@ -354,12 +357,12 @@ begin
   {$ENDIF}
 end;
 
-method DateTime.ToString(aTimeZone: TimeZone := nil): String;
+method DateTime.ToString(aTimeZone: TimeZone := nil): not nullable String;
 begin
   result := ToString(DEFAULT_FORMAT, nil, aTimeZone);
 end;
 
-method DateTime.ToISO8601String(aFormat: ISO8601Format := ISO8601Format.Standard; aTimeZone: TimeZone := nil): String;
+method DateTime.ToISO8601String(aFormat: ISO8601Format := ISO8601Format.Standard; aTimeZone: TimeZone := nil): not nullable String;
 begin
   var lFormat: String;
   {$IF COOPER OR TOFFEE OR DARWIN}
@@ -383,7 +386,7 @@ begin
   result := ToString(lFormat, aTimeZone);
 end;
 
-method DateTime.ToShortDateString(aTimeZone: TimeZone := nil): String;
+method DateTime.ToShortDateString(aTimeZone: TimeZone := nil): not nullable String;
 begin
   {$IF COOPER}
   var lFormatter := java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT);
@@ -400,7 +403,7 @@ begin
   {$ENDIF}
 end;
 
-method DateTime.ToShortTimeString(aTimeZone: TimeZone := nil): String;
+method DateTime.ToShortTimeString(aTimeZone: TimeZone := nil): not nullable String;
 begin
   {$IF COOPER}
   var lFormatter := java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT);
@@ -417,12 +420,12 @@ begin
   {$ENDIF}
 end;
 
-method DateTime.ToShortPrettyDateAndTimeString(aTimeZone: TimeZone := nil): String;
+method DateTime.ToShortPrettyDateAndTimeString(aTimeZone: TimeZone := nil): not nullable String;
 begin
   result := ToShortPrettyDateString(aTimeZone)+" "+ToShortTimeString(aTimeZone);
 end;
 
-method DateTime.ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
+method DateTime.ToShortPrettyDateString(aTimeZone: TimeZone := nil): not nullable String;
 begin
   {$IF COOPER}
   var lFormatter := java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT);
@@ -441,7 +444,7 @@ begin
   {$ENDIF}
 end;
 
-method DateTime.ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
+method DateTime.ToLongPrettyDateString(aTimeZone: TimeZone := nil): not nullable String;
 begin
   {$IF COOPER}
   var lFormatter := java.text.DateFormat.getDateInstance(java.text.DateFormat.LONG);
@@ -709,6 +712,17 @@ begin
 
   lMillis := lMillis + (OADATE_OFFSET / TICKS_PER_MILLISECOND);
   result := new DateTime(lMillis * TICKS_PER_MILLISECOND);
+end;
+
+class method DateTime.ToUnixDate(aDateTime: DateTime): Integer;
+begin
+
+end;
+
+class method DateTime.FromUnixDate(aUnixDate: Integer): DateTime;
+begin
+  var lUnixEpoc := new DateTime(1970, 1, 1, 0, 0, 0, 0);
+  result := lUnixEpoc.AddSeconds(aUnixDate);
 end;
 
 class method DateTime.TryParse(aDateTime: String; aOptions: DateParserOptions := []): nullable DateTime;
