@@ -8,7 +8,7 @@ type
 
   IImmutableStack<T> = public interface
     method Contains(Item: T): Boolean;
-    method Peek: T;
+    method Peek: nullable T;
     method ToArray: array of T;
     property Count: Integer read;
   end;
@@ -21,7 +21,7 @@ type
     constructor; mapped to constructor();
 
     method Contains(Item: T): Boolean;
-    method Peek: T;
+    method Peek: nullable T;
     method ToArray: array of T;
 
     property Count: Integer read {$IF COOPER}mapped.size{$ELSEIF ECHOES OR TOFFEE OR ISLAND}mapped.Count{$ENDIF};
@@ -57,13 +57,13 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableStack<T>.Peek: T;
+method ImmutableStack<T>.Peek: nullable T;
 begin
   {$IF NOT TOFFEE}
-  exit mapped.Peek;
+  if mapped.Count > 0 then
+    exit mapped.Peek;
   {$ELSE}
   var n := mapped.lastObject;
-  if n = nil then raise new StackEmptyException;
   if n = NSNull.null then n := nil;
   result := T(n);
   {$ENDIF}
