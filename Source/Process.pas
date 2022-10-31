@@ -179,8 +179,9 @@ end;
 
 class method Process.Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer;
 begin
-  using lTask := RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, aStdOutCallback, aStdErrCallback) do begin
-    lTask.WaitFor();
+  var lFinished := new &Event;
+  using lTask := RunAsync(aCommand, aArguments, aEnvironment, aWorkingDirectory, aStdOutCallback, aStdErrCallback, () -> lFinished.Set()) do begin
+    lFinished.WaitFor();
     result := lTask.ExitCode;
   end;
 end;
@@ -191,6 +192,8 @@ begin
   result := lTask;
 
   {$IF TOFFEE}
+  var lStdOutFinished := if assigned(aStdOutCallback) then new &Event;
+  var lStdErrFinished := if assigned(aStdErrCallback) then new &Event;
   if assigned(aStdOutCallback) then
     (lTask as PlatformProcess).standardOutput := NSPipe.pipe();
   if assigned(aStdErrCallback) then
@@ -214,7 +217,12 @@ begin
         processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
         d := stdOut.availableData;
       end;
-      stdOut.closeFile();
+      var lError: NSError;
+      if available("macOS 10.15") then
+        stdOut.closeAndReturnError(var lError)
+      else
+        stdOut.closeFile();
+      lStdOutFinished.Set();
     end);
 
   if assigned(aStdErrCallback) then
@@ -235,13 +243,20 @@ begin
         processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
         d := stdErr.availableData;
       end;
-      stdErr.closeFile();
+      var lError: NSError;
+      if available("macOS 10.15") then
+        stdErr.closeAndReturnError(var lError)
+      else
+        stdErr.closeFile();
+      lStdErrFinished.Set();
     end);
 
   lTask.Start();
 
   if assigned(aFinishedCallback) then async begin
     lTask.WaitFor();
+    lStdOutFinished:WaitFor();
+    lStdErrFinished:WaitFor();
     aFinishedCallback(lTask.ExitCode);
   end;
   {$ELSEIF ECHOES}
