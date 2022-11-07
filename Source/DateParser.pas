@@ -3,7 +3,7 @@
 interface
 
 type
-  DateParserOption = public enum(UseCurrentForMissing) of Integer;
+  DateParserOption = public enum(UseCurrentForMissing, IgnoreWhiteSpaces, IgnoreTInIso8601) of Integer;
   DateParserOptions = public set of DateParserOption;
 
   DateParser = public class
@@ -13,7 +13,7 @@ type
     class method GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMaxLength: Integer): Boolean;
     class method GetNextNumberToken(var aFormat: String; var aNumber: Integer; aMin: Integer; aMax: Integer; aMaxLength: Integer): Boolean;
     class method GetNextSepOrStringToken(var aFormat: String): String;
-    class method SkipToNextToken(var aFormat: String; var aDateTime: String): Boolean;
+    class method SkipToNextToken(var aFormat: String; var aDateTime: String; aOptions: DateParserOptions): Boolean;
     class method SkipToken(aToken: String; var aFormat: String): Boolean;
     class method StandardToInternalPattern(aFormat: String; aLocale: Locale; var output: String): Boolean;
     class method CheckIfAny(aToken: String; aValues: array of String): Boolean;
@@ -125,12 +125,17 @@ begin
   end;
 end;
 
-class method DateParser.SkipToNextToken(var aFormat: String; var aDateTime: String): Boolean;
+class method DateParser.SkipToNextToken(var aFormat: String; var aDateTime: String; aOptions: DateParserOptions): Boolean;
 begin
   var lToken := GetNextSepOrStringToken(var aFormat);
   while lToken.Length > 0 do begin
-    if aDateTime.StartsWith(lToken) then
-      aDateTime := aDateTime.Substring(lToken.Length)
+    if (lToken.Trim <> '') and (DateParserOption.IgnoreWhiteSpaces in aOptions) then
+      aDateTime := aDateTime.TrimStart;
+    if aDateTime.StartsWith(lToken) then begin
+      aDateTime := aDateTime.Substring(lToken.Length);
+      if DateParserOption.IgnoreWhiteSpaces in aOptions then
+        aDateTime := aDateTime.TrimStart;
+    end
     else
       exit false;
     lToken := GetNextSepOrStringToken(var aFormat);
@@ -259,11 +264,13 @@ begin
   var lTmp: String;
   var lFormat := aFormat.Trim;
   var lDateTime := aDateTime.Trim;
-  if not SkipToNextToken(var lFormat, var lDateTime) then
+  if not SkipToNextToken(var lFormat, var lDateTime, aOptions) then
     exit false;
   var lToken := GetNextStringToken(var lFormat);
 
   while lToken.Length > 0 do begin
+    if DateParserOption.IgnoreWhiteSpaces in aOptions then
+      lDateTime := lDateTime.TrimStart;
     case lToken of
       'd': begin // day 1 --> 31
         if not GetNextNumberToken(var lDateTime, var lDay, 1, 31, 2) then
@@ -389,9 +396,15 @@ begin
       end;
 
       'T': begin // special case: separator for ISO 8601 strings
-        lTmp := GetNextStringToken(var lDateTime);
-        if lTmp ≠ 'T' then
-          exit false;
+        if DateParserOption.IgnoreTInIso8601 in aOptions then begin
+          if (lDateTime.Length > 0) and (lDateTime[0] in ['T', ' ']) then
+            lDateTime := lDateTime.Substring(1);
+        end
+        else begin
+          lTmp := GetNextStringToken(var lDateTime);
+          if lTmp ≠ 'T' then
+            exit false;
+        end;
       end;
 
       'K': begin // timezone info
@@ -442,7 +455,7 @@ begin
       end;
     end;
 
-    if not SkipToNextToken(var lFormat, var lDateTime) then
+    if not SkipToNextToken(var lFormat, var lDateTime, aOptions) then
       exit false;
     lToken := GetNextStringToken(var lFormat);
   end;
@@ -468,9 +481,9 @@ end;
 
 class method DateParser.TryParseISO8601(aDateTime: String; out output: DateTime): Boolean;
 begin
-  var lFormats := ['yyyy-MM-ddTHH:mm:ss.fffffffK', 'yyyy-MM-ddTHH:mm:ss.fffffffzzz', 'yyyy-MM-ddTHH:mm:ssK', 'yyyy-MM-ddTHH:mm:ss.fK'];
+  var lFormats := ['yyyy-MM-ddTHH:mm:ss.fffffffK', 'yyyy-MM-ddTHH:mm:ss.fffffffzzz', 'yyyy-MM-ddTHH:mm:ssK', 'yyyy-MM-ddTHH:mm:ss.fK', 'yyyy-MM-ddTHH:mm:ss K'];
   for lFormat in lFormats do begin
-    result := InternalParse(aDateTime, lFormat, Locale.Invariant, out output, []);
+    result := InternalParse(aDateTime, lFormat, Locale.Invariant, out output, [DateParserOption.IgnoreTInIso8601, DateParserOption.IgnoreWhiteSpaces]);
     if result then
       exit;
   end;
@@ -493,7 +506,7 @@ begin
   lFormats[6] := aLocale.DateTimeFormat.LongTimePattern; // long time
   lFormats[7] := aLocale.DateTimeFormat.ShortTimePattern; // short time
   for each lFormat in lFormats do
-    if InternalParse(aDateTime, lFormat, aLocale, out  output, aOptions) then
+    if InternalParse(aDateTime, lFormat, aLocale, out  output, [DateParserOption.IgnoreWhiteSpaces] + aOptions) then
       exit true;
 
   result := false;
