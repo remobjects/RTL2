@@ -435,7 +435,7 @@ begin
         if (lTmp <> '+') and (lTmp <> '-') then exit false;
         if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then
           exit false;
-        if lTmp = '-' then lOffset := -lOffset;
+        if lTmp = '+' then lOffset := -lOffset;
       end;
 
       'zzz': begin // timezone, with minutes, -02:00
@@ -447,7 +447,7 @@ begin
           exit false;
         if not GetNextNumberToken(var lDateTime, var lOffsetMin, 0, 59, 2) then
           exit false;
-        if lTmp = '-' then lOffset := -lOffset;
+        if lTmp = '+' then lOffset := -lOffset;
       end;
 
       else begin // separators or literals
