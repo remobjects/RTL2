@@ -417,7 +417,7 @@ begin
             '+', '-': begin
               if not GetNextNumberToken(var lDateTime, var lOffset, 0, 23, 2) then
                 exit false;
-              if lTmp = '-' then
+              if lTmp = '+' then
                 lOffset := -lOffset;
               if (lDateTime ≠ '') and (SkipToken(":", var lDateTime)) then begin
                 if not GetNextNumberToken(var lDateTime, var lOffsetMin, 0, 59, 2) then
