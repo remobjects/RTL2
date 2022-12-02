@@ -22,7 +22,7 @@ type
     constructor(aMessage: String);
     begin
       {$IF TOFFEE}
-      result := inherited constructor withName('Exception') reason(aMessage) userInfo(nil);
+      inherited constructor withName('Exception') reason(aMessage) userInfo(nil);
       {$ELSE}
       inherited constructor(aMessage);
       {$ENDIF}
@@ -36,7 +36,7 @@ type
     {$IF TOFFEE}
     constructor withError(aError: Foundation.NSError);
     begin
-      result := inherited constructor withName('Exception') reason(aError.description) userInfo(nil);
+      inherited constructor withName('Exception') reason(aError.description) userInfo(nil);
     end;
 
     property Message: String read reason;
@@ -72,7 +72,7 @@ type
 
     constructor (aMessage: PlatformString; params aParams: array of Object);
     begin
-      result := new Exception(PlatformString(String.Format(aMessage, aParams)));
+      new Exception(PlatformString(String.Format(aMessage, aParams)));
     end;
 
     {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
