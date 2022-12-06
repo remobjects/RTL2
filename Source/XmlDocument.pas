@@ -32,17 +32,17 @@ type
     class method WithRootElement(aName: not nullable String): not nullable XmlDocument;
 
     {$IF NOT WEBASSEMBLY}
-    class method TryFromFile(aFileName: not nullable File): nullable XmlDocument; inline;
+    class method TryFromFile(aFileName: nullable File): nullable XmlDocument; inline;
     {$ENDIF}
-    class method TryFromUrl(aUrl: not nullable Url): nullable XmlDocument; inline;
-    class method TryFromString(aString: not nullable String): nullable XmlDocument; inline;
-    class method TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument; inline;
+    class method TryFromUrl(aUrl: nullable Url): nullable XmlDocument; inline;
+    class method TryFromString(aString: nullable String): nullable XmlDocument; inline;
+    class method TryFromBinary(aBinary: nullable ImmutableBinary): nullable XmlDocument; inline;
     {$IF NOT WEBASSEMBLY}
-    class method TryFromFile(aFileName: not nullable File; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+    class method TryFromFile(aFileName: nullable File; aAllowBrokenDocument: Boolean): nullable XmlDocument;
     {$ENDIF}
-    class method TryFromUrl(aUrl: not nullable Url; aAllowBrokenDocument: Boolean): nullable XmlDocument;
-    class method TryFromString(aString: not nullable String; aAllowBrokenDocument: Boolean): nullable XmlDocument;
-    class method TryFromBinary(aBinary: not nullable ImmutableBinary; aAllowBrokenDocument: Boolean): nullable XmlDocument; inline;
+    class method TryFromUrl(aUrl: nullable Url; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+    class method TryFromString(aString: nullable String; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+    class method TryFromBinary(aBinary: nullable ImmutableBinary; aAllowBrokenDocument: Boolean): nullable XmlDocument; inline;
 
     [ToString]
     method ToString(): String; override;
@@ -385,12 +385,12 @@ begin
   result := lXMl as not nullable;
 end;
 
-class method XmlDocument.TryFromFile(aFileName: not nullable File): nullable XmlDocument;
+class method XmlDocument.TryFromFile(aFileName: nullable File): nullable XmlDocument;
 begin
   result := TryFromFile(aFileName, false);
 end;
 
-class method XmlDocument.TryFromFile(aFileName: not nullable File; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+class method XmlDocument.TryFromFile(aFileName: nullable File; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
   try
     if aFileName.Exists then begin
@@ -435,13 +435,15 @@ begin
   {$ENDIF}
 end;
 
-class method XmlDocument.TryFromUrl(aUrl: not nullable Url): nullable XmlDocument;
+class method XmlDocument.TryFromUrl(aUrl: nullable Url): nullable XmlDocument;
 begin
   result := TryFromUrl(aUrl, false);
 end;
 
-class method XmlDocument.TryFromUrl(aUrl: not nullable Url; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+class method XmlDocument.TryFromUrl(aUrl: nullable Url; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
+  if not assigned(aUrl) then
+    exit;
   {$IF WEBASSEMBLY}
   {$HINT Fix Below} // 78937: `defined()` doesnt seem to work (and adds extra warning)
   {$ELSE}
@@ -481,13 +483,15 @@ begin
   result := lResult as not nullable;
 end;
 
-class method XmlDocument.TryFromString(aString: not nullable String): nullable XmlDocument;
+class method XmlDocument.TryFromString(aString: nullable String): nullable XmlDocument;
 begin
   result := TryFromString(aString, false);
 end;
 
-class method XmlDocument.TryFromString(aString: not nullable String; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+class method XmlDocument.TryFromString(aString: nullable String; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
+  if not assigned(aString) then
+    exit;
   try
     var lXmlParser := new XmlParser(aString);
     result := lXmlParser.Parse();
@@ -509,14 +513,16 @@ begin
   result := XmlDocument.FromString(new String(aBinary.ToArray));
 end;
 
-class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary): nullable XmlDocument;
+class method XmlDocument.TryFromBinary(aBinary: nullable ImmutableBinary): nullable XmlDocument;
 begin
-  result := XmlDocument.TryFromString(new String(aBinary.ToArray), false);
+  if assigned(aBinary) then
+    result := XmlDocument.TryFromString(new String(aBinary.ToArray), false);
 end;
 
-class method XmlDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; aAllowBrokenDocument: Boolean): nullable XmlDocument;
+class method XmlDocument.TryFromBinary(aBinary: nullable ImmutableBinary; aAllowBrokenDocument: Boolean): nullable XmlDocument;
 begin
-  result := XmlDocument.TryFromString(new String(aBinary.ToArray), aAllowBrokenDocument);
+  if assigned(aBinary) then
+    result := XmlDocument.TryFromString(new String(aBinary.ToArray), aAllowBrokenDocument);
 end;
 
 class method XmlDocument.WithRootElement(aElement: not nullable XmlElement): not nullable XmlDocument;
