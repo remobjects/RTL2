@@ -29,6 +29,8 @@ type
     constructor(aUrl: not nullable Url; aMode: HttpRequestMode := HttpRequestMode.Get);
     operator Implicit(aUrl: not nullable Url): HttpRequest;
 
+    property VerifyUntrustedCertificate: block(aCertificateInfo: HttpCertificateInfo): Boolean;
+
     [ToString]
     method ToString: String;
   end;
@@ -145,7 +147,7 @@ type
   Http = public static class
   private
     {$IF DARWIN}
-    property Session := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration); lazy;
+    //property Session := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration); lazy;
     {$ELSEIF ISLAND AND WINDOWS}
     property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
     {$ENDIF}
@@ -823,7 +825,9 @@ begin
     if assigned(aRequest.ContentType) then
       nsUrlRequest.setValue(aRequest.ContentType) forHTTPHeaderField("Content-Type");
 
-    var lRequest := Session.dataTaskWithRequest(nsUrlRequest) completionHandler((data, nsUrlResponse, error) -> begin
+    var lDelegate := new SessionDelegate(aRequest);
+    var lSession := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration) &delegate(lDelegate) delegateQueue(nil);
+    var lRequest := lSession.dataTaskWithRequest(nsUrlRequest) completionHandler((data, nsUrlResponse, error) -> begin
 
       var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
       if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
@@ -836,6 +840,7 @@ begin
         var response := new HttpResponse withException(new RTLException("Request failed without providing an error."));
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
       end;
+      //lSession.
 
     end);
     lRequest.resume();
@@ -1182,11 +1187,18 @@ begin
   if assigned(aRequest.ContentType) then
     nsUrlRequest.setValue(aRequest.ContentType) forHTTPHeaderField("Content-Type");
 
-  var nsUrlResponse : NSURLResponse;
-  var error: NSError;
   {$HIDE W28}
   // we're aware it's deprecated. but async calls do have their use in console apps.
-  var data := NSURLConnection.sendSynchronousRequest(nsUrlRequest) returningResponse(var nsUrlResponse) error(var error);
+  var lDelegate := new ConnectionDelegate(aRequest);
+  var lConnection := new NSURLConnection withRequest(nsUrlRequest) &delegate(lDelegate);
+  lConnection.start;
+  while not lDelegate.Done do
+    NSRunLoop.currentRunLoop.runMode(NSDefaultRunLoopMode) beforeDate(NSDate.distantFuture);
+  var data := lDelegate.ResponseData;
+  var nsUrlResponse := lDelegate.Response;
+  var error := lDelegate.Error;
+  _ := lConnection;
+  //NSURLConnection.sendSynchronousRequest(nsUrlRequest) returningResponse(var nsUrlResponse) error(var error);
   {$SHOW W28}
 
   var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
