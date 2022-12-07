@@ -39,21 +39,24 @@ type
     end;
 
     {$IF DARWIN}
-    class method certificateInfoWithURLAuthenticationChallenge(challenge: NSURLAuthenticationChallenge): id;
+    class method certificateInfoWithURLAuthenticationChallenge(challenge: NSURLAuthenticationChallenge): HttpCertificateInfo;
     begin
       var trustRef := challenge.protectionSpace().serverTrust();
       var temp: SecTrustResultType;
       SecTrustEvaluate(trustRef, @temp);
-      var count: CFIndex := SecTrustGetCertificateCount(trustRef);
+      var count := SecTrustGetCertificateCount(trustRef);
       var &result: id := nil;
       var i := 0;
       while (i < count) and not assigned(result) do begin
         var certRef: SecCertificateRef := SecTrustGetCertificateAtIndex(trustRef, i);
-        var subject: CFStringRef := SecCertificateCopySubjectSummary(certRef);
-        var certData: CFDataRef := SecCertificateCopyData(certRef);
-        &result := self.certificateInfoWithSubject(String(subject)) issuer(nil) expiration(nil) data(Binary(bridge<NSData>(certData)).ToArray);
-        CFRelease(subject);
-        CFRelease(certData);
+        var subject: CoreFoundation.CFDataRef := SecCertificateCopySubjectSummary(certRef);
+        var certData: CoreFoundation.CFDataRef := SecCertificateCopyData(certRef);
+        var data := bridge<NSData>(certData);
+        var bytes := new Byte[data.length];
+        data.getBytes(@bytes[0]) length(data.length);
+        &result := self.certificateInfoWithSubject(String(subject)) issuer(nil) expiration(nil) data(bytes);
+        CoreFoundation.CFRelease(subject);
+        CoreFoundation.CFRelease(certData);
         inc(i);
       end;
       exit &result;
