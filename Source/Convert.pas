@@ -82,10 +82,10 @@ type
 
     //method ToHexString(aValue: Int32; aWidth: Integer := 0): not nullable String;
     method ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
-    method ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
-    method ToHexString(aData: array of Byte; aCount: Integer): not nullable String;
-    method ToHexString(aData: array of Byte): not nullable String;
-    method ToHexString(aData: ImmutableBinary): not nullable String;
+    method ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer; aSpacer: String := nil): not nullable String;
+    method ToHexString(aData: array of Byte; aCount: Integer; aSpacer: String := nil): not nullable String;
+    method ToHexString(aData: array of Byte; aSpacer: String := nil): not nullable String;
+    method ToHexString(aData: ImmutableBinary; aSpacer: String := nil): not nullable String;
 
     method ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
     method ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
@@ -377,7 +377,7 @@ begin
     result := "0";
 end;
 
-method Convert.ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
+method Convert.ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer; aSpacer: String := nil): not nullable String;
 begin
   if (length(aData) = 0) or (aCount = 0) then
     exit '';
@@ -388,6 +388,8 @@ begin
   var Num: Integer;
 
   for i: Integer := 0 to aCount - 1 do begin
+    if assigned(aSpacer) and (i > 0) and (i mod 2 = 0) then
+      result := result + aSpacer;
     Num := aData[aOffset + i] shr 4;
     Chars[i * 2] := chr(55 + Num + (((Num - 10) shr 31) and -7));
     Num := aData[aOffset + i] and $F;
@@ -397,17 +399,17 @@ begin
   exit new String(Chars);
 end;
 
-method Convert.ToHexString(aData: array of Byte; aCount: Integer): not nullable String;
+method Convert.ToHexString(aData: array of Byte; aCount: Integer; aSpacer: String := nil): not nullable String;
 begin
   result := ToHexString(aData, 0, aCount);
 end;
 
-method Convert.ToHexString(aData: array of Byte): not nullable String;
+method Convert.ToHexString(aData: array of Byte; aSpacer: String := nil): not nullable String;
 begin
   result := ToHexString(aData, 0, length(aData));
 end;
 
-method Convert.ToHexString(aData: ImmutableBinary): not nullable String;
+method Convert.ToHexString(aData: ImmutableBinary; aSpacer: String := nil): not nullable String;
 begin
   result := ToHexString(aData.ToArray())
 end;
