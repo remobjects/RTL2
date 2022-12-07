@@ -169,6 +169,7 @@
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Available.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Http.Cocoa.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">

@@ -48,6 +48,7 @@
     <Reference Include="WatchKit" />
     <Reference Include="gc" />
     <Reference Include="Island" />
+    <Reference Include="Security" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />

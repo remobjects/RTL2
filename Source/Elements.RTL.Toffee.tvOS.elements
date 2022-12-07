@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
-    <ProjectGuid>2593A307-BF8B-4218-BC8A-0C09F4D314AA</ProjectGuid>
+    <ProjectGuid>{2593A307-BF8B-4218-BC8A-0C09F4D314AA}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Elements</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -45,6 +45,7 @@
     <Reference Include="libToffee" />
     <Reference Include="CoreFoundation" />
     <Reference Include="UIKit" />
+    <Reference Include="Security" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />

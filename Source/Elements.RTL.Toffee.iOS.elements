@@ -46,6 +46,7 @@
     <Reference Include="libToffee" />
     <Reference Include="CoreFoundation" />
     <Reference Include="UIKit" />
+    <Reference Include="Security" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Json\JsonExceptions.pas" />
