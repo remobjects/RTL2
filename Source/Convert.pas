@@ -569,8 +569,14 @@ begin
   var b := 0;
   var x: Int32;
   var lIndex := 0;
-  var lTmp := new Byte[S.Length];
-  for i: Int32 := 0 to S.Length - 1 do begin
+  var lEnd := S.Length - 1;
+  while (lEnd > 0) and (S[lEnd] = '=') do
+    dec(lEnd);
+  if (lEnd <> S.Length - 1) and (4 - (lEnd mod 4) <> S.Length - lEnd) then
+    exit nil;
+
+  var lTmp := new Byte[lEnd + 1];
+  for i: Int32 := 0 to lEnd do begin
     x := Codes64.IndexOf(S[i]);
     if x >= 0 then begin
       b := b * 64 + x;
