@@ -20,6 +20,8 @@ type
     method GetOSArchitecture: String;
     method GetProcessBitness: Int32;
     method GetProcessArchitecture: String;
+    {$IF WEBASSEMBLY}[Error("Not Implemented for WebAssembly")]{$ENDIF}
+    {$IF COOPER}[Error("Not Implemented for Java")]{$ENDIF}
     method GetProcessID: Integer;
     method GetMode: String;
     method GetPlatform: String;
@@ -751,16 +753,16 @@ begin
   {$ENDIF}
 end;
 
-{$IF WEBASSEMBLY}[Error("Not Implemented for WebAssembly")]{$ENDIF}
-{$IF COOPER}[Error("Not Implemented for Java")]{$ENDIF}
 method Environment.GetProcessID: Integer;
 begin
   {$IF COOPER}
-  result := "jvm";
+  raise new NotImplementedException("Not Implemented for Java");
   {$ELSEIF DARWIN OR LINUX OR FUCHSIA}
   result := rtl.getpid();
   {$ELSEIF WINDOW}
   result := rtl.GetCurrentProcessId;
+  {$ELSEIF WEBASSEMBLY}
+  raise new NotImplementedException("Not Implemented for WebAssembly");
   {$ELSEIF ECHOES}
   result := System.Diagnostics.Process.GetCurrentProcess.Id;
   {$ENDIF}
