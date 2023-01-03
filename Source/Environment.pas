@@ -20,6 +20,7 @@ type
     method GetOSArchitecture: String;
     method GetProcessBitness: Int32;
     method GetProcessArchitecture: String;
+    method GetProcessID: Integer;
     method GetMode: String;
     method GetPlatform: String;
     method GetEnvironmentVariable(aName: not nullable String): nullable String;
@@ -80,6 +81,8 @@ type
     property Architecture: String read GetOSArchitecture;
     property OSArchitecture: String read GetOSArchitecture;
     property ProcessArchitecture: String read GetProcessArchitecture;
+
+    property ProcessID: Integer read GetProcessID;
 
     property ApplicationContext: ApplicationContext read write;
 
@@ -745,6 +748,21 @@ begin
   result := Convert.TryToInt32(System.getProperty("sun.arch.data.model"));
   {$ELSE}
   result := sizeOf(IntPtr)*8;
+  {$ENDIF}
+end;
+
+{$IF WEBASSEMBLY}[Error("Not Implemented for WebAssembly")]{$ENDIF}
+{$IF COOPER}[Error("Not Implemented for Java")]{$ENDIF}
+method Environment.GetProcessID: Integer;
+begin
+  {$IF COOPER}
+  result := "jvm";
+  {$ELSEIF DARWIN OR LINUX OR FUCHSIA}
+  result := rtl.getpid();
+  {$ELSEIF WINDOW}
+  result := rtl.GetCurrentProcessId;
+  {$ELSEIF ECHOES}
+  result := System.Diagnostics.Process.GetCurrentProcess.Id;
   {$ENDIF}
 end;
 
