@@ -20,8 +20,6 @@ type
     method GetOSArchitecture: String;
     method GetProcessBitness: Int32;
     method GetProcessArchitecture: String;
-    {$IF WEBASSEMBLY}[Error("Not Implemented for WebAssembly")]{$ENDIF}
-    {$IF COOPER}[Error("Not Implemented for Java")]{$ENDIF}
     method GetProcessID: Integer;
     method GetMode: String;
     method GetPlatform: String;
@@ -84,6 +82,8 @@ type
     property OSArchitecture: String read GetOSArchitecture;
     property ProcessArchitecture: String read GetProcessArchitecture;
 
+    {$IF WEBASSEMBLY}[Error("Not Implemented for WebAssembly")]{$ENDIF}
+    {$IF COOPER}[Error("Not Implemented for Java")]{$ENDIF}
     property ProcessID: Integer read GetProcessID;
 
     property ApplicationContext: ApplicationContext read write;
