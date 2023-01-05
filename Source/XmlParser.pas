@@ -101,6 +101,37 @@ type
       result.PreserveEmptyLines := PreserveEmptyLines;
     end;
 
+    class property VisualStudioStyle: XmlFormattingOptions := get_VisualStudioStyle; lazy;
+    class property StandardReadableStyle: XmlFormattingOptions := get_StandardReadableStyle; lazy;
+
+    method get_VisualStudioStyle: XmlFormattingOptions; private;
+    begin
+      result := new XmlFormattingOptions();
+      result.WhitespaceStyle := XmlWhitespaceStyle.PreserveWhitespaceAroundText;
+      result.EmptyTagSyle := XmlTagStyle.PreferSingleTag;
+      result.Indentation := "  ";
+      result.NewLineForElements := true;
+      result.NewLineForAttributes := false;
+      result.NewLineSymbol := XmlNewLineSymbol.CRLF;
+      result.SpaceBeforeSlashInEmptyTags := true;
+      result.WriteNewLineAtEnd := false;
+      result.WriteBOM := true;
+    end;
+
+    method get_StandardReadableStyle: XmlFormattingOptions; private;
+    begin
+      result := new XmlFormattingOptions();
+      result.WhitespaceStyle := XmlWhitespaceStyle.PreserveWhitespaceAroundText;
+      result.EmptyTagSyle := XmlTagStyle.PreferSingleTag;
+      result.Indentation := #9;
+      result.NewLineForElements := true;
+      result.NewLineForAttributes := false;
+      result.NewLineSymbol := XmlNewLineSymbol.PlatformDefault;
+      result.SpaceBeforeSlashInEmptyTags := false;
+      result.PreserveLinebreaksForAttributes := true;
+      result.PreserveEmptyLines := true;
+    end;
+
   assembly
 
     method NewLineString: String;
