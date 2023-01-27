@@ -101,10 +101,10 @@ type
       result.PreserveEmptyLines := PreserveEmptyLines;
     end;
 
-    class property VisualStudioStyle: XmlFormattingOptions := get_VisualStudioStyle; lazy;
-    class property StandardReadableStyle: XmlFormattingOptions := get_StandardReadableStyle; lazy;
+    class property VisualStudioStyle: XmlFormattingOptions := getVisualStudioStyle; lazy;
+    class property StandardReadableStyle: XmlFormattingOptions := getStandardReadableStyle; lazy;
 
-    method get_VisualStudioStyle: XmlFormattingOptions; private;
+    class method getVisualStudioStyle: XmlFormattingOptions; private;
     begin
       result := new XmlFormattingOptions();
       result.WhitespaceStyle := XmlWhitespaceStyle.PreserveWhitespaceAroundText;
@@ -118,7 +118,7 @@ type
       result.WriteBOM := true;
     end;
 
-    method get_StandardReadableStyle: XmlFormattingOptions; private;
+    class method getStandardReadableStyle: XmlFormattingOptions; private;
     begin
       result := new XmlFormattingOptions();
       result.WhitespaceStyle := XmlWhitespaceStyle.PreserveWhitespaceAroundText;
