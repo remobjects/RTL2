@@ -18,7 +18,8 @@ type
     end;
 
     property Endianess: Endianess := Endianess.Little;
-    property Offset: UInt64 read fOffset write fOffset;
+    property Position: UInt64 read fOffset write fOffset;
+    property length: UInt64 read RemObjects.Elements.System.length(fBytes);
 
     //
     // Read at specific offset
@@ -315,6 +316,16 @@ type
       inc(aOffset, aLength);
     end;
 
+    method ReadByteArray(aLength: Integer): array of Byte;
+    begin
+      result := ReadByteArray(var fOffset) Length(aLength);
+    end;
+
+    method ReadByteArray: array of Byte;
+    begin
+      result := ReadByteArray(var fOffset) Length(Length-fOffset);
+    end;
+
     {$IF ISLAND OR TOFFEE}
     method ReadByteArray(var aOffset: UInt64) Length(aLength: Integer) ToAddress(aAddress: ^Void): array of Byte;
     begin
@@ -332,9 +343,21 @@ type
       inc(fOffset, aByteCount);
     end;
 
+    method ReadUInt8: UInt32;
+    begin
+      result := ReadUInt8(var fOffset);
+    end;
+
     method ReadUInt32: UInt32;
     begin
       result := ReadUInt32(var fOffset);
+    end;
+
+    method FindNext(aByte: Byte): nullable UInt64;
+    begin
+      for i := fOffset to Length-1 do
+        if fBytes[i] = aByte then
+          exit i;
     end;
 
   private
