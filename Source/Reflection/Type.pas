@@ -62,7 +62,7 @@ type
     property IsEnum: Boolean read mapped.isEnum();
     property IsValueType: Boolean read mapped.isPrimitive();
     {$ELSEIF TOFFEE AND NOT ISLAND}
-    constructor withID;
+    constructor /*withID*/;
     constructor withClass(aClass: &Class);
     constructor withProtocol(aProtocol: id);
     constructor withSimpleType(aTypeEncoding: String);
@@ -101,6 +101,7 @@ type
     property Fields: ImmutableList<Field> read mapped.GetFields(System.Reflection.BindingFlags.Public or System.Reflection.BindingFlags.NonPublic or System.Reflection.BindingFlags.Instance or System.Reflection.BindingFlags.Static).ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
     property Name: String read mapped.Name;
+    property FullName: String read mapped.FullName;
     property BaseType: nullable &Type read mapped.BaseType;
     property IsClass: Boolean read mapped.IsClass;
     property IsInterface: Boolean read mapped.IsInterface;
@@ -160,8 +161,11 @@ begin
   end;
   {$ELSEIF ECHOES}
   result := new List<&Type>();
-  for each a in AppDomain.CurrentDomain.GetAssemblies do
+  for each a in AppDomain.CurrentDomain.GetAssemblies do try
     (result as List<&Type>).Add(a.GetTypes());
+  except
+    on System.Reflection.ReflectionTypeLoadException do;
+  end;
   {$ELSEIF ISLAND}
   result := sequence of &Type(mapped.AllTypes).ToList();
   {$ENDIF}
@@ -200,7 +204,7 @@ end;
   //result := mapped.IsSubclassOf(aType);
 //end;
 {$ELSEIF TOFFEE AND NOT ISLAND}
-constructor &Type withID;
+constructor &Type /*withID*/;
 begin
   self := inherited init;
   if assigned(self) then begin
