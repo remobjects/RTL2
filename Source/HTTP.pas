@@ -50,6 +50,14 @@ type
     constructor(aUsername, aPassword: not nullable String);
   end;
 
+  HttpBearerAuthentication = public class(IHttpAuthentication)
+  private
+    method ApplyToRequest(aRequest: HttpRequest);
+  public
+    property Key: String;
+    constructor(aKey: not nullable String);
+  end;
+
   IHttpRequestContent = assembly interface
     method GetContentAsBinary(): ImmutableBinary;
     method GetContentAsArray(): array of Byte;
@@ -242,6 +250,18 @@ begin
   var lBytes := Encoding.UTF8.GetBytes(Username+":"+Password) includeBOM(false);
   var lBase64 := Convert.ToBase64String(lBytes);
   aRequest.Headers["Authorization"] := "Basic "+lBase64;
+end;
+
+{ HttpBearerAuthentication }
+
+constructor HttpBearerAuthentication(aKey: not nullable String);
+begin
+  Key := aKey;
+end;
+
+method HttpBearerAuthentication.ApplyToRequest(aRequest: HttpRequest);
+begin
+  aRequest.Headers["Authorization"] := "Bearer "+Key;
 end;
 
 { HttpRequestContent }
