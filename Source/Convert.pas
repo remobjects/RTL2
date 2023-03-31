@@ -87,6 +87,9 @@ type
     method ToHexString(aData: array of Byte; aSpacer: String := nil): not nullable String;
     method ToHexString(aData: ImmutableBinary; aSpacer: String := nil): not nullable String;
 
+    method ToAsciiString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
+    method ToAsciiString(aData: array of Byte): not nullable String;
+
     method ToOctalString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
     method ToBinaryString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
 
@@ -412,6 +415,32 @@ end;
 method Convert.ToHexString(aData: ImmutableBinary; aSpacer: String := nil): not nullable String;
 begin
   result := ToHexString(aData.ToArray())
+end;
+
+method Convert.ToAsciiString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
+begin
+  if (length(aData) = 0) or (aCount = 0) then
+    exit '';
+
+  RangeHelper.Validate(new Range(aOffset, aCount), aData.Length);
+
+  var Chars := new Char[aCount];
+  var Num: Integer;
+
+  for i: Integer := 0 to aCount - 1 do begin
+    Num := aData[aOffset + i];
+    if 32 ≤ Num ≤128 then
+      Chars[i] := chr(Num)
+    else
+      Chars[i] := '.';
+  end;
+
+  exit new String(Chars);
+end;
+
+method Convert.ToAsciiString(aData: array of Byte): not nullable String;
+begin
+  result := ToAsciiString(aData, 0, length(aData));
 end;
 
 method Convert.HexStringToByteArray(aData: not nullable String): array of Byte;
