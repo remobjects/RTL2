@@ -902,7 +902,7 @@ begin
         lResult.Append("%"+Convert.ToHexString(ord(b), 2));
       inc(i);
     end
-    else if ((c < 46) or (58 < c < 65) or (90 < c < 95) or (c = 96) or (122 < c)) and ((c ≠ 37) or not aDontDoubleEncode) then begin
+    else if ((c < 46) or (57 < c < 65) or (90 < c < 95) or (c = 96) or (122 < c)) and ((c ≠ 37) or not aDontDoubleEncode) then begin
       var lBytes := Convert.ToUtf8Bytes(ch);
       for each b in lBytes do
         lResult.Append("%"+Convert.ToHexString(ord(b), 2));
