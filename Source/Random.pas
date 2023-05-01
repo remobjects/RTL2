@@ -54,9 +54,6 @@ begin
   if MaxValuePlusOne <= 0 then
     raise new ArgumentException("MaxValuePlusOne must be positive");
 
-  if (MaxValuePlusOne and -MaxValuePlusOne) = MaxValuePlusOne then
-    exit Integer((MaxValuePlusOne * Int64(Next(31))) shr 31);
-
   var Bits: Int64;
   var Val: Int64;
 
