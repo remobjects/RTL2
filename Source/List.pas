@@ -368,8 +368,13 @@ end;
 
 method List<T>.Add(params Items: nullable array of T);
 begin
-  if assigned(Items) then
+  if assigned(Items) then begin
+    {$IF ECHOES}
+    mapped.AddRange(Items);
+    {$ELSE}
     ListHelpers.AddRange(self, Items);
+    {$ENDIF}
+  end;
 end;
 
 method List<T>.RemoveAll;
