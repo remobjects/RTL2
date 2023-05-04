@@ -8,7 +8,7 @@ type
 
   IImmutableQueue<T> = public interface
     method Contains(Item: T): Boolean;
-    method Peek: T;
+    method Peek: nullable T;
     method ToArray: array of T;
     property Count: Integer read;
   end;
@@ -22,7 +22,7 @@ type
 
     method Contains(Item: T): Boolean;
 
-    method Peek: T;
+    method Peek: nullable T;
     method ToArray: array of T;
 
     property Count: Integer read {$IF COOPER}mapped.size{$ELSEIF ECHOES OR TOFFEE OR ISLAND}mapped.Count{$ENDIF};
@@ -58,17 +58,13 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableQueue<T>.Peek: T;
+method ImmutableQueue<T>.Peek: nullable T;
 begin
-  {$IF NOT TOFFEE}
-  {$IFDEF COOPER}
   if self.Count = 0 then
-    raise new QueueEmptyException;
-    {$ENDIF}
+    exit nil;
+  {$IF NOT TOFFEE}
   exit mapped.Peek;
   {$ELSEIF TOFFEE}
-  if self.Count = 0 then
-    raise new QueueEmptyException;
   var lResult := Foundation.NSMutableArray(mapped).objectAtIndex(0);
   if lResult = NSNull.null then
     lResult := nil;
