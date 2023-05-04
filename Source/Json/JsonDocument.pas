@@ -28,8 +28,8 @@ type
     {$ENDIF}
     class method TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): nullable JsonDocument;
     class method TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
-    class method TryFromString(aString: not nullable String): nullable JsonDocument;
-    class method TryFromString(aString: not nullable String; out aException: Exception): nullable JsonDocument;
+    class method TryFromString(aString: nullable String): nullable JsonDocument;
+    class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonDocument;
     class method CreateDocument: not nullable JsonDocument;
 
     constructor;
@@ -182,16 +182,20 @@ begin
   end;
 end;
 
-class method JsonDocument.TryFromString(aString: not nullable String): nullable JsonDocument;
+class method JsonDocument.TryFromString(aString: nullable String): nullable JsonDocument;
 begin
+  if not assigned(aString) then
+    exit;
   try
     result := new JsonDocument(new JsonDeserializer(aString).Deserialize)
   except
   end;
 end;
 
-class method JsonDocument.TryFromString(aString: not nullable String; out aException: Exception): nullable JsonDocument;
+class method JsonDocument.TryFromString(aString: nullable String; out aException: Exception): nullable JsonDocument;
 begin
+  if not assigned(aString) then
+    exit;
   try
     result := new JsonDocument(new JsonDeserializer(aString).Deserialize)
   except
