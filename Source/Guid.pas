@@ -38,6 +38,7 @@ type
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     operator Implicit(aGuid: PlatformGuid): Guid;
     operator Implicit(aGuid: Guid): PlatformGuid;
+    operator Implicit(aGuid: Guid): nullable PlatformGuid;
     {$ENDIF}
 
     {$IF NOT (COOPER OR TOFFEE)}
@@ -308,6 +309,11 @@ begin
   result := aGuid.fGuid;
 end;
 
+operator Guid.Implicit(aGuid: Guid): nullable PlatformGuid;
+begin
+  if assigned(aGuid) then
+    result := aGuid.fGuid;
+end;
 {$ENDIF}
 
 end.
