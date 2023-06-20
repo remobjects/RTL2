@@ -73,12 +73,12 @@ type
       result := new JsonArray(aValue);
     end;
 
-    operator Implicit(aValue: JsonArray): ImmutableList<JsonNode>;
+    operator Explicit(aValue: JsonArray): ImmutableList<JsonNode>;
     begin
       result := aValue.fItems;
     end;
 
-    operator Implicit(aValue: JsonArray): array of JsonNode;
+    operator Explicit(aValue: JsonArray): array of JsonNode;
     begin
       result := aValue.fItems.ToArray();
     end;
