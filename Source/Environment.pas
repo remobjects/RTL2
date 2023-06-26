@@ -3,7 +3,7 @@
 interface
 
 type
-  OperatingSystem = public enum (Unknown, Windows, Linux, macOS, iOS, tvOS, watchOS, Android, Fuchsia, Xbox, Browser);
+  OperatingSystem = public enum (Unknown, Windows, Linux, macOS, iOS, tvOS, visionOS, watchOS, Android, Fuchsia, Xbox, Browser);
 
   ApplicationContext = public Object;
 
@@ -284,7 +284,7 @@ begin
     result := NSHost.currentHost.localizedName;
     if result.EndsWith(".local") then
       result := result.Substring(0, length(result)-6);
-    {$ELSEIF IOS OR TVOS}
+    {$ELSEIF IOS OR TVOS OR VISIONOS}
     result := UIKit.UIDevice.currentDevice.name;
     {$ELSE}
     result := WatchKit.WKInterfaceDevice.currentDevice.name;
@@ -474,10 +474,12 @@ begin
     exit OperatingSystem.macOS;
     {$ELSEIF IOS}
     exit OperatingSystem.iOS;
-    {$ELSEIF WATCHOS}
-    exit OperatingSystem.watchOS;
     {$ELSEIF TVOS}
     exit OperatingSystem.tvOS;
+    {$ELSEIF VISIONOS}
+    exit OperatingSystem.visionOS;
+    {$ELSEIF WATCHOS}
+    exit OperatingSystem.watchOS;
     {$ELSE}
       {$ERROR Unsupported Cocoa platform}
     {$ENDIF}
@@ -557,10 +559,12 @@ begin
     exit "macOS";
     {$ELSEIF IOS}
     exit "iOS";
-    {$ELSEIF WATCHOS}
-    exit "watchOS";
     {$ELSEIF TVOS}
     exit "tvOS";
+    {$ELSEIF VISIONOS}
+    exit "visionOS";
+    {$ELSEIF WATCHOS}
+    exit "watchOS";
     {$ELSE}
       {$ERROR Unsupported Cocoa platform}
     {$ENDIF}
@@ -598,16 +602,12 @@ begin
   {$IF COOPER}
   result := 0;
   {$ELSEIF TOFFEE}
-    {$IF OSX OR UIKITFORMAC}
+    {$IF OSX OR UIKITFORMAC OR IOS OR TVOS OR VISIONOS}
     result := 64;
-    {$ELSEIF IOS}
-    result := sizeof(IntPtr)*8;
     {$ELSEIF WATCHOS}
     result := 32;
-    {$ELSEIF TVOS}
-    result := 64;
     {$ELSE}
-      {$ERROR Unsupported Toffee platform}
+    {$ERROR Unsupported Toffee platform}
     {$ENDIF}
   {$ELSEIF ECHOES}
   result := if System.Environment.Is64BitOperatingSystem then 64 else 32;
@@ -621,16 +621,12 @@ begin
   {$IF COOPER}
   result := "jvm";
   {$ELSEIF DARWIN}
-    {$IF OSX OR UIKITFORMAC}
+    {$IF OSX OR UIKITFORMAC OR IOS OR TVOS OR VISIONOS}
     result := {$IF __arm64__}"arm64"{$ELSE}"x86_64"{$ENDIF};
-    {$ELSEIF IOS}
-    result := "arm64";
     {$ELSEIF WATCHOS}
     result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF};
-    {$ELSEIF TVOS}
-    result := "arm64";
     {$ELSE}
-      {$ERROR Unsupported Toffee platform}
+    {$ERROR Unsupported Toffee platform}
     {$ENDIF}
   {$ELSEIF ECHOES}
   case Environment.OS of
@@ -686,12 +682,16 @@ begin
       {$ELSE}
       result := if IsRosetta2 then "arm64" else "x86_64";
       {$ENDIF}
+    {$ELSEIF SIMULATOR}
+    result := "arm64"; {$HINT do better}
     {$ELSEIF IOS}
     result := "arm64"; // technically imprecise for arm running on VERY old deviced
-    {$ELSEIF WATCHOS}
-    result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF}; // tecnically impreccise
     {$ELSEIF TVOS}
     result := "arm64";
+    {$ELSEIF VISIONOS}
+    result := "arm64";
+    {$ELSEIF WATCHOS}
+    result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF}; // tecnically impreccise
     {$ELSE}
       {$ERROR Unsupported Toffee platform}
     {$ENDIF}
