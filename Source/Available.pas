@@ -4,12 +4,17 @@ method __ElementsPlatformAndVersionAtLeast(aPlatformName: String; aMaj, aMin: In
 begin
   case caseInsensitive(aPlatformName) of
     "tvos": begin
-        if defined("TARGET_OS_TV") then
+        if defined("TVOS") then
           exit __ElementsPlatformVersionAtLeast(aMaj, aMin, aRev);
         // We only support tvOS on native
       end;
+    "visionos", "xros": begin
+        if defined("VISIONOS") then
+          exit __ElementsPlatformVersionAtLeast(aMaj, aMin, aRev);
+        // We only support visionOS on native
+      end;
     "watchos": begin
-        if defined("TARGET_OS_WATCH") then
+        if defined("WATCHOS") then
           exit __ElementsPlatformVersionAtLeast(aMaj, aMin, aRev);
         // We only support watchOS on native
       end;

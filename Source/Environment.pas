@@ -517,10 +517,12 @@ begin
       exit OperatingSystem.macOS;
       {$ELSEIF IOS}
       exit OperatingSystem.iOS;
-      {$ELSEIF WATCHOS}
-      exit OperatingSystem.watchOS;
       {$ELSEIF TVOS}
       exit OperatingSystem.tvOS;
+      {$ELSEIF VISIONOS}
+      exit OperatingSystem.visionOS;
+      {$ELSEIF WATCHOS}
+      exit OperatingSystem.watchOS;
       {$ELSE}
         {$ERROR Unsupported Cocoa platform}
       {$ENDIF}
