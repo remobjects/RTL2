@@ -244,7 +244,7 @@ type
       for i: Integer := 0 to Values.length - 1 do
         lArray.addObject(Values[i]);
 
-      result := lArray.componentsJoinedByString(aSeparator);
+      result := lArray.componentsJoinedByString(aSeparator) as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       result := PlatformString.Join(aSeparator, Values) as not nullable;
       {$ENDIF}
@@ -261,7 +261,7 @@ type
       end;
       result := sb.toString as not nullable;
       {$ELSEIF TOFFEE}
-      result := (Values as NSArray).componentsJoinedByString(aSeparator);
+      result := (Values as NSArray).componentsJoinedByString(aSeparator) as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       result := PlatformString.Join(aSeparator, Values.ToArray) as not nullable;
       {$ENDIF}
@@ -629,7 +629,7 @@ type
       {$IF COOPER}
       exit mapped.substring(StartIndex, StartIndex + aLength) as not nullable;
       {$ELSEIF TOFFEE}
-      result := mapped.substringWithRange(Foundation.NSMakeRange(StartIndex, aLength));
+      result := mapped.substringWithRange(Foundation.NSMakeRange(StartIndex, aLength)) as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       exit mapped.Substring(StartIndex, aLength) as not nullable;
       {$ENDIF}
@@ -755,7 +755,7 @@ type
       {$IF NOT TOFFEE}
       exit mapped.Replace(OldValue, NewValue) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.stringByReplacingOccurrencesOfString(OldValue) withString(NewValue);
+      exit mapped.stringByReplacingOccurrencesOfString(OldValue) withString(NewValue) as not nullable;
       {$ENDIF}
     end;
 
@@ -766,7 +766,7 @@ type
       {$IF COOPER}
       exit mapped.substring(0, aStartIndex)+aNewValue+mapped.substring(aStartIndex+aLength) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue);
+      exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString(aNewValue) as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       exit mapped.Remove(aStartIndex, aLength).Insert(aStartIndex, aNewValue) as not nullable;
       {$ENDIF}
@@ -779,7 +779,7 @@ type
       {$IF NOT TOFFEE}
       exit mapped.Replace(OldValue, "") as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.stringByReplacingOccurrencesOfString(OldValue) withString("");
+      exit mapped.stringByReplacingOccurrencesOfString(OldValue) withString("") as not nullable;
       {$ENDIF}
     end;
 
@@ -788,7 +788,7 @@ type
       {$IF COOPER}
       exit (mapped.substring(0, aStartIndex)+mapped.substring(aStartIndex+aLength)) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString("");
+      exit mapped.stringByReplacingCharactersInRange(NSMakeRange(aStartIndex, aLength)) withString("") as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       exit mapped.Remove(aStartIndex, aLength) as not nullable;
       {$ENDIF}
@@ -847,7 +847,7 @@ type
       {$ELSEIF TOFFEE}
       result := mapped;
       if result.Length < TotalWidth then
-        result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0);
+        result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0) as not nullable;
       {$ELSEIF ECHOES}
       result := mapped.PadRight(TotalWidth, PaddingChar);
       {$ELSEIF ISLAND}
@@ -864,7 +864,7 @@ type
       {$IF COOPER}
       exit mapped.toLowerCase(Locale.Current) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.lowercaseString;
+      exit mapped.lowercaseString as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       exit mapped.ToLower as not nullable;
       {$ENDIF}
@@ -875,7 +875,7 @@ type
       {$IF COOPER}
       exit mapped.toLowerCase(Locale.Invariant) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.lowercaseStringWithLocale(NSLocale.systemLocale);
+      exit mapped.lowercaseStringWithLocale(NSLocale.systemLocale) as not nullable;
       {$ELSEIF ECHOES}
       exit mapped.ToLowerInvariant as not nullable;
       {$ELSEIF ISLAND}
@@ -888,7 +888,7 @@ type
       {$IF COOPER}
       exit mapped.toLowerCase(aLocale) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.lowercaseStringWithLocale(aLocale);
+      exit mapped.lowercaseStringWithLocale(aLocale) as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       exit mapped.ToLower(aLocale) as not nullable;
       {$ENDIF}
@@ -899,7 +899,7 @@ type
       {$IF COOPER}
       exit mapped.toUpperCase(Locale.Current) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.uppercaseString;
+      exit mapped.uppercaseString as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       exit mapped.ToUpper as not nullable;
       {$ENDIF}
@@ -910,7 +910,7 @@ type
       {$IF COOPER}
       exit mapped.toUpperCase(Locale.Invariant) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.uppercaseStringWithLocale(NSLocale.systemLocale);
+      exit mapped.uppercaseStringWithLocale(NSLocale.systemLocale) as not nullable;
       {$ELSEIF ECHOES}
       exit mapped.ToUpperInvariant as not nullable;
       {$ELSEIF ISLAND}
@@ -923,7 +923,7 @@ type
       {$IF COOPER}
       exit mapped.toUpperCase(aLocale) as not nullable;
       {$ELSEIF TOFFEE}
-      exit mapped.uppercaseStringWithLocale(aLocale);
+      exit mapped.uppercaseStringWithLocale(aLocale) as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       exit mapped.ToUpper(aLocale) as not nullable;
       {$ENDIF}
@@ -965,7 +965,7 @@ type
       {$IF COOPER}
       result := Trim(WhiteSpaceCharacters);
       {$ELSEIF TOFFEE}
-      result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet);
+      result := mapped.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet) as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       result := mapped.Trim() as not nullable; // .NET Trim() does include CR/LF and Unicode whitespace
       {$ENDIF}
@@ -996,7 +996,7 @@ type
       result := lStr.TrimEnd(TrimChars);
       {$ELSEIF TOFFEE}
       var lCharset := NSCharacterSet.characterSetWithCharactersInString(new PlatformString withCharacters(TrimChars) length(TrimChars.length));
-      result := mapped.stringByTrimmingCharactersInSet(lCharset);
+      result := mapped.stringByTrimmingCharactersInSet(lCharset) as not nullable;
       {$ELSEIF ECHOES OR ISLAND}
       result := mapped.Trim(TrimChars) as not nullable;
       {$ENDIF}

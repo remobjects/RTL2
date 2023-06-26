@@ -289,7 +289,7 @@ begin
   {$ELSEIF ISLAND}
   exit RemObjects.Elements.System.Path.GetFullPath(RelativePath) as String as not nullable;
   {$ELSEIF TOFFEE}
-  exit (RelativePath as NSString).stringByStandardizingPath;
+  exit (RelativePath as NSString).stringByStandardizingPath as not nullable;
   {$ENDIF}
 end;
 {$ENDIF}

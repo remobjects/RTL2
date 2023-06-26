@@ -78,7 +78,7 @@ begin
     lStringType := lStringType.Substring(1);
     var lPos := lStringType.IndexOf(',');
     if lPos ≥ 0 then
-      lStringType := lStringType.SubString(0, lPos);
+      lStringType := lStringType.Substring(0, lPos);
     if (lStringType ≠ '^?') and (lStringType.length > 1) then begin
       var lClass := NSClassFromString(lStringType);
       fType := new &Type withClass(lClass);

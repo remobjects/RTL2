@@ -343,7 +343,7 @@ begin
   else
     NSLocale.localeWithLocaleIdentifier("en_US_POSIX"); // without this, i sometimes get rogue AM/PMs
   lFormatter.dateFormat := DateFormatter.Format(Format);
-  result := lFormatter.stringFromDate(mapped);
+  result := lFormatter.stringFromDate(mapped) as not nullable;;
   {$ELSEIF ECHOES}
   if Format = "" then
     exit "";
@@ -397,7 +397,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   lFormatter.dateStyle := NSDateFormatterStyle.ShortStyle;
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
-  result := lFormatter.stringFromDate(mapped);
+  result := lFormatter.stringFromDate(mapped) as not nullable;;
   {$ELSEIF ECHOES OR ISLAND }
   result := fDateTime.ToShortDateString;
   {$ENDIF}
@@ -414,7 +414,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   lFormatter.dateStyle := NSDateFormatterStyle.NoStyle;
   lFormatter.timeStyle := NSDateFormatterStyle.ShortStyle;
-  result := lFormatter.stringFromDate(mapped);
+  result := lFormatter.stringFromDate(mapped) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
   result := fDateTime.ToShortTimeString();
   {$ENDIF}
@@ -436,7 +436,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   lFormatter.dateStyle := NSDateFormatterStyle.MediumStyle;
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
-  result := lFormatter.stringFromDate(mapped);
+  result := lFormatter.stringFromDate(mapped) as not nullable;
   {$ELSEIF ECHOES}
   result := ToShortDateString();
   {$ELSEIF ISLAND}
@@ -455,7 +455,7 @@ begin
   lFormatter.timeZone := coalesce(aTimeZone, TimeZone.Utc);
   lFormatter.dateStyle := NSDateFormatterStyle.LongStyle;
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
-  result := lFormatter.stringFromDate(mapped);
+  result := lFormatter.stringFromDate(mapped) as not nullable;
   {$ELSEIF ECHOES}
   result := fDateTime.ToLongDateString;
   {$ELSEIF ISLAND}
