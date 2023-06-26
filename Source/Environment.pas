@@ -683,7 +683,7 @@ begin
       result := if IsRosetta2 then "arm64" else "x86_64";
       {$ENDIF}
     {$ELSEIF SIMULATOR}
-    result := "arm64"; {$HINT do better}
+    result := {$IF __arm64__}"arm64"{$ELSE}"x86_64"{$ENDIF}; {$HINT not 100% but we really only support native Sim these days}
     {$ELSEIF IOS}
     result := "arm64"; // technically imprecise for arm running on VERY old deviced
     {$ELSEIF TVOS}
