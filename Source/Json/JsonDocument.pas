@@ -21,13 +21,16 @@ type
     class method FromUrl(aUrl: not nullable Url): not nullable JsonDocument;
     {$ENDIF}
     class method FromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): not nullable JsonDocument;
+    class method FromBinary(aBinary: not nullable array of Byte; aEncoding: Encoding := nil): not nullable JsonDocument;
     class method FromString(aString: not nullable String): not nullable JsonDocument;
     {$IF NOT WEBASSEMBLY}
     class method TryFromFile(aFile: not nullable File): nullable JsonDocument;
     class method TryFromFile(aFile: not nullable File; out aException: Exception): nullable JsonDocument;
     {$ENDIF}
-    class method TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): nullable JsonDocument;
-    class method TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
+    class method TryFromBinary(aBinary: nullable ImmutableBinary; aEncoding: Encoding := nil): nullable JsonDocument;
+    class method TryFromBinary(aBinary: nullable ImmutableBinary; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
+    class method TryFromBinary(aBinary: nullable array of Byte; aEncoding: Encoding := nil): nullable JsonDocument;
+    class method TryFromBinary(aBinary: nullable array of Byte; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
     class method TryFromString(aString: nullable String): nullable JsonDocument;
     class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonDocument;
     class method CreateDocument: not nullable JsonDocument;
@@ -137,6 +140,12 @@ begin
   result := new JsonDocument(new JsonDeserializer(new String(aBinary.ToArray, aEncoding)).Deserialize);
 end;
 
+class method JsonDocument.FromBinary(aBinary: not nullable array of Byte; aEncoding: Encoding := nil): not nullable JsonDocument;
+begin
+  if aEncoding = nil then aEncoding := Encoding.Default;
+  result := new JsonDocument(new JsonDeserializer(new String(aBinary, aEncoding)).Deserialize);
+end;
+
 class method JsonDocument.FromString(aString: not nullable String): not nullable JsonDocument;
 begin
   result := new JsonDocument(new JsonDeserializer(aString).Deserialize)
@@ -162,20 +171,52 @@ begin
 end;
 {$ENDIF}
 
-class method JsonDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil): nullable JsonDocument;
+class method JsonDocument.TryFromBinary(aBinary: nullable ImmutableBinary; aEncoding: Encoding := nil): nullable JsonDocument;
 begin
+  if not assigned(aBinary) then
+    exit;
   try
-    if aEncoding = nil then aEncoding := Encoding.Default;
+    if not assigned(aEncoding) then
+      aEncoding := Encoding.Default;
     result := new JsonDocument(new JsonDeserializer(new String(aBinary.ToArray, aEncoding)).Deserialize);
   except
   end;
 end;
 
-class method JsonDocument.TryFromBinary(aBinary: not nullable ImmutableBinary; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
+class method JsonDocument.TryFromBinary(aBinary: nullable ImmutableBinary; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
 begin
+  if not assigned(aBinary) then
+    exit;
   try
-    if aEncoding = nil then aEncoding := Encoding.Default;
+    if not assigned(aEncoding) then
+      aEncoding := Encoding.Default;
     result := new JsonDocument(new JsonDeserializer(new String(aBinary.ToArray, aEncoding)).Deserialize);
+  except
+    on E: Exception do
+      aException := E;
+  end;
+end;
+
+class method JsonDocument.TryFromBinary(aBinary: nullable array of Byte; aEncoding: Encoding := nil): nullable JsonDocument;
+begin
+  if not assigned(aBinary) then
+    exit;
+  try
+    if not assigned(aEncoding) then
+      aEncoding := Encoding.Default;
+    result := new JsonDocument(new JsonDeserializer(new String(aBinary, aEncoding)).Deserialize);
+  except
+  end;
+end;
+
+class method JsonDocument.TryFromBinary(aBinary: nullable array of Byte; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
+begin
+  if not assigned(aBinary) then
+    exit;
+  try
+    if not assigned(aEncoding) then
+      aEncoding := Encoding.Default;
+    result := new JsonDocument(new JsonDeserializer(new String(aBinary, aEncoding)).Deserialize);
   except
     on E: Exception do
       aException := E;
