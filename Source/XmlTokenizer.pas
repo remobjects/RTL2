@@ -12,10 +12,10 @@ type
     fRowStart: Integer;
     fLength: Integer;
 
-    method CharIsIdentifier(C: Char): Boolean; inline;
-    method CharIsWhitespace(C: Char): Boolean; inline;
-    method CharIsNameStart(C: Char): Boolean; inline;
-    method CharIsName(C: Char): Boolean; inline;
+    class method CharIsIdentifier(C: Char): Boolean; inline;
+    class method CharIsWhitespace(C: Char): Boolean; inline;
+    class method CharIsNameStart(C: Char): Boolean; inline;
+    class method CharIsName(C: Char): Boolean; inline;
 
     method Parse;
 
@@ -26,6 +26,8 @@ type
     method ParseSymbolData;
     method ParseComment;
     method ParseCData;
+
+    class method IsValidName(aName: String): Boolean;
 
   public
     constructor (aXml: String);
@@ -56,24 +58,24 @@ begin
   Token := XmlTokenKind.BOF;
 end;
 
-method XmlTokenizer.CharIsIdentifier(C: Char): Boolean;
+class method XmlTokenizer.CharIsIdentifier(C: Char): Boolean;
 begin
   exit (((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or (C = '_'));
 end;
 
-method XmlTokenizer.CharIsWhitespace(C: Char): Boolean;
+class method XmlTokenizer.CharIsWhitespace(C: Char): Boolean;
 begin
   exit (C = ' ') or (C = #13) or (C = #10) or (C = #9);
 end;
 
-method XmlTokenizer.CharIsNameStart(C: Char): Boolean;
+class method XmlTokenizer.CharIsNameStart(C: Char): Boolean;
 begin
   result := ((C >= 'a') and (C <= 'z')) or ((C >= 'A') and (C <= 'Z')) or ((C>=#192) and (C<=#214)) or ((C>=#216) and (C<=#246)) or ((C>=#248) and (C<=#767)) or
     ((C>=#880) and (C<=#893)) or ((C>=#895) and (C<=#8191)) or (C=#8204) or (C=#8205) or ((C>=#8304) and (C<=#8591)) or ((C>=#11264) and (C<=#12271)) or ((C>=#12289) and (C<=#55295)) or
     ((C>=#63744) and (C<=#64975)) or ((C>=#65008) and (C<=#65533)){ or ((C>=#65536) and (C<=#983039))} or (C = '_') or (C = ':');
 end;
 
-method XmlTokenizer.CharIsName(C: Char): Boolean;
+class method XmlTokenizer.CharIsName(C: Char): Boolean;
 begin
   result := CharIsNameStart(C) or ((C >='0') and (C <= '9')) or (C = '-') or (C = '.')
 end;
@@ -129,7 +131,7 @@ begin
           '?': begin
             if (fData.Length >= fPos+5{XmlConsts.TAG_DECL_OPEN.Length}) and
               (new String(fData,fPos,5{XmlConsts.TAG_DECL_OPEN.Length})  = XmlConsts.TAG_DECL_OPEN) and (CharIsWhitespace(fData[fPos+5{XmlConsts.TAG_DECL_OPEN.Length}])) then begin
-              //if fPos = 0 then begin 
+              //if fPos = 0 then begin
               Token := XmlTokenKind.DeclarationStart;
               fLength:= 5;//XmlConsts.TAG_DECL_OPEN.Length;
               Value := nil;
@@ -279,6 +281,32 @@ begin
   fLength := lPosition - fPos;
   Value := new String(fData, fPos, fLength);
   Token := XmlTokenKind.ElementName;
+end;
+
+class method XmlTokenizer.IsValidName(aName: String): Boolean;
+begin
+  var fAlreadyHadColon: Boolean;
+  for i := 0 to length(aName)-1 do begin
+    var ch := aName[i];
+    if (i > 0) and (ch = ':') then begin
+      if fAlreadyHadColon then
+        exit false;
+      if (i = length(aName)) or not CharIsNameStart(aName[i+1]) then
+        exit false;
+      fAlreadyHadColon := true;
+    end
+    else begin
+      if (i = 0) then begin
+        if not CharIsNameStart(ch) then
+          exit false;
+      end
+      else begin
+        if not CharIsName(ch) then
+          exit false;
+      end;
+    end;
+  end;
+  exit true;
 end;
 
 method XmlTokenizer.ParseValue;

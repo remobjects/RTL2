@@ -794,10 +794,7 @@ end;
 
 method XmlNode.CheckName(aName: String): Boolean;
 begin
-  if aName = "" then exit false;
-  var t := new XmlTokenizer(aName);
-  t.ParseName;
-  if t.Value = aName then exit true;
+  result := (length(aName) > 0) and XmlTokenizer.IsValidName(aName);
 end;
 
 constructor XmlNode withParent(aParent: XmlElement);
