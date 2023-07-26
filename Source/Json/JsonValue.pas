@@ -139,7 +139,7 @@ end;
 
 operator JsonStringValue.Implicit(aValue: nullable String): JsonStringValue;
 begin
-  if assgned(aValue) then
+  if assigned(aValue) then
     result := new JsonStringValue(aValue);
 end;
 
