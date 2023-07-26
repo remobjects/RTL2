@@ -21,7 +21,7 @@ type
   JsonStringValue = public class(JsonValue<not nullable String>)
   public
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
-    operator Implicit(aValue: not nullable String): JsonStringValue;
+    operator Implicit(aValue: nullable String): JsonStringValue;
     operator Equal(aLeft: JsonStringValue; aRight: Object): Boolean;
     operator Equal(aLeft: Object; aRight: JsonStringValue): Boolean;
 
@@ -137,9 +137,10 @@ begin
   result := JsonConsts.STRING_QUOTE+sb.ToString()+JsonConsts.STRING_QUOTE;
 end;
 
-operator JsonStringValue.Implicit(aValue: not nullable String): JsonStringValue;
+operator JsonStringValue.Implicit(aValue: nullable String): JsonStringValue;
 begin
-  result := new JsonStringValue(aValue);
+  if assgned(aValue) then
+    result := new JsonStringValue(aValue);
 end;
 
 operator JsonStringValue.&Equal(aLeft: JsonStringValue; aRight: Object): Boolean;
