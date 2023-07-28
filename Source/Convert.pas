@@ -404,17 +404,17 @@ end;
 
 method Convert.ToHexString(aData: array of Byte; aCount: Integer; aSpacer: String := nil): not nullable String;
 begin
-  result := ToHexString(aData, 0, aCount);
+  result := ToHexString(aData, 0, aCount, aSpacer);
 end;
 
 method Convert.ToHexString(aData: array of Byte; aSpacer: String := nil): not nullable String;
 begin
-  result := ToHexString(aData, 0, length(aData));
+  result := ToHexString(aData, 0, length(aData), aSpacer);
 end;
 
 method Convert.ToHexString(aData: ImmutableBinary; aSpacer: String := nil): not nullable String;
 begin
-  result := ToHexString(aData.ToArray())
+  result := ToHexString(aData.ToArray(), aSpacer)
 end;
 
 method Convert.ToAsciiString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
