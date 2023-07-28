@@ -82,10 +82,10 @@ type
 
     //method ToHexString(aValue: Int32; aWidth: Integer := 0): not nullable String;
     method ToHexString(aValue: UInt64; aWidth: Integer := 0): not nullable String;
-    method ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer; aSpacer: String := nil): not nullable String;
-    method ToHexString(aData: array of Byte; aCount: Integer; aSpacer: String := nil): not nullable String;
-    method ToHexString(aData: array of Byte; aSpacer: String := nil): not nullable String;
-    method ToHexString(aData: ImmutableBinary; aSpacer: String := nil): not nullable String;
+    method ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
+    method ToHexString(aData: array of Byte; aCount: Integer; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
+    method ToHexString(aData: array of Byte; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
+    method ToHexString(aData: ImmutableBinary; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
 
     method ToAsciiString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
     method ToAsciiString(aData: array of Byte): not nullable String;
@@ -380,7 +380,7 @@ begin
     result := "0";
 end;
 
-method Convert.ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer; aSpacer: String := nil): not nullable String;
+method Convert.ToHexString(aData: array of Byte; aOffset: Integer; aCount: Integer; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
 begin
   if (length(aData) = 0) or (aCount = 0) then
     exit '';
@@ -388,33 +388,35 @@ begin
   RangeHelper.Validate(new Range(aOffset, aCount), aData.Length);
 
   var Chars := new Char[aCount * 2];
-  var Num: Integer;
+  var lValue: Integer;
 
   for i: Integer := 0 to aCount - 1 do begin
-    if assigned(aSpacer) and (i > 0) and (i mod 2 = 0) then
+    if (aBytesPerLine > 0) and (i > 0) and (i mod aBytesPerLine = 0) then
+      result := result + Environment.LineBreak
+    else if assigned(aSpacer) and (i > 0) and (i mod 2 = 0) then
       result := result + aSpacer;
-    Num := aData[aOffset + i] shr 4;
-    Chars[i * 2] := chr(55 + Num + (((Num - 10) shr 31) and -7));
-    Num := aData[aOffset + i] and $F;
-    Chars[i * 2 + 1] := chr(55 + Num + (((Num - 10) shr 31) and -7));
+    lValue := aData[aOffset + i] shr 4;
+    Chars[i * 2] := chr(55 + lValue + (((lValue - 10) shr 31) and -7));
+    lValue := aData[aOffset + i] and $F;
+    Chars[i * 2 + 1] := chr(55 + lValue + (((lValue - 10) shr 31) and -7));
   end;
 
   exit new String(Chars);
 end;
 
-method Convert.ToHexString(aData: array of Byte; aCount: Integer; aSpacer: String := nil): not nullable String;
+method Convert.ToHexString(aData: array of Byte; aCount: Integer; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
 begin
-  result := ToHexString(aData, 0, aCount, aSpacer);
+  result := ToHexString(aData, 0, aCount, aSpacer, aBytesPerLine);
 end;
 
-method Convert.ToHexString(aData: array of Byte; aSpacer: String := nil): not nullable String;
+method Convert.ToHexString(aData: array of Byte; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
 begin
-  result := ToHexString(aData, 0, length(aData), aSpacer);
+  result := ToHexString(aData, 0, length(aData), aSpacer, aBytesPerLine);
 end;
 
-method Convert.ToHexString(aData: ImmutableBinary; aSpacer: String := nil): not nullable String;
+method Convert.ToHexString(aData: ImmutableBinary; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
 begin
-  result := ToHexString(aData.ToArray(), aSpacer)
+  result := ToHexString(aData.ToArray(), aSpacer, aBytesPerLine);
 end;
 
 method Convert.ToAsciiString(aData: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
