@@ -9,6 +9,10 @@ type
 
     method GetRootObjectItem(aKey: String): nullable JsonNode;
     method SetRootObjectItem(aKey: String; Value: JsonNode);
+    method SetRootObjectItem(aKey: String; Value: nullable String);
+    method SetRootObjectItem(aKey: String; Value: Boolean);
+    method SetRootObjectItem(aKey: String; Value: Int32);
+    method SetRootObjectItem(aKey: String; Value: Double);
     method GetRootArrayItem(aIndex: Integer): nullable JsonNode;
     method GetRootObjectKeys: not nullable sequence of String;
 
@@ -47,6 +51,12 @@ type
 
     property Item[aKey: String]: nullable JsonNode read GetRootObjectItem write SetRootObjectItem; default; virtual;
     property Item[aIndex: Integer]: nullable JsonNode read GetRootArrayItem; default; virtual;
+
+    property Item[aKey: not nullable String]: nullable String write SetRootObjectItem; default; virtual;
+    property Item[aKey: not nullable String]: Boolean write SetRootObjectItem; default; virtual;
+    property Item[aKey: not nullable String]: Int32 write SetRootObjectItem; default; virtual;
+    property Item[aKey: not nullable String]: Double write SetRootObjectItem; default; virtual;
+
     [Obsolete("Use Root: JsonNode, instead")] property RootObject: not nullable JsonObject read fRootNode as JsonObject;
     [Obsolete("Use Root: JsonNode, instead")] property Keys: not nullable sequence of String read GetRootObjectKeys; virtual;
   end;
@@ -268,6 +278,34 @@ begin
 end;
 
 method JsonDocument.SetRootObjectItem(aKey: String; Value: JsonNode);
+begin
+  if fRootNode is not JsonObject then
+    raise new JsonException("Root object is not an object");
+  fRootNode[aKey] := Value;
+end;
+
+method JsonDocument.SetRootObjectItem(aKey: String; Value: nullable String);
+begin
+  if fRootNode is not JsonObject then
+    raise new JsonException("Root object is not an object");
+  fRootNode[aKey] := Value;
+end;
+
+method JsonDocument.SetRootObjectItem(aKey: String; Value: Boolean);
+begin
+  if fRootNode is not JsonObject then
+    raise new JsonException("Root object is not an object");
+  fRootNode[aKey] := Value;
+end;
+
+method JsonDocument.SetRootObjectItem(aKey: String; Value: Int32);
+begin
+  if fRootNode is not JsonObject then
+    raise new JsonException("Root object is not an object");
+  fRootNode[aKey] := Value;
+end;
+
+method JsonDocument.SetRootObjectItem(aKey: String; Value: Double);
 begin
   if fRootNode is not JsonObject then
     raise new JsonException("Root object is not an object");
