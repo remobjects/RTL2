@@ -989,7 +989,7 @@ type
       {$ENDIF}
     end;
 
-    method Trim(const TrimChars: array of Char): not nullable String;
+    method Trim(params TrimChars: array of Char): not nullable String;
     begin
       {$IF COOPER}
       var lStr := TrimStart(TrimChars);
@@ -1002,7 +1002,7 @@ type
       {$ENDIF}
     end;
 
-    method TrimEnd(const TrimChars: array of Char): not nullable String;
+    method TrimEnd(params TrimChars: array of Char): not nullable String;
     begin
       {$IF COOPER OR TOFFEE}
       var len := RemObjects.Elements.System.length(self);
@@ -1019,7 +1019,7 @@ type
       {$ENDIF}
     end;
 
-    method TrimStart(const TrimChars: array of Char): not nullable String;
+    method TrimStart(params TrimChars: array of Char): not nullable String;
     begin
       {$IF COOPER OR TOFFEE}
       var len := RemObjects.Elements.System.length(self);
