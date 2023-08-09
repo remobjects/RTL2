@@ -46,6 +46,7 @@ type
     method ToInt64(aValue: Char): Int64;
     method ToInt64(aValue: not nullable String): Int64;
     method TryToInt64(aValue: nullable String): nullable Int64;
+    method TryToIntPtr(aValue: nullable String): nullable IntPtr;
 
     method ToDouble(aValue: Boolean): Double;
     method ToDouble(aValue: Byte): Double;
@@ -677,6 +678,32 @@ begin
 end;
 
 method Convert.TryToInt64(aValue: nullable String): nullable Int64;
+begin
+  if length(aValue) = 0 then
+    exit nil;
+
+  {$IF COOPER}
+  try
+    exit Long.parseLong(aValue);
+  except
+    on E: NumberFormatException do
+      exit nil;
+  end;
+  {$ELSEIF ECHOES OR ISLAND}
+  for i: Int32 := 0 to length(aValue)-1 do
+    if Char.IsWhiteSpace(aValue[i]) then // TryParse ignores whitespace, we wanna fail
+      exit nil;
+  var lResult: Int64;
+  if Int64.TryParse(aValue, out lResult) then
+    exit lResult
+  else
+    exit nil;
+  {$ELSEIF TOFFEE}
+  exit TryParseInt64(aValue);
+  {$ENDIF}
+end;
+
+method Convert.TryToIntPtr(aValue: nullable String): nullable IntPtr;
 begin
   if length(aValue) = 0 then
     exit nil;
