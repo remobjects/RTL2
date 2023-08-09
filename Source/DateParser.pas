@@ -481,6 +481,8 @@ end;
 
 class method DateParser.TryParseISO8601(aDateTime: String; out output: DateTime): Boolean;
 begin
+  if length(aDateTime) = 0 then
+    exit;
   var lFormats := ['yyyy-MM-ddTHH:mm:ss.fffffffK', 'yyyy-MM-ddTHH:mm:ss.fffffffzzz', 'yyyy-MM-ddTHH:mm:ssK', 'yyyy-MM-ddTHH:mm:ss.fK', 'yyyy-MM-ddTHH:mm:ss K'];
   for lFormat in lFormats do begin
     result := InternalParse(aDateTime, lFormat, Locale.Invariant, out output, [DateParserOption.IgnoreTInIso8601, DateParserOption.IgnoreWhiteSpaces]);
@@ -491,6 +493,8 @@ end;
 
 class method DateParser.TryParse(aDateTime: String; aLocale: Locale; out output: DateTime; aOptions: DateParserOptions): Boolean;
 begin
+  if length(aDateTime) = 0 then
+    exit;
   // 1. string with a date and time component, including long and short patterns.
   // 2. only date component
   // 3. time with seconds
