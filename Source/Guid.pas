@@ -61,10 +61,9 @@ type
 
     method ToByteArray: array of Byte;
     method ToString: String; {$IF ISLAND OR ECHOES}override;{$ENDIF}
-    method ToString(Format: GuidFormat): String;
+    method ToString(Format: GuidFormat; aUppercase: Boolean := false): not nullable String;
 
   end;
-
 
 implementation
 
@@ -248,10 +247,10 @@ end;
 
 method Guid.ToString: String;
 begin
-  result := ToString(GuidFormat.Default);
+  result := ToString(GuidFormat.Default, false);
 end;
 
-method Guid.ToString(Format: GuidFormat): String;
+method Guid.ToString(Format: GuidFormat; aUppercase: Boolean := false): not nullable String;
 begin
   {$IF COOPER}
   case Format of
@@ -269,10 +268,10 @@ begin
   end;
   {$ELSEIF ECHOES}
   case Format of
-    Format.Default: result := fGuid.ToString("D");
-    Format.Braces: result := fGuid.ToString("B");
-    Format.Parentheses: result := fGuid.ToString("P");
-    else result := fGuid.ToString("D");
+    Format.Default: result := fGuid.ToString("D") as not nullable;
+    Format.Braces: result := fGuid.ToString("B") as not nullable;
+    Format.Parentheses: result := fGuid.ToString("P") as not nullable;
+    else result := fGuid.ToString("D") as not nullable;;
   end;
   {$ELSEIF ISLAND}
   result := fGuid.ToString;
@@ -281,7 +280,7 @@ begin
     Format.Parentheses: result := "("+result+")";
   end;
   {$ENDIF}
-  result := result.ToUpper();
+  result := if aUppercase then result.ToUpperInvariant else result.ToLowerInvariant;
 end;
 
 //method Guid.ToString: String;
