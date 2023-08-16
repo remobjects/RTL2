@@ -16,6 +16,7 @@ type
     property fCachedCurrentNumberFormatters := new Dictionary<Integer,NSNumberFormatter>; lazy;
     {$ENDIF}
 
+    method ParseDecimalStringToBytes(s:String; out aSign: Boolean; out arr: array of Byte): Boolean;
     method TrimLeadingZeros(aValue: not nullable String): not nullable String; inline;
     method DigitForValue(aValue: Int32): Char; inline;
   public
@@ -46,8 +47,10 @@ type
     method ToInt64(aValue: Char): Int64;
     method ToInt64(aValue: not nullable String): Int64;
     method TryToInt64(aValue: nullable String): nullable Int64;
+    method TryToUInt64(aValue: nullable String): nullable UInt64;
     {$IF NOT COOPER}
     method TryToIntPtr(aValue: nullable String): nullable IntPtr;
+    method TryToUIntPtr(aValue: nullable String): nullable UIntPtr;
     {$ENDIF}
 
     method ToDouble(aValue: Boolean): Double;
@@ -597,8 +600,8 @@ begin
 end;
 
 method convert.Base64StringToByteArray(S: String): array of Byte;
-  const Codes64: String = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 begin
+  const Codes64: String = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   var a := 0;
   var b := 0;
   var x: Int32;
@@ -705,6 +708,22 @@ begin
   {$ENDIF}
 end;
 
+method Convert.TryToUInt64(aValue: nullable String): nullable UInt64;
+begin
+  if not ParseDecimalStringToBytes(aValue, out var lSign, out var arr) then
+    exit;
+  if lSign then
+    exit;
+  if length(arr) > 8 then
+    exit;
+  var lValue := UInt64(arr[0]);
+
+  for i := 1 to arr.Length-1 do
+    lValue := lValue*10+arr[i];
+
+  result := lValue;
+end;
+
 {$IF NOT COOPER}
 method Convert.TryToIntPtr(aValue: nullable String): nullable IntPtr;
 begin
@@ -725,6 +744,22 @@ begin
   {$ELSEIF TOFFEE}
   exit TryParseInt64(aValue);
   {$ENDIF}
+end;
+
+method Convert.TryToUIntPtr(aValue: nullable String): nullable UIntPtr;
+begin
+  if not ParseDecimalStringToBytes(aValue, out var lSign, out var arr) then
+    exit;
+  if lSign then
+    exit;
+  if length(arr) > 8 then
+    exit;
+  var lValue := UIntPtr(arr[0]);
+
+  for i := 1 to arr.Length-1 do
+    lValue := lValue*10+arr[i];
+
+  result := lValue;
 end;
 {$ENDIF}
 
@@ -1036,5 +1071,35 @@ begin
   exit Number as not nullable;
 end;
 {$ENDIF}
+
+method Convert.ParseDecimalStringToBytes(s:String; out aSign: Boolean; out arr: array of Byte): Boolean;
+begin
+  if length(s) = 0 then
+    exit;
+  var len := length(s);
+  var start := 0;
+  aSign := false;
+  while s[start] = ' ' do begin
+    inc(start);
+    dec(len);
+  end;
+  while s[start+len-1] = ' ' do
+    dec(len);
+
+  if (s[start] = '-') or (s[start] = '+') then begin
+    aSign := (s[start] = '-');
+    dec(len);
+    inc(start);
+  end;
+  arr := new array of Byte(len);
+  for i: Integer := 0 to len-1 do begin
+    var b:= Integer(s[i+start]);
+    if (b>=48) and (b<=57) then
+      arr[i] := b-48
+    else
+      exit false;
+  end;
+  exit true;
+end;
 
 end.
