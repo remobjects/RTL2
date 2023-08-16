@@ -254,10 +254,10 @@ method Guid.ToString(Format: GuidFormat; aUppercase: Boolean := false): not null
 begin
   {$IF COOPER}
   case Format of
-    Format.Default: result := mapped.toString;
+    Format.Default: result := mapped.toString as not nullable;
     Format.Braces: result := "{"+mapped.toString+"}";
     Format.Parentheses: result := "("+mapped.toString+")";
-    else result := mapped.toString;
+    else result := mapped.toString as not nullable;
   end;
   {$ELSEIF TOFFEE}
   result := mapped.UUIDString;
@@ -274,7 +274,7 @@ begin
     else result := fGuid.ToString("D") as not nullable;;
   end;
   {$ELSEIF ISLAND}
-  result := fGuid.ToString;
+  result := fGuid.ToString as not nullable;
   case Format of
     Format.Braces: result := "{"+result+"}";
     Format.Parentheses: result := "("+result+")";
