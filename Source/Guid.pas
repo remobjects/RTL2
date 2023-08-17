@@ -260,7 +260,7 @@ begin
     else result := mapped.toString as not nullable;
   end;
   {$ELSEIF TOFFEE}
-  result := mapped.UUIDString;
+  result := mapped.UUIDString as not nullable;
   case Format of
     Format.Default: ;
     Format.Braces: result := "{"+result+"}";
