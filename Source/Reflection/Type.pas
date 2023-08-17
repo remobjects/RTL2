@@ -110,7 +110,7 @@ type
     property IsValueType: Boolean read mapped.IsValueType;
     {$ELSEIF ISLAND}
     property Name: String read mapped.Name;
-    property FullName: String read mapped.Name;
+    property FullName: String read mapped.FullName;
     method IsSubclassOf(aType: &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read sequence of &Type(mapped.Interfaces).ToList();
     property Methods: ImmutableList<&Method> read sequence of &Method(mapped.Methods).ToList();
