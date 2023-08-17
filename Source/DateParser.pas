@@ -483,7 +483,7 @@ class method DateParser.TryParseISO8601(aDateTime: String; out output: DateTime)
 begin
   if length(aDateTime) = 0 then
     exit;
-  var lFormats := ['yyyy-MM-ddTHH:mm:ss.fffffffK', 'yyyy-MM-ddTHH:mm:ss.fffffffzzz', 'yyyy-MM-ddTHH:mm:ssK', 'yyyy-MM-ddTHH:mm:ss.fK', 'yyyy-MM-ddTHH:mm:ss K'];
+  var lFormats := ['yyyy-MM-ddTHH:mm:ss.fffffffK', 'yyyy-MM-ddTHH:mm:ss.fffffffzzz', 'yyyy-MM-ddTHH:mm:ssK', 'yyyy-MM-ddTHH:mm:ss.fK', 'yyyy-MM-ddTHH:mm:ss K', 'yyyy-MM-ddTHH:mm:ss', 'yyyy-MM-dd'];
   for lFormat in lFormats do begin
     result := InternalParse(aDateTime, lFormat, Locale.Invariant, out output, [DateParserOption.IgnoreTInIso8601, DateParserOption.IgnoreWhiteSpaces]);
     if result then
