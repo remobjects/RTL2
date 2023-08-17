@@ -49,9 +49,8 @@ type
     method ToString: String; override;
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
 
-    property Item[aKey: String]: nullable JsonNode read GetRootObjectItem write SetRootObjectItem; default; virtual;
     property Item[aIndex: Integer]: nullable JsonNode read GetRootArrayItem; default; virtual;
-
+    property Item[aKey: not nullable String]: nullable JsonNode read GetRootObjectItem write SetRootObjectItem; default; virtual;
     property Item[aKey: not nullable String]: nullable String write SetRootObjectItem; default; virtual;
     property Item[aKey: not nullable String]: Boolean write SetRootObjectItem; default; virtual;
     property Item[aKey: not nullable String]: Int32 write SetRootObjectItem; default; virtual;
