@@ -50,7 +50,9 @@ type
     method TryToUInt64(aValue: nullable String): nullable UInt64;
     {$IF NOT COOPER}
     method TryToIntPtr(aValue: nullable String): nullable IntPtr;
+    {$IF NOT TOFFEE}{$HINT DONT SHIP} // E26708: IE Invalid Cast on RTL2/Toffee, with latest
     method TryToUIntPtr(aValue: nullable String): nullable UIntPtr;
+    {$ENDIF}
     {$ENDIF}
 
     method ToDouble(aValue: Boolean): Double;
@@ -746,6 +748,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF NOT TOFFEE}{$HINT DONT SHIP} // E26708: IE Invalid Cast on RTL2/Toffee, with latest
 method Convert.TryToUIntPtr(aValue: nullable String): nullable UIntPtr;
 begin
   if not ParseDecimalStringToBytes(aValue, out var lSign, out var arr) then
@@ -761,6 +764,7 @@ begin
 
   result := lValue;
 end;
+{$ENDIF}
 {$ENDIF}
 
 method Convert.ToDouble(aValue: Boolean): Double;
