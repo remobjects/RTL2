@@ -392,22 +392,35 @@ begin
     exit '';
 
   RangeHelper.Validate(new Range(aOffset, aCount), aData.Length);
-
-  var Chars := new Char[aCount * 2];
   var lValue: Integer;
 
-  for i: Integer := 0 to aCount - 1 do begin
-    if (aBytesPerLine > 0) and (i > 0) and (i mod aBytesPerLine = 0) then
-      result := result + Environment.LineBreak
-    else if assigned(aSpacer) and (i > 0) and (i mod 2 = 0) then
-      result := result + aSpacer;
-    lValue := aData[aOffset + i] shr 4;
-    Chars[i * 2] := chr(55 + lValue + (((lValue - 10) shr 31) and -7));
-    lValue := aData[aOffset + i] and $F;
-    Chars[i * 2 + 1] := chr(55 + lValue + (((lValue - 10) shr 31) and -7));
-  end;
+  if assigned(aSpacer) or (aBytesPerLine > 0) then begin
+    var sb := new StringBuilder(aCount * 2 + length(aSpacer)*aCount + length(Environment.LineBreak)*aCount/aBytesPerLine);
 
-  exit new String(Chars);
+    for i: Integer := 0 to aCount - 1 do begin
+      if (aBytesPerLine > 0) and (i > 0) and (i mod aBytesPerLine = 0) then
+        sb.Append(Environment.LineBreak)
+      else if assigned(aSpacer) and (i > 0) then
+        sb.Append(aSpacer);
+
+      lValue := aData[aOffset + i] shr 4;
+      sb.Append(chr(55 + lValue + (((lValue - 10) shr 31) and -7)));
+      lValue := aData[aOffset + i] and $F;
+      Sb.Append(chr(55 + lValue + (((lValue - 10) shr 31) and -7)));
+    end;
+
+    result := sb.ToString as not nullable;
+  end
+  else begin
+    var Chars := new Char[aCount * 2];
+    for i: Integer := 0 to aCount - 1 do begin
+      lValue := aData[aOffset + i] shr 4;
+      Chars[i * 2] := chr(55 + lValue + (((lValue - 10) shr 31) and -7));
+      lValue := aData[aOffset + i] and $F;
+      Chars[i * 2 + 1] := chr(55 + lValue + (((lValue - 10) shr 31) and -7));
+    end;
+    result := new String(Chars);
+  end;
 end;
 
 method Convert.ToHexString(aData: array of Byte; aCount: Integer; aSpacer: String := nil; aBytesPerLine: Integer := -1): not nullable String;
