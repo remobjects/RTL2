@@ -44,6 +44,12 @@ type
           exit true;
     end;
 
+    [ToString]
+    method ToString: String; override;
+    begin
+      result := $"caseInsensitive({fString})";
+    end;
+
   unit
     constructor(aString: not nullable String);
     begin
