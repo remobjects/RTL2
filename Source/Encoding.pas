@@ -217,10 +217,10 @@ class method Encoding.GetEncoding(aName: not nullable String): nullable Encoding
 begin
   try
     {$IF COOPER}
-    exit java.nio.charset.Charset.forName(aName);
+    exit java.nio.charset.Charset.forName(aName:ToUpperInvariant);
     {$ELSEIF TOFFEE}
     var lEncoding := NSStringEncoding.UTF8StringEncoding;
-    case aName of
+    case aName:ToUpperInvariant of
       'UTF8','UTF-8': lEncoding := NSStringEncoding.UTF8StringEncoding;
       'UTF16','UTF-16': lEncoding := NSStringEncoding.UTF16StringEncoding;
       'UTF32','UTF-32': lEncoding := NSStringEncoding.UTF32StringEncoding;
@@ -238,9 +238,9 @@ begin
     end;
     result := NSNumber.numberWithUnsignedInt(lEncoding as UInt32);
     {$ELSEIF ECHOES}
-    result := System.Text.Encoding.GetEncoding(aName);
+    result := System.Text.Encoding.GetEncoding(aName:ToUpperInvariant);
     {$ELSEIF ISLAND}
-    case aName of
+    case aName:ToUpperInvariant of
       'UTF8','UTF-8': result := PlatformEncoding.UTF8;
       'UTF16','UTF-16': result := PlatformEncoding.UTF16LE; //?
       'UTF32','UTF-32': result := PlatformEncoding.UTF32LE; //?
