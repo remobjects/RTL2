@@ -825,7 +825,7 @@ type
       end;
       result := self;
       {$ELSEIF ECHOES}
-      result := mapped.PadLeft(TotalWidth, PaddingChar);
+      result := mapped.PadLeft(TotalWidth, PaddingChar) as not nullable;
       {$ELSEIF ISLAND}
       result := mapped.PadStart(TotalWidth, PaddingChar);
       {$ENDIF}
@@ -849,7 +849,7 @@ type
       if result.Length < TotalWidth then
         result := mapped.stringByPaddingToLength(TotalWidth) withString(PaddingChar) startingAtIndex(0) as not nullable;
       {$ELSEIF ECHOES}
-      result := mapped.PadRight(TotalWidth, PaddingChar);
+      result := mapped.PadRight(TotalWidth, PaddingChar) as not nullable;
       {$ELSEIF ISLAND}
       result := mapped.PadEnd(TotalWidth, PaddingChar);
       {$ENDIF}
