@@ -217,6 +217,8 @@ begin
         processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
         d := stdOut.availableData;
       end;
+      if length(lastIncompleteLogLine) > 0 then
+        aStdOutCallback(lastIncompleteLogLine);
       var lError: NSError;
       if available("macOS 10.15") then
         stdOut.closeAndReturnError(var lError)
@@ -243,6 +245,8 @@ begin
         processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
         d := stdErr.availableData;
       end;
+      if length(lastIncompleteLogLine) > 0 then
+        aStdOutCallback(lastIncompleteLogLine);
       var lError: NSError;
       if available("macOS 10.15") then
         stdErr.closeAndReturnError(var lError)
