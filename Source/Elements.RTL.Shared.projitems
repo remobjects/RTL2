@@ -170,6 +170,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Available.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Http.Cocoa.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String.VariableProcessor.pas">
+      <VirtualFolder>String</VirtualFolder>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
