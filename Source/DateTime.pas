@@ -349,9 +349,9 @@ begin
     exit "";
   var lDateInTimeZone := if assigned(aTimeZone) then PlatformTimeZone.ConvertTimeFromUtc(fDateTime, aTimeZone) else fDateTime;
   if String.IsNullOrEmpty(Culture) then
-    result := lDateInTimeZone.ToString(DateFormatter.Format(Format))
+    result := lDateInTimeZone.ToString(DateFormatter.Format(Format)) as not nullable
   else
-    result := lDateInTimeZone.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture));
+    result := lDateInTimeZone.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture)) as not nullable;
   {$ELSEIF ISLAND}
   result := fDateTime.ToString(Format, Culture, aTimeZone);
   {$ENDIF}
@@ -398,8 +398,8 @@ begin
   lFormatter.dateStyle := NSDateFormatterStyle.ShortStyle;
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
   result := lFormatter.stringFromDate(mapped) as not nullable;;
-  {$ELSEIF ECHOES OR ISLAND }
-  result := fDateTime.ToShortDateString;
+  {$ELSEIF ECHOES OR ISLAND}
+  result := fDateTime.ToShortDateString as not nullable;
   {$ENDIF}
 end;
 
@@ -416,7 +416,7 @@ begin
   lFormatter.timeStyle := NSDateFormatterStyle.ShortStyle;
   result := lFormatter.stringFromDate(mapped) as not nullable;
   {$ELSEIF ECHOES OR ISLAND}
-  result := fDateTime.ToShortTimeString();
+  result := fDateTime.ToShortTimeString as not nullable;
   {$ENDIF}
 end;
 
@@ -438,7 +438,7 @@ begin
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
   result := lFormatter.stringFromDate(mapped) as not nullable;
   {$ELSEIF ECHOES}
-  result := ToShortDateString();
+  result := ToShortDateString as not nullable;
   {$ELSEIF ISLAND}
   result := fDateTime.ToShortPrettyDateString();
   {$ENDIF}
@@ -457,7 +457,7 @@ begin
   lFormatter.timeStyle := NSDateFormatterStyle.NoStyle;
   result := lFormatter.stringFromDate(mapped) as not nullable;
   {$ELSEIF ECHOES}
-  result := fDateTime.ToLongDateString;
+  result := fDateTime.ToLongDateString as not nullable;
   {$ELSEIF ISLAND}
   result := fDateTime.ToLongPrettyDateString();
   {$ENDIF}
