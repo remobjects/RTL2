@@ -19,6 +19,177 @@ type
     method SetPosition(Value: Int64); virtual;
     method GetPosition: Int64; virtual;
 
+    method ReadUInt64LE(out aResult: UInt64): Boolean;
+    begin
+      var lBytes := new Byte[8];
+      if &Read(lBytes, 8) ≠ 8 then
+        exit false;
+      aResult := (UInt64(lBytes[0])) +
+                 (UInt64(lBytes[1]) shl 8) +
+                 (UInt64(lBytes[2]) shl 16) +
+                 (UInt64(lBytes[3]) shl 24) +
+                 (UInt64(lBytes[4]) shl 32) +
+                 (UInt64(lBytes[5]) shl 40) +
+                 (UInt64(lBytes[6]) shl 48) +
+                 (UInt64(lBytes[7]) shl 56);
+      result := true;
+    end;
+
+    method ReadUInt64BE(out aResult: UInt64): Boolean;
+    begin
+      var lBytes := new Byte[8];
+      if &Read(lBytes, 8) ≠ 8 then
+        exit false;
+      aResult := (UInt64(lBytes[7])) +
+                 (UInt64(lBytes[6]) shl 8) +
+                 (UInt64(lBytes[5]) shl 16) +
+                 (UInt64(lBytes[4]) shl 24) +
+                 (UInt64(lBytes[3]) shl 32) +
+                 (UInt64(lBytes[2]) shl 40) +
+                 (UInt64(lBytes[1]) shl 48) +
+                 (UInt64(lBytes[0]) shl 56);
+      result := true;
+    end;
+
+    method ReadUInt32LE(out aResult: UInt32): Boolean;
+    begin
+      var lBytes := new Byte[4];
+      if &Read(lBytes, 4) ≠ 4 then
+        exit false;
+      aResult := (UInt32(lBytes[0])) +
+                 (UInt32(lBytes[1]) shl 8) +
+                 (UInt32(lBytes[2]) shl 16) +
+                 (UInt32(lBytes[3]) shl 24);
+      result := true;
+    end;
+
+    method ReadUInt32BE(out aResult: UInt32): Boolean;
+    begin
+      var lBytes := new Byte[4];
+      if &Read(lBytes, 4) ≠ 4 then
+        exit false;
+      aResult := (UInt32(lBytes[3])) +
+                 (UInt32(lBytes[2]) shl 8) +
+                 (UInt32(lBytes[1]) shl 16) +
+                 (UInt32(lBytes[0]) shl 24);
+      result := true;
+    end;
+
+    method ReadUInt16LE(out aResult: UInt16): Boolean;
+    begin
+      var lBytes := new Byte[2];
+      if &Read(lBytes, 2) ≠ 2 then
+        exit false;
+      aResult := (UInt16(lBytes[0])) +
+                 (UInt16(lBytes[1]) shl 8);
+      result := true;
+    end;
+
+    method ReadUInt16BE(out aResult: UInt16): Boolean;
+    begin
+      var lBytes := new Byte[2];
+      if &Read(lBytes, 2) ≠ 2 then
+        exit false;
+      aResult := (UInt16(lBytes[1])) +
+                 (UInt16(lBytes[0]) shl 8);
+      result := true;
+    end;
+
+    method ReadByte(out aResult: Byte): Boolean;
+    begin
+      var lBytes := new Byte[1];
+      if &Read(lBytes, 1) ≠ 1 then
+        exit false;
+      aResult := lBytes[0];
+      result := true;
+    end;
+
+    method ReadGuid(out aResult: Guid): Boolean;
+    begin
+      var lBytes := new Byte[sizeOf(Guid)];
+      if &Read(lBytes, sizeOf(Guid)) ≠ sizeOf(Guid) then
+        exit false;
+      aResult := new Guid(lBytes);
+      result := true;
+    end;
+
+    method WriteUInt64LE(value: UInt64): Boolean;
+    begin
+      var lBytes := new Byte[8];
+      lBytes[0] := Byte(value and $FF);
+      lBytes[1] := Byte((value shr 8) and $FF);
+      lBytes[2] := Byte((value shr 16) and $FF);
+      lBytes[3] := Byte((value shr 24) and $FF);
+      lBytes[4] := Byte((value shr 32) and $FF);
+      lBytes[5] := Byte((value shr 40) and $FF);
+      lBytes[6] := Byte((value shr 48) and $FF);
+      lBytes[7] := Byte((value shr 56) and $FF);
+      result := &Write(lBytes, 8) = 8;
+    end;
+
+    method WriteUInt64BE(value: UInt64): Boolean;
+    begin
+      var lBytes := new Byte[8];
+      lBytes[7] := Byte(value and $FF);
+      lBytes[6] := Byte((value shr 8) and $FF);
+      lBytes[5] := Byte((value shr 16) and $FF);
+      lBytes[4] := Byte((value shr 24) and $FF);
+      lBytes[3] := Byte((value shr 32) and $FF);
+      lBytes[2] := Byte((value shr 40) and $FF);
+      lBytes[1] := Byte((value shr 48) and $FF);
+      lBytes[0] := Byte((value shr 56) and $FF);
+      result := &Write(lBytes, 8) = 8;
+    end;
+
+    method WriteUInt32LE(value: UInt32): Boolean;
+    begin
+      var lBytes := new Byte[4];
+      lBytes[0] := Byte(value and $FF);
+      lBytes[1] := Byte((value shr 8) and $FF);
+      lBytes[2] := Byte((value shr 16) and $FF);
+      lBytes[3] := Byte((value shr 24) and $FF);
+      result := &Write(lBytes, 4) = 4;
+    end;
+
+    method WriteUInt32BE(value: UInt32): Boolean;
+    begin
+      var lBytes := new Byte[4];
+      lBytes[3] := Byte(value and $FF);
+      lBytes[2] := Byte((value shr 8) and $FF);
+      lBytes[1] := Byte((value shr 16) and $FF);
+      lBytes[0] := Byte((value shr 24) and $FF);
+      result := &Write(lBytes, 4) = 4;
+    end;
+
+    method WriteUInt16LE(value: UInt16): Boolean;
+    begin
+      var lBytes := new Byte[2];
+      lBytes[0] := Byte(value and $FF);
+      lBytes[1] := Byte((value shr 8) and $FF);
+      result := &Write(lBytes, 2) = 2;
+    end;
+
+    method WriteUInt16BE(value: UInt16): Boolean;
+    begin
+      var lBytes := new Byte[2];
+      lBytes[1] := Byte(value and $FF);
+      lBytes[0] := Byte((value shr 8) and $FF);
+      result := &Write(lBytes, 2) = 2;
+    end;
+
+    //method WriteUInt8(value: Byte): Boolean;
+    //begin
+      //var lBytes := new Byte[1];
+      //lBytes[0] := value;
+      //result := &Write(lBytes, 1) = 1;
+    //end;
+
+    method WriteGuid(value: Guid): Boolean;
+    begin
+      var lBytes := value.ToByteArray();
+      result := &Write(lBytes, 0, lBytes.Length) = lBytes.Length;
+    end;
+
     method CopyTo(Destination: Stream); virtual;
 
     property Length: Int64 read GetLength; virtual;
@@ -263,7 +434,7 @@ begin
   while true do begin
     var lRest := &Read(lBuf, bufSize);
     if lRest > 0 then lRest := Destination.Write(lBuf, lRest);
-    if lRest <> bufSize then break;
+    if lRest ≠ bufSize then break;
   end;
 end;
 
@@ -802,24 +973,24 @@ begin
     lRead[0] := lOneByte;
     if lOneByte = -1 then
       lBytes := 0;
-      if lBytes > 1 then begin
-        lOneByte := fStream.ReadByte;
-        lRead[1] := lOneByte;
-        if lOneByte = -1 then
-          lBytes := 1;
-      end;
+    if lBytes > 1 then begin
+      lOneByte := fStream.ReadByte;
+      lRead[1] := lOneByte;
+      if lOneByte = -1 then
+        lBytes := 1;
+    end;
 
-      if lBytes = 0 then
-        exit -1;
+    if lBytes = 0 then
+      exit -1;
 
-      try
-        lConverted := fEncoding.GetString(lRead, 0, lBytes);
-        lTotal := lConverted.Length;
-      except
+    try
+      lConverted := fEncoding.GetString(lRead, 0, lBytes);
+      lTotal := lConverted.Length;
+    except
        if fStream.CanSeek then
          fStream.Position := lOldPos;
        raise;
-      end;
+    end;
   end;
   if lConverted.Length = 0 then
     result := -1
@@ -915,7 +1086,7 @@ end;
 
 method BinaryStream.Write(aValue: array of Byte; Offset: Int32; Count: Int32);
 begin
-    fStream.Write(aValue, Offset, Count);
+  fStream.Write(aValue, Offset, Count);
 end;
 
 method BinaryStream.WriteSByte(Value: ShortInt);
