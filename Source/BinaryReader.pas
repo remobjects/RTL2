@@ -135,7 +135,7 @@ type
                 (UInt64(fBytes[aOffset+1]) shl  8) +
                 (UInt64(fBytes[aOffset+2]) shl 16) +
                 (UInt64(fBytes[aOffset+3]) shl 24) +
-                (UInt64(fBytes[aOffset+4]) shl 31) +
+                (UInt64(fBytes[aOffset+4]) shl 32) +
                 (UInt64(fBytes[aOffset+5]) shl 40) +
                 (UInt64(fBytes[aOffset+6]) shl 48) +
                 (UInt64(fBytes[aOffset+7]) shl 56);;
@@ -148,7 +148,7 @@ type
                 (UInt64(fBytes[aOffset+6]) shl  8) +
                 (UInt64(fBytes[aOffset+5]) shl 16) +
                 (UInt64(fBytes[aOffset+4]) shl 24) +
-                (UInt64(fBytes[aOffset+3]) shl 31) +
+                (UInt64(fBytes[aOffset+3]) shl 32) +
                 (UInt64(fBytes[aOffset+2]) shl 40) +
                 (UInt64(fBytes[aOffset+1]) shl 48) +
                 (UInt64(fBytes[aOffset+0]) shl 56);;
