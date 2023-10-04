@@ -16,20 +16,41 @@ type
     method CombineWindowsPath(aBasePath: not nullable String; params aPaths: array of String): not nullable String;
 
     {$IF NOT WEBASSEMBLY}
-    method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: sequence of String): nullable String;
+    method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: not nullable sequence of String): nullable String;
     begin
       for each f in aSubFolderOptions do
         if Path.Combine(aFolder, f).FolderExists then
           exit Path.Combine(aFolder, f);
     end;
 
-    method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: sequence of String; aBuildPath: block(aFolder, aSubFolder: String): String): nullable String;
+    method FirstMatchingSubfolder(aFolder: String; aSubFolderOptions: not nullable sequence of String; aBuildPath: block(aFolder, aSubFolder: String): String): nullable String;
     begin
       for each f in aSubFolderOptions do begin
         var p := aBuildPath(aFolder, f);
         if p:FolderExists then
           exit p;
       end;
+    end;
+
+    method FirstFileThatExists(aFiles: nullable sequence of String): nullable String;
+    begin
+      for each f in aFiles do
+        if f:FileExists then
+          exit f;
+    end;
+
+    method FirstFolderThatExists(aFolders: nullable sequence of String): nullable String;
+    begin
+      for each f in aFolders do
+        if f:FolderExists then
+          exit f;
+    end;
+
+    method FirstPathThatExists(aPaths: nullable sequence of String): nullable String;
+    begin
+      for each f in aPaths do
+        if f:FileOrFolderExists then
+          exit f;
     end;
     {$ENDIF}
 
