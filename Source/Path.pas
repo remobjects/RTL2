@@ -32,21 +32,21 @@ type
       end;
     end;
 
-    method FirstFileThatExists(params aFiles: nullable sequence of String): nullable String;
+    method FirstFileThatExists(params aFiles: {$IF TOFFEEV1}nullable array of String{$ELSE}nullable sequence of String{$ENDIF}): nullable String;
     begin
       for each f in aFiles do
         if f:FileExists then
           exit f;
     end;
 
-    method FirstFolderThatExists(params aFolders: nullable sequence of String): nullable String;
+    method FirstFolderThatExists(params aFolders: {$IF TOFFEEV1}nullable array of String{$ELSE}nullable sequence of String{$ENDIF}): nullable String;
     begin
       for each f in aFolders do
         if f:FolderExists then
           exit f;
     end;
 
-    method FirstPathThatExists(params aPaths: nullable sequence of String): nullable String;
+    method FirstPathThatExists(params aPaths: {$IF TOFFEEV1}nullable array of String{$ELSE}nullable sequence of String{$ENDIF}): nullable String;
     begin
       for each f in aPaths do
         if f:FileOrFolderExists then

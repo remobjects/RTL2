@@ -1286,7 +1286,7 @@ type
 
   end;
 
-method coalesceEmpty(params aStrings: nullable sequence of String): nullable String; public;
+method coalesceEmpty(params aStrings: {$IF TOFFEEV1}nullable array of String{$ELSE}nullable sequence of String{$ENDIF}): nullable String; public;
 begin
   for each s in aStrings do
     if length(s) > 0 then
