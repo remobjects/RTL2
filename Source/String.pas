@@ -1286,4 +1286,11 @@ type
 
   end;
 
+method coalesceEmpty(params aStrings: nullable sequence of String): nullable String; public;
+begin
+  for each s in aStrings do
+    if length(s) > 0 then
+      exit s;
+end;
+
 end.
