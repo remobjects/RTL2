@@ -106,6 +106,8 @@ type
     class method TryParseISO8601(aDateTime: String): nullable DateTime;
     class method TryParse(aDateTime: String; aFormat: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
 
+    class method TryParseISO8601(aValue: nullable JsonNode): nullable DateTime;
+
 
     property Hour: Integer read {$IF COOPER}mapped.get(Calendar.HOUR_OF_DAY){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSHourCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Hour{$ENDIF};
     property Minute: Integer read {$IF COOPER}mapped.get(Calendar.MINUTE){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSMinuteCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Minute{$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSMinuteCalendarUnit){$ENDIF};
@@ -754,5 +756,13 @@ begin
   if DateParser.TryParse(aDateTime, aFormat, aLocale, out var lResult, aOptions) then
     result := lResult;
 end;
+
+//
+
+class method DateTime.TryParseISO8601(aValue: nullable JsonNode): nullable DateTime;
+begin
+  result := TryParseISO8601(aValue:StringValue);
+end;
+
 
 end.

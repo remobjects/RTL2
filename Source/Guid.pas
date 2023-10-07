@@ -58,6 +58,7 @@ type
     class property &Empty: not nullable Guid read CreateEmptyGuid; //lazy; readonly;
 
     class method TryParse(aValue: nullable String): nullable Guid;
+    class method TryParse(aValue: nullable JsonNode): nullable Guid;
 
     method ToByteArray: array of Byte;
     method ToString: String; {$IF ISLAND OR ECHOES}override;{$ENDIF}
@@ -199,6 +200,11 @@ begin
     exit nil;
   result := new Guid(lGuid);
   {$ENDIF}
+end;
+
+class method Guid.TryParse(aValue: nullable JsonNode): nullable Guid;
+begin
+  result := TryParse(aValue:StringValue);
 end;
 
 class method Guid.CreateEmptyGuid: not nullable Guid;
