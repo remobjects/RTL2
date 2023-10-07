@@ -47,8 +47,8 @@ type
     class method ReadBytes(aFileName: String): array of Byte;
     class method ReadBinary(aFileName: String): ImmutableBinary;
     class method WriteBytes(aFileName: String; Content: array of Byte);
-    class method WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
-    class method WriteLines(aFileName: String; Content: sequence of String; aEncoding: Encoding := nil);
+    class method WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil; aIncludeBOM: Boolean := false);
+    class method WriteLines(aFileName: String; Content: sequence of String; aEncoding: Encoding := nil; aIncludeBOM: Boolean := false);
     class method WriteBinary(aFileName: String; Content: ImmutableBinary);
     class method AppendText(aFileName: String; Content: String);
     class method AppendBytes(aFileName: String; Content: array of Byte);
@@ -362,16 +362,14 @@ begin
   {$ENDIF}
 end;
 
-class method File.WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil);
+class method File.WriteText(aFileName: String; Content: String; aEncoding: Encoding := nil; aIncludeBOM: Boolean := false);
 begin
-  if not assigned(aEncoding) then
-    aEncoding := Encoding.Default;
-  WriteBytes(aFileName, Content.ToByteArray(aEncoding));
+  WriteBytes(aFileName, coalesce(aEncoding, Encoding.Default).GetBytes(Content) includeBOM(aIncludeBOM));
 end;
 
-class method File.WriteLines(aFileName: String; Content: sequence of String; aEncoding: Encoding := nil);
+class method File.WriteLines(aFileName: String; Content: sequence of String; aEncoding: Encoding := nil; aIncludeBOM: Boolean := false);
 begin
-  WriteText(aFileName, Content.JoinedString(Environment.LineBreak));
+  WriteText(aFileName, Content.JoinedString(Environment.LineBreak), aEncoding, aIncludeBOM);
 end;
 
 class method File.WriteBinary(aFileName: String; Content: ImmutableBinary);
