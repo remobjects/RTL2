@@ -83,6 +83,16 @@ type
     method ExpandTildeInPath(aPath: not nullable String): not nullable String;
     {$ENDIF}
 
+    method TrimTrailingDirectorySeparator(aPath: not nullable String): not nullable String;
+    begin
+      result := (if DirectorySeparatorChar = '\' then aPath.TrimEnd('\', '/') else aPath.TrimEnd('/'));
+    end;
+
+    method ForceTrailingDirectorySeparator(aPath: not nullable String): not nullable String;
+    begin
+      result := TrimTrailingDirectorySeparator(aPath)+DirectorySeparatorChar;
+    end;
+
     property DirectorySeparatorChar: Char read Folder.Separator;
     property PathListSeparatorChar: Char read if Environment.OS = OperatingSystem.Windows then ';' else ':';
   end;
