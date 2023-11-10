@@ -710,7 +710,9 @@ begin
     end;
   end;
 
-  result := lOutput.ToArray();
+  result := new Byte[lOutput.Count];
+  for j: Int32 := 0 to lOutput.Count - 1 do
+    result[j] := lOutput[j];
 end;
 
 //
