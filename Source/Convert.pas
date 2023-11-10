@@ -109,6 +109,10 @@ type
     method ToBase64String(S: array of Byte): not nullable String; inline;
     method ToBase64String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
     method Base64StringToByteArray(S: String): array of Byte;
+
+    method ToBase32String(S: array of Byte): not nullable String;
+    method ToBase32String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
+    method Base32StringToByteArray(S: String): array of Byte;
   end;
 
 implementation
@@ -649,6 +653,67 @@ begin
     result[j] := lTmp[j];
 end;
 
+//
+
+method Convert.ToBase32String(S: array of Byte): not nullable String;
+begin
+  result := ToBase32String(S, 0, length(S));
+end;
+
+method Convert.ToBase32String(S: array of Byte; aStartIndex: Int32; aLength: Int32): not nullable String;
+begin
+  const Codes32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+  var lResult := new StringBuilder();
+  var lBits: Integer := 0;
+  var lValue: Integer := 0;
+
+  for i: Int32 := aStartIndex to (aStartIndex + aLength) - 1 do begin
+    lValue := (lValue shl 8) or S[i];
+    inc(lBits, 8);
+    while lBits ≥ 5 do begin
+      lResult.Append(Codes32[(lValue shr (lBits - 5)) and 31]);
+      dec(lBits, 5);
+    end;
+  end;
+
+  if lBits > 0 then
+    lResult.Append(Codes32[(lValue shl (5 - lBits)) and 31]);
+
+  while (length(result) mod 8) ≠ 0 do
+    lResult.Append('=');
+
+  result := lResult.ToString as not nullable;
+end;
+
+method Convert.Base32StringToByteArray(S: String): array of Byte;
+begin
+  const Codes32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  var lOutput: List<Byte> := new List<Byte>();
+  var lCurrentByte: Integer := 0;
+  var lFilledBits: Integer := 0;
+
+  for each c in S.ToUpperInvariant() do begin
+    if c = '=' then
+      break; // Skip padding
+
+    var lIndex: Integer := Codes32.IndexOf(c);
+    if lIndex = -1 then
+      raise new ArgumentException('Invalid Base32 character.');
+
+    lCurrentByte := (lCurrentByte shl 5) or lIndex;
+    inc(lFilledBits, 5);
+
+    if lFilledBits >= 8 then begin
+      lOutput.Add(Byte(lCurrentByte shr (lFilledBits - 8)));
+      dec(lFilledBits, 8);
+    end;
+  end;
+
+  result := lOutput.ToArray();
+end;
+
+//
 
 method Convert.ToInt64(aValue: Boolean): Int64;
 begin
