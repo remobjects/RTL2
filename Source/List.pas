@@ -122,7 +122,7 @@ type
     constructor withCapacity(aCapacity: Integer);
     constructor withRepeatedValue(aValue: T; aCount: Integer);
 
-    method &Add(aItem: T): T; inline;
+    method &Add(aItem: T): Integer; inline;
     {$IF TOFFEEV2}
     method &Add(Items: nullable List<T>); inline; // prevents "ambiguous ovwerload" with Add(sequence of T))
     {$ENDIF}
@@ -289,14 +289,14 @@ begin
     result.Add(aValue);
 end;
 
-method List<T>.Add(aItem: T): T;
+method List<T>.Add(aItem: T): Integer;
 begin
   {$IF NOT TOFFEE}
   mapped.Add(aItem);
   {$ELSE}
   Foundation.NSMutableArray(mapped).addObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ENDIF}
-  result := aItem;
+  result := Count-1;
 end;
 
 method List<T>.SetItem(&Index: Integer; Value: T);
