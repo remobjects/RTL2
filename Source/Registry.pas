@@ -94,6 +94,17 @@ type
       {$ENDIF}
     end;
 
+    method KeyExists(aRootKey: not nullable RegistryHive; aKeyName: not nullable String): Boolean;
+    begin
+      {$IF ECHOES}
+      using lBaseKey := Microsoft.Win32.RegistryKey.OpenBaseKey(aRootKey, Microsoft.Win32.RegistryView.Default) do
+        using lKey := lBaseKey.OpenSubKey(aKeyName) do
+          exit lKey ≠ nil;
+      {$ELSEIF ISLAND}
+      exit RemObjects.Elements.System.Registry.KeyExists(aRootKey+"\"+aKeyName);
+      {$ENDIF}
+    end;
+
   end;
 
 {$ENDIF}
