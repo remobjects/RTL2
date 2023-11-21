@@ -90,7 +90,7 @@ type
     end;
  // will return false for non-exist-ent keys and values other than JsonNullValue!
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToString(aFormat: JsonFormat): String; override;
     begin
       var Serializer := new JsonSerializer(self, aFormat);
       result := Serializer.Serialize;

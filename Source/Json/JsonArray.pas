@@ -30,7 +30,7 @@ type
     method ToStrings: not nullable sequence of String;
     method ToStringList: not nullable ImmutableList<String>;
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToString(aFormat: JsonFormat): String; override;
 
     {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
     method GetSequence: sequence of JsonNode; iterator;
@@ -179,7 +179,7 @@ begin
   result := lValue as JsonArray as not nullable;
 end;
 
-method JsonArray.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+method JsonArray.ToString(aFormat: JsonFormat): String;
 begin
   var Serializer := new JsonSerializer(self, aFormat);
   exit Serializer.Serialize;
