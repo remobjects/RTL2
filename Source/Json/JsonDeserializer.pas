@@ -9,18 +9,21 @@ type
       Tokenizer := new JsonTokenizer(JsonString, true);
     end;
 
-    method Deserialize: JsonNode;
+    method Deserialize: not nullable JsonNode;
     begin
       Tokenizer.Next;
-      Expected(JsonTokenKind.ObjectStart, JsonTokenKind.ArrayStart);
+      //Expected(JsonTokenKind.ObjectStart, JsonTokenKind.ArrayStart);
       case Tokenizer.Token of
         JsonTokenKind.ObjectStart: exit ReadObject();
         JsonTokenKind.ArrayStart: exit ReadArray();
+        else raise new JsonUnexpectedTokenException('Unexpected token at '+Tokenizer.Row+'/'+Tokenizer.Column+'. Data is "'+Tokenizer.Json+'"');
       end;
     end;
 
   private
+
     Tokenizer: JsonTokenizer;
+
     method Expected(params Values: array of JsonTokenKind);
     begin
       for Item in Values do
@@ -32,7 +35,7 @@ type
     end;
 
 
-    method ReadObject: JsonObject;
+    method ReadObject: not nullable JsonObject;
     begin
       Expected(JsonTokenKind.ObjectStart);
 
@@ -50,7 +53,7 @@ type
         result.Add(Item.Key, Item.Value);
     end;
 
-    method ReadArray: JsonArray;
+    method ReadArray: not nullable JsonArray;
     begin
       Expected(JsonTokenKind.ArrayStart);
 
