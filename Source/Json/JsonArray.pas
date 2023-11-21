@@ -50,12 +50,28 @@ type
       //fItems.Add(aValues);
     //end;
 
+    {$IF TOFFEE}
+    // Toffee does not support sequence & params
+    method &Add(aValues: sequence of String);
+    begin
+      for each el in aValues do begin
+        fItems.Add(new JsonStringValue(el));
+      end;
+    end;
+    method &Add(params aValues: array of String);
+    begin
+      for each el in aValues do begin
+        fItems.Add(new JsonStringValue(el));
+      end;
+    end;
+    {$ELSE}
     method &Add(params aValues: sequence of String);
     begin
       for each el in aValues do begin
         fItems.Add(new JsonStringValue(el));
       end;
     end;
+    {$ENDIF}
 
     //method &Add(params aValues: sequence of String);
     //begin
