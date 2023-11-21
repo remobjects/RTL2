@@ -7,25 +7,95 @@ type
   private
     fItems: Dictionary<String, JsonNode>;
     method GetItem(aKey: not nullable String): nullable JsonNode;
+    begin
+      if fItems.ContainsKey(aKey) then begin
+        result := fItems[aKey];
+        if result is JsonNullValue then
+          result := nil;
+      end;
+    end;
+
     method SetItem(aKey: not nullable String; aValue: nullable JsonNode);
+    begin
+      fItems[aKey] := aValue;
+    end;
+
     method SetItem(aKey: not nullable String; aValue: nullable String);
+    begin
+      fItems[aKey] := JsonStringValue.Create(aValue);
+    end;
+
     method SetItem(aKey: not nullable String; aValue: Boolean);
+    begin
+      fItems[aKey] := new JsonBooleanValue(aValue);
+    end;
+
     method SetItem(aKey: not nullable String; aValue: Int32);
+    begin
+      fItems[aKey] := new JsonIntegerValue(aValue);
+    end;
+
     method SetItem(aKey: not nullable String; aValue: Double);
+    begin
+      fItems[aKey] := new JsonFloatValue(aValue);
+    end;
+
     method GetKeys: not nullable sequence of String;
+    begin
+      exit fItems.Keys as not nullable;
+    end;
+
     method GetProperties: sequence of tuple of (String,JsonNode); iterator;
+    begin
+      for aKey in Keys do
+        yield (aKey, Item[aKey]);
+    end;
 
   public
     constructor;
+    begin
+      fItems := new Dictionary<String, JsonNode>();
+    end;
+
     constructor(aItems: Dictionary<String, JsonNode>);
+    begin
+      fItems := aItems;
+    end;
+
 
     method &Add(aKey: not nullable String; aValue: not nullable JsonNode);
+    begin
+      fItems[aKey] := aValue;
+    end;
+
     method &Remove(aKey: not nullable String): Boolean;
+    begin
+      exit fItems.Remove(aKey);
+    end;
+
     method Clear;
-    method ContainsKey(aKey: not nullable String): Boolean; // will return false for non-exist-ent keys and for JsonNullValue!
-    method ContainsExplicitJsonNullValueForKey(aKey: not nullable String): Boolean; // will return false for non-exist-ent keys and values other than JsonNullValue!
+    begin
+      fItems.RemoveAll;
+    end;
+
+    method ContainsKey(aKey: not nullable String): Boolean;
+    begin
+      var lValue := fItems[aKey];
+      exit assigned(lValue) and (lValue is not JsonNullValue);
+    end;
+ // will return false for non-exist-ent keys and for JsonNullValue!
+    method ContainsExplicitJsonNullValueForKey(aKey: not nullable String): Boolean;
+    begin
+      exit fItems[aKey] is JsonNullValue;
+    end;
+ // will return false for non-exist-ent keys and values other than JsonNullValue!
 
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    begin
+      var Serializer := new JsonSerializer(self, aFormat);
+      result := Serializer.Serialize;
+    end;
+
 
     {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
     method GetSequence: sequence of tuple of (String, JsonNode); iterator;
@@ -44,6 +114,16 @@ type
     //{$ENDIF}
 
     class method Load(JsonString: String): JsonObject;
+    begin
+      var Serializer := new JsonDeserializer(JsonString);
+      var lValue := Serializer.Deserialize;
+
+      if not (lValue is JsonObject) then
+        raise new JsonParserException("String does not contains valid Json object");
+
+      result := lValue as JsonObject;
+    end;
+
 
     property Count: Integer read fItems.Count; override;
     property Item[aKey: not nullable String]: nullable JsonNode read GetItem write SetItem; default; override;
@@ -56,103 +136,5 @@ type
   end;
 
 implementation
-
-constructor JsonObject;
-begin
-  fItems := new Dictionary<String, JsonNode>();
-end;
-
-constructor JsonObject(aItems: Dictionary<String,JsonNode>);
-begin
-  fItems := aItems;
-end;
-
-method JsonObject.GetItem(aKey: not nullable String): nullable JsonNode;
-begin
-  if fItems.ContainsKey(aKey) then begin
-    result := fItems[aKey];
-    if result is JsonNullValue then
-      result := nil;
-  end;
-end;
-
-method JsonObject.SetItem(aKey: not nullable String; aValue: nullable JsonNode);
-begin
-  fItems[aKey] := aValue;
-end;
-
-method JsonObject.SetItem(aKey: not nullable String; aValue: nullable String);
-begin
-  fItems[aKey] := JsonStringValue.Create(aValue);
-end;
-
-method JsonObject.SetItem(aKey: not nullable String; aValue: Boolean);
-begin
-  fItems[aKey] := new JsonBooleanValue(aValue);
-end;
-
-method JsonObject.SetItem(aKey: not nullable String; aValue: Int32);
-begin
-  fItems[aKey] := new JsonIntegerValue(aValue);
-end;
-
-method JsonObject.SetItem(aKey: not nullable String; aValue: Double);
-begin
-  fItems[aKey] := new JsonFloatValue(aValue);
-end;
-
-method JsonObject.Add(aKey: not nullable String; aValue: not nullable JsonNode);
-begin
-  fItems[aKey] := aValue;
-end;
-
-method JsonObject.Clear;
-begin
-  fItems.RemoveAll;
-end;
-
-method JsonObject.ContainsKey(aKey: not nullable String): Boolean;
-begin
-  var lValue := fItems[aKey];
-  exit assigned(lValue) and (lValue is not JsonNullValue);
-end;
-
-method JsonObject.ContainsExplicitJsonNullValueForKey(aKey: not nullable String): Boolean;
-begin
-  exit fItems[aKey] is JsonNullValue;
-end;
-
-method JsonObject.Remove(aKey: not nullable String): Boolean;
-begin
-  exit fItems.Remove(aKey);
-end;
-
-class method JsonObject.Load(JsonString: String): JsonObject;
-begin
-  var Serializer := new JsonDeserializer(JsonString);
-  var lValue := Serializer.Deserialize;
-
-  if not (lValue is JsonObject) then
-    raise new JsonParserException("String does not contains valid Json object");
-
-  result := lValue as JsonObject;
-end;
-
-method JsonObject.GetKeys: not nullable sequence of String;
-begin
-  exit fItems.Keys as not nullable;
-end;
-
-method JsonObject.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
-begin
-  var Serializer := new JsonSerializer(self, aFormat);
-  result := Serializer.Serialize;
-end;
-
-method JsonObject.GetProperties: sequence of tuple of (String,JsonNode);
-begin
-  for aKey in Keys do
-    yield (aKey, Item[aKey]);
-end;
 
 end.
