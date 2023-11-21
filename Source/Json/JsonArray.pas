@@ -40,27 +40,27 @@ type
       fItems.Add(aValue);
     end;
 
-    method &Add(aValues: ImmutableList<JsonNode>);
+    method &Add(aValues: nullable sequence of JsonNode);
     begin
       fItems.Add(aValues);
     end;
 
-    method &Add(params aValues: array of JsonNode);
-    begin
-      fItems.Add(aValues);
-    end;
+    //method &Add(params aValues: array of JsonNode);
+    //begin
+      //fItems.Add(aValues);
+    //end;
 
-    method &Add(aValues: ImmutableList<String>);
+    method &Add(params aValues: sequence of String);
     begin
       for each el in aValues do begin
         fItems.Add(new JsonStringValue(el));
       end;
     end;
 
-    method &Add(params aValues: array of String);
-    begin
-      fItems.Add(aValues.Select(s -> new JsonStringValue(s) as JsonNode));
-    end;
+    //method &Add(params aValues: sequence of String);
+    //begin
+      //fItems.Add(aValues.Select(s -> new JsonStringValue(s) as JsonNode));
+    //end;
 
     method Insert(aIndex: Integer; aValue: not nullable JsonNode);
     begin
@@ -77,6 +77,7 @@ type
       fItems.RemoveAt(aIndex);
     end;
 
+    //
 
     method ToStrings: not nullable sequence of String;
     begin
