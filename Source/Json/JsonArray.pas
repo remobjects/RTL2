@@ -40,7 +40,9 @@ type
       fItems.Add(aValue);
     end;
 
-    method &Add(aValues: nullable sequence of JsonNode);
+    // allowing sequence of JsonNode here causes conflict with allowing adding JsonArrays to an array,
+    // as JsonArray is BOTH a JsonNode *and* a sequence of JsonNodes, so it wuld be logically (and technically) ambiguous
+    method &Add(aValues: nullable ImmutableList<JsonNode>);
     begin
       fItems.Add(aValues);
     end;
