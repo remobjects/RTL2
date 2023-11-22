@@ -112,6 +112,7 @@ type
     property Hour: Integer read {$IF COOPER}mapped.get(Calendar.HOUR_OF_DAY){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSHourCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Hour{$ENDIF};
     property Minute: Integer read {$IF COOPER}mapped.get(Calendar.MINUTE){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSMinuteCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Minute{$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSMinuteCalendarUnit){$ENDIF};
     property Second: Integer read {$IF COOPER}mapped.get(Calendar.SECOND){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSSecondCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Second{$ENDIF};
+    property MilliSecond: Integer read {$IF COOPER}mapped.get(Calendar.MILLISECOND){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSCalendarUnitNanosecond) div 1000000{$ELSEIF ECHOES}fDateTime.Millisecond{$ELSEIF ISLAND}fDateTime.Milliseconds{$ENDIF};
     property Year: Integer read {$IF COOPER}mapped.get(Calendar.YEAR){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSYearCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Year{$ENDIF};
     property Month: Integer read {$IF COOPER}mapped.get(Calendar.MONTH)+1{$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSMonthCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Month{$ENDIF};
     property Day: Integer read {$IF COOPER}mapped.get(Calendar.DAY_OF_MONTH){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSDayCalendarUnit){$ELSEIF ECHOES OR ISLAND}fDateTime.Day{$ENDIF};
