@@ -7,8 +7,8 @@ type
   public
     constructor(aValue: not nullable T);
 
-    [ToString]
-    method ToString: String; override;
+    method ToString(aFormat: JsonFormat): String; override;
+
     [&Equals]
     method &Equals(Obj: Object): Boolean; override;
     [Hash]
@@ -20,8 +20,9 @@ type
 
   JsonStringValue = public class(JsonValue<not nullable String>)
   public
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToString(aFormat: JsonFormat): String; override;
     operator Implicit(aValue: nullable String): JsonStringValue;
+    operator Implicit(aValue: nullable JsonStringValue): string;
     operator Equal(aLeft: JsonStringValue; aRight: Object): Boolean;
     operator Equal(aLeft: Object; aRight: JsonStringValue): Boolean;
 
@@ -30,7 +31,7 @@ type
 
   JsonIntegerValue = public class(JsonValue<Int64>)
   public
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToString(aFormat: JsonFormat): String; override;
     operator Implicit(aValue: Int64): JsonIntegerValue;
     operator Implicit(aValue: Int32): JsonIntegerValue;
     operator Implicit(aValue: JsonIntegerValue): JsonFloatValue;
@@ -46,9 +47,27 @@ type
     //property StringValue: String read ToJson write ToJson; override;
   end;
 
+  //JsonUnsignedIntegerValue = public class(JsonValue<UInt64>)
+  //public
+    //method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    //operator Implicit(aValue: UInt64): JsonUnsignedIntegerValue;
+    //operator Implicit(aValue: UInt32): JsonUnsignedIntegerValue;
+    //operator Implicit(aValue: JsonUnsignedIntegerValue): JsonFloatValue;
+
+    //{$IF NOT COOPER}
+    ////75131: Can't declare multiple cast operators on Java
+    //operator Implicit(aValue: JsonUnsignedIntegerValue): not nullable UInt32;
+    //operator Implicit(aValue: JsonUnsignedIntegerValue): not nullable Double;
+    //operator Implicit(aValue: JsonUnsignedIntegerValue): not nullable Single;
+    //{$ENDIF}
+    ////property IntegerValue: Integer read Value write Value; override;
+    ////property FloatValue: Double read Value write inherited IntegerValue; override;
+    ////property StringValue: String read ToJson write ToJson; override;
+  //end;
+
   JsonFloatValue = public class(JsonValue<Double>)
   public
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToString(aFormat: JsonFormat): String; override;
     operator Implicit(aValue: Double): JsonFloatValue;
     operator Implicit(aValue: Single): JsonFloatValue;
     operator Implicit(aValue: JsonFloatValue): Single;
@@ -59,7 +78,7 @@ type
 
   JsonBooleanValue = public class(JsonValue<Boolean>)
   public
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToString(aFormat: JsonFormat): String; override;
     operator Implicit(aValue: Boolean): JsonBooleanValue;
     //property BooleanValue: Boolean read Value write Value; override;
     //property StringValue: String read ToJson write ToJson; override;
@@ -67,7 +86,7 @@ type
 
   JsonNullValue = public class(JsonValue<Boolean>)
   public
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToString(aFormat: JsonFormat): String; override;
     class property Null: JsonNullValue := new JsonNullValue; lazy;
 
   private
@@ -88,7 +107,7 @@ begin
   Value := aValue;
 end;
 
-method JsonValue<T>.ToString: String;
+method JsonValue<T>.ToString(aFormat: JsonFormat): String;
 begin
   result := Value.ToString;
 end;
@@ -113,7 +132,7 @@ end;
 
 { JsonStringValue }
 
-method JsonStringValue.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+method JsonStringValue.ToString(aFormat: JsonFormat): String;
 begin
   var sb := new StringBuilder;
 
@@ -143,6 +162,11 @@ begin
     result := new JsonStringValue(aValue);
 end;
 
+operator JsonStringValue.Implicit(aValue: nullable JsonStringValue): string;
+begin
+  result := aValue:StringValue;
+end;
+
 operator JsonStringValue.&Equal(aLeft: JsonStringValue; aRight: Object): Boolean;
 begin
   if not assigned(aLeft) and not assigned(aRight) then exit true;
@@ -159,7 +183,7 @@ end;
 
 { JsonIntegerValue }
 
-method JsonIntegerValue.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+method JsonIntegerValue.ToString(aFormat: JsonFormat): String;
 begin
   result := Convert.ToString(Value);
 end;
@@ -196,9 +220,48 @@ begin
 end;
 {$ENDIF}
 
+{ JsonUnsignedIntegerValue }
+
+//method JsonUnsignedIntegerValue.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+//begin
+  //result := Convert.ToString(Value);
+//end;
+
+//operator JsonUnsignedIntegerValue.Implicit(aValue: UInt64): JsonUnsignedIntegerValue;
+//begin
+  //result := new JsonUnsignedIntegerValue(aValue);
+//end;
+
+//operator JsonUnsignedIntegerValue.Implicit(aValue: UInt32): JsonUnsignedIntegerValue;
+//begin
+  //result := new JsonUnsignedIntegerValue(aValue);
+//end;
+
+//operator JsonUnsignedIntegerValue.Implicit(aValue: JsonUnsignedIntegerValue): JsonFloatValue;
+//begin
+  //result := new JsonFloatValue(aValue.Value);
+//end;
+
+//{$IF NOT COOPER}
+//operator JsonUnsignedIntegerValue.Implicit(aValue: JsonUnsignedIntegerValue): not nullable UInt32;
+//begin
+  //result := aValue.Value;
+//end;
+
+//operator JsonUnsignedIntegerValue.Implicit(aValue: JsonUnsignedIntegerValue): not nullable Double;
+//begin
+  //result := aValue.Value;
+//end;
+
+//operator JsonUnsignedIntegerValue.Implicit(aValue: JsonUnsignedIntegerValue): not nullable Single;
+//begin
+  //result := aValue.Value;
+//end;
+//{$ENDIF}
+
 { JsonFloatValue }
 
-method JsonFloatValue.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+method JsonFloatValue.ToString(aFormat: JsonFormat): String;
 begin
   result := Convert.ToStringInvariant(Value).Replace(",","");
   if not result.Contains(".") and not result.Contains("E") and not result.Contains("N") and not result.Contains("I") then result := result+".0";
@@ -221,7 +284,7 @@ end;
 
 { JsonBooleanValue }
 
-method JsonBooleanValue.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+method JsonBooleanValue.ToString(aFormat: JsonFormat): String;
 begin
   result := if Value as Boolean then JsonConsts.TRUE_VALUE else JsonConsts.FALSE_VALUE;
 end;
@@ -233,7 +296,7 @@ end;
 
 { JsonNullValue }
 
-method JsonNullValue.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+method JsonNullValue.ToString(aFormat: JsonFormat): String;
 begin
   result := JsonConsts.NULL_VALUE;
 end;
