@@ -81,7 +81,7 @@ type
 
   public
     constructor; mapped to constructor();
-    constructor(aCapacity: Integer);
+    constructor withCapacity(aCapacity: Integer);
 
     method &Add(Key: not nullable T; Value: nullable U); inline;
     method &Add(aDictionary: nullable ImmutableDictionary<T, U>);
@@ -106,7 +106,7 @@ type
 
 implementation
 
-constructor Dictionary<T,U>(aCapacity: Integer);
+constructor Dictionary<T,U> withCapacity(aCapacity: Integer);
 begin
   {$IF COOPER}
   result := new java.util.HashMap<T,U>(aCapacity);
