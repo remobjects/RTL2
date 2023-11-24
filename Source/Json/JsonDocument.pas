@@ -255,6 +255,11 @@ type
     end;
     {$ENDIF}
 
+    method UniqueCopy: InstanceType; abstract;
+    //begin
+      //result := FromString(ToString);
+    //end;
+
     //property Item[aIndex: Integer]: nullable JsonNode read GetRootArrayItem; default; virtual;
     //property Item[aKey: not nullable String]: nullable JsonNode read GetRootObjectItem write SetRootObjectItem; default; virtual;
     //property Item[aKey: not nullable String]: nullable String write SetRootObjectItem; default; virtual;
@@ -273,10 +278,10 @@ type
     property Item[aKey: not nullable String]: Double write CantSetItem; default; virtual;
     property Item[&Index: Integer]: not nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
     property Keys: not nullable sequence of String read CantGetKeys; virtual;
-    property IntegerValue: Int64 read GetIntegerValue write SetIntegerValue; virtual;
-    property FloatValue: Double read GetFloatValue write SetFloatValue; virtual;
-    property BooleanValue: Boolean read GetBooleanValue write SetBooleanValue; virtual;
-    property StringValue: String read GetStringValue write SetStringValue; virtual;
+    property IntegerValue: Int64 read GetIntegerValue /*write SetIntegerValue*/; virtual;
+    property FloatValue: Double read GetFloatValue /*write SetFloatValue*/; virtual;
+    property BooleanValue: Boolean read GetBooleanValue /*write SetBooleanValue*/; virtual;
+    property StringValue: String read GetStringValue /*write SetStringValue*/; virtual;
 
   private
 
@@ -367,39 +372,39 @@ type
         raise new JsonNodeTypeException("This JsonNode is not a string.")
     end;
 
-    method SetIntegerValue(aValue: Int64);
-    begin
-      if self is JsonIntegerValue then
-        (self as JsonIntegerValue).Value := aValue
-      else if self is JsonFloatValue then
-        (self as JsonFloatValue).Value := aValue
-      else
-        raise new JsonNodeTypeException("This JsonNode is not an integer.")
-    end;
+    //method SetIntegerValue(aValue: Int64);
+    //begin
+      //if self is JsonIntegerValue then
+        //(self as JsonIntegerValue).Value := aValue
+      //else if self is JsonFloatValue then
+        //(self as JsonFloatValue).Value := aValue
+      //else
+        //raise new JsonNodeTypeException("This JsonNode is not an integer.")
+    //end;
 
-    method SetFloatValue(aValue: Double);
-    begin
-      if self is JsonFloatValue then
-        (self as JsonFloatValue).Value := aValue
-      else
-        raise new JsonNodeTypeException("This JsonNode is not a float.")
-    end;
+    //method SetFloatValue(aValue: Double);
+    //begin
+      //if self is JsonFloatValue then
+        //(self as JsonFloatValue).Value := aValue
+      //else
+        //raise new JsonNodeTypeException("This JsonNode is not a float.")
+    //end;
 
-    method SetBooleanValue(aValue: Boolean);
-    begin
-      if self is JsonBooleanValue then
-        (self as JsonBooleanValue).Value := aValue
-      else
-        raise new JsonNodeTypeException("This JsonNode is not a boolean.")
-    end;
+    //method SetBooleanValue(aValue: Boolean);
+    //begin
+      //if self is JsonBooleanValue then
+        //(self as JsonBooleanValue).Value := aValue
+      //else
+        //raise new JsonNodeTypeException("This JsonNode is not a boolean.")
+    //end;
 
-    method SetStringValue(aValue: String);
-    begin
-      if self is JsonStringValue then
-        (self as JsonStringValue).Value := aValue
-      else
-        raise new JsonNodeTypeException("This JsonNode is not a string.")
-    end;
+    //method SetStringValue(aValue: String);
+    //begin
+      //if self is JsonStringValue then
+        //(self as JsonStringValue).Value := aValue
+      //else
+        //raise new JsonNodeTypeException("This JsonNode is not a string.")
+    //end;
 
   end;
 

@@ -6,12 +6,20 @@ type
 
     constructor;
     begin
-      fItems := new Dictionary<String, JsonNode>();
+      fItems := new Dictionary<String, JsonNode>;
     end;
 
     constructor(aItems: Dictionary<String, JsonNode>);
     begin
       fItems := aItems;
+    end;
+
+    method UniqueCopy: InstanceType; override;
+    begin
+      var lValues := new Dictionary<String, JsonNode> withCapacity(fItems.Count);
+      for each k in fItems.Keys do
+        lValues[k] := fItems[k].UniqueCopy;
+      result := new JsonObject(lValues);
     end;
 
     //

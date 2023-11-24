@@ -9,6 +9,11 @@ type
       fItems := new List<JsonNode>();
     end;
 
+    constructor withCapacity(aCapacity: Integer);
+    begin
+      fItems := new List<JsonNode> withCapacity(aCapacity);
+    end;
+
     constructor(aItems: not nullable ImmutableList<JsonNode>);
     begin
       fItems := aItems.UniqueMutableCopy;
@@ -31,6 +36,14 @@ type
     constructor(params aItems: not nullable array of String);
     begin
       fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
+    end;
+
+    method UniqueCopy: InstanceType; override;
+    begin
+      var lValues := new List<JsonNode> withCapacity(fItems.Count);
+      for i := 0 to fItems.Count-1 do
+        lValues.Add(fItems[i].UniqueCopy);
+      result := new JsonArray(lValues);
     end;
 
     //

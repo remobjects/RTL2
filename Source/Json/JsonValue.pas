@@ -14,8 +14,14 @@ type
     [Hash]
     method GetHashCode: Integer; override;
 
-    property Value: not nullable T;
+    property Value: not nullable T; readonly;
     operator Implicit(aValue: JsonValue<T>): T;
+
+    method UniqueCopy: InstanceType; override;
+    begin
+      result := self;
+    end;
+
   end;
 
   JsonStringValue = public class(JsonValue<not nullable String>)
