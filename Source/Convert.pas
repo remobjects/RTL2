@@ -63,6 +63,7 @@ type
     method ToDoubleInvariant(aValue: not nullable String): Double; inline;
 
     method MillisecondsToTimeString(aMS: Double): String;
+    method MemorySizeToString(aSize: UInt64): String;
 
     method ToByte(aValue: Boolean): Byte;
     method ToByte(aValue: Double): Byte;
@@ -944,6 +945,20 @@ begin
   var lSecondsString := if length(result) > 0 then Convert.ToString(lSeconds).PadStart(2, '0') else lSeconds.ToString;
   result := result+lSecondsString+".";
   result := result+Convert.ToString(lMilliSeconds).PadStart(3, '0');
+end;
+
+method Convert.MemorySizeToString(aSize: UInt64): String;
+begin
+  const units = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
+  var lSize: Double := aSize;
+  var lUnitIndex: Integer := 0;
+
+  while (lSize >= 1024) and (lUnitIndex < units.Length-1) do begin
+    lSize := lSize / 1024;
+    inc(lUnitIndex);
+  end;
+
+  result := $"{Convert.ToString(lSize, 1)} {units[lUnitIndex]}";
 end;
 
 //
