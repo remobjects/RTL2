@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-interface
-
 type
   JsonValue<T> = public abstract readonly class(JsonNode)
   public
@@ -57,10 +55,12 @@ type
 
   JsonStringValue = public class(JsonValue<not nullable String>)
   public
+
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       var sb := new StringBuilder;
 
+      sb.Append(JsonConsts.STRING_QUOTE);
       for i: Int32 := 0 to Value.Length-1 do begin
         var c := Value[i];
         case c of
@@ -77,8 +77,9 @@ type
           else sb.Append('\u'+Convert.ToHexString(Int32(c), 4));
         end;
       end;
+      sb.Append(JsonConsts.STRING_QUOTE);
 
-      result := JsonConsts.STRING_QUOTE+sb.ToString()+JsonConsts.STRING_QUOTE;
+      result := sb.ToString();
     end;
 
     operator Implicit(aValue: nullable String): JsonStringValue;
@@ -97,7 +98,7 @@ type
       if not assigned(aLeft) and not assigned(aRight) then exit true;
       if not assigned(aLeft) then exit false;
       if not assigned(aRight) then exit false;
-      if aRight is String then exit aLeft.Value = aRight as String;
+      if aRight is String then exit aLeft.Value = (aRight as String);
       if aRight is JsonStringValue then exit aLeft.Value = (aRight as JsonStringValue).Value;
     end;
 
@@ -134,8 +135,6 @@ type
       result := new JsonFloatValue(aValue.Value);
     end;
 
-    {$IF NOT COOPER}
-    //75131: Can't declare multiple cast operators on Java
     operator Implicit(aValue: JsonIntegerValue): not nullable Int32;
     begin
       result := aValue.Value;
@@ -150,7 +149,6 @@ type
     begin
       result := aValue.Value;
     end;
-    {$ENDIF}
 
   end;
 
