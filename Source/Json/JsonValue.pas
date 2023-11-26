@@ -163,12 +163,10 @@ type
     //operator Implicit(aValue: UInt32): JsonUnsignedIntegerValue;
     //operator Implicit(aValue: JsonUnsignedIntegerValue): JsonFloatValue;
 
-    //{$IF NOT COOPER}
-    ////75131: Can't declare multiple cast operators on Java
     //operator Implicit(aValue: JsonUnsignedIntegerValue): not nullable UInt32;
     //operator Implicit(aValue: JsonUnsignedIntegerValue): not nullable Double;
     //operator Implicit(aValue: JsonUnsignedIntegerValue): not nullable Single;
-    //{$ENDIF}
+
     ////property IntegerValue: Integer read Value write Value; override;
     ////property FloatValue: Double read Value write inherited IntegerValue; override;
     ////property StringValue: String read ToJson write ToJson; override;
@@ -271,7 +269,6 @@ type
   //result := new JsonFloatValue(aValue.Value);
 //end;
 
-//{$IF NOT COOPER}
 //operator JsonUnsignedIntegerValue.Implicit(aValue: JsonUnsignedIntegerValue): not nullable UInt32;
 //begin
   //result := aValue.Value;
@@ -286,7 +283,5 @@ type
 //begin
   //result := aValue.Value;
 //end;
-//{$ENDIF}
-
 
 end.
