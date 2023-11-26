@@ -37,6 +37,9 @@ type
     class method Delete(aFileName: not nullable File); inline;
     class method Exists(aFileName: nullable File): Boolean; inline;
     class method IsReadOnly(aFileName: nullable File): Boolean; inline;
+    class method DateCreated(aFileName: nullable File): DateTime; inline;
+    class method DateModified(aFileName: nullable File): DateTime; inline;
+    class method Size(aFileName: nullable File): Int64; inline;
 
     method ReadText(Encoding: Encoding := nil): String;
     method ReadBytes: array of Byte;
@@ -265,6 +268,11 @@ begin
   {$ENDIF}
 end;
 
+class method File.DateCreated(aFileName: nullable File): DateTime;
+begin
+  result := aFileName.DateCreated;
+end;
+
 method File.getDateModified: DateTime;
 begin
   if not Exists then
@@ -301,6 +309,11 @@ begin
   {$ENDIF}
 end;
 
+class method File.DateModified(aFileName: nullable File): DateTime; inline;
+begin
+  result := aFileName.DateModified;
+end;
+
 method File.getSize: Int64;
 begin
   if not Exists then
@@ -314,6 +327,11 @@ begin
   {$ELSEIF ISLAND}
   result := IslandFile.Length;
   {$ENDIF}
+end;
+
+class method File.Size(aFileName: nullable File): Int64; inline;
+begin
+  result := aFileName.Size;
 end;
 
 //
