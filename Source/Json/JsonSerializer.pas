@@ -93,22 +93,22 @@ end;
 
 method JsonSerializer.VisitString(Value: JsonStringValue);
 begin
-  Builder.Append(Value.ToJson);
+  Builder.Append(Value.ToJsonString);
 end;
 
 method JsonSerializer.VisitInteger(Value: JsonIntegerValue);
 begin
-  Builder.Append(Value.ToJson);
+  Builder.Append(Value.ToJsonString);
 end;
 
 method JsonSerializer.VisitFloat(Value: JsonFloatValue);
 begin
-  Builder.Append(Value.ToJson);
+  Builder.Append(Value.ToJsonString);
 end;
 
 method JsonSerializer.VisitBoolean(Value: JsonBooleanValue);
 begin
-  Builder.Append(Value.ToJson);
+  Builder.Append(Value.ToJsonString);
 end;
 
 method JsonSerializer.VisitNull();

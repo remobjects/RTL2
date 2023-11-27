@@ -120,7 +120,7 @@ type
       result := ToStrings().ToList() as not nullable;
     end;
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       var Serializer := new JsonSerializer(self, aFormat);
       exit Serializer.Serialize;

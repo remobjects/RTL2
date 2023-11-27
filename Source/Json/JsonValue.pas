@@ -9,7 +9,7 @@ type
       Value := aValue;
     end;
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := Value.ToString;
     end;
@@ -56,7 +56,7 @@ type
   JsonStringValue = public class(JsonValue<not nullable String>)
   public
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       var sb := new StringBuilder;
 
@@ -115,7 +115,7 @@ type
 
   JsonIntegerValue = public class(JsonValue<Int64>)
   public
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := Convert.ToString(Value);
     end;
@@ -158,7 +158,7 @@ type
 
   //JsonUnsignedIntegerValue = public class(JsonValue<UInt64>)
   //public
-    //method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    //method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     //operator Implicit(aValue: UInt64): JsonUnsignedIntegerValue;
     //operator Implicit(aValue: UInt32): JsonUnsignedIntegerValue;
     //operator Implicit(aValue: JsonUnsignedIntegerValue): JsonFloatValue;
@@ -169,7 +169,7 @@ type
 
     ////property IntegerValue: Integer read Value write Value; override;
     ////property FloatValue: Double read Value write inherited IntegerValue; override;
-    ////property StringValue: String read ToJson write ToJson; override;
+    ////property StringValue: String read ToJsonString write ToJsonString; override;
   //end;
 
   //
@@ -178,7 +178,7 @@ type
 
   JsonFloatValue = public class(JsonValue<Double>)
   public
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := Convert.ToStringInvariant(Value).Replace(",","");
       if not result.Contains(".") and not result.Contains("E") and not result.Contains("N") and not result.Contains("I") then result := result+".0";
@@ -201,7 +201,7 @@ type
 
     //property FloatValue: Double read Value write Value; override;
     //property IntegerValue: Int64 read Value write Value; override;
-    //property StringValue: String read ToJson write ToJson; override;
+    //property StringValue: String read ToJsonString write ToJsonString; override;
   end;
 
   //
@@ -210,7 +210,7 @@ type
 
   JsonBooleanValue = public class(JsonValue<Boolean>)
   public
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := if Value as Boolean then JsonConsts.TRUE_VALUE else JsonConsts.FALSE_VALUE;
     end;
@@ -221,7 +221,7 @@ type
     end;
 
     //property BooleanValue: Boolean read Value write Value; override;
-    //property StringValue: String read ToJson write ToJson; override;
+    //property StringValue: String read ToJsonString write ToJsonString; override;
   end;
 
   //
@@ -231,7 +231,7 @@ type
   JsonNullValue = public class(JsonValue<Boolean>)
   public
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := JsonConsts.NULL_VALUE;
     end;
@@ -249,7 +249,7 @@ type
 
 { JsonUnsignedIntegerValue }
 
-//method JsonUnsignedIntegerValue.ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+//method JsonUnsignedIntegerValue.ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
 //begin
   //result := Convert.ToString(Value);
 //end;

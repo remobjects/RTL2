@@ -232,10 +232,10 @@ type
     [ToString]
     method ToString: String; override;
     begin
-      result := ToJson(JsonFormat.HumanReadable);
+      result := ToJsonString(JsonFormat.HumanReadable);
     end;
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): String; abstract;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; abstract;
 
     {$IF NOT WEBASSEMBLY}
     method SaveToFile(aFileName: not nullable File);
@@ -245,7 +245,7 @@ type
 
     method SaveToFile(aFileName: not nullable File; aFormat: JsonFormat; aEncoding: Encoding := nil; aIncludeBOM: Boolean := false);
     begin
-      File.WriteText(aFileName, ToJson(aFormat), coalesce(aEncoding, Encoding.UTF8), aIncludeBOM);
+      File.WriteText(aFileName, ToJsonString(aFormat), coalesce(aEncoding, Encoding.UTF8), aIncludeBOM);
     end;
     {$ENDIF}
 
