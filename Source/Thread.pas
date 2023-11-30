@@ -48,6 +48,8 @@ type
     property ThreadId: Int64 read {$IF COOPER}mapped.Id{$ELSEIF ECHOES}mapped.ManagedThreadId{$ENDIF};
     {$ELSEIF TOFFEE}
     property ThreadId: IntPtr read GetThreadID;
+    {$ELSEIF ISLAND}
+    property ThreadId: ThreadID read mapped.ThreadId;
     {$ENDIF}
 
     property Priority: ThreadPriority read GetPriority write SetPriority;
