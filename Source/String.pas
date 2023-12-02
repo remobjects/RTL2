@@ -1042,6 +1042,33 @@ type
     end;
 
     //
+    //
+    //
+
+    method Truncate(aLength: Integer; aEllipsis: String := "…"; aStyle: StringTruncationStyle := StringTruncationStyle.End): String;
+    begin
+      result := self;
+      var lEllipsisLength := aEllipsis.Length;
+      if (Length > aLength) and (Length > lEllipsisLength) and (aLength > lEllipsisLength) then begin
+
+        case aStyle of
+          StringTruncationStyle.Start: begin
+              result := aEllipsis + Substring(Length-(aLength-lEllipsisLength));
+            end;
+          StringTruncationStyle.Middle: begin
+              var lMiddle := (aLength-lEllipsisLength)/2;
+              var lRest := aLength-lEllipsisLength-lMiddle;
+              result := Substring(0, lRest) + aEllipsis + Substring(Length-lMiddle); // lRest favoros to be one longer than lMiddle
+            end;
+          StringTruncationStyle.End: begin
+              result := Substring(0, aLength-lEllipsisLength) + aEllipsis;
+            end;
+        end;
+
+      end;
+    end;
+
+    //
     // Starts/EndsWith
     //
 
@@ -1286,11 +1313,13 @@ type
 
   end;
 
-method coalesceEmpty(params aStrings: {$IF TOFFEEV1}nullable array of String{$ELSE}nullable sequence of String{$ENDIF}): nullable String; public;
-begin
-  for each s in aStrings do
-    if length(s) > 0 then
-      exit s;
-end;
+  StringTruncationStyle = public enum(Start, Middle, &End);
+
+//method coalesceEmpty(params aStrings: {$IF TOFFEEV1}nullable array of String{$ELSE}nullable sequence of String{$ENDIF}): nullable String; public;
+//begin
+  //for each s in aStrings do
+    //if length(s) > 0 then
+      //exit s;
+//end;
 
 end.
