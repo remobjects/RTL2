@@ -138,7 +138,7 @@ type
             if lValue > Consts.MaxInt64 then
               result := new JsonFloatValue(lValue)
             else
-              result := new JsonIntegerValue(Convert.ToInt64(lValue))
+              result := new JsonIntegerValue(Convert.ToInt64(Tokenizer.Value))
           end;
         end;
         JsonTokenKind.Null: result := JsonNullValue.Null;
