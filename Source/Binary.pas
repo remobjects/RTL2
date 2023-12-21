@@ -72,49 +72,6 @@ type
     {$ENDIF}
   end;
 
-  ByteArrayExtensions = public extension record(array of Byte)
-  public
-
-    method IndexOf(aBytes: array of Byte): Integer;
-    begin
-      result := -1;
-      var len := RemObjects.Elements.System.length(aBytes);
-      if len = 0 then
-        exit;
-      if len ≤ RemObjects.Elements.System.length(self) then begin
-        lOuterLoop:
-          for i: Integer := 0 to Length-len do begin
-            if aBytes[0] = self[i] then begin
-              for j: Integer := 1 to len-1 do
-                if aBytes[j] ≠ self[i+j] then
-                  continue lOuterLoop;
-              exit i;
-            end;
-          end;
-      end;
-    end;
-
-    method IndexOf(aByte: Byte): Integer;
-    begin
-      result := -1;
-      for i: Integer := 0 to RemObjects.Elements.System.length(self)-1 do
-        if aByte = self[i] then
-          exit i;
-    end;
-
-    method &Reverse(aArray: array of Byte);
-    begin
-      var len := Length;
-      for i: Integer := 0 to (len-1) div 2 do begin
-        var lSave := self[i];
-        self[i] := self[len-1-i];
-        self[len-1-i] := lSave;
-      end;
-    end;
-
-  end;
-
-
 implementation
 
 { Binary }

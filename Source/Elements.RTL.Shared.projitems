@@ -174,6 +174,7 @@
       <VirtualFolder>String</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Stopwatch.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)ByteArray+Extensions.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Files and Paths">
