@@ -28,6 +28,7 @@ type
     method GetBytes(aValue: String) includeBOM(aIncludeBOM: Boolean): not nullable array of Byte;
 
     method GetString(aValue: not nullable array of Byte): String;
+    method GetString(aValue: not nullable array of Byte; aOffset: Integer): String;
     method GetString(aValue: not nullable array of Byte; aOffset: Integer; aCount: Integer): String;
 
     method GetString(aValue: not nullable ImmutableBinary): String;
@@ -137,7 +138,7 @@ begin
   if aCount = 0 then
     exit "";
 
-  RangeHelper.Validate(new Range(aOffset, aCount), aValue.Length);
+  RangeHelper.Validate(new Range(aOffset, aCount), length(aValue));
   {$IF COOPER}
   var Buffer := java.nio.charset.Charset(self).newDecoder.
     onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE).
@@ -200,7 +201,7 @@ end;
 {$IF ISLAND AND DARWIN AND NOT TOFFEE}
 method Encoding.GetString(aValue: not nullable Foundation.NSData): String;
 begin
-  var lArray := new byte[aValue.length];
+  var lArray := new byte[length(aValue)];
   aValue.getBytes(@lArray[0]);
   result := GetString(lArray);
 end;
@@ -210,7 +211,14 @@ method Encoding.GetString(aValue: not nullable array of Byte): String;
 begin
   if aValue = nil then
     raise new ArgumentNullException("aValue");
-  exit GetString(aValue, 0, aValue.length);
+  exit GetString(aValue, 0, length(aValue));
+end;
+
+method Encoding.GetString(aValue: not nullable array of Byte; aOffset: Integer): String;
+begin
+  if aValue = nil then
+    raise new ArgumentNullException("aValue");
+  exit GetString(aValue, aOffset, length(aValue)-aOffset);
 end;
 
 class method Encoding.GetEncoding(aName: not nullable String): nullable Encoding;
