@@ -185,6 +185,12 @@ type
       inc(aOffset);
     end;
 
+    method ReadGuid(var aOffset: UInt64): not nullable Guid;
+    begin
+      result := new Guid(fBytes, aOffset);
+      inc(aOffset, Guid.Size);
+    end;
+
     //
 
     method ReadDouble(var aOffset: UInt64): Double;
@@ -212,7 +218,7 @@ type
       {$ELSE}
       var lBuffer := ReadByteArray(var aOffset) Length(sizeOf(Double));
       lBuffer.Reverse();
-      memcpy(@lBuffer[0], @result, sizeOf(Double));
+      memcpy(@result, @lBuffer[0], sizeOf(Double));
       {$ENDIF}
     end;
 
@@ -236,7 +242,7 @@ type
       {$ELSE}
       var lBuffer := ReadByteArray(var aOffset) Length(sizeOf(Single));
       lBuffer.Reverse();
-      memcpy(@lBuffer[0], @result, sizeOf(Single));
+      memcpy(@result, @lBuffer[0], sizeOf(Single));
       {$ENDIF}
     end;
 
@@ -343,7 +349,12 @@ type
       inc(fOffset, aByteCount);
     end;
 
-    method ReadUInt8: UInt32;
+    method ReadUInt8: Byte;
+    begin
+      result := ReadUInt8(var fOffset);
+    end;
+
+    method ReadUInt16: UInt16;
     begin
       result := ReadUInt8(var fOffset);
     end;
@@ -353,12 +364,29 @@ type
       result := ReadUInt32(var fOffset);
     end;
 
+    method ReadUInt64: UInt64;
+    begin
+      result := ReadUInt64(var fOffset);
+    end;
+
+    method ReadDouble: Double;
+    begin
+      result := ReadDouble(var fOffset);
+    end;
+
+    method ReadGuid: not nullable Guid;
+    begin
+      result := ReadGuid(var fOffset);
+    end;
+
     method FindNext(aByte: Byte): nullable UInt64;
     begin
       for i := fOffset to Length-1 do
         if fBytes[i] = aByte then
           exit i;
     end;
+
+    property Offset: UInt64 read fOffset;
 
   private
 
