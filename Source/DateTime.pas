@@ -94,11 +94,13 @@ type
 
     method ToISO8601String(aFormat: ISO8601Format := ISO8601Format.Standard; aTimeZone: TimeZone := nil): not nullable String;
 
-    class method ToOADate(aDateTime: DateTime): Double;
-    class method FromOADate(aOADate: Double): DateTime;
+    method ToOADate: Double;
+    class method ToOADate(aDateTime: not nullable DateTime): Double;
+    class method FromOADate(aOADate: Double): not nullable DateTime;
 
-    class method ToUnixDate(aDateTime: DateTime): Integer;
-    class method FromUnixDate(aUnixDate: Integer): DateTime;
+    method ToUnixDate: Integer;
+    class method ToUnixDate(aDateTime: not nullable DateTime): Integer;
+    class method FromUnixDate(aUnixDate: Integer): not nullable DateTime;
 
     class method TryParse(aDateTime: String; aOptions: DateParserOptions := []): nullable DateTime;
     class method TryParse(aDateTime: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
@@ -119,8 +121,8 @@ type
     property DayOfWeek: Integer read {$IF COOPER}mapped.get(Calendar.DAY_OF_WEEK){$ELSEIF TOFFEE}GetComponent(NSCalendarUnit.NSWeekdayCalendarUnit){$ELSEIF ECHOES OR ISLAND}Integer(fDateTime.DayOfWeek)+1{$ENDIF};
     property Date: DateTime read {$IF COOPER OR TOFFEE}new DateTime(self.Year, self.Month, self.Day, 0, 0, 0){$ELSEIF ECHOES OR ISLAND}new DateTime(fDateTime.Date){$ENDIF};
 
-    class property Today: DateTime read {$IF COOPER OR TOFFEE}UtcNow.Date{$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.Today){$ENDIF};
-    class property UtcNow: DateTime read {$IF COOPER}Calendar.getInstance(TimeZone.Utc){$ELSEIF TOFFEE}new PlatformDateTime(){$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.UtcNow){$ENDIF};
+    class property Today: not nullable DateTime read {$IF COOPER OR TOFFEE}UtcNow.Date{$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.Today){$ENDIF};
+    class property UtcNow: not nullable DateTime read {$IF COOPER}Calendar.getInstance(TimeZone.Utc){$ELSEIF TOFFEE}new PlatformDateTime(){$ELSEIF ECHOES OR ISLAND}new DateTime(PlatformDateTime.UtcNow){$ENDIF};
     const TicksTill1970: Int64 = 621355968000000000;
 
     property TimeSince: TimeSpan read (UtcNow-self);
@@ -676,6 +678,12 @@ begin
     raise new InvalidCastException("Cannot cast null DateTime to platform DateTime type.");
   result := aDateTime.fDateTime;
 end;
+
+//operator DateTime.Implicit(aDateTime: DateTime): nullable PlatformDateTime;
+//begin
+  //if assigned(aDateTime) then
+    //result := aDateTime.fDateTime;
+//end;
 {$ENDIF}
 
 {$IF ISLAND AND DARWIN AND NOT TOFFEE}
@@ -690,9 +698,14 @@ begin
 end;
 {$ENDIF}
 
-class method DateTime.ToOADate(aDateTime: DateTime): Double;
+class method DateTime.ToOADate(aDateTime: not nullable DateTime): Double;
 begin
-  var lTicks := aDateTime.Ticks;
+  result := aDateTime.ToOADate;
+end;
+
+method DateTime.ToOADate: Double;
+begin
+  var lTicks := self.Ticks;
   if lTicks = 0 then
     exit 0.0;
 
@@ -705,7 +718,7 @@ begin
   result := Double(lMillis) / MILLISECONDS_PER_DAY;
 end;
 
-class method DateTime.FromOADate(aOADate: Double): DateTime;
+class method DateTime.FromOADate(aOADate: Double): not nullable DateTime;
 begin
   var lValue := if aOADate > 0 then 0.5 else -0.5;
   var lMillis: Int64 := Int64((aOADate * MILLISECONDS_PER_DAY) + lValue);
@@ -717,12 +730,17 @@ begin
   result := new DateTime(lMillis * TICKS_PER_MILLISECOND);
 end;
 
-class method DateTime.ToUnixDate(aDateTime: DateTime): Integer;
+class method DateTime.ToUnixDate(aDateTime: not nullable DateTime): Integer;
 begin
-
+  aDateTime.ToUnixDate;
 end;
 
-class method DateTime.FromUnixDate(aUnixDate: Integer): DateTime;
+method DateTime.ToUnixDate: Integer;
+begin
+  raise new NotImplementedException("DateTime.ToUnixDate");
+end;
+
+class method DateTime.FromUnixDate(aUnixDate: Integer): not nullable DateTime;
 begin
   var lUnixEpoc := new DateTime(1970, 1, 1, 0, 0, 0, 0);
   result := lUnixEpoc.AddSeconds(aUnixDate);
