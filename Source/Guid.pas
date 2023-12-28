@@ -27,6 +27,7 @@ type
     {$ENDIF}
   public
     constructor(aValue: not nullable array of Byte);
+    constructor(aValue: not nullable array of Byte; aOffset: Integer);
     constructor(aValue: not nullable String);
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     constructor (aGuid: PlatformGuid);
@@ -51,7 +52,7 @@ type
     operator Equal(a, b: Guid): Boolean;
     operator NotEqual(a, b: Guid): Boolean;
 
-    class method NewGuid: Guid;
+    class method NewGuid: not nullable Guid;
     //class property EmptyGuid: not nullable Guid := CreateEmptyGuid(); lazy;
     [Obsolete("Use Guid.Empty, instead")]
     class property EmptyGuid: not nullable Guid read &Empty;
@@ -59,6 +60,8 @@ type
 
     class method TryParse(aValue: nullable String): nullable Guid;
     class method TryParse(aValue: nullable JsonNode): nullable Guid;
+
+    class const Size = 16;
 
     method ToByteArray: array of Byte;
     method ToString: String; {$IF ISLAND OR ECHOES}override;{$ENDIF}
@@ -75,10 +78,19 @@ begin
 end;
 {$ENDIF}
 
+constructor Guid(aValue: not nullable array of Byte; aOffset: Integer);
+begin
+  if length(aValue)-aOffset < Size then
+    raise new ArgumentException($"Byte array must have at least 16 bytes from requested offset {aOffset}.");
+  var lBytes := new Byte[Size];
+  &Array.Copy(aValue, aOffset, lBytes, 0, Size);
+  constructor(lBytes);
+end;
+
 constructor Guid(aValue: not nullable array of Byte);
 begin
-  if length(aValue) ≠ 16 then
-    raise new ArgumentException("byte array must be exactly 16 bytes.");
+if length(aValue) ≠ Size then
+    raise new ArgumentException("Byte array must be exactly 16 bytes.");
   {$IF COOPER}
   var bb := java.nio.ByteBuffer.wrap(aValue);
   result := new java.util.UUID(bb.getLong, bb.getLong);
@@ -162,7 +174,7 @@ begin
   result := not a.Equals(b);
 end;
 
-class method Guid.NewGuid: Guid;
+class method Guid.NewGuid: not nullable Guid;
 begin
   {$IF COOPER}
   exit mapped.randomUUID;
