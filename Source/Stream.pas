@@ -106,9 +106,8 @@ type
 
     method ReadGuid(out aResult: Guid): Boolean;
     begin
-      const lGuidSize = if defined("COOPER") then 16 else sizeOf(Guid);
-      var lBytes := new Byte[lGuidSize];
-      if &Read(lBytes, lGuidSize) ≠ lGuidSize then
+      var lBytes := new Byte[Guid.Size];
+      if &Read(lBytes, Guid.Size) ≠ Guid.Size then
         exit false;
       aResult := new Guid(lBytes);
       result := true;
