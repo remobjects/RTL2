@@ -201,8 +201,8 @@ end;
 {$IF ISLAND AND DARWIN AND NOT TOFFEE}
 method Encoding.GetString(aValue: not nullable Foundation.NSData): String;
 begin
-  var lArray := new byte[length(aValue)];
-  aValue.getBytes(@lArray[0]);
+  var lArray := new byte[aValue.length];
+  aValue.getBytes(@lArray[0]) length(aValue.length);
   result := GetString(lArray);
 end;
 {$ENDIF}

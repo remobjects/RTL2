@@ -105,7 +105,7 @@ type
       {$IF ECHOES}
       WriteUInt64BE(BitConverter.DoubleToInt64Bits(value));
       {$ELSEIF COOPER}
-      WriteIntBE64(Double.doubleToLongBits(value));
+      WriteInt64BE(Double.doubleToLongBits(value));
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Double)];
       memcpy(@lBuffer[0], @value, sizeOf(Double));
@@ -119,7 +119,7 @@ type
       {$IF ECHOES}
       WriteUInt32LE(BitConverter.DoubleToInt64Bits(value));
       {$ELSEIF COOPER}
-      WriteIntLE32(Single.floatToIntBits(value));
+      WriteInt32LE(Single.floatToIntBits(value));
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Single)];
       memcpy(@lBuffer[0], @value, sizeOf(Single));
@@ -133,7 +133,7 @@ type
       {$IF ECHOES}
       WriteUInt32BE(BitConverter.DoubleToInt64Bits(value));
       {$ELSEIF COOPER}
-      WriteUIntBE32(Single.floatToIntBits(value));
+      WriteUInt32BE(Single.floatToIntBits(value));
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Single)];
       memcpy(@lBuffer[0], @value, sizeOf(Single));
@@ -228,6 +228,49 @@ type
       fStream.Write(bytes, 0, 2);
     end;
 
+//
+
+    // Int64LE
+    method WriteInt64LE(value: Int64);
+    begin
+      WriteUInt64LE(value as UInt64);
+    end;
+
+    // Int64BE
+    method WriteInt64BE(value: Int64);
+    begin
+      WriteUInt64BE(value as UInt64);
+    end;
+
+    // Int32LE
+    method WriteInt32LE(value: Int32);
+    begin
+      WriteUInt32LE(value as UInt32);
+    end;
+
+    // Int32BE
+    method WriteInt32BE(value: Int32);
+    begin
+      WriteUInt32BE(value as UInt32);
+    end;
+
+    // Int16LE
+    method WriteInt16LE(value: Int16);
+    begin
+      WriteUInt16LE(value as UInt16);
+    end;
+
+    // Int16BE
+    method WriteInt16BE(value: Int16);
+    begin
+      WriteUInt16BE(value as UInt16);
+    end;
+
+    // Int8
+    method WriteInt8(value: SByte);
+    begin
+      WriteUInt8(value as Byte);
+    end;
   end;
 
 end.

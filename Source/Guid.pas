@@ -82,9 +82,14 @@ constructor Guid(aValue: not nullable array of Byte; aOffset: Integer);
 begin
   if length(aValue)-aOffset < Size then
     raise new ArgumentException($"Byte array must have at least 16 bytes from requested offset {aOffset}.");
+  {$IF COOPER}
+  var lBytes := java.util.Arrays.copyOfRange(aValue as array of SByte, aOffset, aOffset+Guid.Size);
+  constructor(lBytes);
+  {$ELSE}
   var lBytes := new Byte[Size];
   &Array.Copy(aValue, aOffset, lBytes, 0, Size);
   constructor(lBytes);
+  {$ENDIF}
 end;
 
 constructor Guid(aValue: not nullable array of Byte);
