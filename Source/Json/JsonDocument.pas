@@ -235,7 +235,7 @@ type
       result := ToJsonString(JsonFormat.HumanReadable);
     end;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; abstract;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; abstract;
 
     {$IF NOT WEBASSEMBLY}
     method SaveToFile(aFileName: not nullable File);

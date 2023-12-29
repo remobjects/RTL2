@@ -54,7 +54,7 @@ type
 
     //
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     begin
       var Serializer := new JsonSerializer(self, aFormat);
       result := Serializer.Serialize;

@@ -9,9 +9,9 @@ type
       Value := aValue;
     end;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     begin
-      result := Value.ToString;
+      result := Value.ToString as not nullable  ;
     end;
 
     [ToString]
