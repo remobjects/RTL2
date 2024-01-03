@@ -127,13 +127,13 @@ type
     end;
 
     {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
-    method GetSequence: sequence of JsonNode; iterator;
+    method GetSequence: sequence of JsonNode; iterator; override; public;
     begin
       yield fItems;
     end;
 
     {$IF TOFFEE}
-    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger;
+    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger; override;
     begin
       {$HIDE CPW8}
       exit NSArray(fItems).countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);

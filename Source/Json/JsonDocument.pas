@@ -277,6 +277,19 @@ type
     property BooleanValue: Boolean read GetBooleanValue /*write SetBooleanValue*/; virtual;
     property StringValue: String read GetStringValue /*write SetStringValue*/; virtual;
 
+    {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
+    method GetSequence: sequence of JsonNode; iterator; virtual;
+    begin
+      raise new JsonNodeTypeException("This JsonNode is not an array.")
+    end;
+
+    {$IF TOFFEE}
+    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^JsonNode) count(len: NSUInteger): NSUInteger; virtual;
+    begin
+      raise new JsonNodeTypeException("This JsonNode is not an array.")
+    end;
+    {$ENDIF}
+
   private
 
     method CantGetItem(aKey: String): nullable JsonNode;
