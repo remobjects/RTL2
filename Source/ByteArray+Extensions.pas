@@ -64,6 +64,23 @@ type
       result := Convert.ToHexString(self, 0, self.Length, aSpacer, aBytesPerLine);
     end;
 
+    operator &Equal(lhs: array of Byte; rhs: array of Byte): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+      if length(lhs) ≠ length(rhs) then
+        exit false;
+      for i := 0 to length(lhs)-1 do
+        if lhs[i] ≠ rhs[i] then
+          exit false;
+      result := true;
+    end;
+
+    operator NotEqual(lhs: array of Byte; rhs: array of Byte): Boolean;
+    begin
+      result := not (lhs = rhs);
+    end;
+
   end;
 
   {$IF TOFFEE}
