@@ -17,8 +17,9 @@ type
       {$ENDIF}
     end;
 
-    //method ToLowerInvariant: Char;
-    //begin
+    method ToLowerInvariant: Char;
+    begin
+      result := new String([self]).ToLowerInvariant()[0];
       //{$IF COOPER}
       //result := Character.toLowerCase(self);
       //{$ELSEIF TOFFEE}
@@ -28,9 +29,9 @@ type
       //{$ELSEIF ISLAND}
       //result := self.ToLower();
       //{$ENDIF}
-    //end;
+    end;
 
-    method ToUpperChar: Char; assembly;
+    method ToUpper: Char;
     begin
       {$IF COOPER}
       result := Character.toUpperCase(self);
@@ -43,8 +44,9 @@ type
       {$ENDIF}
     end;
 
-    //method ToUpperCharInvariant: Char; assembly;
-    //begin
+    method ToUpperInvariant: Char;
+    begin
+      result := new String([self]).ToUpperInvariant()[0];
       //{$IF COOPER}
       //result := Character.toUpperCase(self);
       //{$ELSEIF TOFFEE}
@@ -54,7 +56,7 @@ type
       //{$ELSEIF ISLAND}
       //result := self.ToUpper();
       //{$ENDIF}
-    //end;
+    end;
 
     //
     //
