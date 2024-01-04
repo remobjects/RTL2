@@ -66,11 +66,13 @@ type
 
     operator &Equal(lhs: array of Byte; rhs: array of Byte): Boolean;
     begin
+      {$IF NOT TOFFEE}
       if Object(lhs) = Object(rhs) then
         exit true;
-      if length(lhs) ≠ length(rhs) then
+      {$ENDIF}
+      if RemObjects.Elements.System.length(lhs) ≠ RemObjects.Elements.System.length(rhs) then
         exit false;
-      for i := 0 to length(lhs)-1 do
+      for i := 0 to RemObjects.Elements.System.length(lhs)-1 do
         if lhs[i] ≠ rhs[i] then
           exit false;
       result := true;
