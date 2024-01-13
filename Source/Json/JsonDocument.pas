@@ -324,8 +324,10 @@ type
       if (lhs is JsonNode) and (rhs is JsonNode) then
         exit (lhs as JsonNode) = (rhs as JsonNode);
 
+      {$IF NOT TOFFEE}
       if (lhs is JsonArray) and (rhs is array of String) then
         exit (lhs as JsonArray) = (rhs as array of String);
+      {$ENDIF}
       if (lhs is JsonStringValue) and (rhs is String) then
         exit (lhs as JsonStringValue) = (rhs as String);
       if (lhs is JsonIntegerValue) and (rhs is Integer) then
@@ -346,8 +348,10 @@ type
       if (lhs is JsonNode) and (rhs is JsonNode) then
         exit (lhs as JsonNode) = (rhs as JsonNode);
 
+      {$IF NOT TOFFEE}
       if (lhs is array of String) and (rhs is JsonArray) then
         exit (lhs as array of String) = (rhs as JsonArray);
+      {$ENDIF}
       if (lhs is String) and (rhs is JsonStringValue) then
         exit (lhs as String) = (rhs as JsonStringValue);
       if (lhs is Integer) and (rhs is JsonIntegerValue) then

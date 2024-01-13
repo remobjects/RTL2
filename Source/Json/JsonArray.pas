@@ -202,8 +202,13 @@ type
 
     operator &Equal(lhs: JsonArray; rhs: array of String): Boolean;
     begin
+      {$IF NOT TOFFEE}
       if Object(lhs) = Object(rhs) then
         exit true;
+      {$ELSE}
+      if not assigned(lhs) and not assigned(rhs) then
+        exit true;
+      {$ENDIF}
 
       if lhs.Count ≠ rhs.Count then
         exit false;
@@ -216,8 +221,13 @@ type
 
     operator &Equal(lhs: array of String; rhs: JsonArray): Boolean;
     begin
+      {$IF NOT TOFFEE}
       if Object(lhs) = Object(rhs) then
         exit true;
+      {$ELSE}
+      if not assigned(lhs) and not assigned(rhs) then
+        exit true;
+      {$ENDIF}
 
       if lhs.Count ≠ rhs.Count then
         exit false;
