@@ -26,7 +26,7 @@ type
   public
     constructor (Value: not nullable JsonNode; aFormat: JsonFormat);
 
-    method Serialize: String;
+    method Serialize: not nullable String;
   end;
 
 implementation
@@ -37,7 +37,7 @@ begin
   fFormat := aFormat;
 end;
 
-method JsonSerializer.Serialize: String;
+method JsonSerializer.Serialize: not nullable String;
 begin
   Builder.Clear;
   Offset := 0;
