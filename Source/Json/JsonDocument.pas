@@ -290,6 +290,91 @@ type
     end;
     {$ENDIF}
 
+    operator &Equal(lhs: JsonNode; rhs: JsonNode): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+
+      if (lhs is JsonArray) and (rhs is JsonArray) then
+        exit (lhs as JsonArray) = (rhs as JsonArray);
+      if (lhs is JsonObject) and (rhs is JsonObject) then
+        exit (lhs as JsonObject) = (rhs as JsonObject);
+      if (lhs is JsonStringValue) and (rhs is JsonStringValue) then
+        exit (lhs as JsonStringValue) = (rhs as JsonStringValue);
+      if (lhs is JsonIntegerValue) and (rhs is JsonIntegerValue) then
+        exit (lhs as JsonIntegerValue) = (rhs as JsonIntegerValue);
+      if (lhs is JsonFloatValue) and (rhs is JsonFloatValue) then
+        exit (lhs as JsonFloatValue) = (rhs as JsonFloatValue);
+      if (lhs is JsonBooleanValue) and (rhs is JsonBooleanValue) then
+        exit (lhs as JsonBooleanValue) = (rhs as JsonBooleanValue);
+      if (lhs is JsonNullValue) and (rhs is JsonNullValue) then
+        exit true;
+
+      if (lhs = nil) and (rhs is JsonNullValue) then
+        exit true;
+      if (lhs is JsonNullValue) and (rhs = nil) then
+        exit true;
+    end;
+
+    operator &Equal(lhs: JsonNode; rhs: Object): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+
+      if (lhs is JsonNode) and (rhs is JsonNode) then
+        exit (lhs as JsonNode) = (rhs as JsonNode);
+
+      if (lhs is JsonArray) and (rhs is array of String) then
+        exit (lhs as JsonArray) = (rhs as array of String);
+      if (lhs is JsonStringValue) and (rhs is String) then
+        exit (lhs as JsonStringValue) = (rhs as String);
+      if (lhs is JsonIntegerValue) and (rhs is Integer) then
+        exit (lhs as JsonIntegerValue) = (rhs as Integer);
+      if (lhs is JsonFloatValue) and (rhs is Double) then
+        exit (lhs as JsonFloatValue) = (rhs as Double);
+      if (lhs is JsonBooleanValue) and (rhs is Boolean) then
+        exit (lhs as JsonBooleanValue) = (rhs as Boolean);
+      if (lhs is JsonNullValue) and (rhs = nil) then
+        exit true;
+    end;
+
+    operator &Equal(lhs: Object; rhs: JsonNode): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+
+      if (lhs is JsonNode) and (rhs is JsonNode) then
+        exit (lhs as JsonNode) = (rhs as JsonNode);
+
+      if (lhs is array of String) and (rhs is JsonArray) then
+        exit (lhs as array of String) = (rhs as JsonArray);
+      if (lhs is String) and (rhs is JsonStringValue) then
+        exit (lhs as String) = (rhs as JsonStringValue);
+      if (lhs is Integer) and (rhs is JsonIntegerValue) then
+        exit (lhs as Integer) = (rhs as JsonIntegerValue);
+      if (lhs is Double) and (rhs is JsonFloatValue) then
+        exit (lhs as Double) = (rhs as JsonFloatValue);
+      if (lhs is Boolean) and (rhs is JsonBooleanValue) then
+        exit (lhs as Boolean) = (rhs as JsonBooleanValue);
+      if (lhs = nil) and (rhs is JsonNullValue) then
+        exit true;
+    end;
+
+    operator NotEqual(lhs: JsonNode; rhs: JsonNode): Boolean;
+    begin
+      result := not (lhs = rhs);
+    end;
+
+    operator NotEqual(lhs: JsonNode; rhs: Object): Boolean;
+    begin
+      result := not (lhs = rhs);
+    end;
+
+    operator NotEqual(lhs: Object; rhs: JsonNode): Boolean;
+    begin
+      result := not (lhs = rhs);
+    end;
+
   private
 
     method CantGetItem(aKey: String): nullable JsonNode;

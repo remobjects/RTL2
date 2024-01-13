@@ -96,6 +96,20 @@ type
     property Keys: not nullable sequence of String read GetKeys; override;
     property Properties: sequence of tuple of (String,JsonNode) read GetProperties;
 
+    operator &Equal(lhs: JsonObject; rhs: JsonObject): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+
+      if lhs.Keys.Count ≠ rhs.Keys.Count then
+        exit false;
+      for each k in lhs.Keys do
+        if lhs[k] ≠ rhs[k] then
+          exit false;
+
+      result := true;
+    end;
+
   private
 
     fItems: Dictionary<String, JsonNode>;

@@ -107,6 +107,26 @@ type
       result := aRight = aLeft;
     end;
 
+    operator &Equal(lhs: JsonStringValue; rhs: JsonStringValue): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+      if not assigned(lhs) or not assigned(rhs) then
+        exit false;
+
+      result := lhs.Value = rhs.Value;
+    end;
+
+    operator &Equal(lhs: JsonStringValue; rhs: String): Boolean;
+    begin
+      result := lhs:Value = rhs;
+    end;
+
+    operator &Equal(lhs: String; rhs: JsonStringValue): Boolean;
+    begin
+      result := lhs = rhs:Value;
+    end;
+
   end;
 
   //
@@ -148,6 +168,26 @@ type
     operator Implicit(aValue: JsonIntegerValue): not nullable Single;
     begin
       result := aValue.Value;
+    end;
+
+    operator &Equal(lhs: JsonIntegerValue; rhs: JsonIntegerValue): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+      if not assigned(lhs) or not assigned(rhs) then
+        exit false;
+
+      result := lhs.Value = rhs.Value;
+    end;
+
+    operator &Equal(lhs: JsonIntegerValue; rhs: Integer): Boolean;
+    begin
+      result := lhs:Value = rhs;
+    end;
+
+    operator &Equal(lhs: Integer; rhs: JsonIntegerValue): Boolean;
+    begin
+      result := lhs = rhs:Value;
     end;
 
   end;
@@ -202,6 +242,28 @@ type
     //property FloatValue: Double read Value write Value; override;
     //property IntegerValue: Int64 read Value write Value; override;
     //property StringValue: String read ToJsonString write ToJsonString; override;
+
+    operator &Equal(lhs: JsonFloatValue; rhs: JsonFloatValue): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+      if not assigned(lhs) or not assigned(rhs) then
+        exit false;
+
+      result := lhs.Value = rhs.Value;
+    end;
+
+    operator &Equal(lhs: JsonFloatValue; rhs: Double): Boolean;
+    begin
+      result := lhs.Value = rhs;
+    end;
+
+    operator &Equal(lhs: Double; rhs: JsonFloatValue): Boolean;
+    begin
+      result := lhs = rhs:Value;
+    end;
+
+
   end;
 
   //
@@ -222,6 +284,27 @@ type
 
     //property BooleanValue: Boolean read Value write Value; override;
     //property StringValue: String read ToJsonString write ToJsonString; override;
+
+    operator &Equal(lhs: JsonBooleanValue; rhs: JsonBooleanValue): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+      if not assigned(lhs) or not assigned(rhs) then
+        exit false;
+
+      result := lhs.Value = rhs.Value;
+    end;
+
+    operator &Equal(lhs: JsonBooleanValue; rhs: Boolean): Boolean;
+    begin
+      result := lhs:Value = rhs;
+    end;
+
+    operator &Equal(lhs: Boolean; rhs: JsonBooleanValue): Boolean;
+    begin
+      result := lhs = rhs:Value;
+    end;
+
   end;
 
   //
@@ -243,6 +326,21 @@ type
     constructor;
     begin
       inherited constructor(false);
+    end;
+
+    operator &Equal(lhs: JsonNullValue; rhs: JsonNullValue): Boolean;
+    begin
+      exit true;
+    end;
+
+    operator &Equal(lhs: JsonNullValue; rhs: Object): Boolean;
+    begin
+      exit not assigned(rhs);
+    end;
+
+    operator &Equal(lhs: Object; rhs: JsonNullValue): Boolean;
+    begin
+      exit not assigned(lhs);
     end;
 
   end;

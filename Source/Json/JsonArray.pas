@@ -186,6 +186,53 @@ type
       result := aValue.fItems.ToArray();
     end;
 
+    operator &Equal(lhs: JsonArray; rhs: JsonArray): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+
+      if lhs.Count ≠ rhs.Count then
+        exit false;
+      for i := 0 to lhs.Count-1 do
+        if lhs[i] ≠ rhs[i] then
+          exit false;
+
+      result := true;
+    end;
+
+    operator &Equal(lhs: JsonArray; rhs: array of String): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+
+      if lhs.Count ≠ rhs.Count then
+        exit false;
+      for i := 0 to lhs.Count-1 do
+        if lhs[i]:StringValue ≠ rhs[i] then
+          exit false;
+
+      result := true;
+    end;
+
+    operator &Equal(lhs: array of String; rhs: JsonArray): Boolean;
+    begin
+      if Object(lhs) = Object(rhs) then
+        exit true;
+
+      if lhs.Count ≠ rhs.Count then
+        exit false;
+      for i := 0 to lhs.Count-1 do
+        if lhs[i] ≠ rhs[i]:StringValue then
+          exit false;
+
+      result := true;
+    end;
+
+    //operator NotEqual(lhs: JsonArray; rhs: JsonArray): Boolean;
+    //begin
+      //result := not (lhs = rhs);
+    //end;
+
   private
 
     fItems: not nullable List<JsonNode>;
