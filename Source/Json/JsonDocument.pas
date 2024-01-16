@@ -294,6 +294,8 @@ type
     begin
       if Object(lhs) = Object(rhs) then
         exit true;
+      if not assigned(lhs) or not assigned(rhs) then
+        exit false;
 
       if (lhs is JsonArray) and (rhs is JsonArray) then
         exit (lhs as JsonArray) = (rhs as JsonArray);
@@ -310,9 +312,9 @@ type
       if (lhs is JsonNullValue) and (rhs is JsonNullValue) then
         exit true;
 
-      if (lhs = nil) and (rhs is JsonNullValue) then
+      if not assigned(lhs) and (rhs is JsonNullValue) then
         exit true;
-      if (lhs is JsonNullValue) and (rhs = nil) then
+      if (lhs is JsonNullValue) and not assigned(rhs) then
         exit true;
     end;
 
@@ -320,6 +322,8 @@ type
     begin
       if Object(lhs) = Object(rhs) then
         exit true;
+      if not assigned(lhs) or not assigned(rhs) then
+        exit false;
 
       if (lhs is JsonNode) and (rhs is JsonNode) then
         exit (lhs as JsonNode) = (rhs as JsonNode);
@@ -336,7 +340,7 @@ type
         exit (lhs as JsonFloatValue) = (rhs as Double);
       if (lhs is JsonBooleanValue) and (rhs is Boolean) then
         exit (lhs as JsonBooleanValue) = (rhs as Boolean);
-      if (lhs is JsonNullValue) and (rhs = nil) then
+      if (lhs is JsonNullValue) and not assigned(rhs) then
         exit true;
     end;
 
@@ -344,6 +348,8 @@ type
     begin
       if Object(lhs) = Object(rhs) then
         exit true;
+      if not assigned(lhs) or not assigned(rhs) then
+        exit false;
 
       if (lhs is JsonNode) and (rhs is JsonNode) then
         exit (lhs as JsonNode) = (rhs as JsonNode);
@@ -360,7 +366,7 @@ type
         exit (lhs as Double) = (rhs as JsonFloatValue);
       if (lhs is Boolean) and (rhs is JsonBooleanValue) then
         exit (lhs as Boolean) = (rhs as JsonBooleanValue);
-      if (lhs = nil) and (rhs is JsonNullValue) then
+      if not assigned(lhs) and (rhs is JsonNullValue) then
         exit true;
     end;
 

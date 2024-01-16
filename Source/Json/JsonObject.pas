@@ -101,9 +101,9 @@ type
       if Object(lhs) = Object(rhs) then
         exit true;
 
-      if lhs.Keys.Count ≠ rhs.Keys.Count then
+      if lhs:Keys.Count ≠ rhs:Keys.Count then
         exit false;
-      for each k in lhs.Keys do
+      for each k in lhs:Keys do
         if lhs[k] ≠ rhs[k] then
           exit false;
 

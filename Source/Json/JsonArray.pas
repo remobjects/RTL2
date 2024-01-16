@@ -191,9 +191,9 @@ type
       if Object(lhs) = Object(rhs) then
         exit true;
 
-      if lhs.Count ≠ rhs.Count then
+      if lhs:Count ≠ rhs:Count then
         exit false;
-      for i := 0 to lhs.Count-1 do
+      for i := 0 to lhs:Count-1 do
         if lhs[i] ≠ rhs[i] then
           exit false;
 
@@ -210,9 +210,9 @@ type
         exit true;
       {$ENDIF}
 
-      if lhs.Count ≠ rhs.Count then
+      if lhs:Count ≠ rhs:Count then
         exit false;
-      for i := 0 to lhs.Count-1 do
+      for i := 0 to lhs:Count-1 do
         if lhs[i]:StringValue ≠ rhs[i] then
           exit false;
 
@@ -229,9 +229,9 @@ type
         exit true;
       {$ENDIF}
 
-      if lhs.Count ≠ rhs.Count then
+      if lhs:Count ≠ rhs:Count then
         exit false;
-      for i := 0 to lhs.Count-1 do
+      for i := 0 to lhs:Count-1 do
         if lhs[i] ≠ rhs[i]:StringValue then
           exit false;
 
