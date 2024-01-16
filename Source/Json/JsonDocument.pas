@@ -310,9 +310,9 @@ type
       if (lhs is JsonNullValue) and (rhs is JsonNullValue) then
         exit true;
 
-      if (Object(lhs) = nil) and (rhs is JsonNullValue) then
+      if (lhs = nil) and (rhs is JsonNullValue) then
         exit true;
-      if (lhs is JsonNullValue) and (Object(rhs) = nil) then
+      if (lhs is JsonNullValue) and (rhs = nil) then
         exit true;
     end;
 
