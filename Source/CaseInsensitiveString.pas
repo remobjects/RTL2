@@ -30,6 +30,17 @@ type
       result := a:fString.ToLowerInvariant = b:fString.ToLowerInvariant;
     end;
 
+    method &Equals(aOther: Object): Boolean; override;
+    begin
+      if assigned(aOther) then begin
+        if (aOther is CaseInsensitiveString) then
+          exit self = CaseInsensitiveString(aOther)
+        else if (aOther is String) then
+          exit self = String(aOther);
+      end;
+      exit inherited &Equals(aOther);
+    end;
+
     operator &In(aLeft: CaseInsensitiveString; aRight: array of String): Boolean;
     begin
       for i: Integer := 0 to length(aRight)-1 do
@@ -48,6 +59,11 @@ type
     method ToString: String; override;
     begin
       result := $"caseInsensitive({fString})";
+    end;
+
+    method GetHashCode: Integer; override;
+    begin
+      exit fString.ToLowerInvariant.GetHashCode;
     end;
 
   unit
