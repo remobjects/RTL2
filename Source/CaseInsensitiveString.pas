@@ -61,6 +61,7 @@ type
       result := $"caseInsensitive({fString})";
     end;
 
+    [Hash]
     method GetHashCode: Integer; override;
     begin
       exit fString.ToLowerInvariant.GetHashCode;
