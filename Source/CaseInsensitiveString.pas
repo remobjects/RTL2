@@ -30,6 +30,7 @@ type
       result := a:fString.ToLowerInvariant = b:fString.ToLowerInvariant;
     end;
 
+    [&Equals]
     method &Equals(aOther: Object): Boolean; override;
     begin
       if assigned(aOther) then begin
@@ -38,7 +39,11 @@ type
         else if (aOther is String) then
           exit self = String(aOther);
       end;
+      {$IF TOFFEE}
+      exit self.isEqual(aOther);
+      {$ELSE}
       exit inherited &Equals(aOther);
+      {$ENDIF}
     end;
 
     operator &In(aLeft: CaseInsensitiveString; aRight: array of String): Boolean;
