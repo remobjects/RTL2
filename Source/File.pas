@@ -359,7 +359,10 @@ begin
   var Handle := new FileHandle(aFileName, FileOpenMode.ReadOnly);
   try
     Handle.Seek(0, SeekOrigin.Begin);
-    exit Handle.Read(Handle.Length);
+    if Handle.Length > 0 then
+      exit Handle.Read(Handle.Length)
+    else
+      exit new ImmutableBinary;
   finally
     Handle.Close;
   end;
@@ -373,7 +376,8 @@ begin
   var Handle := new FileHandle(aFileName, FileOpenMode.Create);
   try
     Handle.Length := 0;
-    Handle.Write(Content);
+    if length(Content) > 0 then
+      Handle.Write(Content);
   finally
     Handle.Close;
   end;
@@ -398,7 +402,8 @@ begin
   var Handle := new FileHandle(aFileName, FileOpenMode.Create);
   try
     Handle.Length := 0;
-    Handle.Write(Content);
+    if Content:Length> 0 then
+      Handle.Write(Content);
   finally
     Handle.Close;
   end;
@@ -415,7 +420,8 @@ begin
   var Handle := new FileHandle(aFileName, FileOpenMode.ReadWrite);
   try
     Handle.Seek(0, SeekOrigin.End);
-    Handle.Write(Content);
+    if length(Content) > 0 then
+      Handle.Write(Content);
   finally
     Handle.Close;
   end;
@@ -426,7 +432,8 @@ begin
   var Handle := new FileHandle(aFileName, FileOpenMode.ReadWrite);
   try
     Handle.Seek(0, SeekOrigin.End);
-    Handle.Write(Content);
+    if Content:Length> 0 then
+      Handle.Write(Content);
   finally
     Handle.Close;
   end;
