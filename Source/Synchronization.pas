@@ -11,7 +11,7 @@ type
   PlatformMonitor = public System.Threading.ManualResetEvent;
   {$ELSEIF ISLAND}
   PlatformMonitor = public RemObjects.Elements.System.Monitor;
-  {$ENDIF};
+  {$ENDIF}
 
   Monitor = public class({$IF ISLAND AND NOT TOFFEE}RemObjects.Elements.System.IMonitor{$ENDIF}) mapped to PlatformMonitor
   public
