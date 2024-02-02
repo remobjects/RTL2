@@ -90,6 +90,7 @@ type
     property Count: Integer read fItems.Count; override;
     property Item[aKey: not nullable String]: nullable JsonNode read GetItem write SetItem; default; override;
     property Item[aKey: not nullable String]: nullable String write SetItem; default; override;
+    property Item[aKey: not nullable String]: nullable array of String write SetItem; default; override;
     property Item[aKey: not nullable String]: Boolean write SetItem; default; override;
     property Item[aKey: not nullable String]: Int32 write SetItem; default; override;
     property Item[aKey: not nullable String]: Double write SetItem; default; override;
@@ -131,6 +132,11 @@ type
     method SetItem(aKey: not nullable String; aValue: nullable String);
     begin
       fItems[aKey] := JsonStringValue.Create(aValue);
+    end;
+
+    method SetItem(aKey: not nullable String; aValue: nullable array of String);
+    begin
+      fItems[aKey] := new JsonArray(aValue);
     end;
 
     method SetItem(aKey: not nullable String; aValue: Boolean);

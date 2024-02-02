@@ -267,6 +267,7 @@ type
     property Count: Integer read 1; virtual;
     property Item[aKey: not nullable String]: nullable JsonNode read CantGetItem write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: nullable String write CantSetItem; default; virtual;
+    property Item[aKey: not nullable String]: nullable array of String write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: Boolean write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: Int32 write CantSetItem; default; virtual;
     property Item[aKey: not nullable String]: Double write CantSetItem; default; virtual;
@@ -398,6 +399,11 @@ type
     end;
 
     method CantSetItem(aKey: String; Value: String);
+    begin
+      raise new JsonNodeTypeException("This JsonNode is not a dictionary.")
+    end;
+
+    method CantSetItem(aKey: String; Value: array of String);
     begin
       raise new JsonNodeTypeException("This JsonNode is not a dictionary.")
     end;
