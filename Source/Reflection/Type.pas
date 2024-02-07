@@ -49,7 +49,7 @@ type
     class method GetType(aName: not nullable String): nullable &Type;
     constructor withPlatformType(aType: PlatformType);
     {$IF COOPER}
-    //method IsSubclassOf(aType: &Type): Boolean;
+    method IsSubclassOf(aType: &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
     property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
     property MethodFields: ImmutableList<Field> read mapped.getFields().ToList();
@@ -200,10 +200,10 @@ begin
 end;
 
 {$IF COOPER}
-//method &Type.IsSubclassOf(aType: &Type): Boolean;
-//begin
-  //result := mapped.IsSubclassOf(aType);
-//end;
+method &Type.IsSubclassOf(aType: &Type): Boolean;
+begin
+  result := (self.IsInterface = aType.IsInterface) and mapped.isAssignableFrom(aType);
+end;
 {$ELSEIF TOFFEE AND NOT ISLAND}
 constructor &Type /*withID*/;
 begin
