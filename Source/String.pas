@@ -957,6 +957,49 @@ type
     end;
 
     //
+
+    method Plural(aCount: Integer; aPluralVersion: not nullable String): not nullable String;
+    begin
+      result := if aCount = 1 then self else aPluralVersion;
+    end;
+
+    method PluralInvariant(aCount: Integer; aPluralVersion: nullable String := nil): not nullable String;
+    begin
+      if not assigned(aPluralVersion) then begin
+        if EndsWith("ss") then
+          aPluralVersion := self+"es"
+        else if EndsWith('s') then
+          aPluralVersion := self+"ses"
+        else if EndsWith('y') then
+          aPluralVersion := self.Substring(0, length-1)+"ies"
+        else if EndsWith("SS") then
+          aPluralVersion := self+"ES"
+        else if EndsWith('S') then
+          aPluralVersion := self+"SES"
+        else if EndsWith('Y') then
+          aPluralVersion := self.Substring(0, length-1)+"IES"
+        else if (length > 0) and self[length-1].IsUpper then
+          aPluralVersion := self+"S"
+        else
+          aPluralVersion := self+"s";
+      end;
+      result := if aCount = 1 then self else aPluralVersion as not nullable;
+    end;
+
+    class method SmartJoin(aStringA: nullable String; aStringB: nullable String) WithSeparator(aSeparator: not nullable String): nullable String;
+    begin
+      if not assigned(aStringA) and not assigned(aStringB) then
+        exit nil;
+      if (length(aStringA) = 0) and (length(aStringB) = 0) then
+        exit "";
+      if (length(aStringA) = 0) then
+        exit aStringB;
+      if (length(aStringB) = 0) then
+        exit aStringA;
+      result := aStringA.TrimEnd+aSeparator+aStringB.TrimStart;
+    end;
+
+    //
     // Trim
     //
 
@@ -1188,7 +1231,6 @@ type
     //
     // Properties & Misc
     //
-
 
     property Length: Int32 read mapped.Length; inline;
 
