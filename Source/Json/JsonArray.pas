@@ -4,6 +4,8 @@ type
   JsonArray = public class (JsonNode{$IF NOT TOFFEEV2}, sequence of JsonNode{$ENDIF})
   public
 
+    property NodeKind: JsonNodeKind read JsonNodeKind.Array; override;
+
     constructor;
     begin
       fItems := new List<JsonNode>();

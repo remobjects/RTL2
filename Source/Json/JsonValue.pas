@@ -56,6 +56,8 @@ type
   JsonStringValue = public class(JsonValue<not nullable String>)
   public
 
+    property NodeKind: JsonNodeKind read JsonNodeKind.String; override;
+
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       var sb := new StringBuilder;
@@ -135,6 +137,9 @@ type
 
   JsonIntegerValue = public class(JsonValue<Int64>)
   public
+
+    property NodeKind: JsonNodeKind read JsonNodeKind.Integer; override;
+
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := Convert.ToString(Value);
@@ -218,6 +223,9 @@ type
 
   JsonFloatValue = public class(JsonValue<Double>)
   public
+
+    property NodeKind: JsonNodeKind read JsonNodeKind.Float; override;
+
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := Convert.ToStringInvariant(Value).Replace(",","");
@@ -272,6 +280,9 @@ type
 
   JsonBooleanValue = public class(JsonValue<Boolean>)
   public
+
+    property NodeKind: JsonNodeKind read JsonNodeKind.Boolean; override;
+
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := if Value as Boolean then JsonConsts.TRUE_VALUE else JsonConsts.FALSE_VALUE;
@@ -313,6 +324,8 @@ type
 
   JsonNullValue = public class(JsonValue<Boolean>)
   public
+
+    property NodeKind: JsonNodeKind read JsonNodeKind.Null; override;
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin

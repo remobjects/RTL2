@@ -4,6 +4,8 @@ type
   JsonObject = public class(JsonNode)
   public
 
+    property NodeKind: JsonNodeKind read JsonNodeKind.Object; override;
+
     constructor;
     begin
       fItems := new Dictionary<String, JsonNode>;

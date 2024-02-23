@@ -3,8 +3,11 @@
 type
   JsonNode = public abstract class // old Document
   public
+
     [Obsolete("JsonDocument now is the root node")]
     property Root: not nullable JsonNode read self;
+
+    property NodeKind: JsonNodeKind read; abstract;
 
     //
     // Creation
@@ -517,6 +520,7 @@ type
   end;
 
   JsonFormat = public enum (HumanReadable, Minimal);
+  JsonNodeKind = public enum (Object, &Array, String, Integer, Float, Boolean, Null);
 
   JsonDocument = public JsonNode;
 
