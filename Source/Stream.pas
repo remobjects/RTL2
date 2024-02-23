@@ -860,7 +860,7 @@ begin
   fInternalStream.write(Buffer, Offset, Count);
   {$ELSEIF TOFFEE}
   var lBin := new NSData withBytes(@Buffer[Offset]) length(Count);
-  fInternalStream.writeData(lBin);
+  fInternalStream.writeData(lBin) error(var nil);
   {$ENDIF}
 end;
 
