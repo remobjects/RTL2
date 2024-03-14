@@ -1222,14 +1222,14 @@ begin
   {$SHOW W28}
 
   var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
-  if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
+  if assigned(data) and assigned(nsHttpUrlResponse) then begin
     if defined("TOFFEE") then
       result := new HttpResponse(data, nsHttpUrlResponse)
     else
       result := new HttpResponse(data, nsHttpUrlResponse);
     if nsHttpUrlResponse.statusCode >= 300 then begin
-      if not aThrowOnError then exit nil;
-      raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, result)
+      if aThrowOnError then
+        raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, result)
     end;
   end
   else if assigned(error) then begin
