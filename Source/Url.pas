@@ -551,8 +551,6 @@ method Url.FilePathRelativeToUrlIfPossible(aUrl: not nullable Url): nullable Str
 begin
   if CanGetPathRelativeToUrl(aUrl) then
     result := coalesce(FilePathRelativeToUrl(aUrl) Threshold(Consts.MaxInt32), FilePath)
-  else
-    result := FilePath;
 end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
