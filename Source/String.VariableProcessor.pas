@@ -129,7 +129,6 @@ type
                 if self[i+1] = '}' then begin
                   var lVariableName := self.Substring(lCurrentStart+2, i-lCurrentStart-2);
                   var lValue := aCallback(lVariableName, var lStatus);
-                  Log($"lValue {lValue}");
                   if assigned(lValue) then begin
                     AppendResult(lValue);
                     inc(i,2);
