@@ -987,16 +987,13 @@ begin
     end;
 
     try
-      var webResponse := webRequest.GetResponse() as HttpWebResponse;
-      if webResponse.StatusCode ≥ 300 then begin
-        if not aThrowOnError then new HttpResponse(webResponse);
-        var lException := new HttpException(String.Format("Unable to complete request. Error code: {0}", webResponse.StatusCode), result);
-        (webResponse as IDisposable).Dispose;
+      var lWebResponse := webRequest.GetResponse() as HttpWebResponse;
+      if (lWebResponse.StatusCode ≥ 300) and aThrowOnError then begin
+        var lException := new HttpException(String.Format("Unable to complete request. Error code: {0}", lWebResponse.StatusCode), result);
+        (lWebResponse as IDisposable).Dispose;
         raise lException;
-      end
-      else begin
-        result := new HttpResponse(webResponse);
       end;
+      result := new HttpResponse(lWebResponse);
     except
       on E: System.Net.WebException do begin
         if not aThrowOnError then begin
