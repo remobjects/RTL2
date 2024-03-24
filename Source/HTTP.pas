@@ -121,6 +121,7 @@ type
 
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
     method GetContentAsBinarySynchronous: not nullable ImmutableBinary;
+    method TryGetContentAsBinarySynchronous: nullable ImmutableBinary;
     {$IF XML}method GetContentAsXmlSynchronous: not nullable XmlDocument;{$ENDIF}
     {$IF XML}method TryGetContentAsXmlSynchronous: nullable XmlDocument;{$ENDIF}
     {$IF JSON}method GetContentAsJsonSynchronous: not nullable JsonDocument;{$ENDIF}
@@ -643,6 +644,39 @@ begin
   {$ENDIF}
 end;
 
+{$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembkly")]{$ENDIF}
+method HttpResponse.TryGetContentAsBinarySynchronous: nullable ImmutableBinary;
+begin
+  {$IF COOPER}
+  var allData := new Binary;
+  var stream := Connection:InputStream;
+  if assigned(stream) then begin
+    var data := new Byte[4096];
+    var len := stream.read(data);
+    while len > 0 do begin
+      allData.Write(data, len);
+      len := stream.read(data);
+    end;
+    result := allData as not nullable;
+  end;
+  {$ELSEIF DARWIN}
+  result := Data:mutableCopy;
+  {$ELSEIF ECHOES}
+  using lStream := Response:GetResponseStream do begin
+    if assigned(lStream) then begin
+      var allData := new System.IO.MemoryStream();
+      lStream.CopyTo(allData);
+      result := allData;
+    end;
+  end;
+  {$ELSEIF ISLAND AND WEBASSEMBLY}
+  raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
+  {$ELSEIF ISLAND}
+  if assigned(Data) then
+    result := new Binary(Data.ToArray);
+  {$ENDIF}
+end;
+
 {$IF XML}
 {$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembkly")]{$ENDIF}
 method HttpResponse.GetContentAsXmlSynchronous: not nullable XmlDocument;
@@ -688,7 +722,7 @@ begin
   {$IF WEBASSEMBLY}
   raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSE}
-  var lBinary := GetContentAsBinarySynchronous(); // try?
+  var lBinary := TryGetContentAsBinarySynchronous(); // try?
   if assigned(lBinary) then
     result := JsonDocument.TryFromBinary(lBinary);
   {$ENDIF}
@@ -1000,7 +1034,7 @@ begin
           if E.Response is HttpWebResponse then
             exit new HttpResponse(E.Response as HttpWebResponse)
           else
-            exit nil;
+            exit new HttpResponse withException(E);
         end
         else begin
           if E.Response is HttpWebResponse then
