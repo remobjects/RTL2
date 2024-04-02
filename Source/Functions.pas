@@ -1,5 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+[OmitFromHeader]
 method &write(aMessage: String; params aParams: array of Object); public; inline;
 begin
   if length(aParams) > 0 then
@@ -8,16 +9,19 @@ begin
     RemObjects.Elements.System.write(aMessage);
 end;
 
+[OmitFromHeader]
 method &write(aMessage: String); public; inline;
 begin
   RemObjects.Elements.System.write(aMessage);
 end;
 
+[OmitFromHeader]
 method &write(aMessage: Object); public; inline;
 begin
   RemObjects.Elements.System.write(aMessage);
 end;
 
+[OmitFromHeader]
 method writeLn(aMessage: String; params aParams: array of Object); public; inline;
 begin
   if length(aParams) > 0 then
@@ -31,11 +35,13 @@ begin
   RemObjects.Elements.System.writeLn(aMessage);
 end;
 
+[OmitFromHeader]
 method writeLn(aMessage: Object); public; inline;
 begin
   RemObjects.Elements.System.writeLn(aMessage);
 end;
 
+[OmitFromHeader]
 method writeLn(); public; inline;
 begin
   RemObjects.Elements.System.writeLn();
