@@ -29,11 +29,13 @@ type
     constructor(aUrl: not nullable Url; aMode: HttpRequestMode := HttpRequestMode.Get);
     operator Implicit(aUrl: not nullable Url): HttpRequest;
 
-    property VerifyUntrustedCertificate: block(aCertificateInfo: HttpCertificateInfo): Boolean;
+    property VerifyUntrustedCertificate: VerifyUntrustedCertificateBlock;
 
     [ToString]
     method ToString: String;
   end;
+
+  VerifyUntrustedCertificateBlock nested in httpRequest = public block(aCertificateInfo: HttpCertificateInfo): Boolean;
 
   HttpRequestMode = public enum (Get, Post, Head, Put, Delete, Patch, Options, Trace);
 
