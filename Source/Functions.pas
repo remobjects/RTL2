@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF DARWIN}[OmitFromHeader]{$ENDIF}
+{$IF ___DARWIN}[OmitFromHeader]{$ENDIF}
 method &write(aMessage: String; params aParams: array of Object); public; inline;
 begin
   if length(aParams) > 0 then
@@ -9,19 +9,19 @@ begin
     RemObjects.Elements.System.write(aMessage);
 end;
 
-{$IF DARWIN}[OmitFromHeader]{$ENDIF}
+{$IF ___DARWIN}[OmitFromHeader]{$ENDIF}
 method &write(aMessage: String); public; inline;
 begin
   RemObjects.Elements.System.write(aMessage);
 end;
 
-{$IF DARWIN}[OmitFromHeader]{$ENDIF}
+{$IF ___DARWIN}[OmitFromHeader]{$ENDIF}
 method &write(aMessage: Object); public; inline;
 begin
   RemObjects.Elements.System.write(aMessage);
 end;
 
-{$IF DARWIN}[OmitFromHeader]{$ENDIF}
+{$IF ___DARWIN}[OmitFromHeader]{$ENDIF}
 method writeLn(aMessage: String; params aParams: array of Object); public; inline;
 begin
   if length(aParams) > 0 then
@@ -35,13 +35,13 @@ begin
   RemObjects.Elements.System.writeLn(aMessage);
 end;
 
-{$IF DARWIN}[OmitFromHeader]{$ENDIF}
+{$IF ___DARWIN}[OmitFromHeader]{$ENDIF}
 method writeLn(aMessage: Object); public; inline;
 begin
   RemObjects.Elements.System.writeLn(aMessage);
 end;
 
-{$IF DARWIN}[OmitFromHeader]{$ENDIF}
+{$IF ___DARWIN}[OmitFromHeader]{$ENDIF}
 method writeLn(); public; inline;
 begin
   RemObjects.Elements.System.writeLn();
