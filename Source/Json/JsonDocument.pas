@@ -142,20 +142,18 @@ type
 
     class method TryFromString(aString: nullable String): nullable JsonDocument;
     begin
-      if not assigned(aString) then
-        exit;
       try
-        result := new JsonDeserializer(aString).Deserialize;
+        if length(aString) > 0 then
+          result := new JsonDeserializer(aString).Deserialize;
       except
       end;
     end;
 
     class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonDocument;
     begin
-      if not assigned(aString) then
-        exit;
       try
-        result := new JsonDeserializer(aString).Deserialize;
+        if length(aString) > 0 then
+          result := new JsonDeserializer(aString).Deserialize;
       except
         on E: Exception do
           aException := E;
