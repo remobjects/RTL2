@@ -40,7 +40,7 @@ type
       result := ReadUInt16(var aOffset);
     end;
 
-    method ReadUInt8(aOffset: UInt64): UInt16; /*inline;*/
+    method ReadUInt8(var aOffset: UInt64): UInt16; /*inline;*/
     begin
       result := ReadUInt8(var aOffset);
     end;
@@ -125,11 +125,6 @@ type
         Endianess.Little: result := ReadUInt16LE(var aOffset);
         Endianess.Big: result := ReadUInt16BE(var aOffset);
       end;
-    end;
-
-    method ReadUInt8(var aOffset: UInt64): Byte;
-    begin
-      ReadUInt8(
     end;
 
     //
