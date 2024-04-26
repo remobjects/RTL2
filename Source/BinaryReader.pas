@@ -127,6 +127,11 @@ type
       end;
     end;
 
+    method ReadUInt8(var aOffset: UInt64): Byte;
+    begin
+      ReadUInt8(
+    end;
+
     //
 
     method ReadUInt64LE(var aOffset: UInt64): UInt32;
@@ -177,12 +182,6 @@ type
     begin
       result := (fBytes[aOffset+1]) + (fBytes[aOffset+0] shl 8);
       inc(aOffset, 2);
-    end;
-
-    method ReadUInt8(var aOffset: UInt64): Byte;
-    begin
-      result := fBytes[aOffset];
-      inc(aOffset);
     end;
 
     method ReadGuid(var aOffset: UInt64): not nullable Guid;
