@@ -312,7 +312,7 @@ type
     begin
       result := new Byte[aLength];
       {$IF TOFFEE OR ISLAND}
-      memcpy(@fBytes[aOffset], @result[0], aLength);
+      memcpy(@result[0], @fBytes[aOffset], aLength);
       {$ELSEIF ECHOES}
       &Array.Copy(fBytes, aOffset, result, 0, aLength);
       {$ELSE}
@@ -335,7 +335,7 @@ type
     {$IF ISLAND OR TOFFEE}
     method ReadByteArray(var aOffset: UInt64) Length(aLength: Integer) ToAddress(aAddress: ^Void): array of Byte;
     begin
-      memcpy(@fBytes[aOffset], aAddress, aLength);
+      memcpy(aAddress, @fBytes[aOffset], aLength);
       inc(aOffset, aLength);
     end;
     {$ENDIF}
