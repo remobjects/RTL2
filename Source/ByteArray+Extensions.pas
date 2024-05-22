@@ -31,7 +31,7 @@ type
           exit i;
     end;
 
-    method &Reverse(aArray: array of Byte);
+    method &ReverseArray;
     begin
       var len := Length;
       for i: Integer := 0 to (len-1) div 2 do begin

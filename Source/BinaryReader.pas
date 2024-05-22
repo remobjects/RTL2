@@ -40,7 +40,7 @@ type
       result := ReadUInt16(var aOffset);
     end;
 
-    method ReadUInt8(var aOffset: UInt64): UInt16; /*inline;*/
+    method ReadUInt8(aOffset: UInt64): UInt16; /*inline;*/
     begin
       result := ReadUInt8(var aOffset);
     end;
@@ -179,6 +179,12 @@ type
       inc(aOffset, 2);
     end;
 
+    method ReadUInt8(var aOffset: UInt64): Byte; /*inline;*/
+    begin
+      result := fBytes[aOffset];
+      inc(aOffset);
+    end;
+
     method ReadGuid(var aOffset: UInt64): not nullable Guid;
     begin
       result := new Guid(fBytes, aOffset);
@@ -211,7 +217,7 @@ type
       result := Double.longBitsToDouble(ReadInt64LE(var aOffset));
       {$ELSE}
       var lBuffer := ReadByteArray(var aOffset) Length(sizeOf(Double));
-      lBuffer.Reverse();
+      lBuffer.ReverseArray();
       memcpy(@result, @lBuffer[0], sizeOf(Double));
       {$ENDIF}
     end;
@@ -366,6 +372,16 @@ type
     method ReadDouble: Double;
     begin
       result := ReadDouble(var fOffset);
+    end;
+
+    method ReadDoubleLE: Double;
+    begin
+      result := ReadDoubleLE(var fOffset);
+    end;
+
+    method ReadDoubleBE: Double;
+    begin
+      result := ReadDoubleBE(var fOffset);
     end;
 
     method ReadGuid: not nullable Guid;

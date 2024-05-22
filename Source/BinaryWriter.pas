@@ -95,7 +95,7 @@ type
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Double)];
       memcpy(@lBuffer[0], @value, sizeOf(Double));
-      lBuffer.Reverse();
+      lBuffer.ReverseArray;
       WriteByteArray(lBuffer);
       {$ENDIF}
     end;
@@ -109,7 +109,7 @@ type
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Double)];
       memcpy(@lBuffer[0], @value, sizeOf(Double));
-      //lBuffer.Reverse();
+      //lBuffer.ReverseArray;
       WriteByteArray(lBuffer);
       {$ENDIF}
     end;
@@ -123,7 +123,7 @@ type
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Single)];
       memcpy(@lBuffer[0], @value, sizeOf(Single));
-      lBuffer.Reverse();
+      lBuffer.ReverseArray;
       WriteByteArray(lBuffer);
       {$ENDIF}
     end;
@@ -137,7 +137,7 @@ type
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Single)];
       memcpy(@lBuffer[0], @value, sizeOf(Single));
-      //lBuffer.Reverse();
+      //lBuffer.ReverseArray;
       WriteByteArray(lBuffer);
       {$ENDIF}
     end;
