@@ -68,14 +68,14 @@ type
       fStream.Write(bytes, 0, length(bytes));
     end;
 
-
     // Double
     method WriteDouble(value: Double);
     begin
-      case Endianess of
-        Endianess.Little: WriteDoubleLE(value);
-        Endianess.Big: WriteDoubleBE(value);
-      end;
+      WriteDoubleLE(value);
+      //case Endianess of
+        //Endianess.Little: WriteDoubleLE(value);
+        //Endianess.Big: WriteDoubleBE(value);
+      //end;
     end;
 
     method WriteSingle(value: Single);
@@ -95,24 +95,24 @@ type
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Double)];
       memcpy(@lBuffer[0], @value, sizeOf(Double));
-      lBuffer.ReverseArray;
-      WriteByteArray(lBuffer);
-      {$ENDIF}
-    end;
-
-    method WriteDoubleBE(value: Double);
-    begin
-      {$IF ECHOES}
-      WriteUInt64BE(BitConverter.DoubleToInt64Bits(value));
-      {$ELSEIF COOPER}
-      WriteInt64BE(Double.doubleToLongBits(value));
-      {$ELSE}
-      var lBuffer := new Byte[sizeOf(Double)];
-      memcpy(@lBuffer[0], @value, sizeOf(Double));
       //lBuffer.ReverseArray;
       WriteByteArray(lBuffer);
       {$ENDIF}
     end;
+
+    //method WriteDoubleBE(value: Double);
+    //begin
+      //{$IF ECHOES}
+      //WriteUInt64BE(BitConverter.DoubleToInt64Bits(value));
+      //{$ELSEIF COOPER}
+      //WriteInt64BE(Double.doubleToLongBits(value));
+      //{$ELSE}
+      //var lBuffer := new Byte[sizeOf(Double)];
+      //memcpy(@lBuffer[0], @value, sizeOf(Double));
+      ////lBuffer.ReverseArray;
+      //WriteByteArray(lBuffer);
+      //{$ENDIF}
+    //end;
 
     method WriteSingleLE(value: Single);
     begin

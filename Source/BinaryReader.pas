@@ -195,10 +195,11 @@ type
 
     method ReadDouble(var aOffset: UInt64): Double;
     begin
-      case Endianess of
-        Endianess.Little: result := ReadDoubleLE(var aOffset);
-        Endianess.Big: result := ReadDoubleBE(var aOffset);
-      end;
+      result := ReadDoubleLE(var aOffset);
+      //case Endianess of
+        //Endianess.Little: result := ReadDoubleLE(var aOffset);
+        //Endianess.Big: result := ReadDoubleBE(var aOffset);
+      //end;
     end;
 
     method ReadSingle(var aOffset: UInt64): Single;
@@ -217,21 +218,21 @@ type
       result := Double.longBitsToDouble(ReadInt64LE(var aOffset));
       {$ELSE}
       var lBuffer := ReadByteArray(var aOffset) Length(sizeOf(Double));
-      lBuffer.ReverseArray();
+      //lBuffer.ReverseArray();
       memcpy(@result, @lBuffer[0], sizeOf(Double));
       {$ENDIF}
     end;
 
-    method ReadDoubleBE(var aOffset: UInt64): Double;
-    begin
-      {$IF ECHOES}
-      result := BitConverter.Int64BitsToDouble(ReadInt64BE(var aOffset));
-      {$ELSEIF COOPER}
-      result := Double.longBitsToDouble(ReadInt64BE(var aOffset));
-      {$ELSE}
-      ReadByteArray(var aOffset) Length(sizeOf(Double)) ToAddress(@result);
-      {$ENDIF}
-    end;
+    //method ReadDoubleBE(var aOffset: UInt64): Double;
+    //begin
+      //{$IF ECHOES}
+      //result := BitConverter.Int64BitsToDouble(ReadInt64BE(var aOffset));
+      //{$ELSEIF COOPER}
+      //result := Double.longBitsToDouble(ReadInt64BE(var aOffset));
+      //{$ELSE}
+      //ReadByteArray(var aOffset) Length(sizeOf(Double)) ToAddress(@result);
+      //{$ENDIF}
+    //end;
 
     method ReadSingleLE(var aOffset: UInt64): Single;
     begin
@@ -310,9 +311,11 @@ type
 
     method ReadByteArray(var aOffset: UInt64) Length(aLength: Integer): array of Byte;
     begin
+      Log($"ReadByteArray, {aLength}");
       result := new Byte[aLength];
       {$IF TOFFEE OR ISLAND}
       memcpy(@result[0], @fBytes[aOffset], aLength);
+      Log($"ReadByteArray {Convert.ToHexString(result, " ", 16)}");
       {$ELSEIF ECHOES}
       &Array.Copy(fBytes, aOffset, result, 0, aLength);
       {$ELSE}
@@ -379,10 +382,10 @@ type
       result := ReadDoubleLE(var fOffset);
     end;
 
-    method ReadDoubleBE: Double;
-    begin
-      result := ReadDoubleBE(var fOffset);
-    end;
+    //method ReadDoubleBE: Double;
+    //begin
+      //result := ReadDoubleBE(var fOffset);
+    //end;
 
     method ReadGuid: not nullable Guid;
     begin
