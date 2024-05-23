@@ -234,7 +234,7 @@ begin
   {$IF ECHOES OR COOPER}
     {$IF ECHOES}
       {$IF NETCOREAPP OR NETSTANDARD}
-      lVersion := String(System.Reflection.Assembly.GetEntryAssembly:GetCustomAttribute<System.Runtime.Versioning.TargetFrameworkAttribute>:FrameworkName):SubstringFromLastOccurrenceOf("=v"):Split(".");;
+      lVersion := String(System.Reflection.Assembly.GetEntryAssembly:GetCustomAttribute<System.Runtime.Versioning.TargetFrameworkAttribute>:FrameworkName):SubstringFromLastOccurrenceOf("=v"):Split(".");
       {$ELSE}
       lVersion := String(typeOf(System.String).Assembly.GetName.Version.ToString):Split(".");
       {$ENDIF}

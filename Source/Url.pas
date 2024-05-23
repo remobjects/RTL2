@@ -601,7 +601,7 @@ end;
 method Url.GetLastPathComponent: nullable String;
 begin
   if not assigned(fCachedLastPathComponent) then begin
-    var lPath := RemovePercentEncodingsFromPath(fPath);;
+    var lPath := RemovePercentEncodingsFromPath(fPath);
     if lPath.EndsWith("/") then
       lPath := lPath.Substring(0, length(lPath)-1);
     if length(lPath) > 0 then begin
@@ -810,7 +810,7 @@ method Url.UrlWithRelativeOrAbsoluteFileSubPath(aSubPath: not nullable String): 
 begin
   if aSubPath.IsAbsolutePath then
     exit Url.UrlWithFilePath(aSubPath);
-  result := SubUrlWithFilePath(aSubPath);;
+  result := SubUrlWithFilePath(aSubPath);
 end;
 
 method Url.UrlWithRelativeOrAbsoluteWindowsSubPath(aSubPath: not nullable String): nullable Url;
