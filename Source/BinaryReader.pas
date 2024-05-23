@@ -71,7 +71,7 @@ type
       end;
     end;
 
-    method ReadInt64LE(var aOffset: UInt64): UInt64;
+    method ReadInt64LE(var aOffset: UInt64): Int64;
     begin
       result := ReadUInt64LE(var aOffset) as Int64;
     end;
@@ -129,7 +129,7 @@ type
 
     //
 
-    method ReadUInt64LE(var aOffset: UInt64): UInt32;
+    method ReadUInt64LE(var aOffset: UInt64): UInt64;
     begin
       result := (UInt64(fBytes[aOffset+0])) +
                 (UInt64(fBytes[aOffset+1]) shl  8) +
@@ -138,11 +138,11 @@ type
                 (UInt64(fBytes[aOffset+4]) shl 32) +
                 (UInt64(fBytes[aOffset+5]) shl 40) +
                 (UInt64(fBytes[aOffset+6]) shl 48) +
-                (UInt64(fBytes[aOffset+7]) shl 56);;
+                (UInt64(fBytes[aOffset+7]) shl 56);
       inc(aOffset, 8);
     end;
 
-    method ReadUInt64BE(var aOffset: UInt64): UInt32;
+    method ReadUInt64BE(var aOffset: UInt64): UInt64;
     begin
       result := (UInt64(fBytes[aOffset+7])) +
                 (UInt64(fBytes[aOffset+6]) shl  8) +
@@ -151,7 +151,7 @@ type
                 (UInt64(fBytes[aOffset+3]) shl 32) +
                 (UInt64(fBytes[aOffset+2]) shl 40) +
                 (UInt64(fBytes[aOffset+1]) shl 48) +
-                (UInt64(fBytes[aOffset+0]) shl 56);;
+                (UInt64(fBytes[aOffset+0]) shl 56);
       inc(aOffset, 8);
     end;
 
@@ -270,11 +270,9 @@ type
 
     method ReadByteArray(var aOffset: UInt64) Length(aLength: Integer): array of Byte;
     begin
-      Log($"ReadByteArray, {aLength}");
       result := new Byte[aLength];
       {$IF TOFFEE OR ISLAND}
       memcpy(@result[0], @fBytes[aOffset], aLength);
-      Log($"ReadByteArray {Convert.ToHexString(result, " ", 16)}");
       {$ELSEIF ECHOES}
       &Array.Copy(fBytes, aOffset, result, 0, aLength);
       {$ELSE}
