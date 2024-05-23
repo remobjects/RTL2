@@ -195,46 +195,17 @@ type
 
     method ReadDouble(var aOffset: UInt64): Double;
     begin
-      result := ReadDoubleLE(var aOffset);
-      //case Endianess of
-        //Endianess.Little: result := ReadDoubleLE(var aOffset);
-        //Endianess.Big: result := ReadDoubleBE(var aOffset);
-      //end;
-    end;
-
-    method ReadSingle(var aOffset: UInt64): Single;
-    begin
-      case Endianess of
-        Endianess.Little: result := ReadSingleLE(var aOffset);
-        Endianess.Big: result := ReadSingleBE(var aOffset);
-      end;
-    end;
-
-    method ReadDoubleLE(var aOffset: UInt64): Double;
-    begin
       {$IF ECHOES}
       result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
       {$ELSEIF COOPER}
       result := Double.longBitsToDouble(ReadInt64LE(var aOffset));
       {$ELSE}
       var lBuffer := ReadByteArray(var aOffset) Length(sizeOf(Double));
-      //lBuffer.ReverseArray();
       memcpy(@result, @lBuffer[0], sizeOf(Double));
       {$ENDIF}
     end;
 
-    //method ReadDoubleBE(var aOffset: UInt64): Double;
-    //begin
-      //{$IF ECHOES}
-      //result := BitConverter.Int64BitsToDouble(ReadInt64BE(var aOffset));
-      //{$ELSEIF COOPER}
-      //result := Double.longBitsToDouble(ReadInt64BE(var aOffset));
-      //{$ELSE}
-      //ReadByteArray(var aOffset) Length(sizeOf(Double)) ToAddress(@result);
-      //{$ENDIF}
-    //end;
-
-    method ReadSingleLE(var aOffset: UInt64): Single;
+    method ReadSingle(var aOffset: UInt64): Single;
     begin
       {$IF ECHOES}
       result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
@@ -242,19 +213,7 @@ type
       result := Float.intBitsToFloat(ReadInt32LE(var aOffset));
       {$ELSE}
       var lBuffer := ReadByteArray(var aOffset) Length(sizeOf(Single));
-      lBuffer.Reverse();
       memcpy(@result, @lBuffer[0], sizeOf(Single));
-      {$ENDIF}
-    end;
-
-    method ReadSingleBE(var aOffset: UInt64): Single;
-    begin
-      {$IF ECHOES}
-      result := BitConverter.Int64BitsToDouble(ReadInt32BE(var aOffset));
-      {$ELSEIF COOPER}
-      result := Float.intBitsToFloat(ReadInt32BE(var aOffset));
-      {$ELSE}
-      ReadByteArray(var aOffset) Length(sizeOf(Single)) ToAddress(@result);
       {$ENDIF}
     end;
 
@@ -376,16 +335,6 @@ type
     begin
       result := ReadDouble(var fOffset);
     end;
-
-    method ReadDoubleLE: Double;
-    begin
-      result := ReadDoubleLE(var fOffset);
-    end;
-
-    //method ReadDoubleBE: Double;
-    //begin
-      //result := ReadDoubleBE(var fOffset);
-    //end;
 
     method ReadGuid: not nullable Guid;
     begin

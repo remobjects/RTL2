@@ -71,23 +71,6 @@ type
     // Double
     method WriteDouble(value: Double);
     begin
-      WriteDoubleLE(value);
-      //case Endianess of
-        //Endianess.Little: WriteDoubleLE(value);
-        //Endianess.Big: WriteDoubleBE(value);
-      //end;
-    end;
-
-    method WriteSingle(value: Single);
-    begin
-      case Endianess of
-        Endianess.Little: WriteSingleLE(value);
-        Endianess.Big: WriteSingleBE(value);
-      end;
-    end;
-
-    method WriteDoubleLE(value: Double);
-    begin
       {$IF ECHOES}
       WriteUInt64LE(BitConverter.DoubleToInt64Bits(value));
       {$ELSEIF COOPER}
@@ -95,26 +78,11 @@ type
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Double)];
       memcpy(@lBuffer[0], @value, sizeOf(Double));
-      //lBuffer.ReverseArray;
       WriteByteArray(lBuffer);
       {$ENDIF}
     end;
 
-    //method WriteDoubleBE(value: Double);
-    //begin
-      //{$IF ECHOES}
-      //WriteUInt64BE(BitConverter.DoubleToInt64Bits(value));
-      //{$ELSEIF COOPER}
-      //WriteInt64BE(Double.doubleToLongBits(value));
-      //{$ELSE}
-      //var lBuffer := new Byte[sizeOf(Double)];
-      //memcpy(@lBuffer[0], @value, sizeOf(Double));
-      ////lBuffer.ReverseArray;
-      //WriteByteArray(lBuffer);
-      //{$ENDIF}
-    //end;
-
-    method WriteSingleLE(value: Single);
+    method WriteSingle(value: Single);
     begin
       {$IF ECHOES}
       WriteUInt32LE(BitConverter.DoubleToInt64Bits(value));
@@ -123,21 +91,6 @@ type
       {$ELSE}
       var lBuffer := new Byte[sizeOf(Single)];
       memcpy(@lBuffer[0], @value, sizeOf(Single));
-      lBuffer.ReverseArray;
-      WriteByteArray(lBuffer);
-      {$ENDIF}
-    end;
-
-    method WriteSingleBE(value: Single);
-    begin
-      {$IF ECHOES}
-      WriteUInt32BE(BitConverter.DoubleToInt64Bits(value));
-      {$ELSEIF COOPER}
-      WriteUInt32BE(Single.floatToIntBits(value));
-      {$ELSE}
-      var lBuffer := new Byte[sizeOf(Single)];
-      memcpy(@lBuffer[0], @value, sizeOf(Single));
-      //lBuffer.ReverseArray;
       WriteByteArray(lBuffer);
       {$ENDIF}
     end;
