@@ -1,6 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL.Tests;
 
 uses
+  RemObjects.Elements.RTL,
   RemObjects.Elements.EUnit;
 
 type
@@ -11,8 +12,8 @@ type
     begin
       var f := JsonFloatValue(12.18688);
       Check.AreEqual(f.ToString, "12.18688");
-      Check.AreEqual(f.ToJson, "12.18688");
-      Check.AreNotEqual(f.ToJson, "12.187");
+      Check.AreEqual(f.ToJsonString, "12.18688");
+      Check.AreNotEqual(f.ToJsonString, "12.187");
     end;
 
     method TryFromAString;
