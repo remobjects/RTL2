@@ -13,6 +13,7 @@
     <AllowUnsafeCode>False</AllowUnsafeCode>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <DefaultUses>RemObjects.Elements.RTL</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
@@ -50,7 +51,7 @@
     <Reference Include="EUnit">
       <HintPath>..\..\git\EUnit\bin\Debug\Linux\x86_64\EUnit.fx</HintPath>
     </Reference>
-    <ProjectReference Include="Elements.RTL.Island.Linux">
+    <ProjectReference Include="..\Source\Elements.RTL.Island.Linux.elements">
       <Name>Elements.RTL.Island.Linux</Name>
       <HintPath />
       <Project>{163F84DC-DC6B-4535-994F-0865D3A84D20}</Project>

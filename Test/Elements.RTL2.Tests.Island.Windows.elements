@@ -13,6 +13,7 @@
     <AllowUnsafeCode>False</AllowUnsafeCode>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <DefaultUses>RemObjects.Elements.RTL</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
@@ -48,7 +49,7 @@
     <Reference Include="gc" />
     <Reference Include="Island" />
     <Reference Include="rtl" />
-    <ProjectReference Include="Elements.RTL.Island.Windows">
+    <ProjectReference Include="..\Source\Elements.RTL.Island.Windows.elements">
       <Name>Elements.RTL.Island.Windows</Name>
       <HintPath />
       <Project>{6F888992-4293-4097-8AA3-6667E0187D4F}</Project>
