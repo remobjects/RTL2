@@ -1,6 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL.Tests;
 
 uses
+  RemObjects.Elements.RTL,
   RemObjects.Elements.EUnit;
 
 type
