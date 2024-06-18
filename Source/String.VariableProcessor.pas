@@ -7,6 +7,11 @@ type
   String = public partial class
   public
 
+    method ProcessVariables(aStyle: VariableStyle; aValues: Dictionary<String,String>): not nullable String;
+    begin
+      result := ProcessVariables(aStyle, method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aValues:[aVariable] end);
+    end;
+
     method ProcessVariables(aStyle: VariableStyle; aCallback: block(aVariable: not nullable String): nullable String): not nullable String;
     begin
       result := case aStyle of
