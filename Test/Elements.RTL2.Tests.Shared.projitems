@@ -27,5 +27,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Diff.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Formatter.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Variables.pas" />
   </ItemGroup>
 </Project>

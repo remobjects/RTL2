@@ -18,7 +18,8 @@ type
       Check.IsNotNil(xml.Root.FirstElementWithName("two"));
       Check.IsNotNil(xml.Root.FirstElementWithName("three"));
       Check.IsNotNil(xml.Root.FirstElementWithName("a:two"));
-      Check.IsNotNil(xml.Root.FirstElementWithName("b:three"));      Check.IsNotNil(xml.Root.FirstElementWithName("{http://bc}three"));
+      Check.IsNotNil(xml.Root.FirstElementWithName("b:three"));
+      Check.IsNotNil(xml.Root.FirstElementWithName("{http://bc}three"));
 
       Check.IsNotNil(xml.Root.FirstElementWithName("two").FirstElementWithName("nested"));
       Check.AreEqual(xml.Root.FirstElementWithName("two").FirstElementWithName("nested").Attribute["x"].Value, "a");
