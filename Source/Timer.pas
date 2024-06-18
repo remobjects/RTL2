@@ -14,8 +14,7 @@ type
     fCallback: block(aTimer: Timer); unit;
     method CheckIfEnabled;
   public
-    constructor(aInterval: Integer; aCallback: block(aTimer: Timer));
-    constructor(aInterval: Integer; aRepeat: Boolean; aCallback: block(aTimer: Timer));
+    constructor(aInterval: Integer; aRepeat: Boolean := true; aCallback: block(aTimer: Timer));
     method Start;
     method Stop;
     property Interval: Integer read fInterval;
@@ -25,12 +24,7 @@ type
 
 implementation
 
-constructor Timer(aInterval: Integer; aCallback: block(aTimer: Timer));
-begin
-  constructor (aInterval, false, aCallback);
-end;
-
-constructor Timer(aInterval: Integer; aRepeat: Boolean; aCallback: block(aTimer: Timer));
+constructor Timer(aInterval: Integer; aRepeat: Boolean := true; aCallback: block(aTimer: Timer));
 begin
   fInterval := aInterval;
   fRepeat := aRepeat;
