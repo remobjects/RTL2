@@ -13,7 +13,7 @@ type
       Assert.AreEqual(String.Format("{0,10:d3}", 10), '       010');
       Assert.AreEqual(String.Format("{0,-10:d3}", 10), '010       ');
 
-      Assert.AreEqual(String.Format("{0:P}", 0.2468013), '24' + Locale.Current.NumberFormat.DecimalSeparator + '68');
+      Assert.AreEqual(String.Format("{0:P}", 0.2468013), '24' + Locale.Current.NumberFormat.DecimalSeparator + '68' + ' %');
 
       Assert.AreEqual(String.Format("{0:F}", 17843), '17843' + Locale.Current.NumberFormat.DecimalSeparator + '00');
       Assert.AreEqual(String.Format("{0:F3}", -29541), '-29541' + Locale.Current.NumberFormat.DecimalSeparator + '000');
