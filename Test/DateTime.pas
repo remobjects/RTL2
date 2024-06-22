@@ -80,45 +80,45 @@ type
       lDateTime := DateTime.TryParse('2020-01-26T23:34:00.1+1:00', 'yyyy-MM-ddTHH:mm:ss.fK', Locale.Invariant);
       Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
-      Check.AreEqual(lDateTime.Day, 27);
+      Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
-      Check.AreEqual(lDateTime.Hour, 0);
+      Check.AreEqual(lDateTime.Hour, 22);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParse('2020-01-26T23:34:00+1:00', 'yyyy-MM-ddTHH:mm:ssK', Locale.Invariant);
       Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
-      Check.AreEqual(lDateTime.Day, 27);
+      Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
-      Check.AreEqual(lDateTime.Hour, 0);
+      Check.AreEqual(lDateTime.Hour, 22);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParse('2020-01-26T23:34:00.6175425+1:00', 'yyyy-MM-ddTHH:mm:ss.fffffffK', Locale.Invariant);
       Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
-      Check.AreEqual(lDateTime.Day, 27);
+      Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
-      Check.AreEqual(lDateTime.Hour, 0);
+      Check.AreEqual(lDateTime.Hour, 22);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParse('2020-01-26T23:34:00.6175425+1:00', 'yyyy-MM-ddTHH:mm:ss.fffffffzzz', Locale.Invariant);
       Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
-      Check.AreEqual(lDateTime.Day, 27);
+      Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
-      Check.AreEqual(lDateTime.Hour, 0);
+      Check.AreEqual(lDateTime.Hour, 22);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParseISO8601('2020-01-26T23:34:00.6175425+1:00');
       Check.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
-      Check.AreEqual(lDateTime.Day, 27);
+      Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
-      Check.AreEqual(lDateTime.Hour, 0);
+      Check.AreEqual(lDateTime.Hour, 22);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 00);
     end;
