@@ -279,7 +279,7 @@ begin
   except
     result := getUserName();
   end;
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
     {$IF MACOS AND NOT MACCATALYST}
     result := NSHost.currentHost.localizedName;
     if result.EndsWith(".local") then
@@ -297,8 +297,9 @@ begin
   if rtl.GetComputerName(@lName[0], @lSize) then begin
     result := new String(lName, 0, lSize);
   end
-  else
+  else begin
     result := GetUserName();
+  end;
   {$ELSEIF ISLAND AND (ANDROID OR LINUX)}
   var lSize := 255;
   var lName := new AnsiChar[lSize];
