@@ -12,7 +12,7 @@ interface
 type
   Url = public class(Uri)
   private
-    var fScheme, fHost, fPath, fQueryString, fFragment, fUser: String;
+    var fScheme, fHost, fPath, fQueryString, fFragment, fUser, fPassword: String;
     var fPort: nullable Int32;
     var fCanonicalVersion: Url;
     var fIsCanonical: Boolean;
@@ -67,6 +67,7 @@ type
     property QueryString: String read fQueryString;
     property Fragment: String read fFragment;
     property User: String read fUser;
+    property Password: String read fPassword;
 
     property HostAndPort: nullable String read GetHostNameAndPort;
     property PathAndQueryString: nullable String read GetPathAndQueryString;
@@ -301,7 +302,7 @@ method Url.Parse(aUrlString: not nullable String): Boolean;
 begin
   var lProtocolPosition := aUrlString.IndexOf('://');
   if lProtocolPosition ≥ 0 then begin
-    fScheme := aUrlString.Substring(0, lProtocolPosition);
+    fScheme := aUrlString.Substring(0, lProtocolPosition).ToLowerInvariant;
     aUrlString := aUrlString.Substring(lProtocolPosition + 3); /* skip over :// */
   end;
 
@@ -320,6 +321,19 @@ begin
   else begin
     lHostAndPort := aUrlString;
     aUrlString := '';
+  end;
+
+  var lHostPosition := lHostAndPort.IndexOf('@');
+  if lHostPosition ≥ 0 then begin
+    fUser := lHostAndPort.Substring(0, lHostPosition);
+    lHostAndPort := lHostAndPort.Substring(lHostPosition+1);
+
+    var lPasswordPosition := fUser.IndexOf(':');
+    if lPasswordPosition ≥ 0 then begin
+      fPassword := fUser.Substring(lPasswordPosition+1);
+      fUser := fUser.Substring(0, lPasswordPosition);
+    end;
+
   end;
 
   if lHostAndPort.StartsWith('[') then begin
@@ -379,8 +393,12 @@ begin
     var lResult := new StringBuilder();
     lResult.Append(fScheme);
     lResult.Append("://");
-    if length(fUser) > 0 then
-      lResult.Append(fUser+"@");
+    if length(fUser) > 0 then begin
+      lResult.Append(fUser);
+      if length(fPassword) > 0 then
+        lResult.Append(":"+fPassword);
+      lResult.Append("@");
+    end;
     lResult.Append(GetHostNameAndPort());
     lResult.Append(GetPathAndQueryString());
     fCachedAbsoluteString := lResult.ToString();
