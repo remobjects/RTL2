@@ -37,9 +37,10 @@ type
     {$ENDIF}
 
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
-    operator Implicit(aGuid: PlatformGuid): Guid;
+    operator Implicit(aGuid: nullable PlatformGuid): Guid;
     operator Implicit(aGuid: Guid): PlatformGuid;
     operator Implicit(aGuid: Guid): nullable PlatformGuid;
+    operator Explicit(aObject: Object): Guid;
     {$ENDIF}
 
     {$IF NOT (COOPER OR TOFFEE)}
@@ -294,7 +295,7 @@ begin
     Format.Default: result := fGuid.ToString("D") as not nullable;
     Format.Braces: result := fGuid.ToString("B") as not nullable;
     Format.Parentheses: result := fGuid.ToString("P") as not nullable;
-    else result := fGuid.ToString("D") as not nullable;;
+    else result := fGuid.ToString("D") as not nullable;
   end;
   {$ELSEIF ISLAND}
   result := fGuid.ToString as not nullable;
@@ -321,20 +322,22 @@ end;
 {$ENDIF}
 
 {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
-operator Guid.Implicit(aGuid: PlatformGuid): Guid;
+operator Guid.Implicit(aGuid: nullable PlatformGuid): Guid;
 begin
+  if assigned(aGuid) then
   result := new Guid(aGuid);
-end;
-
-operator Guid.Implicit(aGuid: Guid): PlatformGuid;
-begin
-  result := aGuid.fGuid;
 end;
 
 operator Guid.Implicit(aGuid: Guid): nullable PlatformGuid;
 begin
-  if assigned(aGuid) then
-    result := aGuid.fGuid;
+  if not assigned(aGuid) then
+    raise new NullReferenceException("Cannot cast null Guid to platform Guid type.");
+  result := aGuid.fGuid;
+end;
+
+operator Guid.Implicit(aGuid: Guid): PlatformGuid;
+begin
+  result := coalesce(aGuid:fGuid, PlatformGuid.Empty);
 end;
 {$ENDIF}
 

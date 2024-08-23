@@ -161,7 +161,8 @@ type
     operator Implicit(aDateTime: DateTime): java.util.Date;
     {$ENDIF}
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
-    operator Implicit(aDateTime: PlatformDateTime): DateTime;
+    operator Implicit(aDateTime: nullable PlatformDateTime): DateTime;
+    operator Implicit(aDateTime: DateTime): nullable PlatformDateTime;
     operator Implicit(aDateTime: DateTime): PlatformDateTime;
     {$ENDIF}
     {$IF ISLAND AND DARWIN AND NOT TOFFEE}
@@ -667,15 +668,22 @@ end;
 {$ENDIF}
 
 {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
-operator DateTime.Implicit(aDateTime: PlatformDateTime): DateTime;
+operator DateTime.Implicit(aDateTime: nullable PlatformDateTime): DateTime;
 begin
-  result := new DateTime(aDateTime);
+  if assigned(aDateTime) then
+    result := new DateTime(aDateTime);
+end;
+
+operator DateTime.Implicit(aDateTime: DateTime): nullable PlatformDateTime;
+begin
+  if assigned(aDateTime) then
+    result := aDateTime.fDateTime;
 end;
 
 operator DateTime.Implicit(aDateTime: DateTime): PlatformDateTime;
 begin
   if not assigned(aDateTime) then
-    raise new InvalidCastException("Cannot cast null DateTime to platform DateTime type.");
+    raise new NullReferenceException("Cannot cast null DateTime to platform DateTime type.");
   result := aDateTime.fDateTime;
 end;
 
