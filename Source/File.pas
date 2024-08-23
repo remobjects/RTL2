@@ -7,7 +7,7 @@ type
   private
     {$IF NOT WEBASSEMBLY}
     method getDateModified: DateTime;
-    method setDateModified(aDateTime: DateTime);
+    method setDateModified(aDateTime: not nullable DateTime);
     method getDateCreated: DateTime;
     method getSize: Int64;
     {$ENDIF}
@@ -289,7 +289,7 @@ begin
 end;
 
 {$IF COOPER OR ISLAND}[Warning("Not Implemented for all platforms")]{$ENDIF}
-method File.setDateModified(aDateTime: DateTime);
+method File.setDateModified(aDateTime: not nullable DateTime);
 begin
   if not Exists then
     raise new FileNotFoundException(FullPath);
