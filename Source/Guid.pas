@@ -183,7 +183,7 @@ end;
 class method Guid.NewGuid: not nullable Guid;
 begin
   {$IF COOPER}
-  exit mapped.randomUUID;
+  exit mapped.randomUUID as not nullable;
   {$ELSEIF TOFFEE}
   result := NSUUID.UUID;
   {$ELSEIF ECHOES OR ISLAND}
@@ -338,6 +338,18 @@ end;
 operator Guid.Implicit(aGuid: Guid): PlatformGuid;
 begin
   result := coalesce(aGuid:fGuid, PlatformGuid.Empty);
+end;
+
+operator Guid.Explicit(aObject: Object): Guid;
+begin
+  if not assigned(aObject) then
+    result := nil
+  else if aObject is var pg: PlatformGuid then
+    result := new Guid(pg)
+  else if aObject is var g: Guid then
+    result := g
+  else
+    raise new InvalidCastException($"Cannot cast from {typeOf(aObject)} to Guid.");
 end;
 {$ENDIF}
 
