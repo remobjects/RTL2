@@ -35,7 +35,7 @@ type
   end;
   {$ENDIF}
 
-  DateTime = public partial class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
+  DateTime = public partial {$IF NOT (COOPER OR TOFFEE)}readonly{$ENDIF} class {$IF COOPER OR TOFFEE} mapped to PlatformDateTime{$ENDIF}
   private
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     fDateTime: PlatformDateTime;

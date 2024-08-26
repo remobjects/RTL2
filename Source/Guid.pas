@@ -15,7 +15,7 @@ type
   PlatformGuid = public RemObjects.Elements.System.Guid;
   {$ENDIF}
 
-  Guid = public class {$IF COOPER OR TOFFEE} mapped to PlatformGuid {$ENDIF}
+  Guid = public {$IF NOT (COOPER OR TOFFEE)}readonly{$ENDIF} class {$IF COOPER OR TOFFEE} mapped to PlatformGuid {$ENDIF}
   private
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     fGuid: PlatformGuid;
