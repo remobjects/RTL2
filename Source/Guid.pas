@@ -330,14 +330,15 @@ end;
 
 operator Guid.Implicit(aGuid: Guid): nullable PlatformGuid;
 begin
-  if not assigned(aGuid) then
-    raise new NullReferenceException("Cannot cast null Guid to platform Guid type.");
-  result := aGuid.fGuid;
+  if assigned(aGuid) then
+    result := aGuid.fGuid;
 end;
 
 operator Guid.Implicit(aGuid: Guid): PlatformGuid;
 begin
-  result := coalesce(aGuid:fGuid, PlatformGuid.Empty);
+  if not assigned(aGuid) then
+    raise new NullReferenceException("Cannot cast null Guid to platform Guid type.");
+  result := aGuid.fGuid;
 end;
 
 operator Guid.Explicit(aObject: Object): Guid;
