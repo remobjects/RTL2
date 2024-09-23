@@ -38,7 +38,7 @@ type
     constructor(Value: array of Char);
     begin
       if Value = nil then
-        raise new ArgumentNullException("Value");
+        exit "";
 
       {$IF COOPER}
       result := new PlatformString(Value);
@@ -54,7 +54,7 @@ type
     constructor(Value: array of Char; Offset: Integer; Count: Integer);
     begin
       if Value = nil then
-        raise new ArgumentNullException("Value");
+        exit "";
 
       if Count = 0 then
         exit "";
@@ -464,8 +464,8 @@ type
 
     method IndexOf(Value: String; StartIndex: Integer): Integer; inline;
     begin
-      if Value = nil then
-        raise new ArgumentNullException("Value");
+      if IsNullOrEmpty(Value) then
+        raise new ArgumentException("Input value cannot be nil or empty.");
 
       if Value.Length = 0 then
         exit 0;
@@ -493,8 +493,8 @@ type
 
     method IndexOfIgnoringCase(Value: String; StartIndex: Integer): Integer; inline;
     begin
-      if Value = nil then
-        raise new ArgumentNullException("Value");
+      if IsNullOrEmpty(Value) then
+        raise new ArgumentException("Input value cannot be nil or empty.");
 
       if Value.Length = 0 then
         exit 0;
@@ -547,8 +547,8 @@ type
 
     method LastIndexOf(Value: String): Int32; inline;
     begin
-      if Value = nil then
-        raise new ArgumentNullException("Value");
+      if IsNullOrEmpty(Value) then
+        raise new ArgumentException("Input value cannot be nil or empty.");
 
       if Value.Length = 0 then
         exit mapped.length - 1;
@@ -748,7 +748,7 @@ type
     method Replace(OldValue, NewValue: String): not nullable String; inline;
     begin
       if IsNullOrEmpty(OldValue) then
-        raise new ArgumentNullException("OldValue");
+        raise new ArgumentException("Input value cannot be nil or empty.");
 
       if NewValue = nil then
         NewValue := "";
@@ -775,7 +775,7 @@ type
     method Remove(OldValue: String): not nullable String; inline;
     begin
       if IsNullOrEmpty(OldValue) then
-        raise new ArgumentNullException("OldValue");
+        raise new ArgumentException("Input value cannot be nil or empty.");
       {$IF NOT TOFFEE}
       exit mapped.Replace(OldValue, "") as not nullable;
       {$ELSEIF TOFFEE}
