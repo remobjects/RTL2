@@ -389,7 +389,7 @@ end;
 class method Process.QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
 begin
   result := aArgument;
-  if result.Contains(" ") then
+  if result.Contains(" ") or result.Contains(";") then
     result := String('"'+result.Replace('"', '\"')+'"')
 end;
 
