@@ -28,14 +28,24 @@ type
       for each el in aItems do
         fItems.Add(new JsonStringValue(el));
     end;
-
     {$ENDIF}
+
     constructor(params aItems: not nullable array of JsonNode);
     begin
       fItems := new List<JsonNode>(aItems);
     end;
 
+    constructor(aItems: not nullable sequence of JsonNode);
+    begin
+      fItems := new List<JsonNode>(aItems);
+    end;
+
     constructor(params aItems: not nullable array of String);
+    begin
+      fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
+    end;
+
+    constructor(aItems: not nullable sequence of String);
     begin
       fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
     end;
