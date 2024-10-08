@@ -239,7 +239,8 @@ method JsonTokenizer.ParseIdentifier;
 begin
   var lPosition := fPos + 1;
 
-  while CharIsIdentifier(fData[lPosition]) do
+  var len := length(fData);
+  while (lPosition < len) and CharIsIdentifier(fData[lPosition]) do
     inc(lPosition);
 
   fLength := lPosition - fPos;
