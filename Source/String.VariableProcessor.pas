@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
 type
-  VariableStyle = public enum(Percent, DoubleCurly, EBuild);
+  VariableStyle = public enum(Percent, DoubleCurly, EBuild, EBuildCurly);
   VariableStatus = public enum(Keep, &Skip);
 
   String = public partial class
@@ -19,7 +19,8 @@ type
         //VariableStyle.Percent: ProcessPlaceholders_PercentStyle((aVariable, aStatus) -> aCallback(aVariable));
         VariableStyle.Percent: ProcessPlaceholders_PercentStyle(method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
         VariableStyle.DoubleCurly: ProcessPlaceholders_DoubleCurlyStyle(method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
-        VariableStyle.EBuild: ProcessPlaceholders_EBuildStyle(method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
+        VariableStyle.EBuild: ProcessPlaceholders_EBuildStyle(['(', ')'], method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
+        VariableStyle.EBuildCurly: ProcessPlaceholders_EBuildStyle(['{', '}'], method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
         else raise new Exception($"Unknown variable style {aStyle}");
       end;
     end;
@@ -29,14 +30,15 @@ type
       result := case aStyle of
         VariableStyle.Percent: ProcessPlaceholders_PercentStyle(aCallback);
         VariableStyle.DoubleCurly: ProcessPlaceholders_DoubleCurlyStyle(aCallback);
-        VariableStyle.EBuild: ProcessPlaceholders_EBuildStyle(aCallback);
+        VariableStyle.EBuild: ProcessPlaceholders_EBuildStyle(['(', ')'], aCallback);
+        VariableStyle.EBuildCurly: ProcessPlaceholders_EBuildStyle(['{', '}'], aCallback);
         else raise new Exception($"Unknown variable style {aStyle}");
       end;
     end;
 
   private
 
-    method ProcessPlaceholders_EBuildStyle(aCallback: block(aVariable: not nullable String; var aNewStatus: VariableStatus): nullable String): not nullable String;
+    method ProcessPlaceholders_EBuildStyle(aParens: array [0..1] of Char; aCallback: block(aVariable: not nullable String; var aNewStatus: VariableStatus): nullable String): not nullable String;
     begin
 
       var lCurrentStart := 0;
@@ -58,7 +60,7 @@ type
       Outer: while i < len-2 do begin
 
         if self[i] = '$' then begin
-          if self[i+1] = '(' then begin
+          if self[i+1] = aParens[0] then begin
             if (i > 0) and (self[i-1] = '$') then begin // use `$$(` to escape, keep `$(`
               AppendResult(self.Substring(lCurrentStart, i-lCurrentStart));
               AppendResult("(");
@@ -71,7 +73,7 @@ type
             lCurrentStart := i;
             inc(i,2);
             while i < self.Length do begin
-              if self[i] = ')' then begin
+              if self[i] = aParens[1] then begin
                 var lVariableName := self.Substring(lCurrentStart+2, i-lCurrentStart-2);
                 var lValue := aCallback(lVariableName, var lStatus);
                 if assigned(lValue) then begin
