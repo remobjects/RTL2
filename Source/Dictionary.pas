@@ -7,9 +7,9 @@ type
   PlatformDictionary<T,U> = public {$IF COOPER}java.util.HashMap<T,U>{$ELSEIF TOFFEE}Foundation.NSMutableDictionary<T, U>{$ELSEIF ECHOES}System.Collections.Generic.Dictionary<T,U>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T,U>{$ENDIF};
 
   IImmutableDictionary<T, U> = public interface(PlatformSequence<KeyValuePair<T,U>>)
-    method ContainsKey(Key: not nullable T): Boolean;
-    method ContainsValue(Value: not nullable U): Boolean;
-    property Item[Key: not nullable T]: nullable U read; default; // will return nil for unknown keys
+    method ContainsKey(Key: nullable T): Boolean; // will return false for unknown or nil keys
+    method ContainsValue(Value: nullable U): Boolean;
+    property Item[Key: nullable T]: nullable U read; default; // will return nil for unknown or nil keys
     property Keys: not nullable ImmutableList<T> read;
     property Values: not nullable sequence of U read;
     property Count: Integer read;
@@ -22,18 +22,18 @@ type
   private
     method GetKeys: not nullable ImmutableList<T>;
     method GetValues: not nullable sequence of U;
-    method GetItem(aKey: not nullable T): nullable U; inline;
+    method GetItem(aKey: nullable T): nullable U; inline;
   protected
 
   public
     constructor; mapped to constructor();
 
-    method ContainsKey(Key: not nullable T): Boolean;
-    method ContainsValue(Value: not nullable U): Boolean;
+    method ContainsKey(Key: nullable T): Boolean;
+    method ContainsValue(Value: nullable U): Boolean;
 
     method ForEach(Action: Action<KeyValuePair<T, U>>);
 
-    property Item[Key: not nullable T]: nullable U read GetItem; default; inline; // will return nil for unknown keys
+    property Item[Key: nullable T]: nullable U read GetItem; default; inline; // will return nil for unknown or nil keys
     property Keys: not nullable ImmutableList<T> read GetKeys;
     property Values: not nullable sequence of U read GetValues;
     property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
@@ -68,7 +68,7 @@ type
     method &Add(Key: not nullable T; Value: nullable U);
     method &Remove(Key: not nullable T): Boolean;
     method RemoveAll;
-    property Item[aKey: not nullable T]: nullable U read write; default; // will return nil for unknown keys
+    property Item[aKey: nullable T]: nullable U read write; default; // will return nil for unknown keys
   end;
 
   Dictionary<T, U> = public class(ImmutableDictionary<T, U>) mapped to PlatformDictionary<T,U>
@@ -77,7 +77,7 @@ type
   {$ENDIF}
   private
     method SetItem(Key: not nullable T; Value: nullable U); inline;
-    method GetItem(aKey: not nullable T): nullable U; inline; // duped for performance optimization/inlining
+    method GetItem(aKey: nullable T): nullable U; inline; // duped for performance optimization/inlining
 
   public
     constructor; mapped to constructor();
@@ -88,7 +88,7 @@ type
     method &Remove(Key: not nullable T): Boolean;
     method RemoveAll;
 
-    property Item[aKey: not nullable T]: nullable U read GetItem write SetItem; default;  // will return nil for unknown keys
+    property Item[aKey: nullable T]: nullable U read GetItem write SetItem; default;  // will return nil for unknown keys
   end;
 
   ObjectDictionary = public Dictionary<String,Object>;
@@ -143,8 +143,10 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableDictionary<T, U>.ContainsKey(Key: not nullable T): Boolean;
+method ImmutableDictionary<T, U>.ContainsKey(Key: nullable T): Boolean;
 begin
+  if not assigned(Key) then
+    exit;
   {$IF NOT TOFFEE}
   exit mapped.ContainsKey(Key);
   {$ELSE}
@@ -152,8 +154,10 @@ begin
   {$ENDIF}
 end;
 
-method ImmutableDictionary<T, U>.ContainsValue(Value: not nullable U): Boolean;
+method ImmutableDictionary<T, U>.ContainsValue(Value: nullable U): Boolean;
 begin
+  if not assigned(Value) then
+    exit;
   {$IF NOT TOFFEE}
   exit mapped.ContainsValue(Value);
   {$ELSE}
@@ -166,8 +170,10 @@ begin
   DictionaryHelpers.Foreach(self, Action);
 end;
 
-method ImmutableDictionary<T, U>.GetItem(aKey: not nullable T): nullable U;
+method ImmutableDictionary<T, U>.GetItem(aKey: nullable T): nullable U;
 begin
+  if not assigned(aKey) then
+    exit;
   {$IF COOPER}
   result := mapped[aKey];
   {$ELSEIF TOFFEE}
@@ -181,8 +187,10 @@ begin
   {$ENDIF}
 end;
 
-method Dictionary<T, U>.GetItem(aKey: not nullable T): nullable U;
+method Dictionary<T, U>.GetItem(aKey: nullable T): nullable U;
 begin
+  if not assigned(aKey) then
+    exit;
   {$IF COOPER}
   result := mapped[aKey];
   {$ELSEIF TOFFEE}
