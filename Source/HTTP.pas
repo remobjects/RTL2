@@ -60,28 +60,7 @@ type
     constructor(aKey: not nullable String);
   end;
 
-  IHttpRequestContent = assembly interface
-    method GetContentAsBinary(): ImmutableBinary;
-    method GetContentAsArray(): array of Byte;
-  end;
 
-  HttpRequestContent = public class
-  public
-    operator Implicit(aBinary: not nullable ImmutableBinary): HttpRequestContent;
-    operator Implicit(aString: not nullable String): HttpRequestContent;
-  end;
-
-  HttpBinaryRequestContent = public class(HttpRequestContent, IHttpRequestContent)
-  unit
-    property Binary: ImmutableBinary unit read private write;
-    property &Array: array of Byte unit read private write;
-    method GetContentAsBinary: ImmutableBinary;
-    method GetContentAsArray(): array of Byte;
-  public
-    constructor(aBinary: not nullable ImmutableBinary);
-    constructor(aArray: not nullable array of Byte);
-    constructor(aString: not nullable String; aEncoding: Encoding);
-  end;
 
   HttpResponse = public class({$IF ECHOES OR ISLAND}IDisposable{$ENDIF})
   unit
@@ -265,55 +244,6 @@ end;
 method HttpBearerAuthentication.ApplyToRequest(aRequest: HttpRequest);
 begin
   aRequest.Headers["Authorization"] := "Bearer "+Key;
-end;
-
-{ HttpRequestContent }
-
-operator HttpRequestContent.Implicit(aBinary: not nullable ImmutableBinary): HttpRequestContent;
-begin
-  result := new HttpBinaryRequestContent(aBinary);
-end;
-
-operator HttpRequestContent.Implicit(aString: not nullable String): HttpRequestContent;
-begin
-  result := new HttpBinaryRequestContent(aString, Encoding.UTF8);
-end;
-
-{ HttpBinaryRequestContent }
-
-constructor HttpBinaryRequestContent(aBinary: not nullable ImmutableBinary);
-begin
-  Binary := aBinary;
-end;
-
-constructor HttpBinaryRequestContent(aArray: not nullable array of Byte);
-begin
-  &Array := aArray;
-end;
-
-constructor HttpBinaryRequestContent(aString: not nullable String; aEncoding: Encoding);
-begin
-  if aEncoding = nil then aEncoding := Encoding.Default;
-  &Array := aString.ToByteArray(aEncoding);
-end;
-
-method HttpBinaryRequestContent.GetContentAsBinary(): ImmutableBinary;
-begin
-  if assigned(Binary) then begin
-    result := Binary;
-  end
-  else if assigned(&Array) then begin
-    Binary := new ImmutableBinary(&Array);
-    result := Binary;
-  end;
-end;
-
-method HttpBinaryRequestContent.GetContentAsArray: array of Byte;
-begin
-  if assigned(&Array) then
-    result := &Array
-  else if assigned(Binary) then
-    result := Binary.ToArray();
 end;
 
 { HttpResponse }

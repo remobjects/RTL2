@@ -204,5 +204,8 @@
     <Folder Include="Threading">
       <Virtual>True</Virtual>
     </Folder>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpRequestContent.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
   </ItemGroup>
 </Project>
