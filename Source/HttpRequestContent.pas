@@ -4,6 +4,7 @@ type
   IHttpRequestContent = assembly interface
     method GetContentAsBinary: ImmutableBinary;
     method GetContentAsArray: array of Byte;
+    property ContentType: nullable String read;
   end;
 
   HttpRequestContent = public class
@@ -24,17 +25,19 @@ type
   HttpBinaryRequestContent = public class(HttpRequestContent, IHttpRequestContent)
   public
 
-    constructor(aBinary: not nullable ImmutableBinary);
+    property ContentType: nullable String read private write;
+
+    constructor(aBinary: not nullable ImmutableBinary; aContentType: nullable String := nil);
     begin
       Binary := aBinary;
     end;
 
-    constructor(aArray: not nullable array of Byte);
+    constructor(aArray: not nullable array of Byte; aContentType: nullable String := nil);
     begin
       &Array := aArray;
     end;
 
-    constructor(aString: not nullable String; aEncoding: Encoding);
+    constructor(aString: not nullable String; aEncoding: Encoding; aContentType: nullable String := nil);
     begin
       if aEncoding = nil then aEncoding := Encoding.Default;
       &Array := aString.ToByteArray(aEncoding);

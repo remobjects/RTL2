@@ -4,6 +4,8 @@ type
   HttpFormRequestContent = public class(HttpRequestContent, IHttpRequestContent)
   public
 
+    property ContentType: nullable String read "text/form";
+
     constructor(aValues: not nullable StringDictionary);
     begin
       var sb := new StringBuilder;
@@ -32,6 +34,5 @@ type
     end;
 
   end;
-
 
 end.

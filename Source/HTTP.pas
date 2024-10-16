@@ -8,13 +8,11 @@ interface
 
 type
   HttpRequest = public class
-  unit
-    method ApplyAuthehtication;
   public
     property Mode: HttpRequestMode := HttpRequestMode.Get;
     property Headers: not nullable Dictionary<String,String> := new Dictionary<String,String>; readonly;
     property Content: nullable HttpRequestContent;
-    property ContentType: nullable String;
+    property ContentType: nullable String read coalesce(fContentType, IHttpRequestContent(Content):ContentType) write fContentType;
     property Url: not nullable Url;
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
@@ -33,6 +31,12 @@ type
 
     [ToString]
     method ToString: String;
+
+  unit
+    method ApplyAuthehtication;
+
+  private
+    var fContentType: String;
   end;
 
   VerifyUntrustedCertificateBlock nested in httpRequest = public block(aCertificateInfo: HttpCertificateInfo): Boolean;

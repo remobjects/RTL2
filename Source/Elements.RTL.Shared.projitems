@@ -207,5 +207,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpRequestContent.pas">
       <VirtualFolder>Http</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpJsonRequestContent.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
   </ItemGroup>
 </Project>
