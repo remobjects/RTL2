@@ -94,6 +94,9 @@ type
     property Success: Boolean read (Exception = nil) and (Code < 300);
     property Exception: nullable Exception public read unit write;
 
+    property ContentType: nullable String read Headers["Content-Type"];
+    property ContentEncoding: nullable String read Headers["Content-Encoding"];
+
     method GetContentAsString(aEncoding: Encoding := nil; contentCallback: not nullable HttpContentResponseBlock<String>);
     method GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
     {$IF XML}method GetContentAsXml(contentCallback: not nullable HttpContentResponseBlock<XmlDocument>);{$ENDIF}
