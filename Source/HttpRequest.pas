@@ -6,7 +6,9 @@ type
   HttpRequest = public class
   public
 
-    property Mode: HttpRequestMethod := HttpRequestMethod.Get;
+    [Obsolete("Use Method")]
+    property Mode: HttpRequestMethod read &Method write &Method;
+    property &Method: HttpRequestMethod := HttpRequestMethod.Get;
     property Headers: not nullable Dictionary<String,String> := new Dictionary<String,String>; readonly;
     property Content: nullable HttpRequestContent;
     property ContentType: nullable String read coalesce(fContentType, IHttpRequestContent(Content):ContentType) write fContentType;
@@ -20,8 +22,8 @@ type
 
     property Timeout: Double := 10.0; // Seconds
 
-    constructor(aUrlString: not nullable String; aMode: HttpRequestMethod := HttpRequestMethod.Get);
-    constructor(aUrl: not nullable Url; aMode: HttpRequestMethod := HttpRequestMethod.Get);
+    constructor(aUrlString: not nullable String; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
+    constructor(aUrl: not nullable Url; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
     operator Implicit(aUrl: not nullable Url): HttpRequest;
 
     property VerifyUntrustedCertificate: HttpVerifyUntrustedCertificateBlock;
@@ -49,16 +51,16 @@ implementation
 
 { HttpRequest }
 
-constructor HttpRequest(aUrlString: not nullable String; aMode: HttpRequestMethod := HttpRequestMethod.Get);
+constructor HttpRequest(aUrlString: not nullable String; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
 begin
   Url := Url.UrlWithString(aUrlString);
-  Mode := aMode;
+  &Method := aMethod;
 end;
 
-constructor HttpRequest(aUrl: not nullable Url; aMode: HttpRequestMethod := HttpRequestMethod.Get);
+constructor HttpRequest(aUrl: not nullable Url; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
 begin
   Url := aUrl;
-  Mode := aMode;
+  &Method := aMethod;
 end;
 
 operator HttpRequest.Implicit(aUrl: not nullable Url): HttpRequest;

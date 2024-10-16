@@ -14,7 +14,6 @@ type
     {$ELSEIF ISLAND AND WINDOWS}
     property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
     {$ENDIF}
-    method StringForRequestType(aMode: HttpRequestMethod): String;
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
@@ -49,20 +48,6 @@ uses
 
 { Http }
 
-method Http.StringForRequestType(aMode: HttpRequestMethod): String;
-begin
-  case aMode of
-    HttpRequestMethod.Get: result := 'GET';
-    HttpRequestMethod.Post: result := 'POST';
-    HttpRequestMethod.Head: result := 'HEAD';
-    HttpRequestMethod.Put: result := 'PUT';
-    HttpRequestMethod.Delete: result := 'DELETE';
-    HttpRequestMethod.Patch: result := 'PATCH';
-    HttpRequestMethod.Options: result := 'OPTIONS';
-    HttpRequestMethod.Trace: result := 'TRACE';
-  end;
-end;
-
 method Http.ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
 begin
   aRequest.ApplyAuthehtication;
@@ -71,9 +56,9 @@ begin
   async try
     var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
-    if aRequest.Mode = HttpRequestMethod.Post then
+    if aRequest.Method = HttpRequestMethod.Post then
       lConnection.DoOutput := true;
-    lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
+    lConnection.RequestMethod := aRequest.Method.ToHttpString;
     lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
     for each k in aRequest.Headers.Keys do
       lConnection.setRequestProperty(k, aRequest.Headers[k]);
@@ -110,7 +95,7 @@ begin
       webRequest.UserAgent := aRequest.UserAgent;
     if assigned(aRequest.ContentType) then
       webRequest.ContentType := aRequest.ContentType;
-    webRequest.Method := StringForRequestType(aRequest.Mode);
+    webRequest.Method := aRequest.Method.ToHttpString;
     webRequest.Timeout := Integer(aRequest.Timeout*1000);
     if assigned(aRequest.Accept) then
       webRequest.Accept := aRequest.Accept;
@@ -167,7 +152,7 @@ begin
 
     //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     nsUrlRequest.allowsCellularAccess := aRequest.AllowCellularAccess;
-    nsUrlRequest.HTTPMethod := StringForRequestType(aRequest.Mode);
+    nsUrlRequest.HTTPMethod := aRequest.Method.ToHttpString;
     nsUrlRequest.timeoutInterval := aRequest.Timeout;
 
     if assigned(aRequest.Content) then begin
@@ -212,7 +197,7 @@ begin
   {$ELSEIF WEBASSEMBLY}
   var lRequestHandle := GCHandle.Allocate(RemObjects.Elements.WebAssembly.Browser.NewXMLHttpRequest());
   var lRequest := RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest(lRequestHandle.Target);
-  lRequest.open(aRequest.Mode.ToHttpString, aRequest.Url.ToAbsoluteString, true);
+  lRequest.open(aRequest.Method.ToHttpString, aRequest.Url.ToAbsoluteString, true);
   for each k in aRequest.Headers.Keys do
     lRequest.setRequestHeader(k, aRequest.Headers[k]);
   if assigned(aRequest.Accept) then
@@ -278,9 +263,9 @@ begin
   {$IF COOPER}
   var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
 
-  if aRequest.Mode = HttpRequestMethod.Post then
+  if aRequest.Method = HttpRequestMethod.Post then
     lConnection.DoOutput := true;
-  lConnection.RequestMethod := StringForRequestType(aRequest.Mode);
+  lConnection.RequestMethod := aRequest.Method.ToHttpString;
   lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
   for each k in aRequest.Headers.Keys do
     lConnection.setRequestProperty(k, aRequest.Headers[k]);
@@ -311,7 +296,7 @@ begin
       webRequest.UserAgent := aRequest.UserAgent;
     if assigned(aRequest.ContentType) then
       webRequest.ContentType := aRequest.ContentType;
-    webRequest.Method := StringForRequestType(aRequest.Mode);
+    webRequest.Method := aRequest.Method.ToHttpString;
     webRequest.Timeout := Integer(aRequest.Timeout*1000);
     if assigned(aRequest.Accept) then
       webRequest.Accept := aRequest.Accept;
@@ -367,7 +352,7 @@ begin
   if lConnect = nil then
     raise new RTLException('Unable to connect to ' + aRequest.Url.Host);
 
-  var lMethod := RemObjects.Elements.System.String(StringForRequestType(aRequest.Mode));
+  var lMethod := RemObjects.Elements.System.String(aRequest.Method.ToHttpString);
   var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString);
   var lRequest := rtl.WinHttpOpenRequest(lConnect, LMethod.FirstChar, lPath.FirstChar, nil, nil, nil, lFlags);
   if lRequest = nil then
@@ -479,14 +464,14 @@ begin
     lTotalLength := lData.Length;
   end;
 
-  case aRequest.Mode of
+  case aRequest.Method of
     HttpRequestMethod.Get, HttpRequestMethod.Put, HttpRequestMethod.Delete, HttpRequestMethod.Patch,
     HttpRequestMethod.Options, HttpRequestMethod.Trace:
       CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_HTTPGET, 1);
 
     HttpRequestMethod.Head: begin
       CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOBODY, 1);
-      var lMethod := Encoding.UTF8.GetBytes(StringForRequestType(aRequest.Mode));
+      var lMethod := Encoding.UTF8.GetBytes(aRequest.Method.ToHttpString);
       CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_CUSTOMREQUEST, @lMethod[0]);
     end;
 
@@ -526,7 +511,7 @@ begin
 
   //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
   nsUrlRequest.allowsCellularAccess := aRequest.AllowCellularAccess;
-  nsUrlRequest.HTTPMethod := StringForRequestType(aRequest.Mode);
+  nsUrlRequest.HTTPMethod := aRequest.Method.ToHttpString;
   nsUrlRequest.timeoutInterval := aRequest.Timeout;
 
   if assigned(aRequest.Content) then begin
