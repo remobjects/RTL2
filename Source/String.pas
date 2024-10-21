@@ -426,7 +426,8 @@ type
     begin
       for i: Integer := aStartIndex to Length-1 do
         if not AnyOf.ContainsChar(Chars[i]) then
-          exit true;
+          exit false;
+      exit true;
     end;
 
     //
