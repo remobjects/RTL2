@@ -6,9 +6,13 @@ type
 
     property ContentType: nullable String; readonly;
     property Json: not nullable JsonDocument; readonly;
+    property Encoding: Encoding; readonly;
 
-    constructor(aJson: not nullable JsonDocument; aContentType: nullable String := nil);
+    constructor(aJson: not nullable JsonDocument; aEncoding: Encoding := nil; aContentType: nullable String := nil);
     begin
+      //var ContentType: integer;
+      //ContentType
+      Encoding := coalesce(aEncoding, Encoding.UTF8);
       ContentType := coalesce(aContentType, "application/json");
       Json := aJson;
     end;
@@ -22,7 +26,7 @@ type
 
     method GetContentAsArray(): array of Byte;
     begin
-      result := Encoding.UTF8.GetBytes(Json.ToJsonString(JsonFormat.Minimal));
+      result := Encoding.GetBytes(Json.ToJsonString(JsonFormat.Minimal));
     end;
 
   end;
