@@ -36,6 +36,7 @@ type
     property PlatformGuid: PlatformGuid read self as PlatformGuid;
     {$ENDIF}
 
+    operator Explicit(aGuidString: nullable String): Guid;
     {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
     operator Implicit(aGuid: nullable PlatformGuid): Guid;
     operator Implicit(aGuid: Guid): PlatformGuid;
@@ -320,6 +321,11 @@ begin
   Value[Index2] := Temp;
 end;
 {$ENDIF}
+
+operator Guid.Explicit(aGuidString: nullable String): Guid;
+begin
+  result := new Guid(aGuidString);
+end;
 
 {$IF ECHOES OR (ISLAND AND NOT TOFFEE)}
 operator Guid.Implicit(aGuid: nullable PlatformGuid): Guid;
