@@ -39,7 +39,7 @@ type
       result := new JsonDeserializer(new String(aBinary.ToArray, aEncoding)).Deserialize;
     end;
 
-    class method FromBinary(aBinary: not nullable array of Byte; aEncoding: Encoding := nil): not nullable JsonDocument;
+    class method FromBytes(aBinary: not nullable array of Byte; aEncoding: Encoding := nil): not nullable JsonDocument;
     begin
       if aEncoding = nil then aEncoding := Encoding.Default;
       result := new JsonDeserializer(new String(aBinary, aEncoding)).Deserialize;
@@ -114,7 +114,7 @@ type
       end;
     end;
 
-    class method TryFromBinary(aBinary: nullable array of Byte; aEncoding: Encoding := nil): nullable JsonDocument;
+    class method TryFromBytes(aBinary: nullable array of Byte; aEncoding: Encoding := nil): nullable JsonDocument;
     begin
       if not assigned(aBinary) then
         exit;
@@ -126,7 +126,7 @@ type
       end;
     end;
 
-    class method TryFromBinary(aBinary: nullable array of Byte; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
+    class method TryFromBytes(aBinary: nullable array of Byte; aEncoding: Encoding := nil; out aException: Exception): nullable JsonDocument;
     begin
       if not assigned(aBinary) then
         exit;
@@ -237,6 +237,16 @@ type
     end;
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; abstract;
+
+    method ToJsonBytes(aFormat: JsonFormat := JsonFormat.Minimal; aEncoding: Encoding := Encoding.UTF8; aIncludeBOM: Boolean := false): not nullable array of Byte;
+    begin
+      result := aEncoding.GetBytes(ToJsonString(aFormat)) includeBOM(aIncludeBOM);
+    end;
+
+    method ToJsonBinary(aFormat: JsonFormat := JsonFormat.Minimal; aEncoding: Encoding := Encoding.UTF8; aIncludeBOM: Boolean := false): not nullable ImmutableBinary;
+    begin
+      result := new ImmutableBinary(aEncoding.GetBytes(ToJsonString(aFormat)) includeBOM(aIncludeBOM));
+    end;
 
     {$IF NOT WEBASSEMBLY}
     method SaveToFile(aFileName: not nullable File);
