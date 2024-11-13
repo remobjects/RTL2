@@ -397,6 +397,8 @@ type
       result := not (lhs = rhs);
     end;
 
+    method Any(aName: not nullable String): sequence of JsonNode; empty; virtual; iterator;
+
   private
 
     method CantGetItem(aKey: String): nullable JsonNode;

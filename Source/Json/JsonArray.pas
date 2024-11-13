@@ -255,6 +255,12 @@ type
       //result := not (lhs = rhs);
     //end;
 
+    method Any(aName: not nullable String): sequence of JsonNode; override; iterator;
+    begin
+      for each j in self do
+        yield j.Any(aName);
+    end;
+
   private
 
     fItems: not nullable List<JsonNode>;

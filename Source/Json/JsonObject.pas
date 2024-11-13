@@ -113,6 +113,14 @@ type
       result := true;
     end;
 
+    method Any(aName: not nullable String): sequence of JsonNode; override; iterator;
+    begin
+      with matching j := self[aName] do
+        yield j;
+      for each j in fItems.Values do
+        yield j.Any(aName);
+    end;
+
   private
 
     fItems: Dictionary<String, JsonNode>;
