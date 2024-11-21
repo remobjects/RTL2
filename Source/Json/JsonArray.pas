@@ -261,6 +261,20 @@ type
         yield j.Any(aName);
     end;
 
+    method Replace(aOldValue: JsonNode; aNewValue: JsonNode);
+    begin
+      for i := 0 to fItems.Count-1 do
+        if fItems[i] = aOldValue then
+          fItems[i] := aNewValue;
+    end;
+
+    method Replace(aOldValue: String; aNewValue: String);
+    begin
+      for i := 0 to fItems.Count-1 do
+        if fItems[i] = aOldValue then
+          fItems[i] := new JsonStringValue(aNewValue);
+    end;
+
   private
 
     fItems: not nullable List<JsonNode>;
