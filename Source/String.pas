@@ -987,6 +987,33 @@ type
       result := if aCount = 1 then self else aPluralVersion as not nullable;
     end;
 
+    method Unique(aValidator: not nullable block(aValue: String): Boolean; aStartIndex: Integer := 2; aPattern: not nullable String := " {0}"): String;
+    begin
+      if not aPattern.Contains("{0}") then
+        raise new Exception("Invalid pattern for String.Unique, must contain '{0}' placeholder.");
+      result := Unique(aValidator, aStartIndex, i -> self+aPattern.Replace("{0}", i.ToString));
+    end;
+
+    method Unique(aValidator: not nullable block(aValue: String): Boolean; aStartIndex: Integer := 2; aApplyPattern: block(aIndex: Integer): String): String;
+    begin
+      result := self;
+      var lIndex := aStartIndex;
+      while not aValidator(result) do begin
+        var lOld := result;
+        result := aApplyPattern(lIndex);
+        if result = lOld then
+          raise new Exception("Invalid pattern function, unique value did not change, breaking to prevent infinite loop.");
+        inc(lIndex);
+      end;
+    end;
+
+    method UniqueFilePath(aStartIndex: Integer := 2; aPattern: String := " {0}"): String;
+    begin
+      if not aPattern.Contains("{0}") then
+        raise new Exception("Invalid pattern for String.Unique, must contain '{0}' placeholder.");
+      result := Unique( f -> not f.FileExists, aStartIndex, i -> self.PathWithoutExtension+aPattern.Replace("{0}", i.ToString)+self.PathExtension);
+    end;
+
     class method SmartJoin(aStringA: nullable String; aStringB: nullable String) WithSeparator(aSeparator: not nullable String): nullable String;
     begin
       if not assigned(aStringA) and not assigned(aStringB) then
