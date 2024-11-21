@@ -1007,12 +1007,14 @@ type
       end;
     end;
 
+    {$IF NOT WEBASSEMBLY}
     method UniqueFilePath(aStartIndex: Integer := 2; aPattern: String := " {0}"): String;
     begin
       if not aPattern.Contains("{0}") then
         raise new Exception("Invalid pattern for String.Unique, must contain '{0}' placeholder.");
       result := Unique( f -> not f.FileExists, aStartIndex, i -> self.PathWithoutExtension+aPattern.Replace("{0}", i.ToString)+self.PathExtension);
     end;
+    {$ENDIF}
 
     class method SmartJoin(aStringA: nullable String; aStringB: nullable String) WithSeparator(aSeparator: not nullable String): nullable String;
     begin
