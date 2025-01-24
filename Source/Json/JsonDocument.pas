@@ -302,6 +302,12 @@ type
     end;
     {$ENDIF}
 
+    operator Implicit(aValue: nullable String): JsonNode;
+    begin
+      if assigned(aValue) then
+        result := new JsonStringValue(aValue);
+    end;
+
     operator &Equal(lhs: JsonNode; rhs: JsonNode): Boolean;
     begin
       if Object(lhs) = Object(rhs) then
