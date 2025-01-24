@@ -12,7 +12,7 @@ type
   {$ENDIF}
 
   {$IF COOPER}
-  Math = public class mapped to PlatformMath
+  Math = public partial class mapped to PlatformMath
   public
     class method Abs(d: Double): Double; mapped to abs(d);
     class method Abs(i: Int64): Int64;
@@ -47,7 +47,7 @@ type
     class method Truncate(d: Double): Double;
   end;
   {$ELSEIF TOFFEE}
-  Math = public class
+  Math = public partial class
   public
     {$WARNING Not implemented for Island yet}
     class method Abs(value: Double): Double;
@@ -83,7 +83,7 @@ type
     class method Truncate(d: Double): Double;
   end;
   {$ELSEIF ECHOES OR ISLAND}
-  Math = public class mapped to PlatformMath
+  Math = public partial class mapped to PlatformMath
   public
     class method Abs(d: Double): Double; mapped to Abs(d);
     class method Abs(i: Int64): Int64; mapped to Abs(i);
@@ -137,6 +137,24 @@ type
         0,1,2,3,4: lInteger;
         5: if lEven then lInteger else lInteger+lDirection;
         6,7,8,9: lInteger+lDirection;
+      end;
+    end;
+
+    class property Fibonacci: sequence of UInt64 read GetFibonacci;
+
+    class method GetFibonacci: sequence of UInt64; iterator; private;
+    begin
+      var lLast: Int64 := 1;
+      var lCurrent: Int64 := 1;
+      yield 1;
+      yield 1;
+      loop begin
+        var lTemp := lLast;
+        lLast := lCurrent;
+        lCurrent := lTemp+lLast;
+        if lCurrent < lLast then
+          exit;
+        yield lCurrent;
       end;
     end;
 
