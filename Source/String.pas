@@ -466,7 +466,7 @@ type
     method IndexOf(Value: String; StartIndex: Integer): Integer; inline;
     begin
       if IsNullOrEmpty(Value) then
-        raise new ArgumentException("Input value cannot be nil or empty.");
+        exit -1;
 
       if Value.Length = 0 then
         exit 0;
