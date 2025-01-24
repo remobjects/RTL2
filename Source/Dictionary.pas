@@ -33,7 +33,7 @@ type
 
     method ForEach(Action: Action<KeyValuePair<T, U>>);
 
-    property Item[Key: nullable T]: nullable U read GetItem; default; inline; // will return nil for unknown or nil keys
+    property Item[Key: nullable T]: nullable U read GetItem; default; // will return nil for unknown or nil keys
     property Keys: not nullable ImmutableList<T> read GetKeys;
     property Values: not nullable sequence of U read GetValues;
     property Count: Integer read {$IF COOPER}mapped.size{$ELSE}mapped.Count{$ENDIF};
@@ -88,7 +88,7 @@ type
     method &Remove(Key: not nullable T): Boolean;
     method RemoveAll;
 
-    property Item[aKey: nullable T]: nullable U read GetItem write SetItem; default;  // will return nil for unknown keys
+    property Item[aKey: nullable T]: nullable U read GetItem write SetItem; default; // will return nil for unknown keys
   end;
 
   ObjectDictionary = public Dictionary<String,Object>;
