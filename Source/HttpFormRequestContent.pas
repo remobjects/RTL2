@@ -4,9 +4,9 @@ type
   HttpFormRequestContent = public class(HttpRequestContent, IHttpRequestContent)
   public
 
-    property ContentType: nullable String read "text/form";
+    property ContentType: nullable String read private write;
 
-    constructor(aValues: not nullable StringDictionary);
+    constructor(aValues: not nullable StringDictionary; aEncoding: Encoding := nil; aContentType: nullable String := nil);
     begin
       var sb := new StringBuilder;
       for each k in aValues.Keys index i do begin
@@ -16,7 +16,8 @@ type
         sb.Append("=");
         sb.Append(Url.AddPercentEncodingsToPath(aValues[k]));
       end;
-      fArray := Encoding.UTF8.GetBytes(sb.ToString);
+      fArray := coalesce(aEncoding, Encoding.UTF8).GetBytes(sb.ToString);
+      ContentType := coalesce(aContentType, "text/form");
     end;
 
   private
