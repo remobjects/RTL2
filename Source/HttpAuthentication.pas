@@ -1,56 +1,76 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-interface
-
 type
-  IHttpAuthentication = public interface
+  IHttpAuthorization = public interface
     method ApplyToRequest(aRequest: HttpRequest);
   end;
 
-  HttpBasicAuthentication = public class(IHttpAuthentication)
+  HttpBasicAuthorization = public class(IHttpAuthorization)
   private
+
     method ApplyToRequest(aRequest: HttpRequest);
+    begin
+      var lBytes := Encoding.UTF8.GetBytes(Username+":"+Password) includeBOM(false);
+      var lBase64 := Convert.ToBase64String(lBytes);
+      aRequest.Headers["Authorization"] := "Basic "+lBase64;
+    end;
+
   public
+
     property Username: String;
     property Password: String;
+
     constructor(aUsername, aPassword: not nullable String);
+    begin
+      Username := aUsername;
+      Password := aPassword;
+    end;
+
   end;
 
-  HttpBearerAuthentication = public class(IHttpAuthentication)
+  HttpBearerAuthorization = public class(IHttpAuthorization)
   private
+
     method ApplyToRequest(aRequest: HttpRequest);
+    begin
+      aRequest.Headers["Authorization"] := "Bearer "+Key;
+    end;
+
   public
+
     property Key: String;
+
     constructor(aKey: not nullable String);
+    begin
+      Key := aKey;
+    end;
+
   end;
 
-implementation
+  HttpHeaderAuthorization = public class(IHttpAuthorization)
+  private
 
-{ HttpBasicAuthentication }
+    method ApplyToRequest(aRequest: HttpRequest);
+    begin
+      aRequest.Headers[Name] := Key;
+    end;
 
-constructor HttpBasicAuthentication(aUsername, aPassword: not nullable String);
-begin
-  Username := aUsername;
-  Password := aPassword;
-end;
+  public
 
-method HttpBasicAuthentication.ApplyToRequest(aRequest: HttpRequest);
-begin
-  var lBytes := Encoding.UTF8.GetBytes(Username+":"+Password) includeBOM(false);
-  var lBase64 := Convert.ToBase64String(lBytes);
-  aRequest.Headers["Authorization"] := "Basic "+lBase64;
-end;
+    property Name: String;
+    property Key: String;
 
-{ HttpBearerAuthentication }
+    constructor(aName: String; aKey: not nullable String);
+    begin
+      Name := aName;
+      Key := aKey;
+    end;
 
-constructor HttpBearerAuthentication(aKey: not nullable String);
-begin
-  Key := aKey;
-end;
+    constructor(aKey: not nullable String);
+    begin
+      constructor("api-key", aKey);
+    end;
 
-method HttpBearerAuthentication.ApplyToRequest(aRequest: HttpRequest);
-begin
-  aRequest.Headers["Authorization"] := "Bearer "+Key;
-end;
+  end;
 
 end.
