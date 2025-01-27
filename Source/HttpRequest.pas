@@ -18,7 +18,7 @@ type
     property UserAgent: String;
     property Accept: String;
 
-    property Authentication: IHttpAuthentication;
+    property Authorization: IHttpAuthorization;
 
     property Timeout: Double := 10.0; // Seconds
 
@@ -75,7 +75,7 @@ end;
 
 method HttpRequest.ApplyAuthehtication;
 begin
-  Authentication:ApplyToRequest(self);
+  Authorization:ApplyToRequest(self);
 end;
 
 { HttpRequestMethod }
