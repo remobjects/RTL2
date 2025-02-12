@@ -454,7 +454,7 @@ begin
     {$IFDEF ISLAND}
     raise new NotImplementedException;
     {$ELSE}
-    result := Http.GetXml(new HttpRequest(aUrl));
+    result := Http.GetXml(new HttpRequest(aUrl, Accept := "application/xml"));
     {$ENDIF}
   except
     on E: Exception do begin

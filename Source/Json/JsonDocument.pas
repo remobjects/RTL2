@@ -21,15 +21,12 @@ type
 
     class method FromUrl(aUrl: not nullable Url): not nullable JsonDocument;
     begin
-      if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then begin
-        result := FromFile(File(aUrl.FilePath));
-      end
-      else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then begin
-        result := Http.GetJson(new HttpRequest(aUrl))
-      end
-      else begin
+      if {not defined("WEBASSEMBLY") and} aUrl.IsFileUrl and aUrl.FilePath.FileExists then
+        result := FromFile(File(aUrl.FilePath))
+      else if (aUrl.Scheme = "http") or (aUrl.Scheme = "https") then
+        result := Http.GetJson(new HttpRequest(aUrl, Accept := "application/json"))
+      else
         raise new XmlException(String.Format("Cannot load Json from URL '{0}'.", aUrl.ToAbsoluteString()));
-      end;
     end;
     {$ENDIF}
 
