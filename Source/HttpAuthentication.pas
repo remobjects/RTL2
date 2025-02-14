@@ -73,4 +73,28 @@ type
 
   end;
 
+  HttpQueryParameterAuthorization = public class(IHttpAuthorization)
+  private
+
+    method ApplyToRequest(aRequest: HttpRequest);
+    begin
+      if length(aRequest.Url.QueryString) > 0 then
+        aRequest.Url := Url.UrlWithString(aRequest.Url.ToAbsoluteString+$"&{name}={key}")
+      else
+        aRequest.Url := Url.UrlWithString(aRequest.Url.ToAbsoluteString+$"?{name}={key}");
+    end;
+
+  public
+
+    property Name: String;
+    property Key: String;
+
+    constructor(aName: String; aKey: not nullable String);
+    begin
+      Name := aName;
+      Key := aKey;
+    end;
+
+  end;
+
 end.
