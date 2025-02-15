@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF NOT JAVA17_0 AND NOT JAVA20_0 AND NOT JAVA22_0}
+{$IF NOT JAVA17UP}
 
 uses
   {$IF ECHOES}
