@@ -15,13 +15,12 @@
     <CrossPlatform>True</CrossPlatform>
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
-    <KnownConditionalDefines>DEBUG;NETCORE;TRACE</KnownConditionalDefines>
+    <KnownConditionalDefines>DEBUG;NETCORE;NETSTANDARD;SERIALIZATION;TRACE</KnownConditionalDefines>
     <TargetFramework>.NETCore6.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
     <OutputPath>.\bin\Debug\NETCore</OutputPath>
-    <DefineConstants>DEBUG;NETSTANDARD;TRACE</DefineConstants>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
     <EnableAsserts>True</EnableAsserts>
@@ -35,6 +34,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <ConditionalDefines>DEBUG;NETSTANDARD;SERIALIZATION;TRACE</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
@@ -52,7 +52,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-    <DefineConstants>NETSTANDARD</DefineConstants>
+    <ConditionalDefines>NETSTANDARD;SERIALIZATION</ConditionalDefines>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Echoes">

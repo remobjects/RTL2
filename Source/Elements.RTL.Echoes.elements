@@ -16,11 +16,11 @@
     <CrossPlatform>True</CrossPlatform>
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <KnownConditionalDefines>DEBUG;SERIALIZATION;TRACE</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
     <OutputPath>.\bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;</DefineConstants>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
     <EnableAsserts>True</EnableAsserts>
@@ -34,6 +34,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <ConditionalDefines>DEBUG;SERIALIZATION;TRACE</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
@@ -51,6 +52,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <ConditionalDefines>SERIALIZATION</ConditionalDefines>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

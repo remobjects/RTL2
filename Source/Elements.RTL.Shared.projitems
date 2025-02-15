@@ -219,5 +219,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpAuthentication.pas">
       <VirtualFolder>Http</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Codable.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Coder.Decode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Coder.Encode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Coder.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JsonCoder.Decode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JsonCoder.Encode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JsonCoder.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.Decode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.Encode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.pas" />
   </ItemGroup>
 </Project>
