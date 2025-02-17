@@ -173,7 +173,7 @@ begin
   if fData[lPosition] = '-' then
     inc(lPosition);
 
-  while ((fData[lPosition] >= '0') and (fData[lPosition] <= '9')) or (fData[lPosition] = '.') do begin
+  while (((fData[lPosition] >= '0') and (fData[lPosition] <= '9')) or (fData[lPosition] = '.')) and (lPosition < length(fData)-1) do begin
     inc(lPosition);
 
     if (fData[lPosition] = '.') and (not hs) and ((fData[lPosition + 1] >= '0') and (fData[lPosition + 1] <= '9')) then begin

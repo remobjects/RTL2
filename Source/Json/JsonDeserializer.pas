@@ -16,7 +16,7 @@ type
       case Tokenizer.Token of
         JsonTokenKind.ObjectStart: exit ReadObject();
         JsonTokenKind.ArrayStart: exit ReadArray();
-        else raise new JsonUnexpectedTokenException('Unexpected token at '+Tokenizer.Row+'/'+Tokenizer.Column+'. Data is "'+Tokenizer.Json+'"');
+        else raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}. Data is '{Tokenizer.Json}'");
       end;
     end;
 
@@ -31,7 +31,7 @@ type
           exit;
 
       //raise new SugarUnexpectedTokenException('Unexpected token '+Int32(Tokenizer.Token)+' at '+Tokenizer.Row+'/'+Tokenizer.Column+'. Data is "'+Tokenizer.Json+'"');
-      raise new JsonUnexpectedTokenException('Unexpected token at '+Tokenizer.Row+'/'+Tokenizer.Column+'. Data is "'+Tokenizer.Json+'"');
+      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}. Data is '{Tokenizer.Json}'");
     end;
 
 
