@@ -11,13 +11,13 @@ type
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     begin
-      result := Value.ToString as not nullable  ;
+      result := Value.ToString as not nullable;
     end;
 
     [ToString]
     method ToString: String;
     begin
-      result := Value.ToString;
+      result := ToJsonString;
     end;
 
     [&Equals]
@@ -316,6 +316,9 @@ type
       result := lhs = rhs:Value;
     end;
 
+    class property &True: not nullable JsonBooleanValue := new JsonBooleanValue(true); lazy;
+    class property &False: not nullable JsonBooleanValue := new JsonBooleanValue(false); lazy;
+
   end;
 
   //
@@ -332,7 +335,7 @@ type
       result := JsonConsts.NULL_VALUE;
     end;
 
-    class property Null: JsonNullValue := new JsonNullValue; lazy;
+    class property Null: not nullable JsonNullValue := new JsonNullValue; lazy;
 
   private
 
