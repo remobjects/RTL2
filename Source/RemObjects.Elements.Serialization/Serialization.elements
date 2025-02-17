@@ -35,6 +35,7 @@
     </Reference>
     <Reference Include="RemObjects.Elements.Cirrus">
       <HintPath>..\..\..\Elements\Bin\RemObjects.Elements.Cirrus.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
