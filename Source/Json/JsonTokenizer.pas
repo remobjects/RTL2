@@ -125,6 +125,10 @@ begin
     fPos := fPos + fLength;
     fLastRow := fRow;
     fLastRowStart := fRowStart;
+
+    if fPos ≥ length(fData) then
+      exit false;
+
     Parse;
 
     if (Token = JsonTokenKind.EOF) or (Token = JsonTokenKind.SyntaxError) then
