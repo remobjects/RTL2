@@ -49,16 +49,16 @@ type
         DateTime: EncodeDateTime(aName, aValue as DateTime);
         String: EncodeString(aName, aValue as String);
         //{$IF TOFFEE}
-        //NSNumber: EncodeNumber(aName, aValue as Int8);
+        //NSNumber: EncodeNumber(aName, aValue as SByte);
         //{$ELSE}
-        Int8: EncodeInt8(aName, aValue as Int8);
+        SByte: EncodeInt8(aName, aValue as SByte);
         Int16: EncodeInt16(aName, aValue as Int16);
         Int32: EncodeInt32(aName, aValue as Int32);
         Int64: EncodeInt64(aName, aValue as Int64);
         {$IF NOT COOPER}
         IntPtr: EncodeIntPtr(aName, aValue as IntPtr);
         {$ENDIF}
-        UInt8: EncodeUInt8(aName, aValue as UInt8);
+        Byte: EncodeUInt8(aName, aValue as Byte);
         UInt16: EncodeUInt16(aName, aValue as UInt16);
         UInt32: EncodeUInt32(aName, aValue as UInt32);
         UInt64: EncodeUInt64(aName, aValue as UInt64);
@@ -194,7 +194,7 @@ type
     end;
     {$ENDIF}
 
-    method EncodeInt8(aName: String; aValue: nullable Int8); virtual;
+    method EncodeInt8(aName: String; aValue: nullable SByte); virtual;
     begin
       EncodeInt64(aName, aValue);
     end;
@@ -209,7 +209,7 @@ type
       EncodeInt64(aName, aValue);
     end;
 
-    method EncodeUInt8(aName: String; aValue: nullable UInt8); virtual;
+    method EncodeUInt8(aName: String; aValue: nullable Byte); virtual;
     begin
       EncodeUInt64(aName, aValue);
     end;

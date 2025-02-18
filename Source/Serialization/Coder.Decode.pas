@@ -129,7 +129,7 @@ type
       result := Guid.TryParse(DecodeString(aName));
     end;
 
-    method DecodeInt8(aName: String): nullable Int8; virtual;
+    method DecodeInt8(aName: String): nullable SByte; virtual;
     begin
       result := DecodeInt64(aName);
     end;
@@ -144,7 +144,7 @@ type
       result := DecodeInt64(aName);
     end;
 
-    method DecodeUInt8(aName: String): nullable UInt8; virtual;
+    method DecodeUInt8(aName: String): nullable Byte; virtual;
     begin
       result := DecodeUInt64(aName);
     end;
@@ -195,14 +195,14 @@ type
       case aType of
         DateTime: result := DecodeDateTime(nil);
         String: result := DecodeString(nil);
-        Int8: result := DecodeInt8(nil);
+        SByte: result := DecodeInt8(nil);
         Int16: result := DecodeInt16(nil);
         Int32: result := DecodeInt32(nil);
         Int64: result := DecodeInt64(nil);
         {$IF NOT COOPER}
         IntPtr: result := DecodeInt64(nil) as IntPtr;
         {$ENDIF}
-        UInt8: result := DecodeUInt8(nil);
+        Byte: result := DecodeUInt8(nil);
         UInt16: result := DecodeUInt16(nil);
         UInt32: result := DecodeUInt32(nil);
         UInt64: result := DecodeUInt64(nil);
