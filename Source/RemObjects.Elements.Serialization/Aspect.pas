@@ -109,7 +109,7 @@ type
       if assigned(lExisting) then
         exit false;
 
-      var lEncode := fType.AddMethod("Encode", fServices.GetType("System.Void"), false);
+      var lEncode := fType.AddMethod("Encode", VoidType, false);
       lEncode.AddParameter("aCoder", ParameterModifier.In, fServices.GetType("RemObjects.Elements.Serialization.Coder"));
 
       if IsEncodable(fType.ParentType) then
@@ -128,7 +128,7 @@ type
       if assigned(lExisting) then
         exit false;
 
-      var lDecode := fType.AddMethod("Decode", fServices.GetType("System.Void"), false);
+      var lDecode := fType.AddMethod("Decode", VoidType, false);
       lDecode.AddParameter("aCoder", ParameterModifier.In, fServices.GetType("RemObjects.Elements.Serialization.Coder"));
 
       if IsDecodable(fType.ParentType) then
@@ -149,7 +149,9 @@ type
       if not assigned(lEncode) then
         raise new Exception("Encode method not found");
 
-      //var lEncode := fType.AddMethod("Encode", fServices.GetType("System.Void"), false);
+      writeLn($"got lEncode {fType.Name}.{lEncode}, it's {lEncode.Virtual}.");
+
+      //var lEncode := fType.AddMethod("Encode", VoidType, false);
       //lEncode.AddParameter("aCoder", ParameterModifier.In, fServices.GetType("RemObjects.Elements.Serialization.Coder"));
 
       var lBody := new BeginStatement;
@@ -246,7 +248,7 @@ type
       if not assigned(lDecode) then
         raise new Exception("Decode method not found");
 
-      //var lDecode := fType.AddMethod("Decode", fServices.GetType("System.Void"), false);
+      //var lDecode := fType.AddMethod("Decode", VoidType, false);
       //lDecode.AddParameter("aCoder", ParameterModifier.In, fServices.GetType("RemObjects.Elements.Serialization.Coder"));
 
       var lBody := new BeginStatement;
@@ -388,7 +390,11 @@ type
 
       var lCoderFunction: String;
       var lCoderType: IType;
-      case aType.Fullname of
+      var lName := aType.Fullname;
+      if lName.StartsWith("RemObjects.Elements.System.") then
+        lName := lName.Substring(20); // Let Island system types fall back to the names of .NET System types
+
+      case lName of
         "RemObjects.Elements.RTL.PlatformString", // why does nullable Stirng NOW have "RemObjects.Elements.RTL.PlatformString", but regular has System?
         "RemObjects.Elements.RTL.String", // why does nullable Stirng have "RemObjects.Elements.RTL.String", bnut regular has System?
         "System.String": lCoderFunction := "String";
@@ -412,6 +418,9 @@ type
         "System.UInt64": lCoderFunction := "UInt64";
         "System.UIntPtr": lCoderFunction := "UIntPtr";
 
+        "System.NativeInt": lCoderFunction := "IntPtr";
+        "System.NativeUInt": lCoderFunction := "UIntPtr";
+
         "System.Single": lCoderFunction := "Single";
         "System.Double": lCoderFunction := "Double";
         "System.Boolean": lCoderFunction := "Boolean";
@@ -429,7 +438,7 @@ type
             var lType := FlattenType(lGeneric.GenericType);
             if lGeneric.ParameterCount = 1 then begin
               var lNestedType := lGeneric.GetParameter(0);
-              if lType.Name = "Nullable`1" then begin {$HINT use fullname}
+              if lType.Fullname = "System.Nullable`1" then begin
                 var lNestedCoderFunction := GetCoderFunctionName(lNestedType, aDirection);
                 if assigned(lNestedCoderFunction[0]) then
                   lCoderFunction := /*"Nullable"+*/lNestedCoderFunction[0];
@@ -531,6 +540,12 @@ type
           exit;
       fType.AddInterface(fServices.GetType(aName));
     end;
+
+    property VoidType: ITypeReference := case fServices.Platform of
+      Platform.Echoes: fServices.GetType("System.Void");
+      Platform.Island: fServices.GetType("RemObjects.Elements.System.Void");
+      else raise new Exception($"Unsupported platform {fServices.Platform}.");
+    end; lazy;
 
   end;
 
