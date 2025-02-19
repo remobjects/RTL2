@@ -85,10 +85,8 @@ type
 
     method DecodeStringDictionaryStart(aName: String): Boolean; override;
     begin
-      Log($"DecodeStringDictionaryStart");
       if assigned(aName) then begin
         with matching lElement := Current.FirstElementWithName(aName) do begin
-          Log($"lElement {lElement}");
           Hierarchy.Push(lElement);
           result := true;
         end;

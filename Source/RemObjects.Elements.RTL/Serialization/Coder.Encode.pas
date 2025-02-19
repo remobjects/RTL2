@@ -281,6 +281,7 @@ type
     method EncodeStringDictionaryStart(aName: String); abstract;
     method EncodeStringDictionaryEnd(aName: String); abstract;
 
+    {$IF NOT ISLAND}
     method EncodeStringDictionaryValue<T>(aKey: String; aValue: T; aExpectedType: &Type := nil); virtual;
     begin
       if assigned(aValue) then
@@ -288,6 +289,7 @@ type
       else if ShouldEncodeNil then
         EncodeNil(nil);
     end;
+    {$ENDIF}
 
   end;
 

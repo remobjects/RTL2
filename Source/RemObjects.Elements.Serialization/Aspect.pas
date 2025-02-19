@@ -466,10 +466,8 @@ type
               var lNestedType := lGeneric.GetParameter(0);
               lCoderFunction := "List";
               lCoderType := FlattenType(lNestedType);
-              if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then begin
-                Log($"Unsupported nested type {aType} {lNestedType.Fullname}");
+              if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then
                 exit (nil, nil, lNestedType);
-              end;
 
             end
             else if lType.Fullname in ["System.Collections.Generic.Dictionary`2",
@@ -481,22 +479,18 @@ type
               var lNestedType := lGeneric.GetParameter(1);
               lCoderFunction := "StringDictionary";
               lCoderType := FlattenType(lNestedType);
-              if GetCoderFunctionName(FlattenType(lKeyType), aDirection)[0] ≠ "String" then begin // key must be String
-                Log($"Unsupported dictionary key type {aType} {lNestedType.Fullname}");
+              if GetCoderFunctionName(FlattenType(lKeyType), aDirection)[0] ≠ "String" then // key must be String
                 exit (nil, nil, nil);
-              end;
-              if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then begin
-                Log($"Unsupported nested type {aType} {lNestedType.Fullname}");
+              if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then
                 exit (nil, nil, lNestedType);
-              end;
 
             end
             else begin
-              Log($"Unsupported generic type {aType} {lType.Fullname}");
+              DebugLog($"Unsupported generic type {aType} {lType.Fullname}");
             end;
           end
           else begin
-            Log($"Unsupported type {aType} {aType.Fullname}");
+            DebugLog($"Unsupported type {aType} {aType.Fullname}");
           end;
         end;
       end;

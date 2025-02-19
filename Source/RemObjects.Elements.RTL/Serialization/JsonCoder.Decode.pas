@@ -115,8 +115,6 @@ type
 
     method DecodeStringDictionaryStart(aName: String): Boolean; override;
     begin
-      Log($"aName {aName}");
-      Log($"Current {Current}");
       with matching lValue := JsonObject(DoGetValue(aName)) do begin
         Hierarchy.Push(lValue);
         result := true;
