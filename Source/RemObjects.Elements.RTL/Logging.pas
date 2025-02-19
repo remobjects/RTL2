@@ -93,5 +93,24 @@ begin
   Logger.Log(aObject);
 end;
 
+//
+
+[Conditional("DEBUG")]
+method DebugLog(aMessage: String); public;
+begin
+  Logger:Log(aMessage);
+end;
+
+[Conditional("DEBUG")]
+method DebugLog(aFormat: String; params aParameters: array of Object); public;
+begin
+  Logger:Log(aFormat, aParameters);
+end;
+
+[Conditional("DEBUG")]
+method DebugLog(aObject: nullable Object);
+begin
+  Logger.Log(aObject);
+end;
 
 end.
