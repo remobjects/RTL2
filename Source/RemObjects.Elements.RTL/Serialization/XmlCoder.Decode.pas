@@ -24,9 +24,10 @@ type
     method DecodeObjectStart(aName: String): Boolean; override;
     begin
       if assigned(aName) then begin
-        var lElement := Current.FirstElementWithName(aName);
-        Hierarchy.Push(lElement);
-        result := lElement:Elements.Any;
+        with matching lElement := Current.FirstElementWithName(aName) do begin
+          Hierarchy.Push(lElement);
+          result := lElement:Elements.Any;
+        end;
       end
       else begin
         result := true;
@@ -35,10 +36,9 @@ type
 
     method DecodeObjectEnd(aName: String); override;
     begin
-      if assigned(aName) then begin
+      Hierarchy.Pop;
+      if assigned(aName) then
         Hierarchy.Pop;
-        Hierarchy.Pop;
-      end;
     end;
 
     //
@@ -46,9 +46,10 @@ type
     method DecodeArrayStart(aName: String): Boolean; override;
     begin
       if assigned(aName) then begin
-        var lElement := Current.FirstElementWithName(aName);
-        Hierarchy.Push(lElement);
-        result := true;
+        with matching lElement := Current.FirstElementWithName(aName) do begin
+          Hierarchy.Push(lElement);
+          result := true;
+        end;
       end
       else begin
         raise new CodingExeption("Nested arrays do not support decoding");
@@ -84,14 +85,37 @@ type
 
     method DecodeStringDictionaryStart(aName: String): Boolean; override;
     begin
-      raise new NotImplementedException($"DecodeStringDictionary is not implemented yet");
+      Log($"DecodeStringDictionaryStart");
+      if assigned(aName) then begin
+        with matching lElement := Current.FirstElementWithName(aName) do begin
+          Log($"lElement {lElement}");
+          Hierarchy.Push(lElement);
+          result := true;
+        end;
+      end
+      else begin
+        raise new CodingExeption("Nested dictionaries do not support decoding");
+      end;
     end;
 
     {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
     method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; override;
     begin
-      raise new NotImplementedException($"EncodeStringDictionary is not implemented yet");
-    end;
+      {$IF NOT COOPER} // JE9 Generic type "T" is not available at runtime// JE9 Generic type "T" is not available at runtime
+      result := new Dictionary<String,T>;
+      for each e in Current.Elements do begin
+        if assigned(e.Attribute["Name"]) then begin
+          Hierarchy.Push(e);
+          var lValue := DecodeArrayElement<T>(aName);
+          if assigned(lValue) then
+            result[e.Attribute["Name"].Value] := lValue as T;
+          Hierarchy.Pop;
+        end;
+      end;
+      {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
+      end;
     {$ENDIF}
 
     method DecodeStringDictionaryEnd(aName: String); override;

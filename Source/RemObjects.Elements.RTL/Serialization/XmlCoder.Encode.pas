@@ -83,6 +83,19 @@ type
         Hierarchy.Pop;
     end;
 
+    method EncodeStringDictionaryValue<T>(aKey: String; aValue: T; aExpectedType: &Type := nil); override;
+    begin
+      if assigned(aValue) or ShouldEncodeNil then begin
+        Hierarchy.Push(Current.AddElement("Element"));
+        Current.SetAttribute("Name", aKey);
+        if assigned(aValue) then
+          Encode(nil, aValue, aExpectedType)
+        else
+          EncodeNil(nil);
+        Hierarchy.Pop;
+      end;
+    end;
+
     method EncodeStringDictionaryEnd(aName: String); override;
     begin
       if Current ≠ Xml then

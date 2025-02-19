@@ -143,10 +143,7 @@ type
         EncodeStringDictionaryStart(aName);
         for each k in aValue.Keys do begin
           var v := aValue[k];
-          if assigned(v) then
-            Encode(k, v, aExpectedType)
-          else if ShouldEncodeNil then
-            EncodeNil(nil);
+          EncodeStringDictionaryValue(k, v, aExpectedType);
         end;
         EncodeStringDictionaryEnd(aName);
       end
@@ -283,6 +280,14 @@ type
 
     method EncodeStringDictionaryStart(aName: String); abstract;
     method EncodeStringDictionaryEnd(aName: String); abstract;
+
+    method EncodeStringDictionaryValue<T>(aKey: String; aValue: T; aExpectedType: &Type := nil); virtual;
+    begin
+      if assigned(aValue) then
+        Encode(aKey, aValue, aExpectedType)
+      else if ShouldEncodeNil then
+        EncodeNil(nil);
+    end;
 
   end;
 
