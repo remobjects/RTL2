@@ -16,6 +16,7 @@ type
     method HandleInterface(aServices: IServices; aType: ITypeDefinition); virtual;
     begin
       var lCodableHelpers := new CodableHelpers(aServices, aType, fNamingStyle);
+      lCodableHelpers.EmitPlatformWarning;
       fNeedToImplementEncode := lCodableHelpers.AddIEncode;
       fNeedToImplementDecode := lCodableHelpers.AddIDecode;
     end;
@@ -49,12 +50,14 @@ type
     method HandleInterface(aServices: IServices; aType: ITypeDefinition); override;
     begin
       var lCodableHelpers := new CodableHelpers(aServices, aType, fNamingStyle);
+      lCodableHelpers.EmitPlatformWarning;
       fNeedToImplementEncode := lCodableHelpers.AddIEncode;
     end;
 
     method HandleImplementation(aServices: IServices; aType: ITypeDefinition); override;
     begin
       var lCodableHelpers := new CodableHelpers(aServices, aType, fNamingStyle);
+      lCodableHelpers.EmitPlatformWarning;
       if fNeedToImplementEncode then
         lCodableHelpers.ImplementEncode;
     end;
@@ -96,6 +99,16 @@ type
     var fServices: IServices; private;
     var fType: ITypeDefinition; private;
     var fNamingStyle: NamingStyle;
+
+    method EmitPlatformWarning;
+    begin
+      case fServices.Platform of
+        Platform.Cooper: fServices.EmitWarning(fType, $"Serialization is not fully supported on Java, yet.");
+        Platform.Toffee: fServices.EmitWarning(fType, $"Serialization is not fully supported on Cocoa, yet.");
+        Platform.Gotham: fServices.EmitWarning(fType, $"Serialization is not fully supported on Gootham, yet.");
+        Platform.All: fServices.EmitWarning(fType, $"Serialization is not fully supported on all platforms, yet.");
+      end;
+    end;
 
     //
     // ENCODE
@@ -199,14 +212,14 @@ type
           end;
         end;
 
-        var (lEncoderFunction, lEncoderType) := GetCoderFunctionName(p.Type, Direction.Encode);
+        var (lEncoderFunction, lEncoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Encode);
         //Log($"{p.Name}: {lEncoderFunction}");
 
         case lEncoderFunction of
           "Object": begin
               lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name), new TypeOfValue(lEncoderType)]);
             end;
-          "Array", "List": begin
+          "Array", "List", "StringDictionary": begin
               lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, [lEncoderType], [lParameterName, new IdentifierValue(p.Name), new TypeOfValue(lEncoderType)]);
             end;
           else begin
@@ -215,7 +228,7 @@ type
         end;
 
         if not assigned(lEncoderFunction) then begin
-          fServices.EmitWarning(p, $"Type '{FlattenType(p.Type).Fullname}' for property '{p.Name}' is not encodable");
+          fServices.EmitWarning(p, $"Type '{FlattenType(coalesce(lErrorType, p.Type)).Fullname}' for property '{p.Name}' is not encodable");
           continue;
         end;
 
@@ -304,10 +317,10 @@ type
           end;
         end;
 
-        var (lDecoderFunction, lDecoderType) := GetCoderFunctionName(p.Type, Direction.Decode);
+        var (lDecoderFunction, lDecoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Decode);
 
         if not assigned(lDecoderFunction) then begin
-          fServices.EmitWarning(p, $"Type '{FlattenType(p.Type).Fullname}' for property '{p.Name}' is not decodable");
+          fServices.EmitWarning(p, $"Type '{FlattenType(coalesce(lErrorType, p.Type)).Fullname}' for property '{p.Name}' is not decodable");
           continue;
         end;
 
@@ -346,7 +359,7 @@ type
                                         new TypeValue(p.Type),
                                         BinaryOperator.As)
             end;
-          "Array", "List": begin
+          "Array", "List", "StringDictionary": begin
               lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName/*, new TypeOfValue(lDecoderType)*/]),
                                         new TypeValue(p.Type),
                                         BinaryOperator.As)
@@ -383,7 +396,7 @@ type
       result := aType;
     end;
 
-    method GetCoderFunctionName(aType: IType; aDirection: Direction): tuple of (String, IType);
+    method GetCoderFunctionName(aType: IType; aDirection: Direction): tuple of (String, IType, IType);
     begin
 
       aType := FlattenType(aType);
@@ -397,6 +410,7 @@ type
       case lName of
         "RemObjects.Elements.RTL.PlatformString", // why does nullable Stirng NOW have "RemObjects.Elements.RTL.PlatformString", but regular has System?
         "RemObjects.Elements.RTL.String", // why does nullable Stirng have "RemObjects.Elements.RTL.String", bnut regular has System?
+        "Foundation.NSString",
         "System.String": lCoderFunction := "String";
 
         "RemObjects.Elements.RTL.Guid",
@@ -436,25 +450,49 @@ type
           end
           else if aType is var lGeneric: IGenericInstantiationType then begin
             var lType := FlattenType(lGeneric.GenericType);
-            if lGeneric.ParameterCount = 1 then begin
+            if lType.Fullname = "System.Nullable`1" then begin
+
               var lNestedType := lGeneric.GetParameter(0);
-              if lType.Fullname = "System.Nullable`1" then begin
-                var lNestedCoderFunction := GetCoderFunctionName(lNestedType, aDirection);
-                if assigned(lNestedCoderFunction[0]) then
-                  lCoderFunction := /*"Nullable"+*/lNestedCoderFunction[0];
-              end
-              else if lType.Fullname in ["System.Collections.Generic.List`1",
-                                         "RemObjects.Elements.RTL.List`1",
-                                         "RemObjects.Elements.RTL.ImmutableList`1"] then begin
-                lCoderFunction := "List";
-                lCoderType := FlattenType(lNestedType);
-              end
-              else begin
-                Log($"Unsupported generic type {aType} {lNestedType.Fullname}");
+              var lNestedCoderFunction := GetCoderFunctionName(lNestedType, aDirection);
+              if assigned(lNestedCoderFunction[0]) then
+                lCoderFunction := /*"Nullable"+*/lNestedCoderFunction[0];
+
+            end
+            else if lType.Fullname in ["System.Collections.Generic.List`1",
+                                       "RemObjects.Elements.System.List`1",
+                                       "RemObjects.Elements.RTL.List`1",
+                                       "RemObjects.Elements.RTL.ImmutableList`1"] then begin
+
+              var lNestedType := lGeneric.GetParameter(0);
+              lCoderFunction := "List";
+              lCoderType := FlattenType(lNestedType);
+              if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then begin
+                Log($"Unsupported nested type {aType} {lNestedType.Fullname}");
+                exit (nil, nil, lNestedType);
               end;
+
+            end
+            else if lType.Fullname in ["System.Collections.Generic.Dictionary`2",
+                                       "RemObjects.Elements.System.Dictionary`2",
+                                       "RemObjects.Elements.RTL.Dictionary`1",
+                                       "RemObjects.Elements.RTL.ImmutableDictionary`1"] then begin
+
+              var lKeyType := lGeneric.GetParameter(0);
+              var lNestedType := lGeneric.GetParameter(1);
+              lCoderFunction := "StringDictionary";
+              lCoderType := FlattenType(lNestedType);
+              if GetCoderFunctionName(FlattenType(lKeyType), aDirection)[0] ≠ "String" then begin // key must be String
+                Log($"Unsupported dictionary key type {aType} {lNestedType.Fullname}");
+                exit (nil, nil, nil);
+              end;
+              if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then begin
+                Log($"Unsupported nested type {aType} {lNestedType.Fullname}");
+                exit (nil, nil, lNestedType);
+              end;
+
             end
             else begin
-              Log($"Unsupported generic type {aType} {aType.Fullname}");
+              Log($"Unsupported generic type {aType} {lType.Fullname}");
             end;
           end
           else begin
@@ -462,7 +500,7 @@ type
           end;
         end;
       end;
-      result := (lCoderFunction, lCoderType);
+      result := (lCoderFunction, lCoderType, nil);
     end;
 
     method GetCodableProperties: sequence of IPropertyDefinition; iterator;
@@ -544,10 +582,16 @@ type
     property VoidType: ITypeReference := case fServices.Platform of
       Platform.Echoes: fServices.GetType("System.Void");
       Platform.Island: fServices.GetType("RemObjects.Elements.System.Void");
+      Platform.Toffee: nil;
+      //Platform.Cooper: fServices.GetType("RemObjects.Elements.System.Void");
       else raise new Exception($"Unsupported platform {fServices.Platform}.");
     end; lazy;
 
   end;
+
+  //
+  //
+  //
 
   method TypeImplementsInterface(aType: IType; aName: String): Boolean;
   begin

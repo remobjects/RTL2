@@ -10,7 +10,7 @@ type
     constructor;
     begin
       {$IF NOT SERIALIZATION}
-      raise new Exception("Serialization is not implemented for this platform yet");
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
       constructor withJson(JsonDocument.CreateObject);
     end;
@@ -19,7 +19,7 @@ type
     constructor withFile(aFileName: String);
     begin
       {$IF NOT SERIALIZATION}
-      raise new Exception("Serialization is not implemented for this platform yet");
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
       constructor withJson(JsonDocument.FromFile(aFileName));
     end;
@@ -28,7 +28,7 @@ type
     constructor withJson(aJson: JsonDocument);
     begin
       {$IF NOT SERIALIZATION}
-      raise new Exception("Serialization is not implemented for this platform yet");
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
       Json := aJson;
       Hierarchy.Push(Json/*.Root*/ as JsonObject);

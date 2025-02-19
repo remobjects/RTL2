@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.Serialization;
 
-{$IF SERIALIZATION}
-
 uses
   RemObjects.Elements.RTL,
   RemObjects.Elements.RTL.Reflection;
@@ -50,6 +48,18 @@ type
         raise new CodingExeption($"Decoding of arrays and lists is not (yet) supported on Island.");
         {$ENDIF}
         DecodeArrayEnd(aName);
+      end;
+    end;
+
+    method DecodeStringDictionary<T>(aName: String): Dictionary<String, T>;
+    begin
+      if DecodeStringDictionaryStart(aName) then begin
+        {$IF NOT ISLAND}
+        result := DecodeStringDictionaryElements<T>(aName);
+        {$ELSE}
+        raise new CodingExeption($"Decoding of arrays and lists is not (yet) supported on Island.");
+        {$ENDIF}
+        DecodeStringDictionaryEnd(aName);
       end;
     end;
 
@@ -178,20 +188,31 @@ type
     method DecodeObjectEnd(aName: String); abstract;
 
     method DecodeArrayStart(aName: String): Boolean; abstract;
-    {$IF NOT ISLAND}
+    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
     method DecodeArrayElements<T>(aName: String): array of T; abstract;
     {$ENDIF}
     method DecodeArrayEnd(aName: String); abstract;
 
-    {$IF ECHOES OR ISLAND}
-    method DecodeArrayElement<T>(aName: String): Object; {$IF NOT ISLAND}virtual;{$ENDIF}
+    method DecodeStringDictionaryStart(aName: String): Boolean; abstract;
+    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; abstract;
+    {$ENDIF}
+    method DecodeStringDictionaryEnd(aName: String); abstract;
+
+    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    method DecodeArrayElement<T>(aName: String): Object;
     begin
+      {$IF SERIALIZATION}
       result := DecodeArrayElement(aName, typeOf(T))
+      {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
     end;
     {$ENDIF}
 
     method DecodeArrayElement(aName: String; aType: &Type): Object; {$IF NOT ISLAND}virtual;{$ENDIF}
     begin
+      {$IF SERIALIZATION}
       case aType of
         DateTime: result := DecodeDateTime(nil);
         String: result := DecodeString(nil);
@@ -219,6 +240,9 @@ type
         {$ENDIF}
         else result := DecodeObject(nil, aType);
       end;
+      {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
     end;
 
     method DecodeListStart(aName: String): Boolean; virtual;
@@ -229,7 +253,9 @@ type
     {$IF NOT ISLAND}
     method DecodeListElements<T>(aName: String): List<T>; virtual;
     begin
+      {$IF SERIALIZATION}
       result := DecodeArrayElements<T>(aName).ToList;
+      {$ENDIF}
     end;
     {$ENDIF}
 
@@ -238,14 +264,11 @@ type
       DecodeArrayEnd(aName);
     end;
 
-
-    //method DecodeListStart(aName: String); abstract;
-    //method DecodeListEnd(aName: String); abstract;
-
   private
 
     method FindType(aName: String): &Type;
     begin
+      {$IF NOT (COOPER OR TOFFEEV2)}
       if not assigned(fTypesCache) then
         fTypesCache := &Type.AllTypes;
       result := fTypesCache.FirstOrDefault(t -> t.FullName = aName);
@@ -253,12 +276,15 @@ type
         fTypesCache := &Type.AllTypes; // load again, maye we have new types now
         result := fTypesCache.FirstOrDefault(t -> t.FullName = aName);
       end;
+      {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
     end;
 
+    {$IF NOT (COOPER OR TOFFEEV2)} // E671 Type "RemObjects.Elements.RTL.ImmutableList<T>" has a different class model than "Type" (Cocoa vs Island)
     var fTypesCache: ImmutableList<&Type>;
+    {$ENDIF}
 
   end;
-
-{$ENDIF}
 
 end.

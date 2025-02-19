@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.Serialization;
 
-{$IF SERIALIZATION}
-
 uses
   RemObjects.Elements.RTL,
   RemObjects.Elements.RTL.Reflection;
@@ -80,7 +78,5 @@ type
         Hierarchy.Pop;
     end;
   end;
-
-{$ENDIF}
 
 end.

@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.Serialization;
 
-{$IF SERIALIZATION}
-
 uses
   RemObjects.Elements.RTL,
   RemObjects.Elements.RTL.Reflection;
@@ -39,6 +37,7 @@ type
 
     method Encode(aName: String; aValue: Object; aExpectedType: &Type := nil);
     begin
+      {$IF SERIALIZATION}
       if not assigned(aValue) then begin
         if ShouldEncodeNil then
           EncodeNil(aName);
@@ -83,6 +82,9 @@ type
             raise new CodingExeption($"Type '{typeOf(aValue)}' is not encodable.");
         end;
       end;
+      {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
     end;
 
     method EncodeObject(aName: String; aValue: IEncodable; aExpectedType: &Type := nil); virtual;
@@ -131,6 +133,22 @@ type
       end;
     end;
 
+    method EncodeStringDictionary<T>(aName: String; aValue: Dictionary<String, T>; aExpectedType: &Type := nil);
+    begin
+      if assigned(aValue) then begin
+        EncodeStringDictionaryStart(aName);
+        for each e in aValue do begin
+          if assigned(e) then
+            Encode(nil, e, aExpectedType)
+          else
+            EncodeNil(nil);
+        end;
+        EncodeStringDictionaryEnd(aName);
+      end
+      else if ShouldEncodeNil then begin
+        EncodeNil(aName);
+      end;
+    end;
 
     method EncodeDateTime(aName: String; aValue: nullable DateTime); virtual;
     begin
@@ -258,8 +276,17 @@ type
       EncodeArrayEnd(aName);
     end;
 
+    method EncodeStringDictionaryStart(aName: String); virtual;
+    begin
+      raise new NotImplementedException($"EncodeStringDictionary is not implemented yet");
+    end;
+
+    method EncodeStringDictionaryEnd(aName: String); virtual;
+    begin
+      raise new NotImplementedException($"EncodeStringDictionary is not implemented yet");
+    end;
+
   end;
 
-{$ENDIF}
 
 end.

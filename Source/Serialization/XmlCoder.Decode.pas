@@ -1,7 +1,5 @@
 ﻿namespace RemObjects.Elements.Serialization;
 
-{$IF SERIALIZATION}
-
 uses
   RemObjects.Elements.RTL;
 
@@ -57,9 +55,10 @@ type
       end;
     end;
 
-    {$IF NOT ISLAND}
+    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
     method DecodeArrayElements<T>(aName: String): array of T; override;
     begin
+      {$IF NOT COOPER} // JE9 Generic type "T" is not available at runtime// JE9 Generic type "T" is not available at runtime
       var lElements := Current.ElementsWithName("Element").ToList;
       result := new array of T(lElements.Count);
       for i := 0 to lElements.Count-1 do begin
@@ -69,6 +68,9 @@ type
           result[i] := lValue as T;
         Hierarchy.Pop;
       end;
+      {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
     end;
     {$ENDIF}
 
@@ -78,8 +80,25 @@ type
         Hierarchy.Pop;
     end;
 
-  end;
+    //
 
-{$ENDIF}
+    method DecodeStringDictionaryStart(aName: String): Boolean; override;
+    begin
+      raise new NotImplementedException($"EncodeStringDictionary is not implemented yet");
+    end;
+
+    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; override;
+    begin
+      raise new NotImplementedException($"EncodeStringDictionary is not implemented yet");
+    end;
+    {$ENDIF}
+
+    method DecodeStringDictionaryEnd(aName: String); override;
+    begin
+      raise new NotImplementedException($"EncodeStringDictionary is not implemented yet");
+    end;
+
+  end;
 
 end.

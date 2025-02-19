@@ -10,7 +10,7 @@ type
     constructor;
     begin
       {$IF NOT SERIALIZATION}
-      raise new Exception("Serialization is not implemented for this platform yet");
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
     end;
 
@@ -18,7 +18,7 @@ type
     constructor withFile(aFileName: String);
     begin
       {$IF NOT SERIALIZATION}
-      raise new Exception("Serialization is not implemented for this platform yet");
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
       constructor withXml(XmlDocument.FromFile(aFileName).Root);
     end;
@@ -28,7 +28,7 @@ type
     constructor withXml(aXml: XmlElement);
     begin
       {$IF NOT SERIALIZATION}
-      raise new Exception("Serialization is not implemented for this platform yet");
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
       Xml := aXml;
       Hierarchy.Push(Xml);

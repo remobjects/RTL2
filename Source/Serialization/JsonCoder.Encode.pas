@@ -1,9 +1,8 @@
 ﻿namespace RemObjects.Elements.Serialization;
 
-{$IF SERIALIZATION}
-
 uses
-  RemObjects.Elements.RTL;
+  RemObjects.Elements.RTL,
+  RemObjects.Elements.RTL.Reflection;
 
 type
   JsonCoder = public partial class
@@ -97,11 +96,16 @@ type
 
     class method ToJsonString(aObject: IEncodable; aFormat: JsonFormat := JsonFormat.HumanReadable): String;
     begin
+      {$IF NOT TOFFEEV2}
       var lTemp := new JsonCoder();
       lTemp.Encode(aObject);
       result := lTemp.ToJsonString(aFormat);
+        {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
     end;
 
+    {$IF SERIALIZATION}
     class method FromJson<T>(aJson: JsonNode): T; where T has constructor, T is IDecodable;
     begin
       var lTemp := new JsonCoder withJson(aJson);
@@ -119,11 +123,13 @@ type
       var lTemp := new JsonCoder withJson(aJson);
       result := lTemp.DecodeArray<T>(nil);
     end;
+    {$ENDIF}
 
   protected
 
     method EncodeObjectStart(aName: String; aValue: IEncodable; aExpectedType: &Type := nil); override;
     begin
+      {$IF NOT TOFFEEV2}
       if assigned(aName) then begin
         var lObject := new JsonObject;
         Current[aName] := lObject;
@@ -138,6 +144,9 @@ type
         if typeOf(aValue) ≠ aExpectedType then
           lObject["__Type"] := typeOf(aValue).ToString;
       end;
+      {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
 
       //var lObject := new JsonObject;
 
@@ -166,7 +175,7 @@ type
       end
       else if Current is var lJsonArray: JsonArray then begin
         var lArray := new JsonArray;
-        lJsonArray.Add(lArray);
+        lJsonArray.Add(lArray as JsonNode); {$HINT retest this on Echoes} // cast is needed for abiguity on Toffee
         Hierarchy.Push(lArray);
       end;
     end;
@@ -191,12 +200,14 @@ type
 
   end;
 
+  {$IF NOT TOFFEEV2} // E748 Type mismatch, cannot assign "IEncodable" (Cocoa) to "RemObjects.Elements.System.Object" (Island)
   IEncodable_Json_Extension = public extension class(IEncodable)
   public
 
     method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): JsonNode;
     begin
       var lTemp := new JsonCoder();
+      lTemp.Encode(self);
       lTemp.Encode(self);
       result := lTemp.Json;
     end;
@@ -209,7 +220,6 @@ type
     end;
 
   end;
-
-{$ENDIF}
+  {$ENDIF}
 
 end.
