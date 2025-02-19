@@ -139,7 +139,6 @@ type
 
     method EncodeStringDictionary<T>(aName: String; aValue: Dictionary<String, T>; aExpectedType: &Type := nil);
     begin
-      {$IF NOT ISLAND}
       if assigned(aValue) then begin
         EncodeStringDictionaryStart(aName);
         for each k in aValue.Keys do begin
@@ -151,9 +150,6 @@ type
       else if ShouldEncodeNil then begin
         EncodeNil(aName);
       end;
-      {$ELSE}
-      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
-      {$ENDIF}
     end;
 
     method EncodeDateTime(aName: String; aValue: nullable DateTime); virtual;
@@ -261,6 +257,16 @@ type
       EncodeString(aName, aValue:ToJsonString(JsonFormat.Minimal));
     end;
 
+    method EncodeJsonArray(aName: String; aValue: nullable JsonArray); virtual;
+    begin
+      EncodeJsonNode(aName, aValue);
+    end;
+
+    method EncodeJsonObject(aName: String; aValue: nullable JsonObject); virtual;
+    begin
+      EncodeJsonNode(aName, aValue);
+    end;
+
     property ShouldEncodeNil: Boolean := false;
     property ShouldEncodeDefault: Boolean := false;
 
@@ -285,15 +291,13 @@ type
     method EncodeStringDictionaryStart(aName: String); abstract;
     method EncodeStringDictionaryEnd(aName: String); abstract;
 
-    {$IF NOT ISLAND}
-    method EncodeStringDictionaryValue<T>(aKey: String; aValue: T; aExpectedType: &Type := nil); virtual;
+    method EncodeStringDictionaryValue(aKey: String; aValue: Object; aExpectedType: &Type := nil); virtual;
     begin
       if assigned(aValue) then
         Encode(aKey, aValue, aExpectedType)
       else if ShouldEncodeNil then
         EncodeNil(nil);
     end;
-    {$ENDIF}
 
   end;
 

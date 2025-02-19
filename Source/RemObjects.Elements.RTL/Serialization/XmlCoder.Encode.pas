@@ -83,8 +83,7 @@ type
         Hierarchy.Pop;
     end;
 
-    {$IF NOT ISLAND}
-    method EncodeStringDictionaryValue<T>(aKey: String; aValue: T; aExpectedType: &Type := nil); override;
+    method EncodeStringDictionaryValue(aKey: String; aValue: Object; aExpectedType: &Type := nil); override;
     begin
       if assigned(aValue) or ShouldEncodeNil then begin
         Hierarchy.Push(Current.AddElement("Element"));
@@ -96,7 +95,6 @@ type
         Hierarchy.Pop;
       end;
     end;
-    {$ENDIF}
 
     method EncodeStringDictionaryEnd(aName: String); override;
     begin

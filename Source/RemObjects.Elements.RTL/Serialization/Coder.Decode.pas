@@ -8,13 +8,13 @@ type
   Coder = public partial class
   public
 
-    method Decode(aType: &Type): IDecodable;
+    method Decode(aType: not nullable &Type): IDecodable;
     begin
       result := aType.Instantiate() as IDecodable;
       result.Decode(self);
     end;
 
-    method Decode(aValue: IDecodable);
+    method Decode(aValue: not nullable IDecodable);
     begin
       aValue.Decode(self);
     end;
@@ -181,6 +181,16 @@ type
       var lValue := DecodeString(aName);
       if length(lValue) > 0 then
         result := JsonDocument.FromString(lValue);
+    end;
+
+    method DecodeJsonArray(aName: String): JsonArray; virtual;
+    begin
+      result := DecodeJsonNode(aName) as JsonArray;
+    end;
+
+    method DecodeJsonObject(aName: String): JsonObject; virtual;
+    begin
+      result := DecodeJsonNode(aName) as JsonObject;
     end;
 
     method DecodeObjectType(aName: String): String; virtual; empty;
