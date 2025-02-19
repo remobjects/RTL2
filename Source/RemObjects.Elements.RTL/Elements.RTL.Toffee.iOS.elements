@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <OutputPath>..\..\Bin</OutputPath>
+    <OutputPathUsesModes>True</OutputPathUsesModes>
+    <OutputPathUsesSubModes>True</OutputPathUsesSubModes>
+    <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
+    <ProjectGuid>{EC0982C8-700B-4085-A401-59460E394DAA}</ProjectGuid>
+    <OutputType>StaticLibrary</OutputType>
+    <AssemblyName>Elements</AssemblyName>
+    <AllowGlobals>False</AllowGlobals>
+    <AllowLegacyWith>False</AllowLegacyWith>
+    <AllowLegacyOutParams>False</AllowLegacyOutParams>
+    <AllowLegacyCreate>False</AllowLegacyCreate>
+    <AllowUnsafeCode>False</AllowUnsafeCode>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <SDK>iOS</SDK>
+    <MangleTypeNames>True</MangleTypeNames>
+    <CreateHeaderFile>True</CreateHeaderFile>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
+    <CrossPlatform>True</CrossPlatform>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <SupportUIKitForMac>True</SupportUIKitForMac>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <EnableAsserts>True</EnableAsserts>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <EnableAsserts>False</EnableAsserts>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <GenerateBitcode>True</GenerateBitcode>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Foundation" />
+    <Reference Include="rtl" />
+    <Reference Include="libToffee" />
+    <Reference Include="CoreFoundation" />
+    <Reference Include="UIKit" />
+    <Reference Include="Security" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Json\JsonExceptions.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
+  <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
+</Project>

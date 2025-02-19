@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <OutputPath>..\..\Bin</OutputPath>
+    <OutputPathUsesModes>True</OutputPathUsesModes>
+    <OutputPathUsesSubModes>True</OutputPathUsesSubModes>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
+    <ProjectGuid>{6F89F939-4116-4B8B-B0A8-71E6F56ED4BD}</ProjectGuid>
+    <BinaryName>Elements</BinaryName>
+    <AllowGlobals>False</AllowGlobals>
+    <AllowLegacyWith>False</AllowLegacyWith>
+    <AllowLegacyOutParams>False</AllowLegacyOutParams>
+    <AllowLegacyCreate>False</AllowLegacyCreate>
+    <AllowUnsafeCode>False</AllowUnsafeCode>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <CrossPlatform>True</CrossPlatform>
+    <MangleTypeNames>True</MangleTypeNames>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <GeneratePDB>True</GeneratePDB>
+    <GenerateMDB>True</GenerateMDB>
+    <OutputPathUsesModes>True</OutputPathUsesModes>
+    <OutputPathUsesSubModes>True</OutputPathUsesSubModes>
+    <OutputType>StaticLibrary</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Echoes.Full' ">
+    <Mode>Echoes</Mode>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
+    <OutputType>Library</OutputType>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Echoes.Standard' ">
+    <Mode>Echoes</Mode>
+    <TargetFramework>.NETStandard2.0</TargetFramework>
+    <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
+    <ConditionalDefines>NETSTANDARD</ConditionalDefines>
+    <OutputType>Library</OutputType>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Cooper' ">
+    <Mode>Cooper</Mode>
+    <SubMode>Java</SubMode>
+    <DefaultUses>com.remobjects.elements.linq</DefaultUses>
+    <BinaryName>elements</BinaryName>
+    <OutputType>Library</OutputType>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Windows' ">
+    <Mode>Island</Mode>
+    <SubMode>Windows</SubMode>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Linux' ">
+    <Mode>Island</Mode>
+    <SubMode>Linux</SubMode>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
+    <Mode>Island</Mode>
+    <SubMode>Android</SubMode>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Toffee.iOS' ">
+    <Mode>Toffee</Mode>
+    <SDK>iOS</SDK>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Toffee.macOS' ">
+    <Mode>Toffee</Mode>
+    <SDK>macOS</SDK>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Toffee.tvOS' ">
+    <Mode>Toffee</Mode>
+    <SDK>tvOS</SDK>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Toffee.watchOS' ">
+    <Mode>Toffee</Mode>
+    <SDK>watchOS</SDK>
+    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
+    <Enabled>True</Enabled>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <EnableAsserts>True</EnableAsserts>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <CpuType>anycpu</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <GeneratePDB>False</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+    <EnableAsserts>False</EnableAsserts>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <CpuType>anycpu</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib">
+      <Target>Echoes.Full</Target>
+    </Reference>
+    <Reference Include="System">
+      <Target>Echoes.Full</Target>
+    </Reference>
+    <Reference Include="System.Core">
+      <Target>Echoes.Full</Target>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <Target>Echoes.Full</Target>
+    </Reference>
+    <Reference Include="System.Web">
+      <Target>Echoes.Full</Target>
+    </Reference>
+    <NuGetReference Include="NETStandard.Library:2.0.0">
+      <Target>Echoes.Standard</Target>
+    </NuGetReference>
+    <Reference Include="rt">
+      <Target>Cooper</Target>
+    </Reference>
+    <Reference Include="cooper">
+      <Target>Cooper</Target>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Foundation">
+      <Target>Toffee.iOS</Target>
+    </Reference>
+    <Reference Include="CoreFoundation">
+      <Target>Toffee.iOS</Target>
+    </Reference>
+    <Reference Include="UIKit">
+      <Target>Toffee.iOS</Target>
+    </Reference>
+    <Reference Include="libToffee">
+      <Target>Toffee.iOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Toffee.iOS</Target>
+    </Reference>
+    <Reference Include="Foundation">
+      <Target>Toffee.macOS</Target>
+    </Reference>
+    <Reference Include="AppKit">
+      <Target>Toffee.macOS</Target>
+    </Reference>
+    <Reference Include="CoreFoundation">
+      <Target>Toffee.macOS</Target>
+    </Reference>
+    <Reference Include="libToffee">
+      <Target>Toffee.macOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Toffee.macOS</Target>
+    </Reference>
+    <Reference Include="Foundation">
+      <Target>Toffee.tvOS</Target>
+    </Reference>
+    <Reference Include="CoreFoundation">
+      <Target>Toffee.tvOS</Target>
+    </Reference>
+    <Reference Include="UIKit">
+      <Target>Toffee.tvOS</Target>
+    </Reference>
+    <Reference Include="libToffee">
+      <Target>Toffee.tvOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Toffee.tvOS</Target>
+    </Reference>
+    <Reference Include="Foundation">
+      <Target>Toffee.watchOS</Target>
+    </Reference>
+    <Reference Include="CoreFoundation">
+      <Target>Toffee.watchOS</Target>
+    </Reference>
+    <Reference Include="UIKit">
+      <Target>Toffee.watchOS</Target>
+    </Reference>
+    <Reference Include="WatchKit">
+      <Target>Toffee.watchOS</Target>
+    </Reference>
+    <Reference Include="libToffee">
+      <Target>Toffee.watchOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Toffee.watchOS</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Island.Windows</Target>
+    </Reference>
+    <Reference Include="gc">
+      <Target>Island.Windows</Target>
+    </Reference>
+    <Reference Include="Island">
+      <Target>Island.Windows</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Island.Linux</Target>
+    </Reference>
+    <Reference Include="gc">
+      <Target>Island.Linux</Target>
+    </Reference>
+    <Reference Include="Island">
+      <Target>Island.Linux</Target>
+    </Reference>
+    <Reference Include="rtl">
+      <Target>Island.Android</Target>
+    </Reference>
+    <Reference Include="gc">
+      <Target>Island.Android</Target>
+    </Reference>
+    <Reference Include="Island">
+      <Target>Island.Android</Target>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Cooper\EnumerationSequence.pas">
+      <Target>Cooper</Target>
+    </Compile>
+    <Compile Include="Cooper\LocaleUtils.pas">
+      <Target>Cooper</Target>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.pas">
+      <Target>Echoes</Target>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Target>Echoes</Target>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.pas">
+      <Target>Echoes</Target>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Target>Echoes</Target>
+      <Generator>SettingsSingleFileGenerator</Generator>
+    </None>
+    <Compile Include="Properties\Settings.Designer.pas">
+      <Target>Echoes</Target>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Gotham.targets" />
+  <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
+</Project>

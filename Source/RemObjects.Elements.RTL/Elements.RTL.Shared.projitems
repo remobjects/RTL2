@@ -1,0 +1,236 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputPath>..\..\Bin</OutputPath>
+    <OutputPathUsesModes>True</OutputPathUsesModes>
+    <OutputPathUsesSubModes>True</OutputPathUsesSubModes>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>ABEC8ACC-B076-406C-871B-581E8AF0A453</SharedGUID>
+    <Import_RootNamespace>Elements.RTL.Shared</Import_RootNamespace>
+    <ProjectGuid>{ABEC8ACC-B076-406C-871B-581E8AF0A453}</ProjectGuid>
+    <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Stream.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String.pas">
+      <VirtualFolder>String</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)StringBuilder.pas">
+      <VirtualFolder>String</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)StringFormatter.pas">
+      <VirtualFolder>String</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Synchronization.pas">
+      <VirtualFolder>Threading</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Url.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Binary.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas">
+      <VirtualFolder>String</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TimeZone.pas">
+      <VirtualFolder>Dates &amp; Co</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Locale.pas">
+      <VirtualFolder>Dates &amp; Co</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TimeSpan.pas">
+      <VirtualFolder>Dates &amp; Co</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Object (Extensions).pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Environment.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)File.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)FileHandle.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Folder.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Path.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)DateTime.pas">
+      <VirtualFolder>Dates &amp; Co</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)DateFormatter.pas">
+      <VirtualFolder>Dates &amp; Co</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)List.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Queue.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Stack.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)String (Path).pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)XmlDocument.pas">
+      <VirtualFolder>Xml</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Convert.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Broadcasts.swift" />
+    <Compile Include="$(MSBuildThisFileDirectory)Dictionary.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Dictionary.KeyValuePair.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)LINQ.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HTTP.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Range.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Guid.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Process.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Char.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.CoreFoundation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.MacFolders.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonArray.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonConsts.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonDeserializer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonDocument.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonExceptions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonObject.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonSerializer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonTokenizer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonValue.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)XmlException.pas">
+      <VirtualFolder>Xml</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)XmlParser.pas">
+      <VirtualFolder>Xml</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)XmlTokenizer.pas">
+      <VirtualFolder>Xml</VirtualFolder>
+    </Compile>
+    <None Include="$(MSBuildThisFileDirectory)NativeXmlDocument.pas">
+      <VirtualFolder>Xml</VirtualFolder>
+    </None>
+    <Compile Include="$(MSBuildThisFileDirectory)Thread.pas">
+      <VirtualFolder>Threading</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\MethodInfo.pas" Conditional="!TOFFEEV2" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\ParameterInfo.pas" Conditional="!TOFFEEV2" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)List.Extensions.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Sequence (Extensions).pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Environment.Echoes.Foundation.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Uri.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Urn.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Http.Island.Linux.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Random.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Timer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Event.pas">
+      <VirtualFolder>Threading</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Functions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\PropertyInfo.pas" Conditional="!TOFFEEV2" />
+    <Compile Include="$(MSBuildThisFileDirectory)String.Island.Darwin.pas">
+      <VirtualFolder>Files and Paths</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Registry.pas" />
+    <None Include="$(MSBuildThisFileDirectory)Resources.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)SimpleCommandLineParser.pas" Conditional="!TOFFEEV2" />
+    <Compile Include="$(MSBuildThisFileDirectory)DateParser.pas">
+      <VirtualFolder>Dates &amp; Co</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)String.Unicode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)BinaryReader.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Observer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Difference.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Char.Unicode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)CaseInsensitiveString.pas">
+      <VirtualFolder>String</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\FieldInfo.pas" Conditional="!TOFFEEV2" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Helpers.pas" Conditional="!TOFFEEV2" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Attribute.pas" Conditional="!TOFFEEV2" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinkedList.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Available.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Http.Cocoa.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String.VariableProcessor.pas">
+      <VirtualFolder>String</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Stopwatch.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)ByteArray+Extensions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)BinaryWriter.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Array+Extensions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpFormRequestContent.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
+    <Folder Include="$(MSBuildThisFileDirectory)New Folder" />
+    <Folder Include="Http">
+      <Virtual>True</Virtual>
+    </Folder>
+    <Folder Include="Files and Paths">
+      <Virtual>True</Virtual>
+    </Folder>
+    <Folder Include="String">
+      <Virtual>True</Virtual>
+    </Folder>
+    <Folder Include="Collections">
+      <Virtual>True</Virtual>
+    </Folder>
+    <Folder Include="Dates &amp; Co">
+      <Virtual>True</Virtual>
+    </Folder>
+    <Folder Include="Xml\">
+      <Virtual>True</Virtual>
+    </Folder>
+    <Folder Include="Threading">
+      <Virtual>True</Virtual>
+    </Folder>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpRequestContent.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpJsonRequestContent.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpResponse.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpRequest.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpAuthentication.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Codable.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Coder.Decode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Coder.Encode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Coder.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JsonCoder.Decode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JsonCoder.Encode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JsonCoder.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.Decode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.Encode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.pas" />
+  </ItemGroup>
+</Project>

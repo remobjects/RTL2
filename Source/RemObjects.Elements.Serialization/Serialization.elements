@@ -10,10 +10,12 @@
     <Mode>Echoes</Mode>
     <DefaultUses>RemObjects.Elements.RTL;RemObjects.Elements.RTL.Reflection</DefaultUses>
     <BinaryName>RemObjects.Elements.Serialization</BinaryName>
+    <OutputPath>..\..\Bin</OutputPath>
+    <OutputPathUsesModes>True</OutputPathUsesModes>
+    <OutputPathUsesSubModes>True</OutputPathUsesSubModes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
-    <OutputPath>..\Bin\Debug\NETStandard</OutputPath>
     <ConditionalDefines>DEBUG;TRACE;</ConditionalDefines>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>True</GenerateMDB>
@@ -22,7 +24,6 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <OutputPath>..\Bin\Release\NETStandard</OutputPath>
     <CpuType>anycpu</CpuType>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>

@@ -1,53 +1,53 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # RemObjects Fire
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Cooper", "Elements.RTL.Cooper.elements", "{f9717e15-88bc-4853-8d07-8dbad8c0b2a9}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Cooper", "RemObjects.Elements.RTL\Elements.RTL.Cooper.elements", "{f9717e15-88bc-4853-8d07-8dbad8c0b2a9}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Echoes", "Elements.RTL.Echoes.elements", "{a0b2bf66-f2b1-4ef9-a9ce-792ab3094233}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Echoes", "RemObjects.Elements.RTL\Elements.RTL.Echoes.elements", "{a0b2bf66-f2b1-4ef9-a9ce-792ab3094233}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Echoes.Core", "Elements.RTL.Echoes.Core.elements", "{e799f486-0c6d-4e9c-acee-b36bb941a918}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Echoes.Core", "RemObjects.Elements.RTL\Elements.RTL.Echoes.Core.elements", "{e799f486-0c6d-4e9c-acee-b36bb941a918}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Echoes.Standard", "Elements.RTL.Echoes.Standard.elements", "{b42bf0fd-e746-4a64-a0df-af8fff55dae5}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Echoes.Standard", "RemObjects.Elements.RTL\Elements.RTL.Echoes.Standard.elements", "{b42bf0fd-e746-4a64-a0df-af8fff55dae5}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Android", "Elements.RTL.Island.Android.elements", "{cf39233b-8feb-470c-9e41-4c1944473c1c}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Android", "RemObjects.Elements.RTL\Elements.RTL.Island.Android.elements", "{cf39233b-8feb-470c-9e41-4c1944473c1c}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.iOS", "Elements.RTL.Island.Darwin.iOS.elements", "{0723254e-06ea-46f9-b67f-4d143810a08e}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.iOS", "RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.iOS.elements", "{0723254e-06ea-46f9-b67f-4d143810a08e}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.macOS", "Elements.RTL.Island.Darwin.macOS.elements", "{731df15e-9ee5-452a-a74d-bcbc95afaa23}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.macOS", "RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.macOS.elements", "{731df15e-9ee5-452a-a74d-bcbc95afaa23}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.tvOS", "Elements.RTL.Island.Darwin.tvOS.elements", "{7be9facf-063c-4230-a4da-d9f9d08cfcf8}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.tvOS", "RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.tvOS.elements", "{7be9facf-063c-4230-a4da-d9f9d08cfcf8}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.visionOS", "Elements.RTL.Island.Darwin.visionOS.elements", "{b1fcdf7e-df65-4ad5-8727-c67d92755b32}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.visionOS", "RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.visionOS.elements", "{b1fcdf7e-df65-4ad5-8727-c67d92755b32}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.watchOS", "Elements.RTL.Island.Darwin.watchOS.elements", "{28817723-bb33-4c5f-8705-a7b3dff15174}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.watchOS", "RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.watchOS.elements", "{28817723-bb33-4c5f-8705-a7b3dff15174}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Linux", "Elements.RTL.Island.Linux.elements", "{163f84dc-dc6b-4535-994f-0865d3a84d20}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Linux", "RemObjects.Elements.RTL\Elements.RTL.Island.Linux.elements", "{163f84dc-dc6b-4535-994f-0865d3a84d20}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.WebAssembly", "Elements.RTL.Island.WebAssembly.elements", "{e663418d-2453-4c69-8362-02cc6abeafa7}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.WebAssembly", "RemObjects.Elements.RTL\Elements.RTL.Island.WebAssembly.elements", "{e663418d-2453-4c69-8362-02cc6abeafa7}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Windows", "Elements.RTL.Island.Windows.elements", "{6f888992-4293-4097-8aa3-6667e0187d4f}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Windows", "RemObjects.Elements.RTL\Elements.RTL.Island.Windows.elements", "{6f888992-4293-4097-8aa3-6667e0187d4f}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Shared", "Elements.RTL.Shared.elements", "{abec8acc-b076-406c-871b-581e8af0a453}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Shared", "RemObjects.Elements.RTL\Elements.RTL.Shared.elements", "{abec8acc-b076-406c-871b-581e8af0a453}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.iOS", "Elements.RTL.Toffee.iOS.elements", "{ec0982c8-700b-4085-a401-59460e394daa}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.iOS", "RemObjects.Elements.RTL\Elements.RTL.Toffee.iOS.elements", "{ec0982c8-700b-4085-a401-59460e394daa}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.macOS", "Elements.RTL.Toffee.macOS.elements", "{58d52fe5-e87e-4d9c-8fbb-280980f6762b}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.macOS", "RemObjects.Elements.RTL\Elements.RTL.Toffee.macOS.elements", "{58d52fe5-e87e-4d9c-8fbb-280980f6762b}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.tvOS", "Elements.RTL.Toffee.tvOS.elements", "{2593a307-bf8b-4218-bc8a-0c09f4d314aa}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.tvOS", "RemObjects.Elements.RTL\Elements.RTL.Toffee.tvOS.elements", "{2593a307-bf8b-4218-bc8a-0c09f4d314aa}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.visionOS", "Elements.RTL.Toffee.visionOS.elements", "{18862465-b297-4b8a-80fb-efd18fbf00f8}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.visionOS", "RemObjects.Elements.RTL\Elements.RTL.Toffee.visionOS.elements", "{18862465-b297-4b8a-80fb-efd18fbf00f8}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.watchOS", "Elements.RTL.Toffee.watchOS.elements", "{e1e9cb29-553d-4ea9-b9d1-62a5195bdd10}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Toffee.watchOS", "RemObjects.Elements.RTL\Elements.RTL.Toffee.watchOS.elements", "{e1e9cb29-553d-4ea9-b9d1-62a5195bdd10}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.iOS", "Elements.RTL.ToffeeV2.iOS.elements", "{af81ab1e-118d-4443-9704-ed8cb0c74144}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.iOS", "RemObjects.Elements.RTL\Elements.RTL.ToffeeV2.iOS.elements", "{af81ab1e-118d-4443-9704-ed8cb0c74144}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.macOS", "Elements.RTL.ToffeeV2.macOS.elements", "{81d69900-fed5-4a87-841b-575ff5653840}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.macOS", "RemObjects.Elements.RTL\Elements.RTL.ToffeeV2.macOS.elements", "{81d69900-fed5-4a87-841b-575ff5653840}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.tvOS", "Elements.RTL.ToffeeV2.tvOS.elements", "{1b12e76c-4171-46a5-ad85-fd80c335299d}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.tvOS", "RemObjects.Elements.RTL\Elements.RTL.ToffeeV2.tvOS.elements", "{1b12e76c-4171-46a5-ad85-fd80c335299d}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.visionOS", "Elements.RTL.ToffeeV2.visionOS.elements", "{3a9be265-62f6-481d-a909-0535a0750b67}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.visionOS", "RemObjects.Elements.RTL\Elements.RTL.ToffeeV2.visionOS.elements", "{3a9be265-62f6-481d-a909-0535a0750b67}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.watchOS", "Elements.RTL.ToffeeV2.watchOS.elements", "{686655b4-6e7a-40e4-98d1-b44700641d87}"
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.watchOS", "RemObjects.Elements.RTL\Elements.RTL.ToffeeV2.watchOS.elements", "{686655b4-6e7a-40e4-98d1-b44700641d87}"
 EndProject
 Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Serialization", "RemObjects.Elements.Serialization\Serialization.elements", "{c0fa7d07-304e-4005-9745-c9263230b2ad}"
 EndProject

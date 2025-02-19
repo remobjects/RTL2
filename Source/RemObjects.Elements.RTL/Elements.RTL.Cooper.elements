@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <OutputPath>..\..\Bin</OutputPath>
+    <OutputPathUsesModes>True</OutputPathUsesModes>
+    <OutputPathUsesSubModes>True</OutputPathUsesSubModes>
+    <ProductVersion>3.5</ProductVersion>
+    <ProjectGuid>{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <AllowLegacyCreate>False</AllowLegacyCreate>
+    <AllowLegacyOutParams>False</AllowLegacyOutParams>
+    <CrossPlatform>True</CrossPlatform>
+    <DefaultUses>remobjects.elements.linq</DefaultUses>
+    <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
+    <AssemblyName>elements</AssemblyName>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <EnableAsserts>True</EnableAsserts>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <CpuType>anycpu</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <GenerateDebugInfo>False</GenerateDebugInfo>
+    <EnableAsserts>False</EnableAsserts>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <CpuType>anycpu</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="rt" />
+    <Reference Include="cooper">
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Cooper\EnumerationSequence.pas" />
+    <Compile Include="Cooper\LocaleUtils.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Cooper.targets" />
+  <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
+</Project>
