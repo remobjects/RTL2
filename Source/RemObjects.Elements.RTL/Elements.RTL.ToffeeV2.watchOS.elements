@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputPath>..\..\Bin</OutputPath>
     <OutputPathUsesModes>True</OutputPathUsesModes>
-    <OutputPathUsesSubModes>True</OutputPathUsesSubModes>
+    <OutputPathUsesSDKNames>True</OutputPathUsesSDKNames>
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
     <ProjectGuid>{686655B4-6E7A-40E4-98D1-B44700641D87}</ProjectGuid>
     <OutputType>StaticLibrary</OutputType>

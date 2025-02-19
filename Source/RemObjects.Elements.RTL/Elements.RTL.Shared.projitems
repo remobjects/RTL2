@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <OutputPath>..\..\Bin</OutputPath>
-    <OutputPathUsesModes>True</OutputPathUsesModes>
-    <OutputPathUsesSubModes>True</OutputPathUsesSubModes>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>ABEC8ACC-B076-406C-871B-581E8AF0A453</SharedGUID>
