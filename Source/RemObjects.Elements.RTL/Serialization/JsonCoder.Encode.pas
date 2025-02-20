@@ -121,7 +121,7 @@ type
     class method ArrayFromJson<T>(aJson: JsonNode): array of T; where T has constructor, T is IDecodable;
     begin
       var lTemp := new JsonCoder withJson(aJson);
-      result := lTemp.DecodeArray<T>(nil);
+      result := lTemp.DecodeArray<T>(nil, nil);
     end;
     {$ENDIF}
 

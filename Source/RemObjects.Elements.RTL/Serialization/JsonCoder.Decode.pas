@@ -87,7 +87,7 @@ type
     end;
 
     {$IF ECHOES}
-    method DecodeArrayElements<T>(aName: String): array of T; override;
+    method DecodeArrayElements<T>(aName: String; aType: &Type): array of T; override;
     begin
       if Current is var lJsonArray: JsonArray then begin
         result := new array of T(lJsonArray.Count);
@@ -103,10 +103,10 @@ type
     {$ENDIF}
 
     {$IF ECHOES}
-    method DecodeListElements<T>(aName: String): array of T; override;
+    method DecodeListElements<T>(aName: String; aType: &Type): List<T>; override;
     begin
       if Current is var lJsonArray: JsonArray then begin
-        result := new List<T>(lJsonArray.Count);
+        result := new List<T> withCapacity(lJsonArray.Count);
         for i := 0 to lJsonArray.Count-1 do begin
           Hierarchy.Push(lJsonArray[i]);
           var lValue := DecodeArrayElement<T>(aName);
@@ -149,7 +149,7 @@ type
     end;
 
     {$IF ECHOES} // E703 Virtual generic methods not supported on Island
-    method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; override;
+    method DecodeStringDictionaryElements<T>(aName: String; aType: &Type): Dictionary<String,T>; override;
     begin
       with matching lJsonObject := JsonObject(Current) do begin
         result := new Dictionary<String,T> withCapacity(lJsonObject.Count);

@@ -58,7 +58,7 @@ type
     end;
 
     {$IF ECHOES}
-    method DecodeArrayElements<T>(aName: String): array of T; override;
+    method DecodeArrayElements<T>(aName: String; aType: &Type): array of T; override;
     begin
       var lElements := Current.ElementsWithName("Element").ToList;
       result := new array of T(lElements.Count);
@@ -81,10 +81,10 @@ type
     //
 
     {$IF ECHOES}
-    method DecodeListElements<T>(aName: String): array of T; override;
+    method DecodeListElements<T>(aName: String; aType: &Type): List<T>; override;
     begin
       var lElements := Current.ElementsWithName("Element").ToList;
-      result := new List<T>(lElements.Count);
+      result := new List<T> withCapacity(lElements.Count);
       for i := 0 to lElements.Count-1 do begin
         Hierarchy.Push(lElements[i]);
         var lValue := DecodeArrayElement<T>(aName);
@@ -124,10 +124,11 @@ type
     end;
 
     {$IF ECHOES}
-    method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; override;
+    method DecodeStringDictionaryElements<T>(aName: String; aType: &Type): Dictionary<String,T>; override;
     begin
-      result := new Dictionary<String,T>;
-      for each e in Current.Elements do begin
+      var lElements := Current.ElementsWithName("Element").ToList;
+      result := new Dictionary<String,T> withCapacity(lElements.Count);
+      for each e in lElements do begin
         if assigned(e.Attribute["Name"]) then begin
           Hierarchy.Push(e);
           var lValue := DecodeArrayElement<T>(aName);

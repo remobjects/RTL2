@@ -31,7 +31,7 @@ type
     begin
       if DecodeArrayStart(aName) then begin
         {$IF ECHOES}
-        result := DecodeArrayElements<T>(aName);
+        result := DecodeArrayElements<T>(aName, aType);
         {$ELSE}
         raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
@@ -43,7 +43,7 @@ type
     begin
       if DecodeArrayStart(aName) then begin
         {$IF ECHOES}
-        result := DecodeListElements<T>(aName);
+        result := DecodeListElements<T>(aName, aType);
         {$ELSEIF TOFFEE}
         result := DecodeListElements(aName, aType);
         {$ELSE}
@@ -57,7 +57,7 @@ type
     begin
       if DecodeStringDictionaryStart(aName) then begin
         {$IF ECHOES}
-        result := DecodeStringDictionaryElements<T>(aName);
+        result := DecodeStringDictionaryElements<T>(aName, aType);
         {$ELSEIF TOFFEE}
         result := DecodeStringDictionaryElements(aName, aType);
         {$ELSE}
@@ -211,13 +211,13 @@ type
     method DecodeArrayStart(aName: String): Boolean; abstract;
     method DecodeArrayEnd(aName: String); abstract;
     {$IF ECHOES}
-    method DecodeArrayElements<T>(aName: String): array of T; abstract;
+    method DecodeArrayElements<T>(aName: String; aType: &Type): array of T; abstract;
     {$ENDIF}
 
     method DecodeStringDictionaryStart(aName: String): Boolean; abstract;
     method DecodeStringDictionaryEnd(aName: String); abstract;
     {$IF ECHOES}
-    method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; abstract;
+    method DecodeStringDictionaryElements<T>(aName: String; aType: &Type): Dictionary<String,T>; abstract;
     {$ELSEIF TOFFEE}
     method DecodeStringDictionaryElements(aName: String; aType: &Type): NSMutableDictionary; abstract;
     {$ENDIF}
@@ -275,9 +275,9 @@ type
     end;
 
     {$IF ECHOES}
-    method DecodeListElements<T>(aName: String): List<T>; virtual;
+    method DecodeListElements<T>(aName: String; aType: &Type): List<T>; virtual;
     begin
-      result := DecodeArrayElements<T>(aName).ToList;
+      result := DecodeArrayElements<T>(aName, aType).ToList;
     end;
     {$ELSEIF TOFFEE}
     method DecodeListElements(aName: String; aType: &Type): NSMutableArray; abstract;
