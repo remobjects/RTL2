@@ -1,7 +1,8 @@
 ﻿namespace RemObjects.Elements.Serialization;
 
 uses
-  RemObjects.Elements.RTL;
+  RemObjects.Elements.RTL,
+  RemObjects.Elements.RTL.Reflection;
 
 type
   JsonCoder = public partial class
@@ -101,6 +102,36 @@ type
     end;
     {$ENDIF}
 
+    {$IF ECHOES}
+    method DecodeListElements<T>(aName: String): array of T; override;
+    begin
+      if Current is var lJsonArray: JsonArray then begin
+        result := new List<T>(lJsonArray.Count);
+        for i := 0 to lJsonArray.Count-1 do begin
+          Hierarchy.Push(lJsonArray[i]);
+          var lValue := DecodeArrayElement<T>(aName);
+          if assigned(lValue) then
+            result.Add(lValue as T);
+          Hierarchy.Pop;
+        end;
+      end;
+    end;
+    {$ELSEIF TOFFEE}
+    method DecodeListElements(aName: String; aType: &Type): NSMutableArray; override;
+    begin
+      if Current is var lJsonArray: JsonArray then begin
+        result := new NSMutableArray withCapacity(lJsonArray.Count);
+        for i := 0 to lJsonArray.Count-1 do begin
+          Hierarchy.Push(lJsonArray[i]);
+          var lValue := DecodeArrayElement(aName, aType);
+          if assigned(lValue) then
+            result.addObject(lValue);
+          Hierarchy.Pop;
+        end;
+      end;
+    end;
+    {$ENDIF}
+
     method DecodeArrayEnd(aName: String); override;
     begin
       //if assigned(aName) then
@@ -127,6 +158,20 @@ type
           var lValue := DecodeArrayElement<T>(aName);
           if assigned(lValue) then
             result[k] := lValue as T;
+          Hierarchy.Pop;
+        end;
+      end;
+    end;
+    {$ELSEIF TOFFEE}
+    method DecodeStringDictionaryElements(aName: String; aType: &Type): NSMutableDictionary; override;
+    begin
+      with matching lJsonObject := JsonObject(Current) do begin
+        result := new NSMutableDictionary;
+        for each k in lJsonObject.Keys do begin
+          Hierarchy.Push(lJsonObject[k]);
+          var lValue := DecodeArrayElement(aName, aType);
+          if assigned(lValue) then
+            result[k] := lValue;
           Hierarchy.Pop;
         end;
       end;

@@ -227,7 +227,7 @@ type
             end;
           "Array", "List", "StringDictionary": begin
               if (lEncoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper]) then begin
-                fServices.EmitWarning(p, $"Collections are not supported for serialization on this platform yet, sorry.");
+                fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
                 continue;
               end;
               lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, [lEncoderType], [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef])
@@ -239,9 +239,9 @@ type
 
         if not assigned(lEncoderFunction) then begin
           if fImplementingEncodeAndDecode then
-            fServices.EmitWarning(p, $"Type '{FlattenType(coalesce(lErrorType, p.Type)).Fullname}' for property '{p.Name}' is not codable")
+            fServices.EmitWarning(p, $"Type '{coalesce(lErrorType, p.Type).Fullname}' for property '{p.Name}' is not codable")
           else
-            fServices.EmitWarning(p, $"Type '{FlattenType(coalesce(lErrorType, p.Type)).Fullname}' for property '{p.Name}' is not encodable");
+            fServices.EmitWarning(p, $"Type '{coalesce(lErrorType, p.Type).Fullname}' for property '{p.Name}' is not encodable");
           continue;
         end;
 
@@ -334,7 +334,7 @@ type
 
         if not assigned(lDecoderFunction) then begin
           if not fImplementingEncodeAndDecode then
-            fServices.EmitWarning(p, $"Type '{FlattenType(coalesce(lErrorType, p.Type)).Fullname}' for property '{p.Name}' is not decodable");
+            fServices.EmitWarning(p, $"Type '{coalesce(lErrorType, p.Type).Fullname}' for property '{p.Name}' is not decodable");
           continue;
         end;
 
@@ -380,11 +380,15 @@ type
                                         BinaryOperator.As)
             end;
           "Array", "List", "StringDictionary": begin
-              if fServices.Platform in [Platform.Toffee, Platform.Cooper] then begin
-                fServices.EmitWarning(p, $"Collections are not supported for decoding on this platform yet, sorry.");
+              if (lDecoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper]) then begin
+                fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
                 continue;
               end;
-              lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName/*, lDecoderTypeRef*/]),
+              if fServices.Platform in [Platform.Cooper] then begin
+                fServices.EmitWarning(p, $"Collections are not supported for decoding on Java yet.");
+                continue;
+              end;
+              lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName, lDecoderTypeRef]),
                                         new TypeValue(p.Type),
                                         BinaryOperator.As)
             end;

@@ -27,7 +27,7 @@ type
     end;
     {$ENDIF}
 
-    method DecodeArray<T>(aName: String): array of T;
+    method DecodeArray<T>(aName: String; aType: &Type): array of T;
     begin
       if DecodeArrayStart(aName) then begin
         {$IF ECHOES}
@@ -39,11 +39,13 @@ type
       end;
     end;
 
-    method DecodeList<T>(aName: String): List<T>;
+    method DecodeList<T>(aName: String; aType: &Type): List<T>;
     begin
       if DecodeArrayStart(aName) then begin
         {$IF ECHOES}
         result := DecodeListElements<T>(aName);
+        {$ELSEIF TOFFEE}
+        result := DecodeListElements(aName, aType);
         {$ELSE}
         raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
@@ -51,11 +53,13 @@ type
       end;
     end;
 
-    method DecodeStringDictionary<T>(aName: String): Dictionary<String, T>;
+    method DecodeStringDictionary<T>(aName: String; aType: &Type): Dictionary<String, T>;
     begin
       if DecodeStringDictionaryStart(aName) then begin
         {$IF ECHOES}
         result := DecodeStringDictionaryElements<T>(aName);
+        {$ELSEIF TOFFEE}
+        result := DecodeStringDictionaryElements(aName, aType);
         {$ELSE}
         raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
@@ -214,6 +218,8 @@ type
     method DecodeStringDictionaryEnd(aName: String); abstract;
     {$IF ECHOES}
     method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; abstract;
+    {$ELSEIF TOFFEE}
+    method DecodeStringDictionaryElements(aName: String; aType: &Type): NSMutableDictionary; abstract;
     {$ENDIF}
 
     {$IF ECHOES}
@@ -273,6 +279,8 @@ type
     begin
       result := DecodeArrayElements<T>(aName).ToList;
     end;
+    {$ELSEIF TOFFEE}
+    method DecodeListElements(aName: String; aType: &Type): NSMutableArray; abstract;
     {$ENDIF}
 
     method DecodeListEnd(aName: String); virtual;
