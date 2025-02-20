@@ -31,7 +31,7 @@ type
 
     method EncodeObjectStart(aName: String; aValue: IEncodable; aExpectedType: &Type := nil); override;
     begin
-      var lNew := new XmlElement withName((if defined("COCOA") then aValue.class else typeOf(aValue)).ToString);
+      var lNew := new XmlElement withName((if defined("COCOA") then aValue.class else typeOf(aValue)).Name);
 
       if assigned(aName) then
         Current.AddElement(aName).AddElement(lNew)

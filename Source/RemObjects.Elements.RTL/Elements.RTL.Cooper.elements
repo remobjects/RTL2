@@ -15,10 +15,10 @@
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
     <AssemblyName>elements</AssemblyName>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <KnownConditionalDefines>DEBUG;SERIALIZATION;TRACE</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
-    <DefineConstants>DEBUG;TRACE;</DefineConstants>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <EnableAsserts>True</EnableAsserts>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
@@ -31,6 +31,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <ConditionalDefines>DEBUG;SERIALIZATION;TRACE</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
@@ -46,6 +47,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <ConditionalDefines>SERIALIZATION</ConditionalDefines>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="rt" />
