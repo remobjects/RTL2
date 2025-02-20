@@ -105,10 +105,10 @@ type
     method EmitPlatformWarning;
     begin
       case fServices.Platform of
-        //Platform.Toffee: fServices.EmitWarning(fType, $"Serialization is not fully supported on Cocoa, yet.");
-        Platform.Cooper: fServices.EmitWarning(fType, $"Serialization is not fully supported on Java, yet.");
-        Platform.Gotham: fServices.EmitWarning(fType, $"Serialization is not fully supported on Gootham, yet.");
-        Platform.All: fServices.EmitWarning(fType, $"Serialization is not fully supported on all platforms, yet.");
+        Platform.Toffee: fServices.EmitHint(fType, $"Serialization is not fully supported on Cocoa, yet.");
+        Platform.Cooper: fServices.EmitHint(fType, $"Serialization is not fully supported on Java, yet.");
+        Platform.Gotham: fServices.EmitError(fType, $"Serialization is notsupported on Gootham projects.");
+        Platform.All: fServices.EmitError(fType, $"Serialization is not supported for mixed-platforms projects.");
       end;
     end;
 
@@ -220,10 +220,6 @@ type
 
         case lEncoderFunction of
           "Object": begin
-              if fServices.Platform in [Platform.Cooper] then begin
-                fServices.EmitWarning(p, $"Nested objects are no supported for serialization on this platform yet, sorry.");
-                continue;
-              end;
               lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef]);
             end;
           "Array", "List", "StringDictionary": begin
@@ -373,10 +369,6 @@ type
 
         case lDecoderFunction of
           "Object": begin
-              if fServices.Platform in [Platform.Cooper] then begin
-                fServices.EmitWarning(p, $"Nested objects are no supported for serialization on this platform yet, sorry.");
-                continue;
-              end;
               lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, nil, [lParameterName, lDecoderTypeRef]),
                                         new TypeValue(p.Type),
                                         BinaryOperator.As)
@@ -561,6 +553,10 @@ type
       end;
       result := (lCoderFunction, lCoderType, nil);
     end;
+
+    //
+    //
+    //
 
     method GetCodableProperties: sequence of IPropertyDefinition; iterator;
     begin

@@ -139,7 +139,7 @@ type
           lObject["__Type"] := new JsonStringValue(aValue.class.ToString); // not sure why this needs "new JsonStringValue"
         {$ELSE}
         if typeOf(aValue) ≠ aExpectedType then
-          lObject["__Type"] := typeOf(aValue).ToString;
+          lObject["__Type"] := typeOf(aValue).FullName;
         {$ENDIF}
       end
       else if Current is var lJsonArray: JsonArray then begin
@@ -151,7 +151,7 @@ type
           lObject["__Type"] := new JsonStringValue(aValue.class.ToString); // not sure why this needs "new JsonStringValue"
         {$ELSE}
         if typeOf(aValue) ≠ aExpectedType then
-          lObject["__Type"] := typeOf(aValue).ToString;
+          lObject["__Type"] := typeOf(aValue).FullName;
         {$ENDIF}
       end;
       {$ELSE}

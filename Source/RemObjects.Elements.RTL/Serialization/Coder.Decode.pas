@@ -73,7 +73,7 @@ type
           if not assigned(aConcreteType) then
             raise new CoderException($"Unknown type '{lTypeName}'.");
           if assigned(aType) and (aConcreteType ≠ aType) and not aConcreteType.IsSubclassOf(aType) then
-            raise new CoderException($"Concrete type '{aConcreteType.Name}' does not descend from {aType.Name}.");
+            raise new CoderException($"Concrete type '{aConcreteType.FullName}' does not descend from {aType.FullName}.");
           aType := aConcreteType;
         end;
 
@@ -284,18 +284,15 @@ type
 
     method FindType(aName: String): &Type;
     begin
-      {$IF TOFFEEV1}
+      {$IF TOFFEEV1 OR COOPER}
       if not assigned(fTypesCache) then
         fTypesCache := new;
       result := fTypesCache[aName];
       if not assigned(result) then begin
-        var lClass := NSClassFromString(aName);
-        if assigned(lClass) then begin
-          result := new &Type withPlatformType(lClass);
-          fTypesCache[aName] := result;
-        end;
+        result := &Type.GetType(aName);
+        fTypesCache[aName] := result;
       end;
-      {$ELSEIF NOT (COOPER OR TOFFEEV2)}
+      {$ELSEIF NOT TOFFEEV2}
       if not assigned(fTypesCache) then
         fTypesCache := &Type.AllTypes;
       result := fTypesCache.FirstOrDefault(t -> t.FullName = aName);
@@ -308,9 +305,9 @@ type
       {$ENDIF}
     end;
 
-    {$IF TOFFEEV1}
+    {$IF TOFFEEV1 OR COOPER}
     var fTypesCache: Dictionary<String, &Type>;
-    {$ELSEIF NOT (COOPER OR TOFFEEV2)} // E671 Type "RemObjects.Elements.RTL.ImmutableList<T>" has a different class model than "Type" (Cocoa vs Island)
+    {$ELSEIF NOT TOFFEEV2} // E671 Type "RemObjects.Elements.RTL.ImmutableList<T>" has a different class model than "Type" (Cocoa vs Island)
     var fTypesCache: ImmutableList<&Type>;
     {$ENDIF}
 
