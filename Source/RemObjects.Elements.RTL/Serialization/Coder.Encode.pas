@@ -81,6 +81,10 @@ type
             EncodeGuid(aName, lGuid as Guid)
           else if defined("ECHOES") and (aValue is var lDateTime: RemObjects.Elements.System.GenericNullable<DateTime>) then
             EncodeDateTime(aName, lDateTime as DateTime)
+          else if defined("TOFFEE") and aValue is PlatformGuid then
+            EncodeGuid(aName, aValue as Guid) // sometimes a Guid is __NSConcreteUUID and doesnt hit the "case"
+          else if defined("TOFFEE") and aValue is PlatformString then
+            EncodeString(aName, aValue as PlatformString) // sometimes a Guid is __NSCFConstantString and doesnt hit the "case"
           else if assigned(aName) then
             raise new CodingExeption($"Type '{lType}' for field or property '{aName}' is not encodable.")
           else
@@ -104,14 +108,14 @@ type
       end;
     end;
 
-    {$IF TOFFEEV1}
-    method EncodeObject(aName: String; aValue: IEncodable; aExpectedType: PlatformType := nil); inline;
-    begin
-      EncodeObject(aName, aValue, if assigned(aExpectedType) then new &Type withPlatformType(aExpectedType));
-    end;
-    {$ENDIF}
+    //{$IF TOFFEEV1}
+    //method EncodeObject(aName: String; aValue: IEncodable; aExpectedType: PlatformType := nil); inline;
+    //begin
+      //EncodeObject(aName, aValue, if assigned(aExpectedType) then new &Type withPlatformType(aExpectedType));
+    //end;
+    //{$ENDIF}
 
-    method EncodeArray<T>(aName: String; aValue: array of T; aExpectedType: &Type := nil); {$IF NOT ISLAND}virtual;{$ENDIF}
+    method EncodeArray<T>(aName: String; aValue: array of T; aExpectedType: &Type := nil);
     begin
       if assigned(aValue) then begin
         EncodeArrayStart(aName);
@@ -145,6 +149,13 @@ type
       end;
     end;
 
+    //{$IF TOFFEEV1}
+    //method EncodeList<T>(aName: String; aValue: List<T>; aExpectedType: &Class := nil); inline;
+    //begin
+      //EncodeList(aName, aValue, if assigned(aExpectedType) then new &Type withPlatformType(aExpectedType));
+    //end;
+    //{$ENDIF}
+
     method EncodeStringDictionary<T>(aName: String; aValue: Dictionary<String, T>; aExpectedType: &Type := nil);
     begin
       if assigned(aValue) then begin
@@ -159,6 +170,13 @@ type
         EncodeNil(aName);
       end;
     end;
+
+    //{$IF TOFFEEV1}
+    //method EncodeStringDictionary<T>(aName: String; aValue: Dictionary<String, T>; aExpectedType: &Class := nil); inline;
+    //begin
+      //EncodeStringDictionary(aName, aValue, if assigned(aExpectedType) then new &Type withPlatformType(aExpectedType));
+    //end;
+    //{$ENDIF}
 
     method EncodeDateTime(aName: String; aValue: nullable DateTime); virtual;
     begin

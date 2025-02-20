@@ -216,18 +216,21 @@ type
         //Log($"{p.Name}: {lEncoderFunction}");
 
         var lEncoderTypeRef: Value := if assigned(lEncoderType) then
-          (if fServices.Platform = Platform.Toffee then new ProcValue(new TypeValue(lEncoderType), "class") else new TypeOfValue(lEncoderType));
+          (if fServices.Platform = Platform.Toffee then
+             new NewValue(fServices.GetType("RemObjects.Elements.RTL.Reflection.Type"), [new ProcValue(new TypeValue(lEncoderType), "class")], nil, ["withPlatformType"])
+           else
+             new TypeOfValue(lEncoderType));
 
         case lEncoderFunction of
           "Object": begin
               lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef]);
             end;
           "Array", "List", "StringDictionary": begin
-              if fServices.Platform in [Platform.Toffee, Platform.Cooper] then begin
-                fServices.EmitWarning(p, $"Collections are no supported for serialization on this platform yet, sorry.");
+              if (lEncoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper]) then begin
+                fServices.EmitWarning(p, $"Collections are not supported for serialization on this platform yet, sorry.");
                 continue;
               end;
-              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, [lEncoderType], [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef]);
+              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, [lEncoderType], [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef])
             end;
           else begin
               lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name)]);
@@ -365,7 +368,10 @@ type
         end;
 
         var lDecoderTypeRef: Value := if assigned(lDecoderType) then
-          (if fServices.Platform = Platform.Toffee then new ProcValue(new TypeValue(lDecoderType), "class") else new TypeOfValue(lDecoderType));
+          (if fServices.Platform = Platform.Toffee then
+             new NewValue(fServices.GetType("RemObjects.Elements.RTL.Reflection.Type"), [new ProcValue(new TypeValue(lDecoderType), "class")], nil, ["withPlatformType"])
+           else
+             new TypeOfValue(lDecoderType));
 
         case lDecoderFunction of
           "Object": begin
@@ -375,7 +381,7 @@ type
             end;
           "Array", "List", "StringDictionary": begin
               if fServices.Platform in [Platform.Toffee, Platform.Cooper] then begin
-                fServices.EmitWarning(p, $"Collections are no supported for serialization on this platform yet, sorry.");
+                fServices.EmitWarning(p, $"Collections are not supported for decoding on this platform yet, sorry.");
                 continue;
               end;
               lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName/*, lDecoderTypeRef*/]),
