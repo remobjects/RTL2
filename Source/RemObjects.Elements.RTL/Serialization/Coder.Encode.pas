@@ -44,7 +44,10 @@ type
         exit;
       end;
 
-      case aValue type of
+      //Log($"typeOf(aValue) {typeOf(aValue)}");
+      {$HINT `typeOf(aValue)` is nil here, for Cocoa. why?}
+      var lType := if defined("COCOA") then aValue.class else typeOf(aValue);
+      case lType of
         DateTime: EncodeDateTime(aName, aValue as DateTime);
         String: EncodeString(aName, aValue as String);
         //{$IF TOFFEE}
@@ -54,14 +57,12 @@ type
         Int16: EncodeInt16(aName, aValue as Int16);
         Int32: EncodeInt32(aName, aValue as Int32);
         Int64: EncodeInt64(aName, aValue as Int64);
-        {$IF NOT COOPER}
-        IntPtr: EncodeIntPtr(aName, aValue as IntPtr);
-        {$ENDIF}
         Byte: EncodeUInt8(aName, aValue as Byte);
         UInt16: EncodeUInt16(aName, aValue as UInt16);
         UInt32: EncodeUInt32(aName, aValue as UInt32);
         UInt64: EncodeUInt64(aName, aValue as UInt64);
-        {$IF NOT COOPER}
+        {$IF NOT (TOFFEE OR COOPER)}
+        IntPtr: EncodeIntPtr(aName, aValue as IntPtr);
         UIntPtr: EncodeUIntPtr(aName, aValue as UIntPtr);
         {$ENDIF}
         Boolean: EncodeBoolean(aName, aValue as Boolean);
@@ -69,21 +70,21 @@ type
         Double: EncodeDouble(aName, aValue as Double);
         //{$ENDIF}
         Guid: EncodeGuid(aName, aValue as Guid);
-        {$IF NOT COOPER} // On these platforms the types are aliased
+        {$IF NOT (TOFFEE OR COOPER)} // On these platforms the types are aliased
         PlatformDateTime: EncodeDateTime(aName, aValue as DateTime);
         PlatformGuid: EncodeGuid(aName, aValue as Guid);
         {$ENDIF}
         else begin
           if aValue is IEncodable then
             EncodeObject(aName, aValue as IEncodable, aExpectedType)
-          else if aValue is var lGuid: RemObjects.Elements.System.GenericNullable<Guid> then
+          else if defined("ECHOES") and (aValue is var lGuid: RemObjects.Elements.System.GenericNullable<Guid>) then
             EncodeGuid(aName, lGuid as Guid)
-          else if aValue is var lDateTime: RemObjects.Elements.System.GenericNullable<DateTime> then
+          else if defined("ECHOES") and (aValue is var lDateTime: RemObjects.Elements.System.GenericNullable<DateTime>) then
             EncodeDateTime(aName, lDateTime as DateTime)
           else if assigned(aName) then
-            raise new CodingExeption($"Type '{typeOf(aValue)}' for field or property '{aName}' is not encodable.")
+            raise new CodingExeption($"Type '{lType}' for field or property '{aName}' is not encodable.")
           else
-            raise new CodingExeption($"Type '{typeOf(aValue)}' is not encodable.");
+            raise new CodingExeption($"Type '{lType}' is not encodable.");
         end;
       end;
       {$ELSE}
@@ -102,6 +103,13 @@ type
         EncodeNil(aName);
       end;
     end;
+
+    {$IF TOFFEEV1}
+    method EncodeObject(aName: String; aValue: IEncodable; aExpectedType: PlatformType := nil); inline;
+    begin
+      EncodeObject(aName, aValue, if assigned(aExpectedType) then new &Type withPlatformType(aExpectedType));
+    end;
+    {$ENDIF}
 
     method EncodeArray<T>(aName: String; aValue: array of T; aExpectedType: &Type := nil); {$IF NOT ISLAND}virtual;{$ENDIF}
     begin
@@ -272,7 +280,7 @@ type
 
   protected
 
-    method EncodeObjectStart(aName: String; aValue: IEncodable; aExpectedType: &Type := nil); abstract;
+    method EncodeObjectStart(aName: String; aValue: IEncodable; aExpectedType: &&Type := nil); abstract;
     method EncodeObjectEnd(aName: String; aValue: IEncodable); abstract;
 
     method EncodeArrayStart(aName: String); abstract;

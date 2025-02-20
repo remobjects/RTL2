@@ -85,10 +85,9 @@ type
       end;
     end;
 
-    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    {$IF ECHOES}
     method DecodeArrayElements<T>(aName: String): array of T; override;
     begin
-      {$IF NOT COOPER} // JE9 Generic type "T" is not available at runtime// JE9 Generic type "T" is not available at runtime
       if Current is var lJsonArray: JsonArray then begin
         result := new array of T(lJsonArray.Count);
         for i := 0 to lJsonArray.Count-1 do begin
@@ -99,9 +98,6 @@ type
           Hierarchy.Pop;
         end;
       end;
-      {$ELSE}
-      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
-      {$ENDIF}
     end;
     {$ENDIF}
 
@@ -121,10 +117,9 @@ type
       end;
     end;
 
-    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    {$IF ECHOES} // E703 Virtual generic methods not supported on Island
     method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; override;
     begin
-      {$IF NOT COOPER} // JE9 Generic type "T" is not available at runtime// JE9 Generic type "T" is not available at runtime
       with matching lJsonObject := JsonObject(Current) do begin
         result := new Dictionary<String,T> withCapacity(lJsonObject.Count);
         for each k in lJsonObject.Keys do begin
@@ -135,9 +130,6 @@ type
           Hierarchy.Pop;
         end;
       end;
-      {$ELSE}
-      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
-      {$ENDIF}
     end;
     {$ENDIF}
 

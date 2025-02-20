@@ -56,10 +56,9 @@ type
       end;
     end;
 
-    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    {$IF ECHOES}
     method DecodeArrayElements<T>(aName: String): array of T; override;
     begin
-      {$IF NOT COOPER} // JE9 Generic type "T" is not available at runtime// JE9 Generic type "T" is not available at runtime
       var lElements := Current.ElementsWithName("Element").ToList;
       result := new array of T(lElements.Count);
       for i := 0 to lElements.Count-1 do begin
@@ -69,9 +68,6 @@ type
           result[i] := lValue as T;
         Hierarchy.Pop;
       end;
-      {$ELSE}
-      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
-      {$ENDIF}
     end;
     {$ENDIF}
 
@@ -96,10 +92,9 @@ type
       end;
     end;
 
-    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    {$IF ECHOES}
     method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; override;
     begin
-      {$IF NOT COOPER} // JE9 Generic type "T" is not available at runtime// JE9 Generic type "T" is not available at runtime
       result := new Dictionary<String,T>;
       for each e in Current.Elements do begin
         if assigned(e.Attribute["Name"]) then begin
@@ -110,10 +105,7 @@ type
           Hierarchy.Pop;
         end;
       end;
-      {$ELSE}
-      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
-      {$ENDIF}
-      end;
+    end;
     {$ENDIF}
 
     method DecodeStringDictionaryEnd(aName: String); override;

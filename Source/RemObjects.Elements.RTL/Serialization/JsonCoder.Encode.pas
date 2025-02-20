@@ -105,7 +105,7 @@ type
       {$ENDIF}
     end;
 
-    {$IF SERIALIZATION}
+    {$IF ECHOES OR ISLAND}
     class method FromJson<T>(aJson: JsonNode): T; where T has constructor, T is IDecodable;
     begin
       var lTemp := new JsonCoder withJson(aJson);
@@ -134,15 +134,25 @@ type
         var lObject := new JsonObject;
         Current[aName] := lObject;
         Hierarchy.Push(lObject);
+        {$IF TOFFEE}
+        if aValue.class ≠ aExpectedType:TypeClass then
+          lObject["__Type"] := new JsonStringValue(aValue.class.ToString); // not sure why this needs "new JsonStringValue"
+        {$ELSE}
         if typeOf(aValue) ≠ aExpectedType then
           lObject["__Type"] := typeOf(aValue).ToString;
+        {$ENDIF}
       end
       else if Current is var lJsonArray: JsonArray then begin
         var lObject := new JsonObject;
         lJsonArray.Add(lObject);
         Hierarchy.Push(lObject);
+        {$IF TOFFEE}
+        if aValue.class ≠ aExpectedType.class then
+          lObject["__Type"] := new JsonStringValue(aValue.class.ToString); // not sure why this needs "new JsonStringValue"
+        {$ELSE}
         if typeOf(aValue) ≠ aExpectedType then
           lObject["__Type"] := typeOf(aValue).ToString;
+        {$ENDIF}
       end;
       {$ELSE}
       raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");

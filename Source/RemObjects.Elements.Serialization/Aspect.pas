@@ -103,8 +103,8 @@ type
     method EmitPlatformWarning;
     begin
       case fServices.Platform of
+        //Platform.Toffee: fServices.EmitWarning(fType, $"Serialization is not fully supported on Cocoa, yet.");
         Platform.Cooper: fServices.EmitWarning(fType, $"Serialization is not fully supported on Java, yet.");
-        Platform.Toffee: fServices.EmitWarning(fType, $"Serialization is not fully supported on Cocoa, yet.");
         Platform.Gotham: fServices.EmitWarning(fType, $"Serialization is not fully supported on Gootham, yet.");
         Platform.All: fServices.EmitWarning(fType, $"Serialization is not fully supported on all platforms, yet.");
       end;
@@ -162,8 +162,6 @@ type
       if not assigned(lEncode) then
         raise new Exception("Encode method not found");
 
-      writeLn($"got lEncode {fType.Name}.{lEncode}, it's {lEncode.Virtual}.");
-
       //var lEncode := fType.AddMethod("Encode", VoidType, false);
       //lEncode.AddParameter("aCoder", ParameterModifier.In, fServices.GetType("RemObjects.Elements.Serialization.Coder"));
 
@@ -215,12 +213,19 @@ type
         var (lEncoderFunction, lEncoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Encode);
         //Log($"{p.Name}: {lEncoderFunction}");
 
+        var lEncoderTypeRef: Value := if assigned(lEncoderType) then
+          (if fServices.Platform = Platform.Toffee then new ProcValue(new TypeValue(lEncoderType), "class") else new TypeOfValue(lEncoderType));
+
         case lEncoderFunction of
           "Object": begin
-              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name), new TypeOfValue(lEncoderType)]);
+              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef]);
             end;
           "Array", "List", "StringDictionary": begin
-              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, [lEncoderType], [lParameterName, new IdentifierValue(p.Name), new TypeOfValue(lEncoderType)]);
+              if fServices.Platform = Platform.Toffee then begin
+                fServices.EmitWarning(p, $"Collections are no supported for serialization on Cocoa yet, sorry.");
+                continue;
+              end;
+              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, [lEncoderType], [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef]);
             end;
           else begin
               lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name)]);
@@ -353,14 +358,21 @@ type
           end;
         end;
 
+        var lDecoderTypeRef: Value := if assigned(lDecoderType) then
+          (if fServices.Platform = Platform.Toffee then new ProcValue(new TypeValue(lDecoderType), "class") else new TypeOfValue(lDecoderType));
+
         case lDecoderFunction of
           "Object": begin
-              lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, nil, [lParameterName, new TypeOfValue(lDecoderType)]),
+              lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, nil, [lParameterName, lDecoderTypeRef]),
                                         new TypeValue(p.Type),
                                         BinaryOperator.As)
             end;
           "Array", "List", "StringDictionary": begin
-              lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName/*, new TypeOfValue(lDecoderType)*/]),
+              if fServices.Platform = Platform.Toffee then begin
+                fServices.EmitWarning(p, $"Collections are no supported for serialization on Cocoa yet, sorry.");
+                continue;
+              end;
+              lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName/*, lDecoderTypeRef*/]),
                                         new TypeValue(p.Type),
                                         BinaryOperator.As)
             end;
@@ -405,7 +417,9 @@ type
       var lCoderType: IType;
       var lName := aType.Fullname;
       if lName.StartsWith("RemObjects.Elements.System.") then
-        lName := lName.Substring(20); // Let Island system types fall back to the names of .NET System types
+        lName := lName.Substring(20) // Let Island system types fall back to the names of .NET System types
+      else if lName.StartsWith("nullable ") then
+        lName := lName.Substring(9); // happens for Cocoa numbers
 
       case lName of
         "RemObjects.Elements.RTL.PlatformString", // why does nullable Stirng NOW have "RemObjects.Elements.RTL.PlatformString", but regular has System?
@@ -414,23 +428,30 @@ type
         "System.String": lCoderFunction := "String";
 
         "RemObjects.Elements.RTL.Guid",
+        "Foundation.NSUUID",
         "System.Guid": lCoderFunction := "Guid";
 
         "RemObjects.Elements.RTL.DateTime",
+        "Foundation.NSDate",
         "System.DateTime": lCoderFunction := "DateTime";
 
         "RemObjects.Elements.RTL.JsonNode": lCoderFunction := "JsonNode";
+        "RemObjects.Elements.RTL.JsonArray": lCoderFunction := "JsonArray";
+        "RemObjects.Elements.RTL.JsonObject": lCoderFunction := "JsonObject";
 
         "System.Byte": lCoderFunction := "UInt8";
         "System.SByte": lCoderFunction := "Int8";
+        "System.Int8": lCoderFunction := "Int8";
         "System.Int16": lCoderFunction := "Int16";
         "System.Int32": lCoderFunction := "Int32";
         "System.Int64": lCoderFunction := "Int64";
-        "System.IntPtr": lCoderFunction := "IntPtr";
+        "System.UInt8": lCoderFunction := "UInt8";
         "System.UInt16": lCoderFunction := "UInt16";
         "System.UInt32": lCoderFunction := "UInt32";
         "System.UInt64": lCoderFunction := "UInt64";
+
         "System.UIntPtr": lCoderFunction := "UIntPtr";
+        "System.IntPtr": lCoderFunction := "IntPtr";
 
         "System.NativeInt": lCoderFunction := "IntPtr";
         "System.NativeUInt": lCoderFunction := "UIntPtr";
@@ -438,6 +459,7 @@ type
         "System.Single": lCoderFunction := "Single";
         "System.Double": lCoderFunction := "Double";
         "System.Boolean": lCoderFunction := "Boolean";
+
         else begin
           if ((aDirection = Direction.Encode) and IsEncodable(aType)) or ((aDirection = Direction.Decode) and IsDecodable(aType)) then begin
             lCoderFunction := "Object";
@@ -450,47 +472,70 @@ type
           end
           else if aType is var lGeneric: IGenericInstantiationType then begin
             var lType := FlattenType(lGeneric.GenericType);
-            if lType.Fullname = "System.Nullable`1" then begin
 
-              var lNestedType := lGeneric.GetParameter(0);
-              var lNestedCoderFunction := GetCoderFunctionName(lNestedType, aDirection);
-              if assigned(lNestedCoderFunction[0]) then
-                lCoderFunction := /*"Nullable"+*/lNestedCoderFunction[0];
+            case lType.Fullname of
 
-            end
-            else if lType.Fullname in ["System.Collections.Generic.List`1",
-                                       "RemObjects.Elements.System.List`1",
-                                       "RemObjects.Elements.RTL.List`1",
-                                       "RemObjects.Elements.RTL.ImmutableList`1"] then begin
+              "System.Nullable`1",
+              "RemObjects.Elements.System.Nullable`1": begin
+                var lNestedType := lGeneric.GetParameter(0);
+                var lNestedCoderFunction := GetCoderFunctionName(lNestedType, aDirection);
+                if assigned(lNestedCoderFunction[0]) then
+                  lCoderFunction := /*"Nullable"+*/lNestedCoderFunction[0];
+              end;
 
-              var lNestedType := lGeneric.GetParameter(0);
-              lCoderFunction := "List";
-              lCoderType := FlattenType(lNestedType);
-              if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then
-                exit (nil, nil, lNestedType);
+            "Foundation.NSArray",
+            "Foundation.NSMutableArray",
+            "System.Collections.Generic.List`1",
+            "RemObjects.Elements.System.List`1",
+            "RemObjects.Elements.RTL.List`1",
+            "RemObjects.Elements.RTL.ImmutableList`1": begin
 
-            end
-            else if lType.Fullname in ["System.Collections.Generic.Dictionary`2",
-                                       "RemObjects.Elements.System.Dictionary`2",
-                                       "RemObjects.Elements.RTL.Dictionary`1",
-                                       "RemObjects.Elements.RTL.ImmutableDictionary`1"] then begin
+                var lNestedType := lGeneric.GetParameter(0);
+                lCoderFunction := "List";
+                lCoderType := FlattenType(lNestedType);
+                if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then
+                  exit (nil, nil, lNestedType);
 
-              var lKeyType := lGeneric.GetParameter(0);
-              var lNestedType := lGeneric.GetParameter(1);
-              lCoderFunction := "StringDictionary";
-              lCoderType := FlattenType(lNestedType);
-              if GetCoderFunctionName(FlattenType(lKeyType), aDirection)[0] ≠ "String" then // key must be String
-                exit (nil, nil, nil);
-              if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then
-                exit (nil, nil, lNestedType);
+              end;
 
-            end
+            "Foundation.NSDictionary",
+            "Foundation.NSMutableDictionary",
+            "System.Collections.Generic.Dictionary`2",
+            "RemObjects.Elements.System.Dictionary`2",
+            "RemObjects.Elements.RTL.Dictionary`1",
+            "RemObjects.Elements.RTL.ImmutableDictionary`1": begin
+
+                var lKeyType := lGeneric.GetParameter(0);
+                var lNestedType := lGeneric.GetParameter(1);
+                lCoderFunction := "StringDictionary";
+                lCoderType := FlattenType(lNestedType);
+                if GetCoderFunctionName(FlattenType(lKeyType), aDirection)[0] ≠ "String" then // key must be String
+                  exit (nil, nil, nil);
+                if not assigned(GetCoderFunctionName(lCoderType, aDirection)[0]) then
+                  exit (nil, nil, lNestedType);
+
+              end;
+
+            "Foundation.NSNumber": begin
+
+                var lNestedType := lGeneric.GetParameter(0);
+                  exit GetCoderFunctionName(FlattenType(lNestedType), aDirection);
+
+              end;
+
             else begin
-              DebugLog($"Unsupported generic type {aType} {lType.Fullname}");
-            end;
+                {$IF DEBUG}
+                Log($"Unsupported generic type '{lType.Fullname}'");
+                {$ENDIF}
+              end;
+
+            end; // case
+
           end
           else begin
-            DebugLog($"Unsupported type {aType} {aType.Fullname}");
+            {$IF DEBUG}
+            Log($"Unsupported type '{aType.Fullname}'");
+            {$ENDIF}
           end;
         end;
       end;

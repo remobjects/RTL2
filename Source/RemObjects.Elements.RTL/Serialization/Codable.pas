@@ -16,6 +16,11 @@ type
       (self as IDecodable).Decode(lCoder);
     end;
 
+    constructor withDecoder(aCoder: Coder);
+    begin
+      (self as IDecodable).Decode(aCoder);
+    end;
+
     method ToJson: JsonObject;
     begin
       var lCoder := new JsonCoder;

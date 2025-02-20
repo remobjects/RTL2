@@ -21,15 +21,16 @@
     <DeploymentTargetVersion>1.0</DeploymentTargetVersion>
     <CrossPlatform>True</CrossPlatform>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <KnownConditionalDefines>DEBUG;SERIALIZATION;TRACE</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
-    <DefineConstants>DEBUG;TRACE;</DefineConstants>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <EnableAsserts>True</EnableAsserts>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <ConditionalDefines>DEBUG;SERIALIZATION;TRACE</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
@@ -39,6 +40,7 @@
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <GenerateBitcode>True</GenerateBitcode>
+    <ConditionalDefines>SERIALIZATION</ConditionalDefines>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Foundation" />

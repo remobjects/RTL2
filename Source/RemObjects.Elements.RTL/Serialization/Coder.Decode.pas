@@ -30,10 +30,10 @@ type
     method DecodeArray<T>(aName: String): array of T;
     begin
       if DecodeArrayStart(aName) then begin
-        {$IF NOT ISLAND}
+        {$IF ECHOES}
         result := DecodeArrayElements<T>(aName);
         {$ELSE}
-        raise new CodingExeption($"Decoding of arrays and lists is not (yet) supported on Island.");
+        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
         DecodeArrayEnd(aName);
       end;
@@ -42,10 +42,10 @@ type
     method DecodeList<T>(aName: String): List<T>;
     begin
       if DecodeArrayStart(aName) then begin
-        {$IF NOT ISLAND}
+        {$IF ECHOES}
         result := DecodeListElements<T>(aName);
         {$ELSE}
-        raise new CodingExeption($"Decoding of arrays and lists is not (yet) supported on Island.");
+        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
         DecodeArrayEnd(aName);
       end;
@@ -54,10 +54,10 @@ type
     method DecodeStringDictionary<T>(aName: String): Dictionary<String, T>;
     begin
       if DecodeStringDictionaryStart(aName) then begin
-        {$IF NOT ISLAND}
+        {$IF ECHOES}
         result := DecodeStringDictionaryElements<T>(aName);
         {$ELSE}
-        raise new CodingExeption($"Decoding of arrays and lists is not (yet) supported on Island.");
+        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
         DecodeStringDictionaryEnd(aName);
       end;
@@ -81,11 +81,18 @@ type
           raise new CoderException($"Unknown type.");
 
         result := aType.Instantiate() as IDecodable;
+
         result.Decode(self);
         DecodeObjectEnd(aName);
       end;
     end;
 
+    {$IF TOFFEEV1}
+    method DecodeObject(aName: String; aType: PlatformType): IDecodable; inline;
+    begin
+      result := DecodeObject(aName, new &Type withPlatformType(aType));
+    end;
+    {$ENDIF}
 
     //method BeginReadObject(aObject: IDecodable);
     //begin
@@ -198,18 +205,18 @@ type
     method DecodeObjectEnd(aName: String); abstract;
 
     method DecodeArrayStart(aName: String): Boolean; abstract;
-    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    method DecodeArrayEnd(aName: String); abstract;
+    {$IF ECHOES}
     method DecodeArrayElements<T>(aName: String): array of T; abstract;
     {$ENDIF}
-    method DecodeArrayEnd(aName: String); abstract;
 
     method DecodeStringDictionaryStart(aName: String): Boolean; abstract;
-    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    method DecodeStringDictionaryEnd(aName: String); abstract;
+    {$IF ECHOES}
     method DecodeStringDictionaryElements<T>(aName: String): Dictionary<String,T>; abstract;
     {$ENDIF}
-    method DecodeStringDictionaryEnd(aName: String); abstract;
 
-    {$IF NOT ISLAND} // E703 Virtual generic methods not supported on Island
+    {$IF ECHOES}
     method DecodeArrayElement<T>(aName: String): Object;
     begin
       {$IF SERIALIZATION}
@@ -220,10 +227,11 @@ type
     end;
     {$ENDIF}
 
-    method DecodeArrayElement(aName: String; aType: &Type): Object; {$IF NOT ISLAND}virtual;{$ENDIF}
+    method DecodeArrayElement(aName: String; aType: &Type): Object; virtual;
     begin
       {$IF SERIALIZATION}
-      case aType of
+      var lType := if defined("COCOA") then aType.TypeClass else aType;
+      case lType of
         DateTime: result := DecodeDateTime(nil);
         String: result := DecodeString(nil);
         SByte: result := DecodeInt8(nil);
@@ -244,7 +252,7 @@ type
         Single: result := DecodeSingle(nil);
         Double: result := DecodeDouble(nil);
         Guid: result := DecodeGuid(nil);
-        {$IF NOT COOPER} // On these platforms the types are aliased
+        {$IF NOT (TOFFEE OR COOPER)} // On these platforms the types are aliased
         PlatformDateTime: result := DecodeDateTime(nil);
         PlatformGuid: result := DecodeGuid(nil);
         {$ENDIF}
@@ -260,12 +268,10 @@ type
       result := DecodeArrayStart(aName);
     end;
 
-    {$IF NOT ISLAND}
+    {$IF ECHOES}
     method DecodeListElements<T>(aName: String): List<T>; virtual;
     begin
-      {$IF SERIALIZATION}
       result := DecodeArrayElements<T>(aName).ToList;
-      {$ENDIF}
     end;
     {$ENDIF}
 
@@ -278,7 +284,18 @@ type
 
     method FindType(aName: String): &Type;
     begin
-      {$IF NOT (COOPER OR TOFFEEV2)}
+      {$IF TOFFEEV1}
+      if not assigned(fTypesCache) then
+        fTypesCache := new;
+      result := fTypesCache[aName];
+      if not assigned(result) then begin
+        var lClass := NSClassFromString(aName);
+        if assigned(lClass) then begin
+          result := new &Type withPlatformType(lClass);
+          fTypesCache[aName] := result;
+        end;
+      end;
+      {$ELSEIF NOT (COOPER OR TOFFEEV2)}
       if not assigned(fTypesCache) then
         fTypesCache := &Type.AllTypes;
       result := fTypesCache.FirstOrDefault(t -> t.FullName = aName);
@@ -291,7 +308,9 @@ type
       {$ENDIF}
     end;
 
-    {$IF NOT (COOPER OR TOFFEEV2)} // E671 Type "RemObjects.Elements.RTL.ImmutableList<T>" has a different class model than "Type" (Cocoa vs Island)
+    {$IF TOFFEEV1}
+    var fTypesCache: Dictionary<String, &Type>;
+    {$ELSEIF NOT (COOPER OR TOFFEEV2)} // E671 Type "RemObjects.Elements.RTL.ImmutableList<T>" has a different class model than "Type" (Cocoa vs Island)
     var fTypesCache: ImmutableList<&Type>;
     {$ENDIF}
 
