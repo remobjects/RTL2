@@ -49,12 +49,13 @@ type
     class method GetType(aName: not nullable String): nullable &Type;
     constructor withPlatformType(aType: PlatformType);
     {$IF COOPER}
-    method IsSubclassOf(aType: &Type): Boolean;
+    method IsSubclassOf(aType: not nullable &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
     property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
     property MethodFields: ImmutableList<Field> read mapped.getFields().ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
-    property Name: String read mapped.Name;
+    property Name: String read String(mapped.Name):SubstringToFirstOccurrenceOf("<").SubstringFromLastOccurrenceOf(".");
+    property FullName: String read mapped.Name;
     property BaseType: nullable &Type read mapped.getSuperclass();
     property IsClass: Boolean read (not mapped.isInterface()) and (not mapped.isPrimitive());
     property IsInterface: Boolean read mapped.isInterface();
@@ -87,6 +88,7 @@ type
     property Interfaces: ImmutableList<&Type> read Get_Interfaces;
     property Methods: ImmutableList<&Method> read Get_Methods;
     property Name: String read mapped.Name;
+    property FullName: String read mapped.FullName;
     property BaseType: nullable &Type read mapped.GetTypeInfo().BaseType;
     property IsClass: Boolean read mapped.GetTypeInfo().IsClass;
     property IsInterface: Boolean read mapped.GetTypeInfo().IsInterface;
@@ -143,6 +145,7 @@ type
   {$ENDIF}
 
 implementation
+
 {$IFNDEF TOFFEEV2}
 {$IF COOPER}[Warning("Type.GetAllTypes is not supported for Java")]{$ENDIF}
 class method &Type.GetAllTypes: ImmutableList<&Type>;
@@ -200,9 +203,9 @@ begin
 end;
 
 {$IF COOPER}
-method &Type.IsSubclassOf(aType: &Type): Boolean;
+method &Type.IsSubclassOf(aType: not nullable &Type): Boolean;
 begin
-  result := (self.IsInterface = aType.IsInterface) and mapped.isAssignableFrom(aType);
+  result := (self.IsInterface = aType.IsInterface) and (aType as PlatformType).isAssignableFrom(mapped);
 end;
 {$ELSEIF TOFFEE AND NOT ISLAND}
 constructor &Type /*withID*/;
