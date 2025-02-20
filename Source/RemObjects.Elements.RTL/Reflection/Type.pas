@@ -48,6 +48,12 @@ type
     class property AllTypes: ImmutableList<&Type> read GetAllTypes;
     class method GetType(aName: not nullable String): nullable &Type;
     constructor withPlatformType(aType: PlatformType);
+
+    {$IF TOFFEE}
+    class method MangleName(aName: not nullable String): not nullable String;
+    class method UnmangleName(aName: not nullable String): not nullable String;
+    {$ENDIF}
+
     {$IF COOPER}
     method IsSubclassOf(aType: not nullable &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
@@ -76,7 +82,8 @@ type
     //operator Explicit(aClass: rtl.Class): &Type;
     //operator Explicit(aProtocol: Protocol): &Type;
     property TypeClass: &Class read fClass;
-    property Name: String read getName;
+    property Name: String read getName; {$HINT demangle & cut?}
+    property FullName: String read getName;
     property BaseType: nullable &Type read if IsClass then new &Type withClass(class_getSuperclass(fClass));
     property IsClass: Boolean read assigned(fClass) or fIsID;
     property IsInterface: Boolean read assigned(fProtocol);
@@ -183,7 +190,7 @@ begin
   except
   end;
   {$ELSEIF TOFFEE AND NOT ISLAND}
-  var lClass := NSClassFromString(aName);
+  var lClass := NSClassFromString(MangleName(aName));
   if assigned(lClass) then
     result := new &Type withClass(lClass);
   {$ELSEIF ECHOES}
@@ -201,6 +208,22 @@ begin
   constructor withClass(aType);
   {$ENDIF}
 end;
+
+{$IF TOFFEE}
+class method &Type.MangleName(aName: not nullable String): not nullable String;
+begin
+  result := aName;
+  if result.Contains(".") then
+    result := "__"+result.Replace(".", "_");
+end;
+
+class method &Type.UnmangleName(aName: not nullable String): not nullable String;
+begin
+  result := aName;
+  if result.StartsWith("__") then
+    result := result.Substring(2).Replace("_", ".");
+end;
+{$ENDIF}
 
 {$IF COOPER}
 method &Type.IsSubclassOf(aType: not nullable &Type): Boolean;
@@ -247,8 +270,8 @@ end;
 method &Type.GetName: String;
 begin
   if fIsID then exit ('id');
-  if assigned(fClass) then exit fClass.description;
-  if assigned(fProtocol) then exit fProtocol.description;
+  if assigned(fClass) then exit Unmanglename(fClass.description);
+  if assigned(fProtocol) then exit Unmanglename(fProtocol.description);
   if assigned(fSimpleType) then begin
     case fSimpleType of
       'c': exit 'char';

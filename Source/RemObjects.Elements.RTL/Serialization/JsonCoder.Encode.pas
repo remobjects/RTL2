@@ -136,7 +136,7 @@ type
         Hierarchy.Push(lObject);
         {$IF TOFFEE}
         if aValue.class ≠ aExpectedType:TypeClass then
-          lObject["__Type"] := new JsonStringValue(aValue.class.ToString); // not sure why this needs "new JsonStringValue"
+          lObject["__Type"] := new &Type withPlatformType(aValue.class).FullName
         {$ELSE}
         if typeOf(aValue) ≠ aExpectedType then
           lObject["__Type"] := typeOf(aValue).FullName;
@@ -148,7 +148,7 @@ type
         Hierarchy.Push(lObject);
         {$IF TOFFEE}
         if aValue.class ≠ aExpectedType.class then
-          lObject["__Type"] := new JsonStringValue(aValue.class.ToString); // not sure why this needs "new JsonStringValue"
+          lObject["__Type"] := new &Type withPlatformType(aValue.class).FullName
         {$ELSE}
         if typeOf(aValue) ≠ aExpectedType then
           lObject["__Type"] := typeOf(aValue).FullName;
