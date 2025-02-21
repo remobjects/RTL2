@@ -134,25 +134,15 @@ type
         var lObject := new JsonObject;
         Current[aName] := lObject;
         Hierarchy.Push(lObject);
-        {$IF TOFFEEV1}
-        if aValue.class ≠ aExpectedType:TypeClass then
-          lObject["__Type"] := new &Type withPlatformType(aValue.class).FullName
-        {$ELSE}
-        if typeOf(aValue) ≠ aExpectedType then
-          lObject["__Type"] := typeOf(aValue).FullName;
-        {$ENDIF}
+        if &Type.TypeOf(aValue) ≠ aExpectedType then
+          lObject["__Type"] := &Type.TypeOf(aValue).FullName;
       end
       else if Current is var lJsonArray: JsonArray then begin
         var lObject := new JsonObject;
         lJsonArray.Add(lObject);
         Hierarchy.Push(lObject);
-        {$IF TOFFEEV1}
-        if aValue.class ≠ aExpectedType.class then
-          lObject["__Type"] := new &Type withPlatformType(aValue.class).FullName
-        {$ELSE}
-        if typeOf(aValue) ≠ aExpectedType then
-          lObject["__Type"] := typeOf(aValue).FullName;
-        {$ENDIF}
+        if &Type.TypeOf(aValue) ≠ aExpectedType then
+          lObject["__Type"] := &Type.TypeOf(aValue).FullName;
       end;
       {$ELSE}
       raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");

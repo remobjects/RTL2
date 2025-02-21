@@ -89,7 +89,7 @@ type
         Hierarchy.Push(lElements[i]);
         var lValue := DecodeArrayElement<T>(aName);
         if assigned(lValue) then
-          result[i] := lValue as T;
+          result.Add(lValue as T);
         Hierarchy.Pop;
       end;
     end;
