@@ -134,7 +134,7 @@ type
         var lObject := new JsonObject;
         Current[aName] := lObject;
         Hierarchy.Push(lObject);
-        {$IF TOFFEE}
+        {$IF TOFFEEV1}
         if aValue.class ≠ aExpectedType:TypeClass then
           lObject["__Type"] := new &Type withPlatformType(aValue.class).FullName
         {$ELSE}
@@ -146,7 +146,7 @@ type
         var lObject := new JsonObject;
         lJsonArray.Add(lObject);
         Hierarchy.Push(lObject);
-        {$IF TOFFEE}
+        {$IF TOFFEEV1}
         if aValue.class ≠ aExpectedType.class then
           lObject["__Type"] := new &Type withPlatformType(aValue.class).FullName
         {$ELSE}

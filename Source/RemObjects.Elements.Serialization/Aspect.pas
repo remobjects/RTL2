@@ -105,9 +105,9 @@ type
     method EmitPlatformWarning;
     begin
       case fServices.Platform of
-        Platform.Toffee: fServices.EmitHint(fType, $"Serialization is not fully supported on Cocoa, yet.");
+        Platform.Island: fServices.EmitHint(fType, $"Serialization is not fully supported on Island, yet.");
         Platform.Cooper: fServices.EmitHint(fType, $"Serialization is not fully supported on Java, yet.");
-        Platform.Gotham: fServices.EmitError(fType, $"Serialization is notsupported on Gootham projects.");
+        Platform.Gotham: fServices.EmitError(fType, $"Serialization is notsupported for Gotham projects.");
         Platform.All: fServices.EmitError(fType, $"Serialization is not supported for mixed-platforms projects.");
       end;
     end;
