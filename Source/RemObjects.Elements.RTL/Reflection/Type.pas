@@ -47,6 +47,7 @@ type
   public
     class property AllTypes: ImmutableList<&Type> read GetAllTypes;
     class method GetType(aName: not nullable String): nullable &Type;
+    class method TypeOf(aObject: Object): nullable &Type;
     constructor withPlatformType(aType: PlatformType);
 
     {$IF TOFFEE}
@@ -197,6 +198,15 @@ begin
   result := PlatformType.GetType(aName);
   {$ELSEIF ISLAND}
   result := &Type.AllTypes.FirstOrDefault(a -> a.Name = aName);
+  {$ENDIF}
+end;
+
+class method &Type.TypeOf(aObject: Object): nullable &Type;
+begin
+  {$IFDEF TOFFEEV1}
+  result := new &Type withPlatformType(aObject.class);
+  {$ELSE}
+  result := RemObjects.Elements.System.typeOf(aObject);
   {$ENDIF}
 end;
 
