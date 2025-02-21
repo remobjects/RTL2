@@ -5,6 +5,11 @@ uses
   RemObjects.Elements.RTL.Reflection;
 
 type
+  {$IF TOFFEEV1 OR COOPER}
+  NonGenericPlatformList = assembly {$IF COOPER}java.util.ArrayList{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
+  NonGenericPlatformDictionary = Assembly {$IF COOPER}java.util.Hashtable{$ELSEIF TOFFEE}Foundation.NSMutableDictionary{$ENDIF};
+  {$ENDIF}
+
   Coder = public partial class
   public
 
@@ -44,7 +49,7 @@ type
       if DecodeArrayStart(aName) then begin
         {$IF ECHOES}
         result := DecodeListElements<T>(aName, aType);
-        {$ELSEIF TOFFEE}
+        {$ELSEIF TOFFEEV1 OR COOPER}
         result := DecodeListElements(aName, aType);
         {$ELSE}
         raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
@@ -58,8 +63,13 @@ type
       if DecodeStringDictionaryStart(aName) then begin
         {$IF ECHOES}
         result := DecodeStringDictionaryElements<T>(aName, aType);
-        {$ELSEIF TOFFEE}
+        {$ELSEIF TOFFEEV1}
         result := DecodeStringDictionaryElements(aName, aType);
+        {$ELSEIF COOPER}
+        var lResult := DecodeStringDictionaryElements(aName, aType);
+        result := new Dictionary<String, T>();
+        for each matching k: String in lResult.Keys do
+          result[k] := lResult[k] as T;
         {$ELSE}
         raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
@@ -218,8 +228,8 @@ type
     method DecodeStringDictionaryEnd(aName: String); abstract;
     {$IF ECHOES}
     method DecodeStringDictionaryElements<T>(aName: String; aType: &Type): Dictionary<String,T>; abstract;
-    {$ELSEIF TOFFEE}
-    method DecodeStringDictionaryElements(aName: String; aType: &Type): NSMutableDictionary; abstract;
+    {$ELSEIF TOFFEEV1 OR COOPER}
+    method DecodeStringDictionaryElements(aName: String; aType: &Type): NonGenericPlatformDictionary; abstract;
     {$ENDIF}
 
     {$IF ECHOES}
@@ -279,8 +289,8 @@ type
     begin
       result := DecodeArrayElements<T>(aName, aType).ToList;
     end;
-    {$ELSEIF TOFFEE}
-    method DecodeListElements(aName: String; aType: &Type): NSMutableArray; abstract;
+    {$ELSEIF TOFFEEV1 OR COOPER}
+    method DecodeListElements(aName: String; aType: &Type): NonGenericPlatformList; abstract;
     {$ENDIF}
 
     method DecodeListEnd(aName: String); virtual;

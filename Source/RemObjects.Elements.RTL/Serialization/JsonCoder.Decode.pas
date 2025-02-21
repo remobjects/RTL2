@@ -116,16 +116,16 @@ type
         end;
       end;
     end;
-    {$ELSEIF TOFFEE}
-    method DecodeListElements(aName: String; aType: &Type): NSMutableArray; override;
+    {$ELSEIF TOFFEEV1 OR COOPER}
+    method DecodeListElements(aName: String; aType: &Type): NonGenericPlatformList; override;
     begin
       if Current is var lJsonArray: JsonArray then begin
-        result := new NSMutableArray withCapacity(lJsonArray.Count);
+        result := {$IF TOFFEE}new NonGenericPlatformList withCapacity(lJsonArray.Count){$ELSEIF COOPER}new NonGenericPlatformList(lJsonArray.Count){$ENDIF};
         for i := 0 to lJsonArray.Count-1 do begin
           Hierarchy.Push(lJsonArray[i]);
           var lValue := DecodeArrayElement(aName, aType);
           if assigned(lValue) then
-            result.addObject(lValue);
+            {$IF TOFFEE}result.addObject(lValue){$ELSEIF COOPER}result.Add(lValue){$ENDIF};
           Hierarchy.Pop;
         end;
       end;
@@ -162,11 +162,11 @@ type
         end;
       end;
     end;
-    {$ELSEIF TOFFEE}
-    method DecodeStringDictionaryElements(aName: String; aType: &Type): NSMutableDictionary; override;
+    {$ELSEIF TOFFEEV1 OR COOPER}
+    method DecodeStringDictionaryElements(aName: String; aType: &Type): NonGenericPlatformDictionary; override;
     begin
       with matching lJsonObject := JsonObject(Current) do begin
-        result := new NSMutableDictionary;
+        result := {$IF TOFFEE}new NonGenericPlatformDictionary withCapacity(lJsonObject.Count){$ELSEIF COOPER}new NonGenericPlatformDictionary(lJsonObject.Count){$ENDIF};
         for each k in lJsonObject.Keys do begin
           Hierarchy.Push(lJsonObject[k]);
           var lValue := DecodeArrayElement(aName, aType);

@@ -106,7 +106,6 @@ type
     begin
       case fServices.Platform of
         Platform.Island: fServices.EmitHint(fType, $"Serialization is not fully supported on Island, yet.");
-        Platform.Cooper: fServices.EmitHint(fType, $"Serialization is not fully supported on Java, yet.");
         Platform.Gotham: fServices.EmitError(fType, $"Serialization is notsupported for Gotham projects.");
         Platform.All: fServices.EmitError(fType, $"Serialization is not supported for mixed-platforms projects.");
       end;
@@ -382,10 +381,6 @@ type
           "Array", "List", "StringDictionary": begin
               if (lDecoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper]) then begin
                 fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
-                continue;
-              end;
-              if fServices.Platform in [Platform.Cooper] then begin
-                fServices.EmitWarning(p, $"Collections are not supported for decoding on Java yet.");
                 continue;
               end;
               lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName, lDecoderTypeRef]),
