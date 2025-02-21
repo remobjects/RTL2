@@ -140,7 +140,8 @@ type
     method Instantiate: Object;
     begin
       {$IF COOPER}
-      result := mapped.newInstance()
+      var lConstructor := mapped.getDeclaredConstructor();
+      result := lConstructor:newInstance();
       {$ELSEIF TOFFEE AND NOT ISLAND}
       result := fClass.alloc.init;
       {$ELSEIF ECHOES}
