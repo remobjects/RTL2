@@ -152,6 +152,16 @@ type
   end;
   {$ENDIF}
 
+  {$IF TOFFEEV2}
+  Type_Reflection = public extension class(&Type)
+  public
+    class method TypeOf(aObject: Object): nullable &Type;
+    begin
+      result := RemObjects.Elements.System.typeOf(aObject);
+    end;
+  end;
+  {$ENDIF}
+
 implementation
 
 {$IFNDEF TOFFEEV2}
