@@ -226,7 +226,6 @@ type
     begin
       var lTemp := new JsonCoder();
       lTemp.Encode(self);
-      lTemp.Encode(self);
       result := lTemp.ToJson;
     end;
 

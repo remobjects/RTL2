@@ -38,13 +38,13 @@ type
       else if assigned(Current) then
         Current.AddElement("Element").AddElement(lNew)
       else
-        Xml := lNew;
+        fXml := lNew;
       Hierarchy.Push(lNew);
     end;
 
     method EncodeObjectEnd(aName: String; aValue: IEncodable); override;
     begin
-      if Current ≠ Xml then
+      if Current ≠ fXml then
         Hierarchy.Pop;
     end;
 
@@ -72,14 +72,14 @@ type
         Hierarchy.Push(Current.AddElement("Element"))//.AddElement(lNew)
       end
       else begin
-        Xml := new XmlElement withName(aKind);
-        Hierarchy.Push(Xml);
+        fXml := new XmlElement withName(aKind);
+        Hierarchy.Push(fXml);
       end;
     end;
 
     method EncodeArrayEnd(aName: String); override;
     begin
-      if Current ≠ Xml then
+      if Current ≠ fXml then
         Hierarchy.Pop;
     end;
 
@@ -98,10 +98,31 @@ type
 
     method EncodeStringDictionaryEnd(aName: String); override;
     begin
-      if Current ≠ Xml then
+      if Current ≠ fXml then
         Hierarchy.Pop;
     end;
 
   end;
+
+  {$IF NOT TOFFEEV2} // E748 Type mismatch, cannot assign "IEncodable" (Cocoa) to "RemObjects.Elements.System.Object" (Island)
+  IEncodable_Xml_Extension = public extension class(IEncodable)
+  public
+
+    method ToXml: XmlElement;
+    begin
+      var lTemp := new XmlCoder();
+      lTemp.Encode(self);
+      result := lTemp.ToXml;
+    end;
+
+    method ToXmlString(aFormat: XmlFormattingOptions := nil): String;
+    begin
+      var lTemp := new XmlCoder();
+      lTemp.Encode(self);
+      result := lTemp.ToXmlString(aFormat);
+    end;
+
+  end;
+  {$ENDIF}
 
 end.
