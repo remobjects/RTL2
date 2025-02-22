@@ -8,14 +8,6 @@ type
   XmlCoder = public partial class
   public
 
-    method DecodeString(aName: String): String; override;
-    begin
-      if assigned(aName) then
-        result := Current.FirstElementWithName(aName):Value
-      else
-        result := Current:Value;
-    end;
-
     method DecodeObjectType(aName: String): String; override;
     begin
       result := Current.Elements.First.LocalName;
@@ -64,7 +56,7 @@ type
       result := new array of T(lElements.Count);
       for i := 0 to lElements.Count-1 do begin
         Hierarchy.Push(lElements[i]);
-        var lValue := DecodeArrayElement<T>(aName);
+        var lValue := DecodeArrayElement(aName, typeOf(T));
         if assigned(lValue) then
           result[i] := lValue as T;
         Hierarchy.Pop;
@@ -87,7 +79,7 @@ type
       result := new List<T> withCapacity(lElements.Count);
       for i := 0 to lElements.Count-1 do begin
         Hierarchy.Push(lElements[i]);
-        var lValue := DecodeArrayElement<T>(aName);
+        var lValue := DecodeArrayElement(aName, typeOf(T));
         if assigned(lValue) then
           result.Add(lValue as T);
         Hierarchy.Pop;
@@ -131,7 +123,7 @@ type
       for each e in lElements do begin
         if assigned(e.Attribute["Name"]) then begin
           Hierarchy.Push(e);
-          var lValue := DecodeArrayElement<T>(aName);
+          var lValue := DecodeArrayElement(aName, typeOf(T));
           if assigned(lValue) then
             result[e.Attribute["Name"].Value] := lValue as T;
           Hierarchy.Pop;
@@ -159,6 +151,16 @@ type
     begin
       if assigned(aName) then
         Hierarchy.Pop;
+    end;
+
+    //
+
+    method DecodeString(aName: String): String; override;
+    begin
+      if assigned(aName) then
+        result := Current.FirstElementWithName(aName):Value
+      else
+        result := Current:Value;
     end;
 
   end;

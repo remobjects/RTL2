@@ -32,61 +32,9 @@ type
     end;
     {$ENDIF}
 
-    method DecodeArray<T>(aName: String; aType: &Type): array of T;
-    begin
-      if DecodeArrayStart(aName) then begin
-        {$IF ECHOES}
-        result := DecodeArrayElements<T>(aName, aType);
-        {$ELSEIF TOFFEEV1}
-        result := (DecodeArrayElements(aName, aType) as PlatformList<T>):ToArray;
-        {$ELSEIF COOPER}
-        {$HINT this doesn't work result array is if wrong type.}
-        // class [Ljava.lang.Object; cannot be cast to class [LTestApp.Bar;
-        //result := ((DecodeArrayElements(aName, aType) as PlatformList<T>) as List<T>).ToArray;
-        var lResult := ((DecodeArrayElements(aName, aType) as PlatformList<T>) as List<T>).ToArray;
-        if assigned(lResult) then
-          result := java.lang.reflect.Array.newInstance(aType, lResult.Count) as array of T;
-        for i := 0 to lResult.Count-1 do
-          result[i] := lResult[i];
-        {$ELSE}
-        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
-        {$ENDIF}
-        DecodeArrayEnd(aName);
-      end;
-    end;
-
-    method DecodeList<T>(aName: String; aType: &Type): List<T>;
-    begin
-      if DecodeArrayStart(aName) then begin
-        {$IF ECHOES}
-        result := DecodeListElements<T>(aName, aType);
-        {$ELSEIF TOFFEEV1 OR COOPER}
-        result := DecodeListElements(aName, aType);
-        {$ELSE}
-        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
-        {$ENDIF}
-        DecodeArrayEnd(aName);
-      end;
-    end;
-
-    method DecodeStringDictionary<T>(aName: String; aType: &Type): Dictionary<String, T>;
-    begin
-      if DecodeStringDictionaryStart(aName) then begin
-        {$IF ECHOES}
-        result := DecodeStringDictionaryElements<T>(aName, aType);
-        {$ELSEIF TOFFEEV1}
-        result := DecodeStringDictionaryElements(aName, aType);
-        {$ELSEIF COOPER}
-        var lResult := DecodeStringDictionaryElements(aName, aType);
-        result := new Dictionary<String, T>();
-        for each matching k: String in lResult.Keys do
-          result[k] := lResult[k] as T;
-        {$ELSE}
-        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
-        {$ENDIF}
-        DecodeStringDictionaryEnd(aName);
-      end;
-    end;
+    //
+    //
+    //
 
     method DecodeObject(aName: String; aType: &Type): IDecodable;
     begin
@@ -118,6 +66,150 @@ type
       result := DecodeObject(aName, new &Type withPlatformType(aType));
     end;
     {$ENDIF}
+
+    method DecodeObjectType(aName: String): String; virtual; empty;
+    method DecodeObjectStart(aName: String): Boolean; abstract;
+    method DecodeObjectEnd(aName: String); abstract;
+
+    //
+
+    method DecodeArray<T>(aName: String; aType: &Type): array of T;
+    begin
+      if DecodeArrayStart(aName) then begin
+        {$IF ECHOES}
+        result := DecodeArrayElements<T>(aName, aType);
+        {$ELSEIF TOFFEEV1}
+        result := (DecodeArrayElements(aName, aType) as PlatformList<T>):ToArray;
+        {$ELSEIF COOPER}
+        {$HINT this below doesn't work result array is if wrong type.}
+        // class [Ljava.lang.Object; cannot be cast to class [LTestApp.Bar;
+        //result := ((DecodeArrayElements(aName, aType) as PlatformList<T>) as List<T>).ToArray;
+        var lResult := ((DecodeArrayElements(aName, aType) as PlatformList<T>) as List<T>).ToArray;
+        if assigned(lResult) then
+          result := java.lang.reflect.Array.newInstance(aType, lResult.Count) as array of T;
+        for i := 0 to lResult.Count-1 do
+          result[i] := lResult[i];
+        {$ELSE}
+        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
+        {$ENDIF}
+        DecodeArrayEnd(aName);
+      end;
+    end;
+
+    method DecodeArrayElement(aName: String; aType: &Type): Object;
+    begin
+      {$IF SERIALIZATION}
+      var lType := if defined("COCOA") then aType.TypeClass else aType;
+      case lType of
+        DateTime: result := DecodeDateTime(nil);
+        String: result := DecodeString(nil);
+        SByte: result := DecodeInt8(nil);
+        Int16: result := DecodeInt16(nil);
+        Int32: result := DecodeInt32(nil);
+        Int64: result := DecodeInt64(nil);
+        {$IF NOT COOPER}
+        IntPtr: result := DecodeInt64(nil) as IntPtr;
+        {$ENDIF}
+        Byte: result := DecodeUInt8(nil);
+        UInt16: result := DecodeUInt16(nil);
+        UInt32: result := DecodeUInt32(nil);
+        UInt64: result := DecodeUInt64(nil);
+        {$IF NOT COOPER}
+        UIntPtr: result := DecodeUInt64(nil) as UIntPtr;
+        {$ENDIF}
+        Boolean: result := DecodeBoolean(nil);
+        Single: result := DecodeSingle(nil);
+        Double: result := DecodeDouble(nil);
+        Guid: result := DecodeGuid(nil);
+        {$IF NOT (TOFFEE OR COOPER)} // On these platforms the types are aliased
+        PlatformDateTime: result := DecodeDateTime(nil);
+        PlatformGuid: result := DecodeGuid(nil);
+        {$ENDIF}
+        else result := DecodeObject(nil, aType);
+      end;
+      {$ELSE}
+      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
+      {$ENDIF}
+    end;
+
+    method DecodeArrayStart(aName: String): Boolean; abstract;
+
+    {$IF ECHOES}
+    method DecodeArrayElements<T>(aName: String; aType: &Type): array of T; abstract;
+    {$ELSEIF TOFFEEV1 OR COOPER}
+    method DecodeArrayElements(aName: String; aType: &Type): NonGenericPlatformList; virtual;
+    begin
+      result := DecodeListElements(aName, aType);
+    end;
+    {$ENDIF}
+
+    method DecodeArrayEnd(aName: String); abstract;
+
+    //
+
+    method DecodeList<T>(aName: String; aType: &Type): List<T>;
+    begin
+      if DecodeArrayStart(aName) then begin
+        {$IF ECHOES}
+        result := DecodeListElements<T>(aName, aType);
+        {$ELSEIF TOFFEEV1 OR COOPER}
+        result := DecodeListElements(aName, aType);
+        {$ELSE}
+        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
+        {$ENDIF}
+        DecodeArrayEnd(aName);
+      end;
+    end;
+
+    method DecodeListStart(aName: String): Boolean; virtual;
+    begin
+      result := DecodeArrayStart(aName);
+    end;
+
+    {$IF ECHOES}
+    method DecodeListElements<T>(aName: String; aType: &Type): List<T>; virtual;
+    begin
+      result := DecodeArrayElements<T>(aName, aType).ToList;
+    end;
+    {$ELSEIF TOFFEEV1 OR COOPER}
+    method DecodeListElements(aName: String; aType: &Type): NonGenericPlatformList; abstract;
+    {$ENDIF}
+
+    method DecodeListEnd(aName: String); virtual;
+    begin
+      DecodeArrayEnd(aName);
+    end;
+
+    //
+
+    method DecodeStringDictionary<T>(aName: String; aType: &Type): Dictionary<String, T>;
+    begin
+      if DecodeStringDictionaryStart(aName) then begin
+        {$IF ECHOES}
+        result := DecodeStringDictionaryElements<T>(aName, aType);
+        {$ELSEIF TOFFEEV1}
+        result := DecodeStringDictionaryElements(aName, aType);
+        {$ELSEIF COOPER}
+        var lResult := DecodeStringDictionaryElements(aName, aType);
+        result := new Dictionary<String, T>();
+        for each matching k: String in lResult.Keys do
+          result[k] := lResult[k] as T;
+        {$ELSE}
+        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
+        {$ENDIF}
+        DecodeStringDictionaryEnd(aName);
+      end;
+    end;
+
+    method DecodeStringDictionaryStart(aName: String): Boolean; abstract;
+
+    {$IF ECHOES}
+    method DecodeStringDictionaryElements<T>(aName: String; aType: &Type): Dictionary<String,T>; abstract;
+    {$ELSEIF TOFFEEV1 OR COOPER}
+    method DecodeStringDictionaryElements(aName: String; aType: &Type): NonGenericPlatformDictionary; abstract;
+    {$ENDIF}
+
+    method DecodeStringDictionaryEnd(aName: String); abstract;
 
     //method BeginReadObject(aObject: IDecodable);
     //begin
@@ -223,95 +315,6 @@ type
     method DecodeJsonObject(aName: String): JsonObject; virtual;
     begin
       result := DecodeJsonNode(aName) as JsonObject;
-    end;
-
-    method DecodeObjectType(aName: String): String; virtual; empty;
-    method DecodeObjectStart(aName: String): Boolean; abstract;
-    method DecodeObjectEnd(aName: String); abstract;
-
-    method DecodeArrayStart(aName: String): Boolean; abstract;
-    method DecodeArrayEnd(aName: String); abstract;
-    {$IF ECHOES}
-    method DecodeArrayElements<T>(aName: String; aType: &Type): array of T; abstract;
-    {$ELSEIF TOFFEEV1 OR COOPER}
-    method DecodeArrayElements(aName: String; aType: &Type): NonGenericPlatformList; virtual;
-    begin
-      result := DecodeListElements(aName, aType);
-    end;
-    {$ENDIF}
-
-    method DecodeStringDictionaryStart(aName: String): Boolean; abstract;
-    method DecodeStringDictionaryEnd(aName: String); abstract;
-    {$IF ECHOES}
-    method DecodeStringDictionaryElements<T>(aName: String; aType: &Type): Dictionary<String,T>; abstract;
-    {$ELSEIF TOFFEEV1 OR COOPER}
-    method DecodeStringDictionaryElements(aName: String; aType: &Type): NonGenericPlatformDictionary; abstract;
-    {$ENDIF}
-
-    {$IF ECHOES}
-    method DecodeArrayElement<T>(aName: String): Object;
-    begin
-      {$IF SERIALIZATION}
-      result := DecodeArrayElement(aName, typeOf(T))
-      {$ELSE}
-      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
-      {$ENDIF}
-    end;
-    {$ENDIF}
-
-    method DecodeArrayElement(aName: String; aType: &Type): Object; virtual;
-    begin
-      {$IF SERIALIZATION}
-      var lType := if defined("COCOA") then aType.TypeClass else aType;
-      case lType of
-        DateTime: result := DecodeDateTime(nil);
-        String: result := DecodeString(nil);
-        SByte: result := DecodeInt8(nil);
-        Int16: result := DecodeInt16(nil);
-        Int32: result := DecodeInt32(nil);
-        Int64: result := DecodeInt64(nil);
-        {$IF NOT COOPER}
-        IntPtr: result := DecodeInt64(nil) as IntPtr;
-        {$ENDIF}
-        Byte: result := DecodeUInt8(nil);
-        UInt16: result := DecodeUInt16(nil);
-        UInt32: result := DecodeUInt32(nil);
-        UInt64: result := DecodeUInt64(nil);
-        {$IF NOT COOPER}
-        UIntPtr: result := DecodeUInt64(nil) as UIntPtr;
-        {$ENDIF}
-        Boolean: result := DecodeBoolean(nil);
-        Single: result := DecodeSingle(nil);
-        Double: result := DecodeDouble(nil);
-        Guid: result := DecodeGuid(nil);
-        {$IF NOT (TOFFEE OR COOPER)} // On these platforms the types are aliased
-        PlatformDateTime: result := DecodeDateTime(nil);
-        PlatformGuid: result := DecodeGuid(nil);
-        {$ENDIF}
-        else result := DecodeObject(nil, aType);
-      end;
-      {$ELSE}
-      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
-      {$ENDIF}
-    end;
-
-    method DecodeListStart(aName: String): Boolean; virtual;
-    begin
-      result := DecodeArrayStart(aName);
-    end;
-
-    {$IF ECHOES}
-    method DecodeListElements<T>(aName: String; aType: &Type): List<T>; virtual;
-    begin
-      result := DecodeArrayElements<T>(aName, aType).ToList;
-    end;
-    {$ELSEIF TOFFEEV1 OR COOPER}
-    method DecodeListElements(aName: String; aType: &Type): NonGenericPlatformList; abstract;
-    {$ENDIF}
-
-    method DecodeListEnd(aName: String); virtual;
-    begin
-      DecodeArrayEnd(aName);
     end;
 
   private
