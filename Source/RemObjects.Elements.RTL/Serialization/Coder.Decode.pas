@@ -38,9 +38,16 @@ type
         {$IF ECHOES}
         result := DecodeArrayElements<T>(aName, aType);
         {$ELSEIF TOFFEEV1}
-        result := (DecodeArrayElements(aName, aType) as PlatformList<T>).ToArray;
+        result := (DecodeArrayElements(aName, aType) as PlatformList<T>):ToArray;
         {$ELSEIF COOPER}
-        result := ((DecodeArrayElements(aName, aType) as PlatformList<T>) as List<T>).ToArray;
+        {$HINT this doesn't work result array is if wrong type.}
+        // class [Ljava.lang.Object; cannot be cast to class [LTestApp.Bar;
+        //result := ((DecodeArrayElements(aName, aType) as PlatformList<T>) as List<T>).ToArray;
+        var lResult := ((DecodeArrayElements(aName, aType) as PlatformList<T>) as List<T>).ToArray;
+        if assigned(lResult) then
+          result := java.lang.reflect.Array.newInstance(aType, lResult.Count) as array of T;
+        for i := 0 to lResult.Count-1 do
+          result[i] := lResult[i];
         {$ELSE}
         raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
