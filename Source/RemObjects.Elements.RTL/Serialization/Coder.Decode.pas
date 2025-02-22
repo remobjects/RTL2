@@ -37,6 +37,10 @@ type
       if DecodeArrayStart(aName) then begin
         {$IF ECHOES}
         result := DecodeArrayElements<T>(aName, aType);
+        {$ELSEIF TOFFEEV1}
+        result := (DecodeArrayElements(aName, aType) as PlatformList<T>).ToArray;
+        {$ELSEIF COOPER}
+        result := ((DecodeArrayElements(aName, aType) as PlatformList<T>) as List<T>).ToArray;
         {$ELSE}
         raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
@@ -222,6 +226,11 @@ type
     method DecodeArrayEnd(aName: String); abstract;
     {$IF ECHOES}
     method DecodeArrayElements<T>(aName: String; aType: &Type): array of T; abstract;
+    {$ELSEIF TOFFEEV1 OR COOPER}
+    method DecodeArrayElements(aName: String; aType: &Type): NonGenericPlatformList; virtual;
+    begin
+      result := DecodeListElements(aName, aType);
+    end;
     {$ENDIF}
 
     method DecodeStringDictionaryStart(aName: String): Boolean; abstract;
