@@ -162,7 +162,7 @@ type
 
     method EncodeObjectEnd(aName: String; aValue: IEncodable); override;
     begin
-      if Current ≠ Json then
+      if Current ≠ fJson then
         Hierarchy.Pop;
     end;
 
@@ -181,7 +181,7 @@ type
 
     method EncodeArrayEnd(aName: String); override;
     begin
-      if Current ≠ Json then
+      if Current ≠ fJson then
         Hierarchy.Pop;
     end;
 
@@ -200,7 +200,7 @@ type
 
     method EncodeStringDictionaryEnd(aName: String); override;
     begin
-      if Current ≠ Json then
+      if Current ≠ fJson then
         Hierarchy.Pop;
     end;
 
@@ -222,12 +222,12 @@ type
   IEncodable_Json_Extension = public extension class(IEncodable)
   public
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): JsonNode;
+    method ToJson: JsonNode;
     begin
       var lTemp := new JsonCoder();
       lTemp.Encode(self);
       lTemp.Encode(self);
-      result := lTemp.Json;
+      result := lTemp.ToJson;
     end;
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;

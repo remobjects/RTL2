@@ -6,7 +6,7 @@ uses
 
 type
   XmlCoder = public partial class
-  public
+  protected
 
     method DecodeObjectType(aName: String): String; override;
     begin
@@ -153,7 +153,7 @@ type
         Hierarchy.Pop;
     end;
 
-    //
+  public
 
     method DecodeString(aName: String): String; override;
     begin

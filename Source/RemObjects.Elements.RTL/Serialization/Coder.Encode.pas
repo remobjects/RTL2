@@ -8,16 +8,6 @@ type
   Coder = public partial class
   public
 
-    method BeginWriteObject(aObject: IEncodable);
-    begin
-
-    end;
-
-    method EndWriteObject(aObject: IEncodable);
-    begin
-
-    end;
-
     method Encode(aObject: Object; aExpectedType: &Type := nil);
     begin
       Encode(nil, aObject);
@@ -96,6 +86,10 @@ type
       {$ENDIF}
     end;
 
+    //
+    //
+    //
+
     method EncodeObject(aName: String; aValue: IEncodable; aExpectedType: &Type := nil); virtual;
     begin
       if assigned(aValue) then begin
@@ -108,12 +102,7 @@ type
       end;
     end;
 
-    //{$IF TOFFEEV1}
-    //method EncodeObject(aName: String; aValue: IEncodable; aExpectedType: PlatformType := nil); inline;
-    //begin
-      //EncodeObject(aName, aValue, if assigned(aExpectedType) then new &Type withPlatformType(aExpectedType));
-    //end;
-    //{$ENDIF}
+    //
 
     method EncodeArray<T>(aName: String; aValue: array of T; aExpectedType: &Type := nil);
     begin
@@ -132,6 +121,8 @@ type
       end;
     end;
 
+    //
+
     method EncodeList<T>(aName: String; aValue: List<T>; aExpectedType: &Type := nil);
     begin
       if assigned(aValue) then begin
@@ -149,13 +140,6 @@ type
       end;
     end;
 
-    //{$IF TOFFEEV1}
-    //method EncodeList<T>(aName: String; aValue: List<T>; aExpectedType: &Class := nil); inline;
-    //begin
-      //EncodeList(aName, aValue, if assigned(aExpectedType) then new &Type withPlatformType(aExpectedType));
-    //end;
-    //{$ENDIF}
-
     method EncodeStringDictionary<T>(aName: String; aValue: Dictionary<String, T>; aExpectedType: &Type := nil);
     begin
       if assigned(aValue) then begin
@@ -171,12 +155,9 @@ type
       end;
     end;
 
-    //{$IF TOFFEEV1}
-    //method EncodeStringDictionary<T>(aName: String; aValue: Dictionary<String, T>; aExpectedType: &Class := nil); inline;
-    //begin
-      //EncodeStringDictionary(aName, aValue, if assigned(aExpectedType) then new &Type withPlatformType(aExpectedType));
-    //end;
-    //{$ENDIF}
+    //
+    //
+    //
 
     method EncodeDateTime(aName: String; aValue: nullable DateTime); virtual;
     begin

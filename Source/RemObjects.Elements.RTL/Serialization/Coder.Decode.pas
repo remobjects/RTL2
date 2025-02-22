@@ -11,21 +11,21 @@ type
   {$ENDIF}
 
   Coder = public partial class
-  public
+  protected
 
-    method Decode(aType: not nullable &Type): IDecodable;
+    method Decode(aType: not nullable &Type): IDecodable; public;
     begin
       result := aType.Instantiate() as IDecodable;
       result.Decode(self);
     end;
 
-    method Decode(aValue: not nullable IDecodable);
+    method Decode(aValue: not nullable IDecodable); public;
     begin
       aValue.Decode(self);
     end;
 
     {$IF ECHOES OR ISLAND}
-    method Decode<T>: T; where T has constructor, T is IDecodable;
+    method Decode<T>: T; where T has constructor, T is IDecodable; public;
     begin
       result := new T;
       result.Decode(self);
@@ -36,7 +36,7 @@ type
     //
     //
 
-    method DecodeObject(aName: String; aType: &Type): IDecodable;
+    method DecodeObject(aName: String; aType: &Type): IDecodable; public;
     begin
       if DecodeObjectStart(aName) then begin
         var lTypeName := DecodeObjectType(aName);
@@ -61,7 +61,7 @@ type
     end;
 
     {$IF TOFFEEV1}
-    method DecodeObject(aName: String; aType: PlatformType): IDecodable; inline;
+    method DecodeObject(aName: String; aType: PlatformType): IDecodable; inline; public;
     begin
       result := DecodeObject(aName, new &Type withPlatformType(aType));
     end;
@@ -73,7 +73,7 @@ type
 
     //
 
-    method DecodeArray<T>(aName: String; aType: &Type): array of T;
+    method DecodeArray<T>(aName: String; aType: &Type): array of T; public;
     begin
       if DecodeArrayStart(aName) then begin
         {$IF ECHOES}
@@ -147,7 +147,7 @@ type
 
     //
 
-    method DecodeList<T>(aName: String; aType: &Type): List<T>;
+    method DecodeList<T>(aName: String; aType: &Type): List<T>; public;
     begin
       if DecodeArrayStart(aName) then begin
         {$IF ECHOES}
@@ -182,7 +182,7 @@ type
 
     //
 
-    method DecodeStringDictionary<T>(aName: String; aType: &Type): Dictionary<String, T>;
+    method DecodeStringDictionary<T>(aName: String; aType: &Type): Dictionary<String, T>; public;
     begin
       if DecodeStringDictionaryStart(aName) then begin
         {$IF ECHOES}
@@ -220,6 +220,8 @@ type
     //begin
 
     //end;
+
+  public
 
     method DecodeDateTime(aName: String): DateTime; virtual;
     begin

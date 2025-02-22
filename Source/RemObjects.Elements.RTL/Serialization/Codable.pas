@@ -25,7 +25,7 @@ type
     begin
       var lCoder := new JsonCoder;
       lCoder.Encode(self);
-      result := lCoder.Json as JsonObject;
+      result := lCoder.ToJson as JsonObject;
     end;
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
