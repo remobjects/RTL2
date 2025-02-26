@@ -105,7 +105,7 @@ type
       {$ENDIF}
     end;
 
-    {$IF SERIALIZATION}
+    {$IF ECHOES OR ISLAND}
     class method FromJson<T>(aJson: JsonNode): T; where T has constructor, T is IDecodable;
     begin
       var lTemp := new JsonCoder withJson(aJson);
@@ -121,7 +121,7 @@ type
     class method ArrayFromJson<T>(aJson: JsonNode): array of T; where T has constructor, T is IDecodable;
     begin
       var lTemp := new JsonCoder withJson(aJson);
-      result := lTemp.DecodeArray<T>(nil);
+      result := lTemp.DecodeArray<T>(nil, nil);
     end;
     {$ENDIF}
 
@@ -134,15 +134,15 @@ type
         var lObject := new JsonObject;
         Current[aName] := lObject;
         Hierarchy.Push(lObject);
-        if typeOf(aValue) ≠ aExpectedType then
-          lObject["__Type"] := typeOf(aValue).ToString;
+        if &Type.TypeOf(aValue) ≠ aExpectedType then
+          lObject["__Type"] := &Type.TypeOf(aValue).FullName;
       end
       else if Current is var lJsonArray: JsonArray then begin
         var lObject := new JsonObject;
         lJsonArray.Add(lObject);
         Hierarchy.Push(lObject);
-        if typeOf(aValue) ≠ aExpectedType then
-          lObject["__Type"] := typeOf(aValue).ToString;
+        if &Type.TypeOf(aValue) ≠ aExpectedType then
+          lObject["__Type"] := &Type.TypeOf(aValue).FullName;
       end;
       {$ELSE}
       raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
@@ -162,7 +162,7 @@ type
 
     method EncodeObjectEnd(aName: String; aValue: IEncodable); override;
     begin
-      if Current ≠ Json then
+      if Current ≠ fJson then
         Hierarchy.Pop;
     end;
 
@@ -181,7 +181,7 @@ type
 
     method EncodeArrayEnd(aName: String); override;
     begin
-      if Current ≠ Json then
+      if Current ≠ fJson then
         Hierarchy.Pop;
     end;
 
@@ -200,7 +200,7 @@ type
 
     method EncodeStringDictionaryEnd(aName: String); override;
     begin
-      if Current ≠ Json then
+      if Current ≠ fJson then
         Hierarchy.Pop;
     end;
 
@@ -222,12 +222,11 @@ type
   IEncodable_Json_Extension = public extension class(IEncodable)
   public
 
-    method ToJson(aFormat: JsonFormat := JsonFormat.HumanReadable): JsonNode;
+    method ToJson: JsonNode;
     begin
       var lTemp := new JsonCoder();
       lTemp.Encode(self);
-      lTemp.Encode(self);
-      result := lTemp.Json;
+      result := lTemp.ToJson;
     end;
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;

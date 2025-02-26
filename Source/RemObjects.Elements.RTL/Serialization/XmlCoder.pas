@@ -30,17 +30,29 @@ type
       {$IF NOT SERIALIZATION}
       raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
-      Xml := aXml;
-      Hierarchy.Push(Xml);
+      fXml := aXml;
+      Hierarchy.Push(fXml);
     end;
-
-    property Xml: XmlElement;
 
     [ToString]
     method ToString: String; override;
     begin
-      result := XmlDocument.WithRootElement(Xml).ToString(XmlFormattingOptions.StandardReadableStyle);
+      result := XmlDocument.WithRootElement(fXml).ToString(XmlFormattingOptions.StandardReadableStyle);
     end;
+
+    method ToXml: XmlElement;
+    begin
+      result := fXml;
+    end;
+
+    method ToXmlString(aFormat: XmlFormattingOptions := nil): String;
+    begin
+      fXml.ToString(true, false, aFormat);
+    end;
+
+  private
+
+    property fXml: XmlElement;
 
   end;
 

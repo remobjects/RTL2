@@ -16,11 +16,16 @@ type
       (self as IDecodable).Decode(lCoder);
     end;
 
+    constructor withDecoder(aCoder: Coder);
+    begin
+      (self as IDecodable).Decode(aCoder);
+    end;
+
     method ToJson: JsonObject;
     begin
       var lCoder := new JsonCoder;
       lCoder.Encode(self);
-      result := lCoder.Json as JsonObject;
+      result := lCoder.ToJson as JsonObject;
     end;
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;

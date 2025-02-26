@@ -27,7 +27,7 @@ type
   end;
 
   GenericCoder<T> = public abstract class(Coder)
-  public
+  protected
 
     property Current: T read Hierarchy.Peek;
     property Hierarchy := new Stack<T>; readonly;

@@ -8,16 +8,6 @@ type
   Coder = public partial class
   public
 
-    method BeginWriteObject(aObject: IEncodable);
-    begin
-
-    end;
-
-    method EndWriteObject(aObject: IEncodable);
-    begin
-
-    end;
-
     method Encode(aObject: Object; aExpectedType: &Type := nil);
     begin
       Encode(nil, aObject);
@@ -44,7 +34,10 @@ type
         exit;
       end;
 
-      case aValue type of
+      //Log($"typeOf(aValue) {typeOf(aValue)}");
+      {$HINT `typeOf(aValue)` is nil here, for Cocoa. why?}
+      var lType := if defined("COCOA") then aValue.class else typeOf(aValue);
+      case lType of
         DateTime: EncodeDateTime(aName, aValue as DateTime);
         String: EncodeString(aName, aValue as String);
         //{$IF TOFFEE}
@@ -54,14 +47,12 @@ type
         Int16: EncodeInt16(aName, aValue as Int16);
         Int32: EncodeInt32(aName, aValue as Int32);
         Int64: EncodeInt64(aName, aValue as Int64);
-        {$IF NOT COOPER}
-        IntPtr: EncodeIntPtr(aName, aValue as IntPtr);
-        {$ENDIF}
         Byte: EncodeUInt8(aName, aValue as Byte);
         UInt16: EncodeUInt16(aName, aValue as UInt16);
         UInt32: EncodeUInt32(aName, aValue as UInt32);
         UInt64: EncodeUInt64(aName, aValue as UInt64);
-        {$IF NOT COOPER}
+        {$IF NOT (TOFFEE OR COOPER)}
+        IntPtr: EncodeIntPtr(aName, aValue as IntPtr);
         UIntPtr: EncodeUIntPtr(aName, aValue as UIntPtr);
         {$ENDIF}
         Boolean: EncodeBoolean(aName, aValue as Boolean);
@@ -69,27 +60,35 @@ type
         Double: EncodeDouble(aName, aValue as Double);
         //{$ENDIF}
         Guid: EncodeGuid(aName, aValue as Guid);
-        {$IF NOT COOPER} // On these platforms the types are aliased
+        {$IF NOT (TOFFEE OR COOPER)} // On these platforms the types are aliased
         PlatformDateTime: EncodeDateTime(aName, aValue as DateTime);
         PlatformGuid: EncodeGuid(aName, aValue as Guid);
         {$ENDIF}
         else begin
           if aValue is IEncodable then
             EncodeObject(aName, aValue as IEncodable, aExpectedType)
-          else if aValue is var lGuid: RemObjects.Elements.System.GenericNullable<Guid> then
+          else if defined("ECHOES") and (aValue is var lGuid: RemObjects.Elements.System.GenericNullable<Guid>) then
             EncodeGuid(aName, lGuid as Guid)
-          else if aValue is var lDateTime: RemObjects.Elements.System.GenericNullable<DateTime> then
+          else if defined("ECHOES") and (aValue is var lDateTime: RemObjects.Elements.System.GenericNullable<DateTime>) then
             EncodeDateTime(aName, lDateTime as DateTime)
+          else if defined("TOFFEE") and aValue is PlatformGuid then
+            EncodeGuid(aName, aValue as Guid) // sometimes a Guid is __NSConcreteUUID and doesnt hit the "case"
+          else if defined("TOFFEE") and aValue is PlatformString then
+            EncodeString(aName, aValue as PlatformString) // sometimes a Guid is __NSCFConstantString and doesnt hit the "case"
           else if assigned(aName) then
-            raise new CodingExeption($"Type '{typeOf(aValue)}' for field or property '{aName}' is not encodable.")
+            raise new CodingExeption($"Type '{lType}' for field or property '{aName}' is not encodable.")
           else
-            raise new CodingExeption($"Type '{typeOf(aValue)}' is not encodable.");
+            raise new CodingExeption($"Type '{lType}' is not encodable.");
         end;
       end;
       {$ELSE}
       raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
     end;
+
+    //
+    //
+    //
 
     method EncodeObject(aName: String; aValue: IEncodable; aExpectedType: &Type := nil); virtual;
     begin
@@ -103,7 +102,9 @@ type
       end;
     end;
 
-    method EncodeArray<T>(aName: String; aValue: array of T; aExpectedType: &Type := nil); {$IF NOT ISLAND}virtual;{$ENDIF}
+    //
+
+    method EncodeArray<T>(aName: String; aValue: array of T; aExpectedType: &Type := nil);
     begin
       if assigned(aValue) then begin
         EncodeArrayStart(aName);
@@ -119,6 +120,8 @@ type
         EncodeNil(aName);
       end;
     end;
+
+    //
 
     method EncodeList<T>(aName: String; aValue: List<T>; aExpectedType: &Type := nil);
     begin
@@ -139,7 +142,6 @@ type
 
     method EncodeStringDictionary<T>(aName: String; aValue: Dictionary<String, T>; aExpectedType: &Type := nil);
     begin
-      {$IF NOT ISLAND}
       if assigned(aValue) then begin
         EncodeStringDictionaryStart(aName);
         for each k in aValue.Keys do begin
@@ -151,10 +153,11 @@ type
       else if ShouldEncodeNil then begin
         EncodeNil(aName);
       end;
-      {$ELSE}
-      raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
-      {$ENDIF}
     end;
+
+    //
+    //
+    //
 
     method EncodeDateTime(aName: String; aValue: nullable DateTime); virtual;
     begin
@@ -261,12 +264,22 @@ type
       EncodeString(aName, aValue:ToJsonString(JsonFormat.Minimal));
     end;
 
+    method EncodeJsonArray(aName: String; aValue: nullable JsonArray); virtual;
+    begin
+      EncodeJsonNode(aName, aValue);
+    end;
+
+    method EncodeJsonObject(aName: String; aValue: nullable JsonObject); virtual;
+    begin
+      EncodeJsonNode(aName, aValue);
+    end;
+
     property ShouldEncodeNil: Boolean := false;
     property ShouldEncodeDefault: Boolean := false;
 
   protected
 
-    method EncodeObjectStart(aName: String; aValue: IEncodable; aExpectedType: &Type := nil); abstract;
+    method EncodeObjectStart(aName: String; aValue: IEncodable; aExpectedType: &&Type := nil); abstract;
     method EncodeObjectEnd(aName: String; aValue: IEncodable); abstract;
 
     method EncodeArrayStart(aName: String); abstract;
@@ -285,15 +298,13 @@ type
     method EncodeStringDictionaryStart(aName: String); abstract;
     method EncodeStringDictionaryEnd(aName: String); abstract;
 
-    {$IF NOT ISLAND}
-    method EncodeStringDictionaryValue<T>(aKey: String; aValue: T; aExpectedType: &Type := nil); virtual;
+    method EncodeStringDictionaryValue(aKey: String; aValue: Object; aExpectedType: &Type := nil); virtual;
     begin
       if assigned(aValue) then
         Encode(aKey, aValue, aExpectedType)
       else if ShouldEncodeNil then
         EncodeNil(nil);
     end;
-    {$ENDIF}
 
   end;
 

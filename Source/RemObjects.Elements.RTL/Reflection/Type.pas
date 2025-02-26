@@ -47,14 +47,22 @@ type
   public
     class property AllTypes: ImmutableList<&Type> read GetAllTypes;
     class method GetType(aName: not nullable String): nullable &Type;
+    class method TypeOf(aObject: Object): nullable &Type;
     constructor withPlatformType(aType: PlatformType);
+
+    {$IF TOFFEE}
+    class method MangleName(aName: not nullable String): not nullable String;
+    class method UnmangleName(aName: not nullable String): not nullable String;
+    {$ENDIF}
+
     {$IF COOPER}
-    method IsSubclassOf(aType: &Type): Boolean;
+    method IsSubclassOf(aType: not nullable &Type): Boolean;
     property Interfaces: ImmutableList<&Type> read mapped.getInterfaces().ToList() as ImmutableList<&Type>;
     property Methods: ImmutableList<&Method> read mapped.getMethods().ToList();
     property MethodFields: ImmutableList<Field> read mapped.getFields().ToList();
     //property Attributes: ImmutableList<Sugar.Reflection.AttributeInfo> read mapped.().ToList();
-    property Name: String read mapped.Name;
+    property Name: String read String(mapped.Name):SubstringToFirstOccurrenceOf("<").SubstringFromLastOccurrenceOf(".");
+    property FullName: String read mapped.Name;
     property BaseType: nullable &Type read mapped.getSuperclass();
     property IsClass: Boolean read (not mapped.isInterface()) and (not mapped.isPrimitive());
     property IsInterface: Boolean read mapped.isInterface();
@@ -75,7 +83,8 @@ type
     //operator Explicit(aClass: rtl.Class): &Type;
     //operator Explicit(aProtocol: Protocol): &Type;
     property TypeClass: &Class read fClass;
-    property Name: String read getName;
+    property Name: String read getName; {$HINT demangle & cut?}
+    property FullName: String read getName;
     property BaseType: nullable &Type read if IsClass then new &Type withClass(class_getSuperclass(fClass));
     property IsClass: Boolean read assigned(fClass) or fIsID;
     property IsInterface: Boolean read assigned(fProtocol);
@@ -87,6 +96,7 @@ type
     property Interfaces: ImmutableList<&Type> read Get_Interfaces;
     property Methods: ImmutableList<&Method> read Get_Methods;
     property Name: String read mapped.Name;
+    property FullName: String read mapped.FullName;
     property BaseType: nullable &Type read mapped.GetTypeInfo().BaseType;
     property IsClass: Boolean read mapped.GetTypeInfo().IsClass;
     property IsInterface: Boolean read mapped.GetTypeInfo().IsInterface;
@@ -130,7 +140,8 @@ type
     method Instantiate: Object;
     begin
       {$IF COOPER}
-      result := mapped.newInstance()
+      var lConstructor := mapped.getDeclaredConstructor();
+      result := lConstructor:newInstance();
       {$ELSEIF TOFFEE AND NOT ISLAND}
       result := fClass.alloc.init;
       {$ELSEIF ECHOES}
@@ -142,7 +153,18 @@ type
   end;
   {$ENDIF}
 
+  {$IF TOFFEEV2}
+  Type_Reflection = public extension class(&Type)
+  public
+    class method TypeOf(aObject: Object): nullable &Type;
+    begin
+      result := RemObjects.Elements.System.typeOf(aObject);
+    end;
+  end;
+  {$ENDIF}
+
 implementation
+
 {$IFNDEF TOFFEEV2}
 {$IF COOPER}[Warning("Type.GetAllTypes is not supported for Java")]{$ENDIF}
 class method &Type.GetAllTypes: ImmutableList<&Type>;
@@ -180,13 +202,22 @@ begin
   except
   end;
   {$ELSEIF TOFFEE AND NOT ISLAND}
-  var lClass := NSClassFromString(aName);
+  var lClass := NSClassFromString(MangleName(aName));
   if assigned(lClass) then
     result := new &Type withClass(lClass);
   {$ELSEIF ECHOES}
   result := PlatformType.GetType(aName);
   {$ELSEIF ISLAND}
   result := &Type.AllTypes.FirstOrDefault(a -> a.Name = aName);
+  {$ENDIF}
+end;
+
+class method &Type.TypeOf(aObject: Object): nullable &Type;
+begin
+  {$IFDEF TOFFEEV1}
+  result := new &Type withPlatformType(aObject.class);
+  {$ELSE}
+  result := RemObjects.Elements.System.typeOf(aObject);
   {$ENDIF}
 end;
 
@@ -199,10 +230,26 @@ begin
   {$ENDIF}
 end;
 
-{$IF COOPER}
-method &Type.IsSubclassOf(aType: &Type): Boolean;
+{$IF TOFFEE}
+class method &Type.MangleName(aName: not nullable String): not nullable String;
 begin
-  result := (self.IsInterface = aType.IsInterface) and mapped.isAssignableFrom(aType);
+  result := aName;
+  if result.Contains(".") then
+    result := "__"+result.Replace(".", "_");
+end;
+
+class method &Type.UnmangleName(aName: not nullable String): not nullable String;
+begin
+  result := aName;
+  if result.StartsWith("__") then
+    result := result.Substring(2).Replace("_", ".");
+end;
+{$ENDIF}
+
+{$IF COOPER}
+method &Type.IsSubclassOf(aType: not nullable &Type): Boolean;
+begin
+  result := (self.IsInterface = aType.IsInterface) and (aType as PlatformType).isAssignableFrom(mapped);
 end;
 {$ELSEIF TOFFEE AND NOT ISLAND}
 constructor &Type /*withID*/;
@@ -244,8 +291,8 @@ end;
 method &Type.GetName: String;
 begin
   if fIsID then exit ('id');
-  if assigned(fClass) then exit fClass.description;
-  if assigned(fProtocol) then exit fProtocol.description;
+  if assigned(fClass) then exit Unmanglename(fClass.description);
+  if assigned(fProtocol) then exit Unmanglename(fProtocol.description);
   if assigned(fSimpleType) then begin
     case fSimpleType of
       'c': exit 'char';

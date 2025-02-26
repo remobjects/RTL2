@@ -89,7 +89,7 @@ type
     constructor withParent(aParent: XmlElement := nil);
   protected
     method CheckName(aName: String): Boolean;
-    method CharIsWhitespace(C: String): Boolean;
+    method CharIsWhitespace(C: String): Boolean; inline;
     method ConvertEntity(S: String; C: nullable Char): String;
   public
     constructor; empty;
