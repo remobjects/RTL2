@@ -17,6 +17,7 @@ type
         JsonTokenKind.ObjectStart: exit ReadObject();
         JsonTokenKind.ArrayStart: exit ReadArray();
         else begin
+          var lToken := Tokenizer.Token;
           case Tokenizer.Token of
             JsonTokenKind.String: result := ReadValue as not nullable;
             JsonTokenKind.Number: result := ReadValue as not nullable;
@@ -25,7 +26,7 @@ type
             JsonTokenKind.False: result := ReadValue as not nullable;
             else raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}. Data is '{Tokenizer.Value}'");
           end;
-          if Tokenizer.Next then
+          if (Tokenizer.Token <> lToken) or Tokenizer.Next then
             raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}. Data is '{Tokenizer.Value}'");
         end;
       end;
