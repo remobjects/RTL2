@@ -21,6 +21,7 @@ type
     method ParseWhitespace;
     method ParseNumber;
     method ParseString;
+    method ParseDigits(aPos: Integer): Integer;
   public
     constructor (aJson: String);
     constructor (aJson: String; SkipWhitespaces: Boolean);
@@ -132,8 +133,7 @@ begin
     Parse;
 
     if (Token = JsonTokenKind.EOF) or (Token = JsonTokenKind.SyntaxError) then
-     exit false;
-
+      exit false;
     if IgnoreWhitespaces and (Token = JsonTokenKind.Whitespace) then
       continue;
 
@@ -171,34 +171,44 @@ end;
 
 method JsonTokenizer.ParseNumber;
 begin
-  var hs: Boolean := false;
   var lPosition := fPos;
-
   if fData[lPosition] = '-' then
     inc(lPosition);
-
-  while (((fData[lPosition] >= '0') and (fData[lPosition] <= '9')) or (fData[lPosition] = '.')) and (lPosition < length(fData)-1) do begin
+  lPosition := ParseDigits(lPosition);
+  if Token = JsonTokenKind.SyntaxError then
+    exit;
+  if (lPosition < length(fData)) and (fData[lPosition] = '.') then begin
     inc(lPosition);
-
-    if (fData[lPosition] = '.') and (not hs) and ((fData[lPosition + 1] >= '0') and (fData[lPosition + 1] <= '9')) then begin
-      hs := true;
-      inc(lPosition);
-    end;
+    lPosition := ParseDigits(lPosition);
+    if Token = JsonTokenKind.SyntaxError then
+      exit;
   end;
 
-  if (fData[lPosition] = 'e') or (fData[lPosition] = 'E') then begin
+  if (lPosition < length(fData)) and ((fData[lPosition] = 'e') or (fData[lPosition] = 'E')) then begin
     inc(lPosition);
-
-    if (fData[lPosition] = '-') or (fData[lPosition] = '+') then
+    if (lPosition < length(fData)) and ((fData[lPosition] = '+') or (fData[lPosition] = '-')) then
       inc(lPosition);
-
-    while (fData[lPosition] >= '0') and (fData[lPosition] <= '9') do
-      inc(lPosition);
+    lPosition := ParseDigits(lPosition);
+    if Token = JsonTokenKind.SyntaxError then
+      exit;
   end;
 
   Token := JsonTokenKind.Number;
   fLength := lPosition - fPos;
   Value := new String(fData, fPos, fLength);
+end;
+
+method JsonTokenizer.ParseDigits(aPos: Integer) : Integer;
+begin
+  var lStartPos := aPos;
+  while (aPos < length(fData)) and ((fData[aPos] >= '0') and (fData[aPos]<='9')) do
+    inc(aPos);
+  if aPos = lStartPos then begin
+    Token := JsonTokenKind.SyntaxError;
+    fPos := aPos;
+    Value := new String(fData, aPos, 1);
+  end;
+  exit aPos;
 end;
 
 method JsonTokenizer.ParseString;
