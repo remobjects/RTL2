@@ -1,19 +1,19 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # RemObjects Fire
-Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Cooper", "..\Source\Elements.RTL.Cooper.elements", "{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}"
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Cooper", "..\Source\RemObjects.Elements.RTL\Elements.RTL.Cooper.elements", "{F9717E15-88BC-4853-8D07-8DBAD8C0B2A9}"
 EndProject
-Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Echoes", "..\Source\Elements.RTL.Echoes.elements", "{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}"
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Echoes", "..\Source\RemObjects.Elements.RTL\Elements.RTL.Echoes.elements", "{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}"
 EndProject
-Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Linux", "..\Source\Elements.RTL.Island.Linux.elements", "{163F84DC-DC6B-4535-994F-0865D3A84D20}"
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Linux", "..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Linux.elements", "{163F84DC-DC6B-4535-994F-0865D3A84D20}"
 EndProject
-Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Windows", "..\Source\Elements.RTL.Island.Windows.elements", "{6F888992-4293-4097-8AA3-6667E0187D4F}"
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Island.Windows", "..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Windows.elements", "{6F888992-4293-4097-8AA3-6667E0187D4F}"
 EndProject
-Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Shared", "..\Source\Elements.RTL.Shared.elements", "{ABEC8ACC-B076-406C-871B-581E8AF0A453}"
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Shared", "..\Source\RemObjects.Elements.RTL\Elements.RTL.Shared.elements", "{ABEC8ACC-B076-406C-871B-581E8AF0A453}"
 EndProject
-Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.iOS", "..\Source\Elements.RTL.Toffee.iOS.elements", "{EC0982C8-700B-4085-A401-59460E394DAA}"
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.iOS", "..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.iOS.elements", "{EC0982C8-700B-4085-A401-59460E394DAA}"
 EndProject
-Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.macOS", "..\Source\Elements.RTL.Toffee.macOS.elements", "{58D52FE5-E87E-4D9C-8FBB-280980F6762B}"
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL.Toffee.macOS", "..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.macOS.elements", "{58D52FE5-E87E-4D9C-8FBB-280980F6762B}"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Elements.RTL2.Tests.Cooper", "Elements.RTL2.Tests.Cooper.elements", "{F9394C75-0042-42C1-B0DC-B5ACB2C0C3A7}"
 EndProject

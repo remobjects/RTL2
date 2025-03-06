@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>RemObjects.Elements.Serialization</RootNamespace>
+    <ProjectGuid>{C0FA7D07-304E-4005-9745-C9263230B2AD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <TargetFramework>.NETStandard2.0</TargetFramework>
+    <Mode>Echoes</Mode>
+    <DefaultUses>RemObjects.Elements.RTL;RemObjects.Elements.RTL.Reflection</DefaultUses>
+    <BinaryName>RemObjects.Elements.Serialization</BinaryName>
+    <OutputPath>..\..\Bin</OutputPath>
+    <OutputPathUsesModes>True</OutputPathUsesModes>
+    <OutputPathUsesSDKNames>True</OutputPathUsesSDKNames>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Optimize>False</Optimize>
+    <ConditionalDefines>DEBUG;TRACE;</ConditionalDefines>
+    <GeneratePDB>True</GeneratePDB>
+    <GenerateMDB>True</GenerateMDB>
+    <EnableAsserts>True</EnableAsserts>
+    <CpuType>anycpu</CpuType>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <CpuType>anycpu</CpuType>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Echoes">
+      <HintPath>..\bin\Debug\NETStandard\Echoes.dll</HintPath>
+    </Reference>
+    <Reference Include="Elements">
+      <HintPath>..\bin\Debug\NETStandard\Elements.dll</HintPath>
+    </Reference>
+    <Reference Include="RemObjects.Elements.Cirrus">
+      <HintPath>..\..\..\Elements\Bin\RemObjects.Elements.Cirrus.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.pas" />
+    <Compile Include="Aspect.pas" />
+    <Compile Include="Attributes.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.targets" />
+</Project>
