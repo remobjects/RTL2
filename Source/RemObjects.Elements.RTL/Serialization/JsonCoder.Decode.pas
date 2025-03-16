@@ -74,16 +74,21 @@ type
         end;
       end;
     end;
-    {$ELSEIF TOFFEEV1 OR COOPER}
+    {$ELSEIF TOFFEE OR ISLAND OR COOPER}
     method DecodeListElements(aName: String; aType: &Type): NonGenericPlatformList; override;
     begin
       if Current is var lJsonArray: JsonArray then begin
-        result := {$IF TOFFEE}new NonGenericPlatformList withCapacity(lJsonArray.Count){$ELSEIF COOPER}new NonGenericPlatformList(lJsonArray.Count){$ENDIF};
+        result := if defined("TOFFEEV1") then
+          new NonGenericPlatformList withCapacity(lJsonArray.Count)
+        else if defined("COOPER") then
+          new NonGenericPlatformList(lElements.Count)
+        else
+          new NonGenericPlatformList;
         for i := 0 to lJsonArray.Count-1 do begin
           Hierarchy.Push(lJsonArray[i]);
           var lValue := DecodeArrayElement(aName, aType);
           if assigned(lValue) then
-            {$IF TOFFEE}result.addObject(lValue){$ELSEIF COOPER}result.Add(lValue){$ENDIF};
+            {$IF TOFFEE}result.addObject(lValue){$ELSE}result.Add(lValue){$ENDIF};
           Hierarchy.Pop;
         end;
       end;
@@ -114,11 +119,11 @@ type
         end;
       end;
     end;
-    {$ELSEIF TOFFEEV1 OR COOPER}
+    {$ELSEIF TOFFEE OR ISLAND OR COOPER}
     method DecodeStringDictionaryElements(aName: String; aType: &Type): NonGenericPlatformDictionary; override;
     begin
       with matching lJsonObject := JsonObject(Current) do begin
-        result := {$IF TOFFEE}new NonGenericPlatformDictionary withCapacity(lJsonObject.Count){$ELSEIF COOPER}new NonGenericPlatformDictionary(lJsonObject.Count){$ENDIF};
+        result := if defined("TOFFEEV1") or defined("ISLAND") then new NonGenericPlatformDictionary withCapacity(lJsonObject.Count) else new NonGenericPlatformDictionary(lJsonObject.Count);
         for each k in lJsonObject.Keys do begin
           Hierarchy.Push(lJsonObject[k]);
           var lValue := DecodeArrayElement(aName, aType);

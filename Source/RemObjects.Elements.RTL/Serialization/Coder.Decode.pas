@@ -5,9 +5,9 @@ uses
   RemObjects.Elements.RTL.Reflection;
 
 type
-  {$IF TOFFEEV1 OR COOPER}
-  NonGenericPlatformList = assembly {$IF COOPER}java.util.ArrayList{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ENDIF};
-  NonGenericPlatformDictionary = Assembly {$IF COOPER}java.util.Hashtable{$ELSEIF TOFFEE}Foundation.NSMutableDictionary{$ENDIF};
+  {$IF TOFFEE OR ISLAND OR COOPER}
+  NonGenericPlatformList = assembly {$IF COOPER}java.util.ArrayList{$ELSEIF TOFFEE}Foundation.NSMutableArray{$ELSEIF ISLAND}List<Object>{$ENDIF};
+  NonGenericPlatformDictionary = Assembly {$IF COOPER}java.util.Hashtable{$ELSEIF TOFFEE}Foundation.NSMutableDictionary{$ELSEIF ISLAND}Dictionary<String,Object>{$ENDIF};
   {$ENDIF}
 
   Coder = public partial class
@@ -89,8 +89,8 @@ type
           result := java.lang.reflect.Array.newInstance(aType, lResult.Count) as array of T;
         for i := 0 to lResult.Count-1 do
           result[i] := lResult[i];
-        {$ELSE}
-        raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
+        {$ELSEIF ISLAND}
+        raise new CodingExeption($"Decoding of arrays is not (yet) supported on this platform.");
         {$ENDIF}
         DecodeArrayEnd(aName);
       end;
@@ -99,7 +99,7 @@ type
     method DecodeArrayElement(aName: String; aType: &Type): Object;
     begin
       {$IF SERIALIZATION}
-      var lType := if defined("COCOA") then aType.TypeClass else aType;
+      var lType := if defined("TOFFEE") then aType.TypeClass else if defined("ISLAND") then aType as PlatformType else aType;
       case lType of
         DateTime: result := DecodeDateTime(nil);
         String: result := DecodeString(nil);
@@ -136,7 +136,7 @@ type
 
     {$IF ECHOES}
     method DecodeArrayElements<T>(aName: String; aType: &Type): array of T; abstract;
-    {$ELSEIF TOFFEEV1 OR COOPER}
+    {$ELSEIF TOFFEE OR ISLAND OR COOPER}
     method DecodeArrayElements(aName: String; aType: &Type): NonGenericPlatformList; virtual;
     begin
       result := DecodeListElements(aName, aType);
@@ -154,6 +154,11 @@ type
         result := DecodeListElements<T>(aName, aType);
         {$ELSEIF TOFFEEV1 OR COOPER}
         result := DecodeListElements(aName, aType);
+        {$ELSEIF ISLAND}
+        var lResult := DecodeListElements(aName, aType);
+        result := new List<T>;//(lResult.Count);
+        for i := 0 to lResult.Count-1 do
+          result.Add(lResult[i] as T);
         {$ELSE}
         raise new CodingExeption($"Decoding of collections is not (yet) supported on this platform.");
         {$ENDIF}
@@ -171,7 +176,7 @@ type
     begin
       result := DecodeArrayElements<T>(aName, aType).ToList;
     end;
-    {$ELSEIF TOFFEEV1 OR COOPER}
+    {$ELSEIF TOFFEE OR ISLAND OR COOPER}
     method DecodeListElements(aName: String; aType: &Type): NonGenericPlatformList; abstract;
     {$ENDIF}
 
@@ -189,7 +194,7 @@ type
         result := DecodeStringDictionaryElements<T>(aName, aType);
         {$ELSEIF TOFFEEV1}
         result := DecodeStringDictionaryElements(aName, aType);
-        {$ELSEIF COOPER}
+        {$ELSEIF ISLAND OR COOPER}
         var lResult := DecodeStringDictionaryElements(aName, aType);
         result := new Dictionary<String, T>();
         for each matching k: String in lResult.Keys do
@@ -205,7 +210,7 @@ type
 
     {$IF ECHOES}
     method DecodeStringDictionaryElements<T>(aName: String; aType: &Type): Dictionary<String,T>; abstract;
-    {$ELSEIF TOFFEEV1 OR COOPER}
+    {$ELSEIF TOFFEE OR ISLAND OR COOPER}
     method DecodeStringDictionaryElements(aName: String; aType: &Type): NonGenericPlatformDictionary; abstract;
     {$ENDIF}
 

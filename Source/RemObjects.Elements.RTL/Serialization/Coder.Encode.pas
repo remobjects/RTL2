@@ -36,13 +36,13 @@ type
 
       //Log($"typeOf(aValue) {typeOf(aValue)}");
       {$HINT `typeOf(aValue)` is nil here, for Cocoa. why?}
-      var lType := if defined("COCOA") then aValue.class else typeOf(aValue);
+      var lType := if defined("TOFFEE") then aValue.class else if defined("ISLAND") then typeOf(aValue) as PlatformType else typeOf(aValue);
       case lType of
         DateTime: EncodeDateTime(aName, aValue as DateTime);
         String: EncodeString(aName, aValue as String);
-        //{$IF TOFFEE}
-        //NSNumber: EncodeNumber(aName, aValue as SByte);
-        //{$ELSE}
+        {$IF TOFFEE}
+        NSNumber: EncodeNumber(aName, aValue as SByte);
+        {$ENDIF}
         SByte: EncodeInt8(aName, aValue as SByte);
         Int16: EncodeInt16(aName, aValue as Int16);
         Int32: EncodeInt32(aName, aValue as Int32);
@@ -58,7 +58,6 @@ type
         Boolean: EncodeBoolean(aName, aValue as Boolean);
         Single: EncodeSingle(aName, aValue as Single);
         Double: EncodeDouble(aName, aValue as Double);
-        //{$ENDIF}
         Guid: EncodeGuid(aName, aValue as Guid);
         {$IF NOT (TOFFEE OR COOPER)} // On these platforms the types are aliased
         PlatformDateTime: EncodeDateTime(aName, aValue as DateTime);

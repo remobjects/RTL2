@@ -85,16 +85,23 @@ type
         Hierarchy.Pop;
       end;
     end;
-    {$ELSEIF TOFFEEV1 OR COOPER}
+    {$ELSEIF TOFFEE OR ISLAND OR COOPER}
     method DecodeListElements(aName: String; aType: &Type): NonGenericPlatformList; override;
     begin
       var lElements := Current.ElementsWithName("Element").ToList;
-      result := {$IF TOFFEE}new NonGenericPlatformList withCapacity(lElements.Count){$ELSEIF COOPER}new NonGenericPlatformList(lElements.Count){$ENDIF};
+      result := if defined("TOFFEEV1") then
+        new NonGenericPlatformList withCapacity(lElements.Count)
+      else if defined("COOPER") then
+        new NonGenericPlatformList(lElements.Count)
+      else
+        new NonGenericPlatformList;
+      //else if defined("ISLAND") then
+        //new NonGenericPlatformList;
       for i := 0 to lElements.Count-1 do begin
         Hierarchy.Push(lElements[i]);
         var lValue := DecodeArrayElement(aName, aType);
         if assigned(lValue) then
-          {$IF TOFFEE}result.addObject(lValue){$ELSEIF COOPER}result.Add(lValue){$ENDIF};
+          {$IF TOFFEE}result.addObject(lValue){$ELSE}result.Add(lValue){$ENDIF};
         Hierarchy.Pop;
       end;
     end;
@@ -130,11 +137,11 @@ type
         end;
       end;
     end;
-    {$ELSEIF TOFFEEV1 OR COOPER}
+    {$ELSEIF TOFFEE OR ISLAND OR COOPER}
     method DecodeStringDictionaryElements(aName: String; aType: &Type): NonGenericPlatformDictionary; override;
     begin
       var lElements := Current.ElementsWithName("Element").ToList;
-      result := {$IF TOFFEE}new NonGenericPlatformDictionary withCapacity(lElements.Count){$ELSEIF COOPER}new NonGenericPlatformDictionary(lElements.Count){$ENDIF};
+      result := if defined("TOFFEEV1") or defined("ISLAND") then new NonGenericPlatformDictionary withCapacity(lElements.Count) else new NonGenericPlatformDictionary(lElements.Count);
       for each e in lElements do begin
         if assigned(e.Attribute["Name"]) then begin
           Hierarchy.Push(e);

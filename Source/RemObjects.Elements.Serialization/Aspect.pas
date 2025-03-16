@@ -105,7 +105,6 @@ type
     method EmitPlatformWarning;
     begin
       case fServices.Platform of
-        Platform.Island: fServices.EmitHint(fType, $"Serialization is not fully supported on Island, yet.");
         Platform.Gotham: fServices.EmitError(fType, $"Serialization is notsupported for Gotham projects.");
         Platform.All: fServices.EmitError(fType, $"Serialization is not supported for mixed-platforms projects.");
       end;
@@ -225,7 +224,7 @@ type
               lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef]);
             end;
           "Array", "List", "StringDictionary": begin
-              if (lEncoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper]) then begin
+              if (lEncoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper, Platform.Island]) then begin
                 fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
                 continue;
               end;
@@ -379,7 +378,7 @@ type
                                         BinaryOperator.As)
             end;
           "Array", "List", "StringDictionary": begin
-              if (lDecoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper]) then begin
+              if (lDecoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper, Platform.Island]) then begin
                 fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
                 continue;
               end;
