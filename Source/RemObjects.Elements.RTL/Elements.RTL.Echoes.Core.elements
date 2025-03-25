@@ -18,7 +18,7 @@
     <CrossPlatform>True</CrossPlatform>
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
-    <KnownConditionalDefines>DEBUG;NETCORE;NETSTANDARD;SERIALIZATION;TRACE</KnownConditionalDefines>
+    <KnownConditionalDefines>DEBUG;HTTPCLIENT;NETCORE;NETSTANDARD;SERIALIZATION;TRACE</KnownConditionalDefines>
     <TargetFramework>.NETCore6.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -36,7 +36,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-    <ConditionalDefines>DEBUG;NETSTANDARD;SERIALIZATION;TRACE</ConditionalDefines>
+    <ConditionalDefines>DEBUG;HTTPCLIENT;NETCORE;NETSTANDARD;SERIALIZATION;TRACE</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
@@ -53,7 +53,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-    <ConditionalDefines>NETSTANDARD;SERIALIZATION</ConditionalDefines>
+    <ConditionalDefines>HTTPCLIENT;NETCORE;NETSTANDARD;SERIALIZATION</ConditionalDefines>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Echoes">

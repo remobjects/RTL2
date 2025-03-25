@@ -87,65 +87,102 @@ begin
       ResponseCallback(new HttpResponse withException(E));
   end;
   {$ELSEIF ECHOES}
-  using webRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do try
-    {$IF NOT NETFX_CORE}
-    webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
-    {$ENDIF}
-    if assigned(aRequest.UserAgent) then
-      webRequest.UserAgent := aRequest.UserAgent;
-    if assigned(aRequest.ContentType) then
-      webRequest.ContentType := aRequest.ContentType;
-    webRequest.Method := aRequest.Method.ToHttpString;
-    webRequest.Timeout := Integer(aRequest.Timeout*1000);
-    if assigned(aRequest.Accept) then
-      webRequest.Accept := aRequest.Accept;
-
-    for each k in aRequest.Headers.Keys do
-      webRequest.Headers[k] := aRequest.Headers[k];
-
-    if assigned(aRequest.Content) then begin
-    {$IF NETSTANDARD}
-      // I don't want to mess with BeginGetRequestStream/EndGetRequestStream methods here
-      // HttpWebRequest.GetRequestStreamAsync() is not available in WP 8.0
-      var getRequestStreamTask := System.Threading.Tasks.Task<System.IO.Stream>.Factory.FromAsync(@webRequest.BeginGetRequestStream, @webRequest.EndGetRequestStream, nil);
-    {$ENDIF}
-      using stream :=
-        {$IF NETSTANDARD}
-        await getRequestStreamTask
-        {$ELSEIF NETFX_CORE}
-        await webRequest.GetRequestStreamAsync()
-        {$ELSE}
-        webRequest.GetRequestStream()
-        {$ENDIF}
-    do begin
-        var data := (aRequest.Content as IHttpRequestContent).GetContentAsArray();
-        stream.Write(data, 0, data.Length);
-        stream.Flush();
-        //webRequest.ContentLength := data.Length;
-      end;
-    end;
-
-    webRequest.BeginGetResponse( (ar) -> begin
-
+    {$IF HTTPCLIENT}
+    using lClient := new System.Net.Http.HttpClient() do begin
       try
-        var webResponse := webRequest.EndGetResponse(ar) as HttpWebResponse;
-        if webResponse.StatusCode >= 300 then begin
-          ResponseCallback(new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer, aRequest)));
-          (webResponse as IDisposable).Dispose;
+        var lRequestMessage := new System.Net.Http.HttpRequestMessage();
+        lRequestMessage.RequestUri := aRequest.Url;
+        lRequestMessage.Method := new System.Net.Http.HttpMethod(aRequest.Method.ToHttpString);
+
+        if assigned(aRequest.UserAgent) then
+          lRequestMessage.Headers.UserAgent.ParseAdd(aRequest.UserAgent);
+        if assigned(aRequest.ContentType) then
+          lRequestMessage.Content := new System.Net.Http.ByteArrayContent((aRequest.Content as IHttpRequestContent).GetContentAsArray());
+        lRequestMessage.Content.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.ContentType);
+        lRequestMessage.Headers.Accept.ParseAdd(aRequest.Accept);
+
+        for each k in aRequest.Headers.Keys do
+          lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
+
+        var cts := new System.Threading.CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout));
+
+        var lRepsonseMessage := await lClient.SendAsync(lRequestMessage, cts.Token);
+        if lRepsonseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect then begin
+          ResponseCallback(new HttpResponse withException(new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest)));
         end
         else begin
-          ResponseCallback(new HttpResponse(webResponse));
+          ResponseCallback(new HttpResponse(lRepsonseMessage));
         end;
       except
+        on E: System.OperationCanceledException do
+          ResponseCallback(new HttpResponse withException(new HttpException('Request timed out', aRequest)));
         on E: Exception do
           ResponseCallback(new HttpResponse withException(E));
       end;
+    end;
+    {$ELSE}
+    using webRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do try
+      {$IF NOT NETFX_CORE}
+      webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
+      {$ENDIF}
+      webRequest.KeepAlive := aRequest.KeepAlive;
+      if assigned(aRequest.UserAgent) then
+        webRequest.UserAgent := aRequest.UserAgent;
+      if assigned(aRequest.ContentType) then
+        webRequest.ContentType := aRequest.ContentType;
+      webRequest.Method := aRequest.Method.ToHttpString;
+      webRequest.Timeout := Integer(aRequest.Timeout*1000);
+      if assigned(aRequest.Accept) then
+        webRequest.Accept := aRequest.Accept;
 
-    end, nil);
-  except
-    on E: Exception do
-      ResponseCallback(new HttpResponse withException(E));
-  end;
+      for each k in aRequest.Headers.Keys do
+        webRequest.Headers[k] := aRequest.Headers[k];
+
+      if assigned(aRequest.Content) then begin
+      {$IF NETSTANDARD}
+        // I don't want to mess with BeginGetRequestStream/EndGetRequestStream methods here
+        // HttpWebRequest.GetRequestStreamAsync() is not available in WP 8.0
+        var getRequestStreamTask := System.Threading.Tasks.Task<System.IO.Stream>.Factory.FromAsync(@webRequest.BeginGetRequestStream, @webRequest.EndGetRequestStream, nil);
+      {$ENDIF}
+        using stream :=
+          {$IF NETSTANDARD}
+          await getRequestStreamTask
+          {$ELSEIF NETFX_CORE}
+          await webRequest.GetRequestStreamAsync()
+          {$ELSE}
+          webRequest.GetRequestStream()
+          {$ENDIF}
+      do begin
+          var data := (aRequest.Content as IHttpRequestContent).GetContentAsArray();
+          stream.Write(data, 0, data.Length);
+          stream.Flush();
+          //webRequest.ContentLength := data.Length;
+        end;
+      end;
+
+      webRequest.BeginGetResponse( (ar) -> begin
+
+        try
+          var webResponse := webRequest.EndGetResponse(ar) as HttpWebResponse;
+          if webResponse.StatusCode >= 300 then begin
+            ResponseCallback(new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer, aRequest)));
+            (webResponse as IDisposable).Dispose;
+          end
+          else begin
+            ResponseCallback(new HttpResponse(webResponse));
+          end;
+        except
+          on E: Exception do
+            ResponseCallback(new HttpResponse withException(E));
+        end;
+
+      end, nil);
+    except
+      on E: Exception do
+        ResponseCallback(new HttpResponse withException(E));
+    end;
+    {$ENDIF}
   {$ELSEIF DARWIN}
   try
     var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);
@@ -288,58 +325,96 @@ begin
   end;
 
   {$ELSEIF ECHOES}
-  using webRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do begin
-    {$IF NOT NETFX_CORE}
-    webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
-    {$ENDIF}
-    if assigned(aRequest.UserAgent) then
-      webRequest.UserAgent := aRequest.UserAgent;
-    if assigned(aRequest.ContentType) then
-      webRequest.ContentType := aRequest.ContentType;
-    webRequest.Method := aRequest.Method.ToHttpString;
-    webRequest.Timeout := Integer(aRequest.Timeout*1000);
-    if assigned(aRequest.Accept) then
-      webRequest.Accept := aRequest.Accept;
+    {$IF HTTPCLIENT}
+    using lClient := new System.Net.Http.HttpClient() do begin
+      var lRequestMessage := new System.Net.Http.HttpRequestMessage();
+      lRequestMessage.RequestUri := aRequest.Url;
+      lRequestMessage.Method := new System.Net.Http.HttpMethod(aRequest.Method.ToHttpString);
 
-    for each k in aRequest.Headers.Keys do
-      webRequest.Headers[k] := aRequest.Headers[k];
+      if assigned(aRequest.UserAgent) then
+        lRequestMessage.Headers.UserAgent.ParseAdd(aRequest.UserAgent);
+      if assigned(aRequest.ContentType) then
+        lRequestMessage.Content.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.ContentType);
+      lRequestMessage.Headers.Accept.ParseAdd(aRequest.Accept);
 
-    if assigned(aRequest.Content) then begin
-      using stream := webRequest.GetRequestStream() do begin
-        var data := (aRequest.Content as IHttpRequestContent).GetContentAsArray();
-        stream.Write(data, 0, data.Length);
-        stream.Flush();
-      end;
-    end;
+      for each k in aRequest.Headers.Keys do
+        lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
 
-    try
-      var lWebResponse := webRequest.GetResponse() as HttpWebResponse;
-      if (lWebResponse.StatusCode ≥ 300) and aThrowOnError then begin
-        var lException := new HttpException(String.Format("Unable to complete request. Error code: {0}", lWebResponse.StatusCode), result);
-        (lWebResponse as IDisposable).Dispose;
-        raise lException;
-      end;
-      result := new HttpResponse(lWebResponse);
-    except
-      on E: System.Net.WebException do begin
-        if not aThrowOnError then begin
-          if E.Response is HttpWebResponse then
-            exit new HttpResponse(E.Response as HttpWebResponse)
-          else
-            exit new HttpResponse withException(E);
-        end
-        else begin
-          if E.Response is HttpWebResponse then
-            raise new HttpException(E.Message, aRequest, new HttpResponse(E.Response as HttpWebResponse))
-          else case E.Status of
-            WebExceptionStatus.NameResolutionFailure: raise new HttpException($"Could not resolve host name '{aRequest.Url.Host}'", aRequest)
-            else raise new HttpException(E.Message, aRequest);
+      if assigned(aRequest.Content) then
+        lRequestMessage.Content := new System.Net.Http.ByteArrayContent((aRequest.Content as IHttpRequestContent).GetContentAsArray());
+
+      try
+        var lResponseMessage := lClient.SendAsync(lRequestMessage).Result;
+        if (lResponseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect) and aThrowOnError then
+          raise new HttpException(String.Format("Unable to complete request. Error code: {0}", lResponseMessage.StatusCode), nil);
+        result := new HttpResponse(lResponseMessage);
+      except
+        on E: System.AggregateException do begin
+          var webEx := E.InnerException as System.Net.Http.HttpRequestException;
+          if assigned(webEx) and not aThrowOnError then begin
+            exit new HttpResponse withException(webEx);
+          end
+          else begin
+            raise new HttpException(webEx.Message, aRequest);
           end;
         end;
       end;
     end;
+    {$ELSE}
+    using webRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do begin
+      {$IF NOT NETFX_CORE}
+      webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
+      {$ENDIF}
+      webRequest.KeepAlive := aRequest.KeepAlive;
+      if assigned(aRequest.UserAgent) then
+        webRequest.UserAgent := aRequest.UserAgent;
+      if assigned(aRequest.ContentType) then
+        webRequest.ContentType := aRequest.ContentType;
+      webRequest.Method := aRequest.Method.ToHttpString;
+      webRequest.Timeout := Integer(aRequest.Timeout*1000);
+      if assigned(aRequest.Accept) then
+        webRequest.Accept := aRequest.Accept;
 
-  end;
+      for each k in aRequest.Headers.Keys do
+        webRequest.Headers[k] := aRequest.Headers[k];
+
+      if assigned(aRequest.Content) then begin
+        using stream := webRequest.GetRequestStream() do begin
+          var data := (aRequest.Content as IHttpRequestContent).GetContentAsArray();
+          stream.Write(data, 0, data.Length);
+          stream.Flush();
+        end;
+      end;
+
+      try
+        var lWebResponse := webRequest.GetResponse() as HttpWebResponse;
+        if (lWebResponse.StatusCode ≥ 300) and aThrowOnError then begin
+          var lException := new HttpException(String.Format("Unable to complete request. Error code: {0}", lWebResponse.StatusCode), result);
+          (lWebResponse as IDisposable).Dispose;
+          raise lException;
+        end;
+        result := new HttpResponse(lWebResponse);
+      except
+        on E: System.Net.WebException do begin
+          if not aThrowOnError then begin
+            if E.Response is HttpWebResponse then
+              exit new HttpResponse(E.Response as HttpWebResponse)
+            else
+              exit new HttpResponse withException(E);
+          end
+          else begin
+            if E.Response is HttpWebResponse then
+              raise new HttpException(E.Message, aRequest, new HttpResponse(E.Response as HttpWebResponse))
+            else case E.Status of
+              WebExceptionStatus.NameResolutionFailure: raise new HttpException($"Could not resolve host name '{aRequest.Url.Host}'", aRequest)
+              else raise new HttpException(E.Message, aRequest);
+            end;
+          end;
+        end;
+      end;
+
+    end;
+    {$ENDIF}
   {$ELSEIF ISLAND AND WINDOWS}
   var lFlags := if aRequest.Url.Scheme.EqualsIgnoringCase('https') then rtl.WINHTTP_FLAG_SECURE else 0;
   var lPort := 80;

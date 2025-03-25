@@ -55,8 +55,31 @@ type
     var Data: NSData;
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
     {$ELSEIF ECHOES}
+    {$IF HTTPCLIENT}
+    var Response: System.Net.Http.HttpResponseMessage;
+    constructor(aResponse: System.Net.Http.HttpResponseMessage);
+    begin
+      Response := aResponse;
+      Code := Int32(aResponse.StatusCode);
+      Headers := new Dictionary<String,String>();
+      //var lHeaders := new Dictionary<String,String>;
+      //for each k: String in aResponse.Headers.:AllKeys do
+        //lHeaders[k.ToString] := aResponse.Headers[k];
+      //Headers := lHeaders;
+    end;
+    {$ELSE}
     var Response: HttpWebResponse;
     constructor(aResponse: HttpWebResponse);
+    begin
+      Response := aResponse;
+      Code := Int32(aResponse.StatusCode);
+      Headers := new Dictionary<String,String>();
+      var lHeaders := new Dictionary<String,String>;
+      for each k: String in aResponse.Headers:AllKeys do
+        lHeaders[k.ToString] := aResponse.Headers[k];
+      Headers := lHeaders;
+    end;
+    {$ENDIF}
     {$ELSEIF WEBASSEMBLY}
     var fOriginalRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest; private;
     constructor(aRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest);
@@ -125,16 +148,6 @@ begin
   end;
 end;
 {$ELSEIF ECHOES}
-constructor HttpResponse(aResponse: HttpWebResponse);
-begin
-  Response := aResponse;
-  Code := Int32(aResponse.StatusCode);
-  Headers := new Dictionary<String,String>();
-  var lHeaders := new Dictionary<String,String>;
-  for each k: String in aResponse.Headers:AllKeys do
-    lHeaders[k.ToString] := aResponse.Headers[k];
-  Headers := lHeaders;
-end;
 {$ELSEIF WEBASSEMBLY}
 constructor HttpResponse(aRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest);
 begin
@@ -207,8 +220,21 @@ begin
     contentCallback(new HttpResponseContent<String>(Exception := new RTLException("Invalid Encoding")));
   {$ELSEIF ECHOES}
   async begin
-    var responseString := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd();
-    contentCallback(new HttpResponseContent<String>(Content := responseString))
+    {$IF HTTPCLIENT}
+    using lStream := await response.Content.ReadAsStreamAsync() do begin
+      using lReader := new System.IO.StreamReader(lStream, aEncoding) do begin
+        var responseString := lReader.ReadToEnd();
+        contentCallback(new HttpResponseContent<String>(Content := responseString))
+      end;
+    end;
+    {$ELSE}
+    using lStream := Response.GetResponseStream() do begin
+      using lReader := new System.IO.StreamReader(lStream, aEncoding) do begin
+        var responseString := lReader.ReadToEnd();
+        contentCallback(new HttpResponseContent<String>(Content := responseString))
+      end;
+    end;
+    {$ENDIF}
   end;
   {$ELSEIF WEBASSEMBLY}
   contentCallback(new HttpResponseContent<String>(Content := fOriginalRequest.responseText));
@@ -241,7 +267,13 @@ begin
   {$ELSEIF ECHOES}
   async begin
     var allData := new System.IO.MemoryStream();
-    Response.GetResponseStream().CopyTo(allData);
+    {$IF HTTPCLIENT}
+    using lStream := await response.Content.ReadAsStreamAsync() do
+      lStream.CopyTo(allData);
+    {$ELSE}
+    using lStream := Response.GetResponseStream() do
+      lStream .CopyTo(allData);
+    {$ENDIF}
     contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
   end;
   {$ELSEIF WEBASSEMBLY}
@@ -341,9 +373,15 @@ begin
   {$ELSEIF ECHOES}
   async begin
     try
-      using responseStream := Response.GetResponseStream() do
-        using fileStream := System.IO.File.OpenWrite(aTargetFile) do
-          responseStream.CopyTo(fileStream);
+      {$IF HTTPCLIENT}
+      using lStream := await response.Content.ReadAsStreamAsync() do
+        using lFileStream := System.IO.File.OpenWrite(aTargetFile) do
+          lStream.CopyTo(lFileStream);
+      {$ELSE}
+      using lStream := Response.GetResponseStream() do
+        using lFileStream := System.IO.File.OpenWrite(aTargetFile) do
+          lStream.CopyTo(lFileStream);
+      {$ENDIF}
       contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)));
     except
       on E: Exception do
@@ -380,7 +418,16 @@ begin
   else
     raise new RTLException("Invalid Encoding");
   {$ELSEIF ECHOES}
-  result := new System.IO.StreamReader(Response.GetResponseStream(), aEncoding).ReadToEnd() as not nullable;
+    {$IF HTTPCLIENT}
+    var lTask := response.Content.ReadAsStreamAsync();
+    using lStream := lTask.Result do
+      using lReader := new System.IO.StreamReader(lStream, aEncoding) do
+        result := lReader.ReadToEnd() as not nullable;
+    {$ELSE}
+    using lStream := Response.GetResponseStream() do
+      using lReader := new System.IO.StreamReader(lStream, aEncoding) do
+        result := lReader.ReadToEnd() as not nullable;
+    {$ENDIF}
   {$ELSEIF ISLAND AND WEBASSEMBLY}
   raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSEIF ISLAND}
@@ -405,7 +452,14 @@ begin
   result := Data.mutableCopy as not nullable;
   {$ELSEIF ECHOES}
   var allData := new System.IO.MemoryStream();
-  Response.GetResponseStream().CopyTo(allData);
+  {$IF HTTPCLIENT}
+  var lTask := response.Content.ReadAsStreamAsync();
+  using lStream := lTask.Result do
+    lStream.CopyTo(allData);
+  {$ELSE}
+  using lStream := Response.GetResponseStream() do
+    lStream.CopyTo(allData);
+  {$ENDIF}
   result := allData as not nullable;
   {$ELSEIF ISLAND AND WEBASSEMBLY}
   raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
@@ -432,13 +486,24 @@ begin
   {$ELSEIF DARWIN}
   result := Data:mutableCopy;
   {$ELSEIF ECHOES}
-  using lStream := Response:GetResponseStream do begin
-    if assigned(lStream) then begin
-      var allData := new System.IO.MemoryStream();
-      lStream.CopyTo(allData);
-      result := allData;
+    {$IF HTTPCLIENT}
+    var lTask := response.Content.ReadAsStreamAsync();
+    using lStream := lTask.Result do begin
+      if assigned(lStream) then begin
+        var allData := new System.IO.MemoryStream();
+        lStream.CopyTo(allData);
+        result := allData;
+      end;
     end;
-  end;
+    {$ELSE}
+    using lStream := Response:GetResponseStream do begin
+      if assigned(lStream) then begin
+        var allData := new System.IO.MemoryStream();
+        lStream.CopyTo(allData);
+        result := allData;
+      end;
+    end;
+  {$ENDIF}
   {$ELSEIF ISLAND AND WEBASSEMBLY}
   raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSEIF ISLAND}
