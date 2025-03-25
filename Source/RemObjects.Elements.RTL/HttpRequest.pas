@@ -15,6 +15,7 @@ type
     property Url: not nullable Url;
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
+    property KeepAlive: Boolean := true;
     property UserAgent: String;
     property Accept: String;
 
