@@ -192,7 +192,7 @@ type
       if DecodeStringDictionaryStart(aName) then begin
         {$IF ECHOES}
         result := DecodeStringDictionaryElements<T>(aName, aType);
-        {$ELSEIF TOFFEEV1}
+        {$ELSEIF TOFFEE}
         result := DecodeStringDictionaryElements(aName, aType);
         {$ELSEIF ISLAND OR COOPER}
         var lResult := DecodeStringDictionaryElements(aName, aType);
