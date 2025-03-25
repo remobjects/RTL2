@@ -81,7 +81,7 @@ type
         result := if defined("TOFFEEV1") then
           new NonGenericPlatformList withCapacity(lJsonArray.Count)
         else if defined("COOPER") then
-          new NonGenericPlatformList(lElements.Count)
+          new NonGenericPlatformList(lJsonArray.Count)
         else
           new NonGenericPlatformList;
         for i := 0 to lJsonArray.Count-1 do begin
