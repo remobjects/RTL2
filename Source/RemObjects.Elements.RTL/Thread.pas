@@ -42,7 +42,11 @@ type
 
     //property State: ThreadState read GetState write SetState;
     property IsAlive: Boolean read {$IF NOT TOFFEE}mapped.IsAlive{$ELSEIF TOFFEE}mapped.isExecuting{$ENDIF};
+    {$IF ISLAND AND DARWIN}
+    property Name: String read mapped.Name;
+    {$ELSE}
     property Name: String read mapped.Name write {$IF NOT TOFFEE}mapped.Name{$ELSEIF TOFFEE}mapped.setName{$ENDIF};
+    {$ENDIF}
 
     {$IF COOPER OR ECHOES}
     property ThreadId: Int64 read {$IF COOPER}mapped.Id{$ELSEIF ECHOES}mapped.ManagedThreadId{$ENDIF};
