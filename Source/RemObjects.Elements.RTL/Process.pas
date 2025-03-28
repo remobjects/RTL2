@@ -37,6 +37,7 @@ type
     class method Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil): Integer;
     class method Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String): Integer; inline;
     class method Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
+    class method Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: array of Byte; out aStdErr: array of Byte): Integer;
     class method Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer;
     class method RunAsync(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
 
@@ -174,6 +175,50 @@ begin
   end;
   {$ELSEIF ISLAND}
   result := PlatformProcess.Run(aCommand, aArguments, aEnvironment, aWorkingDirectory, out aStdOut, out aStdErr);
+  {$ENDIF}
+end;
+
+class method Process.Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: array of Byte; out aStdErr: array of Byte): Integer;
+begin
+  {$IF TOFFEE}
+  using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
+    (lTask as NSTask).standardOutput := NSPipe.pipe();
+    (lTask as NSTask).standardError := NSPipe.pipe();
+    var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
+    var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
+    lTask.Start();
+    lTask.WaitFor();
+
+    var error: NSError;
+    var lStdOutData := stdOut.readDataToEndOfFileAndReturnError(var error);
+    //aStdOut := new array of Byte withNSData(stdOutData);
+    aStdOut := new Byte[lStdOutData.length];
+    lStdOutData.getBytes(@aStdOut[0]) length(lStdOutData.length);
+    stdOut.closeAndReturnError(var error);
+
+    var lStdErrData := stdErr.readDataToEndOfFileAndReturnError(var error);
+    //aStdErr := new array of Byte withNSData(stdErrData);
+    aStdErr := new Byte[lStdErrData.length];
+    lStdErrData.getBytes(@aStdErr[0]) length(lStdErrData.length);
+    stdErr.closeAndReturnError(var error);
+  end;
+  {$ELSEIF ECHOES}
+  var lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory);
+  (lTask as PlatformProcess).StartInfo.RedirectStandardOutput := true;
+  (lTask as PlatformProcess).StartInfo.RedirectStandardError := true;
+  lTask.Start();
+  lTask.WaitFor();
+  using m := new MemoryStream do begin
+    (lTask as PlatformProcess).StandardOutput.BaseStream.CopyTo(m);
+    aStdOut := m.ToArray;
+  end;
+  using m := new MemoryStream do begin
+    (lTask as PlatformProcess).StandardError.BaseStream.CopyTo(m);
+    aStdOut := m.ToArray;
+  end;
+  {$ELSEIF ISLAND}
+  raise new NotImplementedException("Process.Run(aStdOut: array of Byte) is not implemented for Island yet.")
+  //result := PlatformProcess.Run(aCommand, aArguments, aEnvironment, aWorkingDirectory, out aStdOut, out aStdErr);
   {$ENDIF}
 end;
 
