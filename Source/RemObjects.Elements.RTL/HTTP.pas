@@ -238,16 +238,16 @@ begin
 
   lRequest.onload := method begin
     //writeLn("Wasm HTTP Success");
-    responseCallback(new HttpResponse(lRequest));
+    aResponseCallback(new HttpResponse(lRequest));
     lRequestHandle.Dispose();
   end;
 
   lRequest.onerror := method begin
     //writeLn("Wasm HTTP Error");
     if length(String(lRequest.statusText)) > 0 then
-      responseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
+      aResponseCallback(new HttpResponse withException(new RTLException(lRequest.statusText)))
     else
-      responseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")));
+      aResponseCallback(new HttpResponse withException(new RTLException("Request failed without providing an error.")));
     lRequestHandle.Dispose();
   end;
   lRequest.send();
