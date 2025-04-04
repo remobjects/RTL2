@@ -17,7 +17,7 @@ type
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
-    method ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
+    method ExecuteRequest(aRequest: not nullable HttpRequest; aResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
     method TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
 
@@ -48,7 +48,7 @@ uses
 
 { Http }
 
-method Http.ExecuteRequest(aRequest: not nullable HttpRequest; ResponseCallback: not nullable HttpResponseBlock);
+method Http.ExecuteRequest(aRequest: not nullable HttpRequest; aResponseCallback: not nullable HttpResponseBlock);
 begin
   aRequest.ApplyAuthehtication;
 
@@ -76,15 +76,15 @@ begin
 
     try
       var lResponse := if lConnection.ResponseCode >= 300 then new HttpResponse withException(new HttpException(lConnection.responseCode, aRequest)) else new HttpResponse(lConnection);
-      responseCallback(lResponse);
+      aResponseCallback(lResponse);
     except
       on E: Exception do
-        responseCallback(new HttpResponse withException(E));
+        aResponseCallback(new HttpResponse withException(E));
     end;
 
   except
     on E: Exception do
-      ResponseCallback(new HttpResponse withException(E));
+      aResponseCallback(new HttpResponse withException(E));
   end;
   {$ELSEIF ECHOES}
     {$IF HTTPCLIENT}
@@ -109,78 +109,70 @@ begin
 
         var lRepsonseMessage := await lClient.SendAsync(lRequestMessage, cts.Token);
         if lRepsonseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect then begin
-          ResponseCallback(new HttpResponse withException(new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest)));
+          aResponseCallback(new HttpResponse withException(new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest)));
         end
         else begin
-          ResponseCallback(new HttpResponse(lRepsonseMessage));
+          aResponseCallback(new HttpResponse(lRepsonseMessage));
         end;
       except
         on E: System.OperationCanceledException do
-          ResponseCallback(new HttpResponse withException(new HttpException('Request timed out', aRequest)));
+          aResponseCallback(new HttpResponse withException(new HttpException('Request timed out', aRequest)));
         on E: Exception do
-          ResponseCallback(new HttpResponse withException(E));
+          aResponseCallback(new HttpResponse withException(E));
       end;
     end;
     {$ELSE}
-    using webRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do try
+    using lWebRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do try
       {$IF NOT NETFX_CORE}
-      webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
+      lWebRequest.AllowAutoRedirect := aRequest.FollowRedirects;
       {$ENDIF}
-      webRequest.KeepAlive := aRequest.KeepAlive;
+      lWebRequest.KeepAlive := aRequest.KeepAlive;
       if assigned(aRequest.UserAgent) then
-        webRequest.UserAgent := aRequest.UserAgent;
+        lWebRequest.UserAgent := aRequest.UserAgent;
       if assigned(aRequest.ContentType) then
-        webRequest.ContentType := aRequest.ContentType;
-      webRequest.Method := aRequest.Method.ToHttpString;
-      webRequest.Timeout := Integer(aRequest.Timeout*1000);
+        lWebRequest.ContentType := aRequest.ContentType;
+      lWebRequest.Method := aRequest.Method.ToHttpString;
+      lWebRequest.Timeout := Integer(aRequest.Timeout*1000);
       if assigned(aRequest.Accept) then
-        webRequest.Accept := aRequest.Accept;
+        lWebRequest.Accept := aRequest.Accept;
 
       for each k in aRequest.Headers.Keys do
-        webRequest.Headers[k] := aRequest.Headers[k];
+        lWebRequest.Headers[k] := aRequest.Headers[k];
 
       if assigned(aRequest.Content) then begin
-      {$IF NETSTANDARD}
+        {$IF NETSTANDARD}
         // I don't want to mess with BeginGetRequestStream/EndGetRequestStream methods here
         // HttpWebRequest.GetRequestStreamAsync() is not available in WP 8.0
-        var getRequestStreamTask := System.Threading.Tasks.Task<System.IO.Stream>.Factory.FromAsync(@webRequest.BeginGetRequestStream, @webRequest.EndGetRequestStream, nil);
-      {$ENDIF}
-        using stream :=
-          {$IF NETSTANDARD}
-          await getRequestStreamTask
-          {$ELSEIF NETFX_CORE}
-          await webRequest.GetRequestStreamAsync()
-          {$ELSE}
-          webRequest.GetRequestStream()
-          {$ENDIF}
-      do begin
+        var lGetRequestStreamTask := System.Threading.Tasks.Task<System.IO.Stream>.Factory.FromAsync(@lWebRequest.BeginGetRequestStream, @lWebRequest.EndGetRequestStream, nil);
+        {$ENDIF}
+        using stream := {$IF NETSTANDARD} await lGetRequestStreamTask {$ELSEIF NETFX_CORE} await lWebRequest.GetRequestStreamAsync() {$ELSE} lWebRequest.GetRequestStream() {$ENDIF} do begin
           var data := (aRequest.Content as IHttpRequestContent).GetContentAsArray();
           stream.Write(data, 0, data.Length);
           stream.Flush();
-          //webRequest.ContentLength := data.Length;
+          //lWebRequest.ContentLength := data.Length;
         end;
       end;
 
-      webRequest.BeginGetResponse( (ar) -> begin
+      lWebRequest.BeginGetResponse( (ar) -> begin
 
         try
-          var webResponse := webRequest.EndGetResponse(ar) as HttpWebResponse;
+          var webResponse := lWebRequest.EndGetResponse(ar) as HttpWebResponse;
           if webResponse.StatusCode >= 300 then begin
-            ResponseCallback(new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer, aRequest)));
+            aResponseCallback(new HttpResponse withException(new HttpException(webResponse.StatusCode as Integer, aRequest)));
             (webResponse as IDisposable).Dispose;
           end
           else begin
-            ResponseCallback(new HttpResponse(webResponse));
+            aResponseCallback(new HttpResponse(webResponse));
           end;
         except
           on E: Exception do
-            ResponseCallback(new HttpResponse withException(E));
+            aResponseCallback(new HttpResponse withException(E));
         end;
 
       end, nil);
     except
       on E: Exception do
-        ResponseCallback(new HttpResponse withException(E));
+        aResponseCallback(new HttpResponse withException(E));
     end;
     {$ENDIF}
   {$ELSEIF DARWIN}
@@ -215,13 +207,13 @@ begin
       var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
       if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
         var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new HttpException(nsHttpUrlResponse.statusCode, aRequest)) else new HttpResponse(data, nsHttpUrlResponse);
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(response));
       end else if assigned(error) then begin
         var response := new HttpResponse withException(new RTLException withError(error));
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(response));
       end else begin
         var response := new HttpResponse withException(new RTLException("Request failed without providing an error."));
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> responseCallback(response));
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(response));
       end;
       //lSession.
 
@@ -229,7 +221,7 @@ begin
     lRequest.resume();
   except
     on E: Exception do
-      ResponseCallback(new HttpResponse withException(E));
+      aResponseCallback(new HttpResponse withException(E));
   end;
   {$ELSEIF WEBASSEMBLY}
   var lRequestHandle := GCHandle.Allocate(RemObjects.Elements.WebAssembly.Browser.NewXMLHttpRequest());
@@ -263,10 +255,10 @@ begin
   async begin
     try
       var lResponse := ExecuteRequestSynchronous(aRequest, true);
-      ResponseCallback(lResponse);
+      aResponseCallback(lResponse);
     except
       on E: Exception do
-        ResponseCallback(new HttpResponse withException(E));
+        aResponseCallback(new HttpResponse withException(E));
     end;
   end;
   {$ENDIF}
