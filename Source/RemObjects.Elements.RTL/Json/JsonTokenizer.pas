@@ -216,7 +216,7 @@ begin
   var sb := new StringBuilder;
   var lPosition := fPos + 1;
 
-  while (fData[lPosition] <> #0) and (fData[lPosition] <> '"') do begin
+  while (lPosition < length(fData)) and (fData[lPosition] <> #0) and (fData[lPosition] <> '"') do begin
 
     if fData[lPosition] = '\' then begin
       inc(lPosition);
@@ -243,6 +243,9 @@ begin
 
     inc(lPosition);
   end;
+
+  if lPosition ≥ length(fData) then
+    raise new JsonUnexpectedTokenException($"Unexpected end of string at {Row}/{Column}.");
 
   Value := sb.ToString;
   Token := JsonTokenKind.String;
