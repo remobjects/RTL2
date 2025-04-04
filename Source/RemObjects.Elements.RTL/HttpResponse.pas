@@ -59,6 +59,42 @@ type
       {$ENDIF}
     end;
 
+    method GetContentAsStreamedString(aEncoding: Encoding := nil; contentCallback: not nullable HttpContentResponseBlock<String>);
+    begin
+      if aEncoding = nil then aEncoding := Encoding.Default;
+      {$IF COOPER}
+      raise new NotImplementedException("GetContentAsStreamedString is not supported on this platform yet.");
+      {$ELSEIF DARWIN}
+      var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
+      if assigned(s) then
+        contentCallback(new HttpResponseContent<String>(Content := s))
+      else
+        contentCallback(new HttpResponseContent<String>(Exception := new RTLException("Invalid Encoding")));
+      {$ELSEIF ECHOES}
+      async begin
+        {$IF HTTPCLIENT}
+          using lStream := await response.Content.ReadAsStreamAsync() do begin
+            using lReader := new System.IO.StreamReader(lStream, aEncoding) do begin
+              var responseString := lReader.ReadToEnd();
+              contentCallback(new HttpResponseContent<String>(Content := responseString))
+            end;
+          end;
+          {$ELSE}
+          using lStream := Response.GetResponseStream() do begin
+            using lReader := new System.IO.StreamReader(lStream, aEncoding) do begin
+              var responseString := lReader.ReadToEnd();
+              contentCallback(new HttpResponseContent<String>(Content := responseString))
+            end;
+          end;
+          {$ENDIF}
+      end;
+      {$ELSEIF WEBASSEMBLY}
+      raise new NotImplementedException("GetContentAsStreamedString is not supported on this platform yet.");
+      {$ELSEIF ISLAND}
+      raise new NotImplementedException("GetContentAsStreamedString is not supported on this platform yet.");
+      {$ENDIF}
+    end;
+
     {$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
     begin
