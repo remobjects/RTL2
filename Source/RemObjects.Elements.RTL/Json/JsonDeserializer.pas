@@ -4,9 +4,9 @@ type
   JsonDeserializer = assembly class
   assembly
 
-    constructor (JsonString: String);
+    constructor (JsonString: String; aAllowPartialJson: Boolean := false);
     begin
-      Tokenizer := new JsonTokenizer(JsonString, true);
+      Tokenizer := new JsonTokenizer(JsonString, true, AllowPartialJson := aAllowPartialJson);
     end;
 
     method Deserialize: not nullable JsonNode;
@@ -24,10 +24,10 @@ type
             JsonTokenKind.Null: result := ReadValue as not nullable;
             JsonTokenKind.True: result := ReadValue as not nullable;
             JsonTokenKind.False: result := ReadValue as not nullable;
-            else raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}. Data is '{Tokenizer.Value}'");
+            else raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}.");
           end;
           if (Tokenizer.Token <> lToken) or Tokenizer.Next then
-            raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}. Data is '{Tokenizer.Value}'");
+            raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}.");
         end;
       end;
     end;
@@ -42,8 +42,11 @@ type
         if Tokenizer.Token = Item then
           exit;
 
-      //raise new SugarUnexpectedTokenException('Unexpected token '+Int32(Tokenizer.Token)+' at '+Tokenizer.Row+'/'+Tokenizer.Column+'. Data is "'+Tokenizer.Json+'"');
-      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}; expected '{Values.JoinedString(", ")}', got '{Tokenizer.Token}'.");
+      {$IF COOPER}
+      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}.");
+      {$ELSE}
+      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}; expected '{Values.Select(v -> v.ToString).JoinedString(", ")}', got '{Tokenizer.Token}'.");
+      {$ENDIF}
     end;
 
 
@@ -59,7 +62,8 @@ type
 
       var Properties := ReadProperties;
 
-      Expected(JsonTokenKind.ObjectEnd);
+      if not Tokenizer.IsPartialJson then
+        Expected(JsonTokenKind.ObjectEnd);
 
       for Item in Properties do
         result.Add(Item.Key, Item.Value);
@@ -90,11 +94,11 @@ type
       repeat
         List.Add(ReadPropery);
 
-        if Tokenizer.Token = JsonTokenKind.ValueSeperator then begin
+        if not Tokenizer.IsPartialJson and (Tokenizer.Token = JsonTokenKind.ValueSeperator) then begin
           Tokenizer.Next;
           continue;
         end;
-      until (Tokenizer.Token = JsonTokenKind.EOF) or (Tokenizer.Token = JsonTokenKind.ObjectEnd);
+      until Tokenizer.IsPartialJson or (Tokenizer.Token = JsonTokenKind.EOF) or (Tokenizer.Token = JsonTokenKind.ObjectEnd);
 
       exit List;
     end;
@@ -103,8 +107,8 @@ type
     begin
       var lKey := ReadKey;
       Expected(JsonTokenKind.NameSeperator);
-      Tokenizer.Next;
-      result := new KeyValuePair<String,JsonNode>(lKey, ReadValue);
+      if Tokenizer.Next then
+        result := new KeyValuePair<String,JsonNode>(lKey, ReadValue);
     end;
 
     method ReadKey: String;

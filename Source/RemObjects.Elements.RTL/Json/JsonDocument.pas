@@ -137,12 +137,13 @@ type
       end;
     end;
 
-    class method TryFromString(aString: nullable String): nullable JsonDocument;
+    class method TryFromString(aString: nullable String; aAllowPartialJson: Boolean := false): nullable JsonDocument;
     begin
-      try
-        if length(aString) > 0 then
-          result := new JsonDeserializer(aString).Deserialize;
-      except
+      if length(aString) > 0 then begin
+        try
+          result := new JsonDeserializer(aString, aAllowPartialJson).Deserialize;
+        except
+        end;
       end;
     end;
 

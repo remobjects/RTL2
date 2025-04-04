@@ -35,6 +35,9 @@ type
     property Value: String read private write;
     property Token: JsonTokenKind read private write;
     property IgnoreWhitespaces: Boolean read write; readonly;
+
+    property AllowPartialJson: Boolean;
+    property IsPartialJson: Boolean;
   end;
 
 implementation
@@ -131,6 +134,8 @@ begin
       exit false;
 
     Parse;
+    if IsPartialJson then
+      exit true;
 
     if (Token = JsonTokenKind.EOF) or (Token = JsonTokenKind.SyntaxError) then
       exit false;
@@ -244,8 +249,12 @@ begin
     inc(lPosition);
   end;
 
-  if lPosition ≥ length(fData) then
-    raise new JsonUnexpectedTokenException($"Unexpected end of string at {Row}/{Column}.");
+  if lPosition ≥ length(fData) then begin
+    if AllowPartialJson then
+      IsPartialJson := true
+    else
+      raise new JsonUnexpectedEndOfFileException($"Unexpected end of string at {Row}/{Column}.");
+  end;
 
   Value := sb.ToString;
   Token := JsonTokenKind.String;
