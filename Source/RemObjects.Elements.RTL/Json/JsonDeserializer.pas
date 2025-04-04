@@ -43,7 +43,7 @@ type
           exit;
 
       //raise new SugarUnexpectedTokenException('Unexpected token '+Int32(Tokenizer.Token)+' at '+Tokenizer.Row+'/'+Tokenizer.Column+'. Data is "'+Tokenizer.Json+'"');
-      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}. Data is '{Tokenizer.Json}'");
+      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}; expected '{Values.JoinedString(", ")}', got '{Tokenizer.Token}'.");
     end;
 
 

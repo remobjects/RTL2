@@ -63,7 +63,7 @@ type
     end;
 
     {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
-    method GetSequence: sequence of tuple of (String, JsonNode); iterator;
+    method GetSequence: sequence of tuple of (String, JsonNode); iterator; reintroduce;
     begin
       for each kv in fItems do
         yield (kv.Key, kv.Value);
