@@ -201,10 +201,7 @@ begin
       nsUrlRequest.setValue(aRequest.ContentType) forHTTPHeaderField("Content-Type");
 
     var lResponse: HttpResponse;
-    var lResonseTriggered := false;
     lResponse := new HttpResponse(aRequest, (aResponse) -> begin
-      locking aRequest do
-        lResonseTriggered := true;
       var nsHttpUrlResponse := NSHTTPURLResponse(aResponse);
       dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(lResponse));
     end);

@@ -94,7 +94,6 @@ type
       else begin
         fIncomingDataComplete.WaitFor;
         aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := new ImmutableBinary(Data)));
-        {$WARNING IMPLEMENT}
       end;
       {$ELSEIF ECHOES}
       async begin
@@ -131,9 +130,10 @@ type
           allData.Write(data, len);
           len := stream.read(data);
         end;
-        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
+        aContentCallback(allData, true);
+        {$HINT implement proper streaming}
       end;
-      {$ELSEIF DARWIN}
+      {$ELSEIF COCOA}
       {$HINT refactor this to work for ALL platforms?}
       if assigned(Data) then begin
 
@@ -172,7 +172,7 @@ type
       {$ELSEIF ISLAND}
       async begin
         var allData := new Binary(Data.ToArray);
-        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
+        aContentCallback(allData, true);
       end;
       {$ENDIF}
     end;
@@ -181,32 +181,37 @@ type
     method GetContentAsBinarySynchronous: not nullable ImmutableBinary;
     begin
       {$IF COOPER}
-      var allData := new Binary;
-      var stream := Connection.InputStream;
-      var data := new Byte[4096];
-      var len := stream.read(data);
-      while len > 0 do begin
-        allData.Write(data, len);
-        len := stream.read(data);
-      end;
-      result := allData as not nullable;
+        var allData := new Binary;
+        var stream := Connection.InputStream;
+        var data := new Byte[4096];
+        var len := stream.read(data);
+        while len > 0 do begin
+          allData.Write(data, len);
+          len := stream.read(data);
+        end;
+        result := allData as not nullable;
       {$ELSEIF DARWIN}
-      result := Data.mutableCopy as not nullable;
+        if assigned(Data) then
+          exit Data as not nullable;
+        fIncomingDataComplete.WaitFor;
+        if assigned(Data) then
+          exit Data as not nullable;
+        raise new HttpException($"No data received");
       {$ELSEIF ECHOES}
-      var allData := new System.IO.MemoryStream();
-      {$IF HTTPCLIENT}
-      var lTask := response.Content.ReadAsStreamAsync();
+        var allData := new System.IO.MemoryStream();
+        {$IF HTTPCLIENT}
+        var lTask := response.Content.ReadAsStreamAsync();
         using lStream := lTask.Result do
           lStream.CopyTo(allData);
         {$ELSE}
         using lStream := Response.GetResponseStream() do
           lStream.CopyTo(allData);
-        {$ENDIF}
-      result := allData as not nullable;
+      {$ENDIF}
+        result := allData as not nullable;
       {$ELSEIF ISLAND AND WEBASSEMBLY}
-      raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
+        raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
       {$ELSEIF ISLAND}
-      result := new Binary(Data.ToArray);
+        result := new Binary(Data.ToArray);
       {$ENDIF}
     end;
 
@@ -226,7 +231,10 @@ type
         result := allData as not nullable;
       end;
       {$ELSEIF DARWIN}
-      result := Data:mutableCopy;
+      if assigned(Data) then
+        exit Data;
+      fIncomingDataComplete.WaitFor;
+      exit Data;
       {$ELSEIF ECHOES}
         {$IF HTTPCLIENT}
         var lTask := response.Content.ReadAsStreamAsync();
@@ -388,11 +396,8 @@ type
       end;
       {$ELSEIF DARWIN}
       async begin
-        var error: NSError;
-        if Data.writeToFile(aTargetFile as NSString) options(NSDataWritingOptions.NSDataWritingAtomic) error(var error) then
-          aContentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
-        else
-          aContentCallback(new HttpResponseContent<File>(Exception := new RTLException withError(error)));
+        File.WriteBinary(aTargetFile, data);
+        aContentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
       end;
       {$ELSEIF ECHOES}
       async begin
@@ -481,20 +486,30 @@ type
       Headers := lHeaders;
     end;
     {$ELSEIF DARWIN}
-    var Data: NSData;
+    var Data: ImmutableBinary;
+
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
     begin
-      Data := aData;
+      Data := LoadData(aData);
       Code := aResponse.statusCode;
+      Headers := LoadHeaders(aResponse);
+    end;
+
+    method LoadHeaders(aResponse: NSHTTPURLResponse): not nullable Dictionary<String,String>;
+    begin
       if defined("TOFFEE") then begin
-        Headers := aResponse.allHeaderFields as PlatformDictionary<String,String> as not nullable ImmutableDictionary<String,String>;
+        result := aResponse.allHeaderFields as PlatformDictionary<String,String> as not nullable Dictionary<String,String>;
       end
       else begin
-        var lHeaders := new Dictionary<String,String>;
+        result := new;
         for each k in aResponse.allHeaderFields.allKeys do
-          lHeaders[k] := aResponse.allHeaderFields[k];
-        Headers := lHeaders;
+          result[k] := aResponse.allHeaderFields[k];
       end;
+    end;
+
+    method LoadData(aData: NSData): ImmutableBinary;
+    begin
+      result := if defined("TOFFEE") then aData else new ImmutableBinary(aData);
     end;
     {$ELSEIF ECHOES}
       {$IF HTTPCLIENT}

@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.RTL;
 
-{$IF COCOA}
+{$IF DARWIN}
 type
   HttpResponse = public partial class(INSURLSessionDelegate, INSURLSessionDataDelegate, INSURLSessionTaskDelegate)
   assembly
@@ -19,7 +19,7 @@ type
 
     var fIncomingData: Binary;
 
-    var fIncomingDataCallback: block(aData: not nullable Binary);
+    var fIncomingDataCallback: block(aData: not nullable ImmutableBinary);
     var fIncomingDataCompleteCallback: block(aException: nullable Exception);
     var fIncomingDataComplete := new &Event;
 
@@ -65,13 +65,13 @@ type
     // INSURLSessionDataDelegate
     //
 
-    method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didReceiveResponse(response: NSURLResponse) completionHandler(completionHandler: block(disposition: NSURLSessionResponseDisposition));
+    method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didReceiveResponse(aResponse: NSURLResponse) completionHandler(completionHandler: block(disposition: NSURLSessionResponseDisposition));
     begin
       //Log($"didReceiveResponse {response}");
       fIncomingData := new;
-      Headers := (response as NSHTTPURLResponse).allHeaderFields as PlatformDictionary<String,String> as not nullable ImmutableDictionary<String,String>;
+      Headers := LoadHeaders(aResponse as NSHTTPURLResponse);
       if assigned(fGotResponseCallback) then
-        fGotResponseCallback(response as NSHTTPURLResponse);
+        fGotResponseCallback(aResponse as NSHTTPURLResponse);
       completionHandler(NSURLSessionResponseDisposition.Allow);
     end;
 
@@ -89,29 +89,13 @@ type
 
     method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didReceiveData(aData: NSData);
     begin
-      // Handle incoming data incrementally here.
-      // Convert NSData to a suitable string format if needed, or process raw bytes.
       locking self do begin
-        fIncomingData.Write(aData);
+        var lData := LoadData(aData);
+        fIncomingData.Write(lData.ToArray);
         if assigned(fIncomingDataCallback) then
-          fIncomingDataCallback(aData);
-        //Log($"length(fIncomingData) {fIncomingData.Length}");
+          fIncomingDataCallback(lData);
       end;
-      //var receivedString := new NSString withData(aData) encoding(NSStringEncoding.UTF8StringEncoding);
-      //Log('Received data: ' + receivedString);
     end;
-
-    //[Optional] method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) willCacheResponse(proposedResponse: NSCachedURLResponse) completionHandler(completionHandler: block(cachedResponse: NSCachedURLResponse));
-    //[Optional] method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didBecomeStreamTask(streamTask: NSURLSessionStreamTask);
-    //[Optional] method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didBecomeDownloadTask(downloadTask: NSURLSessionDownloadTask);
-
-    //method URLSession(session: NSURLSession) task(task: NSURLSessionTask) didCompleteWithError(error: NSError);
-    //begin
-      //if error <> nil then
-        //Log('Task completed with error: ' + error.localizedDescription)
-      //else
-        //Log('Task completed successfully.');
-    //end;
 
   end;
 

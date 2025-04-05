@@ -18,8 +18,6 @@ type
   Process = public partial class {$IF ECHOES OR COCOA OR ISLAND}mapped to PlatformProcess{$ENDIF}
   private
     class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
-  assembly
-    class method ProcessStringToLines(rawString: String) LastIncompleteLogLine(out lastIncompleteLogLine: String) Callback(callback: block(aLine: String));
   protected
   public
 
@@ -60,6 +58,8 @@ type
     class method SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
     class method SplitQuotedCEscapedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
     class method StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable ImmutableList<String>): not nullable String;
+
+    class method ProcessStringToLines(rawString: String) LastIncompleteLogLine(out lastIncompleteLogLine: String) Callback(callback: block(aLine: String));
   end;
 
 implementation
@@ -375,26 +375,6 @@ begin
   result := RunAsync(aCommand, aArguments.ToList, aEnvironment, aWorkingDirectory, aStdOutCallback, aStdErrCallback, aFinishedCallback);
 end;
 
-class method Process.ProcessStringToLines(rawString: String) LastIncompleteLogLine(out lastIncompleteLogLine: String) Callback(callback: block(aLine: string));
-begin
-  if length(rawString) > 0 then begin
-    if length(rawString) > 0 then begin
-      rawString := lastIncompleteLogLine+rawString;
-      lastIncompleteLogLine := nil;
-    end;
-    var lines := rawString.Split(Environment.LineBreak);
-    for i: Int32 := 0 to lines.Count-1 do begin
-      var s := lines[i];
-      if (i = lines.Count-1) and not s.EndsWith(Environment.LineBreak) then begin
-        if length(s) > 0 then
-          lastIncompleteLogLine := s;
-        break;
-      end;
-      Callback(s);
-    end;
-  end;
-end;
-
 class method Process.SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
 begin
   {$IF TOFFEE}
@@ -427,6 +407,26 @@ begin
 end;
 
 {$ENDIF}
+
+class method Process.ProcessStringToLines(rawString: String) LastIncompleteLogLine(out lastIncompleteLogLine: String) Callback(callback: block(aLine: string));
+begin
+  if length(rawString) > 0 then begin
+    if length(rawString) > 0 then begin
+      rawString := lastIncompleteLogLine+rawString;
+      lastIncompleteLogLine := nil;
+    end;
+    var lines := rawString.Split(Environment.LineBreak);
+    for i: Int32 := 0 to lines.Count-1 do begin
+      var s := lines[i];
+      if (i = lines.Count-1) and not s.EndsWith(Environment.LineBreak) then begin
+        if length(s) > 0 then
+          lastIncompleteLogLine := s;
+        break;
+      end;
+      Callback(s);
+    end;
+  end;
+end;
 
 class method Process.QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
 begin
