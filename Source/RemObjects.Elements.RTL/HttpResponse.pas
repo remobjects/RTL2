@@ -98,13 +98,8 @@ type
       {$ELSEIF ECHOES}
       async begin
         var allData := new System.IO.MemoryStream();
-        {$IF HTTPCLIENT}
-        using lStream := await response.Content.ReadAsStreamAsync() do
+        using lStream := {$IF HTTPCLIENT}await response.Content.ReadAsStreamAsync(){$ELSE}Response.GetResponseStream(){$ENDIF} do
           lStream.CopyTo(allData);
-        {$ELSE}
-        using lStream := Response.GetResponseStream() do
-          lStream .CopyTo(allData);
-        {$ENDIF}
         aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
       end;
       {$ELSEIF WEBASSEMBLY}
@@ -118,7 +113,7 @@ type
     end;
 
     {$IF WEBASSEMBLY}[Warning("Binary data is not supported on WebAssembly")]{$ENDIF}
-    method GetContentAsStreamedBinary(aContentCallback: not nullable HttpStringStreamResponseBlock<Binary>);
+    method GetContentAsStreamedBinary(aContentCallback: not nullable HttpStringStreamResponseBlock<ImmutableBinary>);
     begin
       {$IF COOPER}
       async begin
@@ -134,7 +129,6 @@ type
         {$HINT implement proper streaming}
       end;
       {$ELSEIF COCOA}
-      {$HINT refactor this to work for ALL platforms?}
       if assigned(Data) then begin
 
         aContentCallback(Data, true);
@@ -157,13 +151,20 @@ type
       {$ELSEIF ECHOES}
       async begin
         var allData := new System.IO.MemoryStream();
-        {$IF HTTPCLIENT}
-        using lStream := await response.Content.ReadAsStreamAsync() do
-          lStream.CopyTo(allData);
-        {$ELSE}
-        using lStream := Response.GetResponseStream() do
-          lStream.CopyTo(allData);
-        {$ENDIF}
+        using lStream := {$IF HTTPCLIENT}await response.Content.ReadAsStreamAsync(){$ELSE}Response.GetResponseStream(){$ENDIF} do begin
+          var lBytesRead: Int64;
+          var lBufferSize := 8192; // You can choose an appropriate buffer size
+          var lBuffer := new Byte[lBufferSize];
+          repeat
+            lBytesRead := lStream.Read(lBuffer, 0, lBufferSize);
+            if lBytesRead > 0 then begin
+              var lData := new ImmutableBinary(lBuffer, 0, lBytesRead);
+              aContentCallback(lData, false);
+            end;
+          until lBytesRead = 0;
+
+          aContentCallback(nil, true);
+        end;
         aContentCallback(allData, true);
         {$HINT implement proper streaming}
       end;
@@ -173,6 +174,7 @@ type
       async begin
         var allData := new Binary(Data.ToArray);
         aContentCallback(allData, true);
+        {$HINT implement proper streaming}
       end;
       {$ENDIF}
     end;
