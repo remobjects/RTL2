@@ -39,7 +39,7 @@ type
     end;
 
     {$IF DARWIN}
-    class method certificateInfoWithURLAuthenticationChallenge(challenge: NSURLAuthenticationChallenge): HttpCertificateInfo;
+    class method certificateInfoWithURLAuthenticationChallenge(challenge: NSURLAuthenticationChallenge): HttpCertificateInfo; assembly;
     begin
       var trustRef := challenge.protectionSpace().serverTrust();
       var temp: SecTrustResultType;
@@ -127,36 +127,6 @@ type
         end;
       end;
       challenge.sender.continueWithoutCredentialForAuthenticationChallenge(challenge);
-    end;
-
-  end;
-
-  SessionDelegate = class(INSURLSessionDelegate)
-  public
-
-    constructor(aRequest: HttpRequest);
-    begin
-      Request := aRequest;
-    end;
-
-    property Request: HttpRequest read private write;
-
-    method URLSession(session: NSURLSession) didReceiveChallenge(challenge: NSURLAuthenticationChallenge) completionHandler(completionHandler: block(disposition: NSURLSessionAuthChallengeDisposition; credential: NSURLCredential));
-    begin
-      if (challenge.protectionSpace.authenticationMethod = NSURLAuthenticationMethodServerTrust) and (Request.Url.host = challenge.protectionSpace.host) then begin
-        var trustResult: SecTrustResultType := 0;
-        var err := SecTrustEvaluate(challenge.protectionSpace.serverTrust, var trustResult);
-        var alreadyTrusted := (err = noErr) and (trustResult in [SecTrustResultType.kSecTrustResultProceed, SecTrustResultType.kSecTrustResultUnspecified]);
-        if alreadyTrusted then begin
-          completionHandler(NSURLSessionAuthChallengeDisposition.PerformDefaultHandling, nil);
-          exit;
-        end
-        else if assigned(Request.VerifyUntrustedCertificate) and Request.VerifyUntrustedCertificate(HttpCertificateInfo.certificateInfoWithURLAuthenticationChallenge(challenge)) then begin
-          completionHandler(NSURLSessionAuthChallengeDisposition.UseCredential, NSURLCredential.credentialForTrust(challenge.protectionSpace.serverTrust));
-          exit;
-        end;
-      end;
-      completionHandler(NSURLSessionAuthChallengeDisposition.PerformDefaultHandling, nil);
     end;
 
   end;

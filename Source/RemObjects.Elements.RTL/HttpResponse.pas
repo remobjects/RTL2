@@ -1,9 +1,9 @@
 ﻿namespace RemObjects.Elements.RTL;
 
 type
-  HttpResponse = public class({$IF ECHOES OR ISLAND}IDisposable{$ENDIF})
+  HttpResponse = public partial class({$IF ECHOES OR ISLAND}IDisposable{$ENDIF})
   public
-    property Headers: not nullable ImmutableDictionary<String,String>; readonly;
+    property Headers: not nullable ImmutableDictionary<String,String> read private write;
     property Code: Int32; readonly;
     property Success: Boolean read (Exception = nil) and (Code < 300);
     property Exception: nullable Exception public read unit write;
@@ -15,78 +15,56 @@ type
     // String
     //
 
-    method GetContentAsString(aEncoding: Encoding := nil; contentCallback: not nullable HttpContentResponseBlock<String>);
+    method GetContentAsString(aEncoding: Encoding := nil; aContentCallback: not nullable HttpContentResponseBlock<String>);
     begin
-      if aEncoding = nil then aEncoding := Encoding.Default;
-      {$IF COOPER}
-      GetContentAsBinary( (content) -> begin
-        if content.Success then
-          contentCallback(new HttpResponseContent<String>(Content := new String(content.Content.ToArray, aEncoding)))
+      if aEncoding = nil then
+        aEncoding := Encoding.Default;
+
+      GetContentAsBinary begin
+        if aResponseContent.Success then
+          aContentCallback(new HttpResponseContent<String>(Content := aEncoding.GetString(aResponseContent.Content.ToArray)))
         else
-          contentCallback(new HttpResponseContent<String>(Exception := content.Exception))
-      end);
-      {$ELSEIF DARWIN}
-      var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
-      if assigned(s) then
-        contentCallback(new HttpResponseContent<String>(Content := s))
-      else
-        contentCallback(new HttpResponseContent<String>(Exception := new RTLException("Invalid Encoding")));
-      {$ELSEIF ECHOES}
-      async begin
-        {$IF HTTPCLIENT}
-        using lStream := await response.Content.ReadAsStreamAsync() do begin
-          using lReader := new System.IO.StreamReader(lStream, aEncoding) do begin
-            var responseString := lReader.ReadToEnd();
-            contentCallback(new HttpResponseContent<String>(Content := responseString))
+          aContentCallback(new HttpResponseContent<String>(Exception := aResponseContent.Exception))
+      end;
+    end;
+
+    method GetContentAsStreamedString(aEncoding: Encoding := nil; aContentCallback: not nullable HttpStringStreamResponseBlock<String>);
+    begin
+      if aEncoding = nil then
+        aEncoding := Encoding.Default;
+
+      GetContentAsStreamedBinary begin
+        if aData:Length > 0 then begin
+          var s := aEncoding.GetString(aData);
+          if assigned(s) then
+            aContentCallback(s, aDone);
+        end;
+      end;
+    end;
+
+    method GetContentAsLines(aEncoding: Encoding := nil; aContentCallback: not nullable HttpStringStreamResponseBlock<String>);
+    begin
+      var lLastIncompleteLine: String;
+      GetContentAsStreamedString begin
+        if aData:Length > 0 then begin
+          Process.ProcessStringToLines(aData) LastIncompleteLogLine(out lLastIncompleteLine) begin
+            aContentCallback(aLine, false);
           end;
         end;
-        {$ELSE}
-        using lStream := Response.GetResponseStream() do begin
-          using lReader := new System.IO.StreamReader(lStream, aEncoding) do begin
-            var responseString := lReader.ReadToEnd();
-            contentCallback(new HttpResponseContent<String>(Content := responseString))
-          end;
-        end;
-        {$ENDIF}
+        if aDone then
+          aContentCallback(nil, true);
       end;
-      {$ELSEIF WEBASSEMBLY}
-      contentCallback(new HttpResponseContent<String>(Content := fOriginalRequest.responseText));
-      {$ELSEIF ISLAND}
-      async begin
-        var lResponseString := aEncoding.GetString(Data.ToArray);
-        contentCallback(new HttpResponseContent<String>(Content := lResponseString));
-      end;
-      {$ENDIF}
     end;
 
     {$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
     method GetContentAsStringSynchronous(aEncoding: Encoding := nil): not nullable String;
     begin
-      if aEncoding = nil then aEncoding := Encoding.Default;
-      {$IF COOPER}
-      result := new String(GetContentAsBinarySynchronous().ToArray, aEncoding);
-      {$ELSEIF DARWIN}
-      var s := new Foundation.NSString withData(Data) encoding(aEncoding.AsNSStringEncoding); // todo: test this
-      if assigned(s) then
-        exit s as not nullable
-      else
-        raise new RTLException("Invalid Encoding");
-      {$ELSEIF ECHOES}
-        {$IF HTTPCLIENT}
-        var lTask := response.Content.ReadAsStreamAsync();
-          using lStream := lTask.Result do
-            using lReader := new System.IO.StreamReader(lStream, aEncoding) do
-              result := lReader.ReadToEnd() as not nullable;
-        {$ELSE}
-        using lStream := Response.GetResponseStream() do
-          using lReader := new System.IO.StreamReader(lStream, aEncoding) do
-            result := lReader.ReadToEnd() as not nullable;
-        {$ENDIF}
-      {$ELSEIF ISLAND AND WEBASSEMBLY}
-      raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
-      {$ELSEIF ISLAND}
-      result := aEncoding.GetString(Data.ToArray) as not nullable;
-      {$ENDIF}
+      if aEncoding = nil then
+        aEncoding := Encoding.Default;
+
+      //{$IF COOPER}
+      var lContent := GetContentAsBinarySynchronous();
+      result := aEncoding.GetString(lContent.ToArray);
     end;
 
     //
@@ -94,7 +72,7 @@ type
     //
 
     {$IF WEBASSEMBLY}[Warning("Binary data is not supported on WebAssembly")]{$ENDIF}
-    method GetContentAsBinary(contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
+    method GetContentAsBinary(aContentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
     begin
       // maybe delegsate to GetContentAsBinarySynchronous?
       {$IF COOPER}
@@ -107,10 +85,17 @@ type
           allData.Write(data, len);
           len := stream.read(data);
         end;
-        contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
       end;
       {$ELSEIF DARWIN}
-      contentCallback(new HttpResponseContent<ImmutableBinary>(Content := new ImmutableBinary(Data)));
+      if assigned(Data) then begin
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := new ImmutableBinary(Data)));
+      end
+      else begin
+        fIncomingDataComplete.WaitFor;
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := new ImmutableBinary(Data)));
+        {$WARNING IMPLEMENT}
+      end;
       {$ELSEIF ECHOES}
       async begin
         var allData := new System.IO.MemoryStream();
@@ -121,14 +106,73 @@ type
         using lStream := Response.GetResponseStream() do
           lStream .CopyTo(allData);
         {$ENDIF}
-        contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
       end;
       {$ELSEIF WEBASSEMBLY}
       raise new NotImplementedException("Binary data is not supported on WebAssembly")
       {$ELSEIF ISLAND}
       async begin
         var allData := new Binary(Data.ToArray);
-        contentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
+      end;
+      {$ENDIF}
+    end;
+
+    {$IF WEBASSEMBLY}[Warning("Binary data is not supported on WebAssembly")]{$ENDIF}
+    method GetContentAsStreamedBinary(aContentCallback: not nullable HttpStringStreamResponseBlock<Binary>);
+    begin
+      {$IF COOPER}
+      async begin
+        var allData := new Binary;
+        var stream := if connection.getResponseCode > 400 then Connection.ErrorStream else Connection.InputStream;
+        var data := new Byte[4096];
+        var len := stream.read(data);
+        while len > 0 do begin
+          allData.Write(data, len);
+          len := stream.read(data);
+        end;
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
+      end;
+      {$ELSEIF DARWIN}
+      {$HINT refactor this to work for ALL platforms?}
+      if assigned(Data) then begin
+
+        aContentCallback(Data, true);
+
+      end
+      else begin
+
+        locking self do begin
+          if fIncomingData:Length > 0 then
+            aContentCallback(fIncomingData, true);
+          fIncomingDataCallback := (data) -> begin
+            aContentCallback(data, false);
+          end;
+          fIncomingDataCompleteCallback := (error) -> begin
+            aContentCallback(nil, true);
+          end;
+        end;
+
+      end;
+      {$ELSEIF ECHOES}
+      async begin
+        var allData := new System.IO.MemoryStream();
+        {$IF HTTPCLIENT}
+        using lStream := await response.Content.ReadAsStreamAsync() do
+          lStream.CopyTo(allData);
+        {$ELSE}
+        using lStream := Response.GetResponseStream() do
+          lStream.CopyTo(allData);
+        {$ENDIF}
+        aContentCallback(allData, true);
+        {$HINT implement proper streaming}
+      end;
+      {$ELSEIF WEBASSEMBLY}
+      raise new NotImplementedException("Binary data is not supported on WebAssembly")
+      {$ELSEIF ISLAND}
+      async begin
+        var allData := new Binary(Data.ToArray);
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
       end;
       {$ENDIF}
     end;
@@ -214,15 +258,15 @@ type
     // Xml
     //
 
-    method GetContentAsXml(contentCallback: not nullable HttpContentResponseBlock<XmlDocument>);
+    method GetContentAsXml(aContentCallback: not nullable HttpContentResponseBlock<XmlDocument>);
     begin
       {$IF WEBASSEMBLY}
       try
         var document := XmlDocument.FromString(fOriginalRequest.responseText);
-        contentCallback(new HttpResponseContent<XmlDocument>(Content := document))
+        aContentCallback(new HttpResponseContent<XmlDocument>(Content := document))
       except
         on E: Exception do
-          contentCallback(new HttpResponseContent<XmlDocument>(Exception := E));
+          aContentCallback(new HttpResponseContent<XmlDocument>(Exception := E));
       end;
       {$ELSE}
       GetContentAsBinary((content) -> begin
@@ -230,15 +274,15 @@ type
           try
             var document := XmlDocument.FromBinary(content.Content);
             if assigned(document) then
-              contentCallback(new HttpResponseContent<XmlDocument>(Content := document))
+              aContentCallback(new HttpResponseContent<XmlDocument>(Content := document))
             else
-              contentCallback(new HttpResponseContent<XmlDocument>(Exception := new RTLException("Could not parse result as XML.")));
+              aContentCallback(new HttpResponseContent<XmlDocument>(Exception := new RTLException("Could not parse result as XML.")));
           except
             on E: Exception do
-              contentCallback(new HttpResponseContent<XmlDocument>(Exception := E));
+              aContentCallback(new HttpResponseContent<XmlDocument>(Exception := E));
           end;
         end else begin
-          contentCallback(new HttpResponseContent<XmlDocument>(Exception := content.Exception));
+          aContentCallback(new HttpResponseContent<XmlDocument>(Exception := content.Exception));
         end;
       end);
       {$ENDIF}
@@ -275,28 +319,28 @@ type
     // Json
     //
 
-    method GetContentAsJson(contentCallback: not nullable HttpContentResponseBlock<JsonDocument>);
+    method GetContentAsJson(aContentCallback: not nullable HttpContentResponseBlock<JsonDocument>);
     begin
       {$IF WEBASSEMBLY}
       try
         var document :=  JsonDocument.FromString(fOriginalRequest.responseText);
-        contentCallback(new HttpResponseContent<JsonDocument>(Content := document))
+        aContentCallback(new HttpResponseContent<JsonDocument>(Content := document))
       except
         on E: Exception do
-          contentCallback(new HttpResponseContent<JsonDocument>(Exception := E));
+          aContentCallback(new HttpResponseContent<JsonDocument>(Exception := E));
       end;
       {$ELSE}
       GetContentAsBinary((content) -> begin
         if content.Success then begin
           try
             var document := JsonDocument.FromBinary(content.Content);
-            contentCallback(new HttpResponseContent<JsonDocument>(Content := document));
+            aContentCallback(new HttpResponseContent<JsonDocument>(Content := document));
           except
             on E: Exception do
-              contentCallback(new HttpResponseContent<JsonDocument>(Exception := E));
+              aContentCallback(new HttpResponseContent<JsonDocument>(Exception := E));
           end;
         end else begin
-          contentCallback(new HttpResponseContent<JsonDocument>(Exception := content.Exception));
+          aContentCallback(new HttpResponseContent<JsonDocument>(Exception := content.Exception));
         end;
       end);
       {$ENDIF}
@@ -328,7 +372,7 @@ type
     //
 
     {$IF WEBASSEMBLY}[Warning("File Access is not supported on WebAssembly")]{$ENDIF}
-    method SaveContentAsFile(aTargetFile: not nullable String; contentCallback: not nullable HttpContentResponseBlock<File>);
+    method SaveContentAsFile(aTargetFile: not nullable String; aContentCallback: not nullable HttpContentResponseBlock<File>);
     begin
       {$IF COOPER}
       async begin
@@ -340,15 +384,15 @@ type
           allData.write(data, 0, len);
           len := stream.read(data);
         end;
-        contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)));
+        aContentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)));
       end;
       {$ELSEIF DARWIN}
       async begin
         var error: NSError;
         if Data.writeToFile(aTargetFile as NSString) options(NSDataWritingOptions.NSDataWritingAtomic) error(var error) then
-          contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
+          aContentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
         else
-          contentCallback(new HttpResponseContent<File>(Exception := new RTLException withError(error)));
+          aContentCallback(new HttpResponseContent<File>(Exception := new RTLException withError(error)));
       end;
       {$ELSEIF ECHOES}
       async begin
@@ -362,10 +406,10 @@ type
             using lFileStream := System.IO.File.OpenWrite(aTargetFile) do
               lStream.CopyTo(lFileStream);
           {$ENDIF}
-          contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)));
+          aContentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)));
         except
           on E: Exception do
-            contentCallback(new HttpResponseContent<File>(Exception := E));
+            aContentCallback(new HttpResponseContent<File>(Exception := E));
         end;
       end;
       {$ELSEIF WEBASSEMBLY}
@@ -376,10 +420,10 @@ type
           var lStream := new FileStream(aTargetFile, FileOpenMode.Create or FileOpenMode.ReadWrite);
           Data.CopyTo(lStream);
           Data.Flush;
-          contentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
+          aContentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
         except
           on E: Exception do
-            contentCallback(new HttpResponseContent<File>(Exception := E));
+            aContentCallback(new HttpResponseContent<File>(Exception := E));
         end;
       end;
       {$ENDIF}
@@ -544,7 +588,8 @@ type
     property Exception: nullable Exception public read unit write;
   end;
 
-  HttpResponseBlock = public block (Response: not nullable HttpResponse);
-  HttpContentResponseBlock<T> = public block (ResponseContent: not nullable HttpResponseContent<T>);
+  HttpResponseBlock = public block (aResponse: not nullable HttpResponse);
+  HttpContentResponseBlock<T> = public block (aResponseContent: not nullable HttpResponseContent<T>);
+  HttpStringStreamResponseBlock<T> = public block (aData: nullable T; aDone: Boolean);
 
 end.

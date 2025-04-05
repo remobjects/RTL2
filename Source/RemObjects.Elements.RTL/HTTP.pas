@@ -200,24 +200,17 @@ begin
     if assigned(aRequest.ContentType) then
       nsUrlRequest.setValue(aRequest.ContentType) forHTTPHeaderField("Content-Type");
 
-    var lDelegate := new SessionDelegate(aRequest);
-    var lSession := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration) &delegate(lDelegate) delegateQueue(nil);
-    var lRequest := lSession.dataTaskWithRequest(nsUrlRequest) completionHandler((data, nsUrlResponse, error) -> begin
-
-      var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
-      if assigned(data) and assigned(nsHttpUrlResponse) and not assigned(error) then begin
-        var response := if nsHttpUrlResponse.statusCode >= 300 then new HttpResponse withException(new HttpException(nsHttpUrlResponse.statusCode, aRequest)) else new HttpResponse(data, nsHttpUrlResponse);
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(response));
-      end else if assigned(error) then begin
-        var response := new HttpResponse withException(new RTLException withError(error));
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(response));
-      end else begin
-        var response := new HttpResponse withException(new RTLException("Request failed without providing an error."));
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(response));
-      end;
-      //lSession.
-
+    var lResponse: HttpResponse;
+    var lResonseTriggered := false;
+    lResponse := new HttpResponse(aRequest, (aResponse) -> begin
+      locking aRequest do
+        lResonseTriggered := true;
+      var nsHttpUrlResponse := NSHTTPURLResponse(aResponse);
+      dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(lResponse));
     end);
+
+    var lSession := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration) &delegate(lResponse) delegateQueue(nil);
+    var lRequest := lSession.dataTaskWithRequest(nsUrlRequest);// completionHandler((data, nsUrlResponse, error) -> begin
     lRequest.resume();
   except
     on E: Exception do

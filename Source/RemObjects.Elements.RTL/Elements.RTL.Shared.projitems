@@ -229,5 +229,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.Decode.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.Encode.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\XmlCoder.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpResponse.Cocoa.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
   </ItemGroup>
 </Project>

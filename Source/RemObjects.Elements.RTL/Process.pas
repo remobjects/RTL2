@@ -18,9 +18,8 @@ type
   Process = public partial class {$IF ECHOES OR COCOA OR ISLAND}mapped to PlatformProcess{$ENDIF}
   private
     class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
-    {$IF TOFFEE}
-    class method processStdOutData(rawString: String) lastIncompleteLogLine(out lastIncompleteLogLine: String) callback(callback: block(aLine: String));
-    {$ENDIF}
+  assembly
+    class method ProcessStringToLines(rawString: String) LastIncompleteLogLine(out lastIncompleteLogLine: String) Callback(callback: block(aLine: String));
   protected
   public
 
@@ -252,14 +251,14 @@ begin
         using autoreleasepool do begin
           var d := stdOut.availableData;
           if (d ≠ nil) and (d.length > 0) then
-            processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
+            ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aStdOutCallback);
           NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
         end;
       end;
       lTask.WaitFor();
       var d := stdOut.availableData;
       while (d ≠ nil) and (d.length > 0) do begin
-        processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdOutCallback);
+        ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aStdOutCallback);
         d := stdOut.availableData;
       end;
       if length(lastIncompleteLogLine) > 0 then
@@ -280,14 +279,14 @@ begin
         using autoreleasepool do begin
           var d := stdErr.availableData;
           if (d ≠ nil) and (d.length > 0) then
-            processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
+            ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aStdErrCallback);
           NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
         end;
       end;
       lTask.WaitFor();
       var d := stdErr.availableData;
       while (d ≠ nil) and (d.length > 0) do begin
-        processStdOutData(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) lastIncompleteLogLine(out lastIncompleteLogLine) callback(aStdErrCallback);
+        ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aStdErrCallback);
         d := stdErr.availableData;
       end;
       if length(lastIncompleteLogLine) > 0 then
@@ -376,8 +375,7 @@ begin
   result := RunAsync(aCommand, aArguments.ToList, aEnvironment, aWorkingDirectory, aStdOutCallback, aStdErrCallback, aFinishedCallback);
 end;
 
-{$IF TOFFEE}
-class method Process.processStdOutData(rawString: String) lastIncompleteLogLine(out lastIncompleteLogLine: String) callback(callback: block(aLine: string));
+class method Process.ProcessStringToLines(rawString: String) LastIncompleteLogLine(out lastIncompleteLogLine: String) Callback(callback: block(aLine: string));
 begin
   if length(rawString) > 0 then begin
     if length(rawString) > 0 then begin
@@ -392,11 +390,10 @@ begin
           lastIncompleteLogLine := s;
         break;
       end;
-      callback(s);
+      Callback(s);
     end;
   end;
 end;
-{$ENDIF}
 
 class method Process.SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
 begin
