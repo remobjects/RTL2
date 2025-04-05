@@ -4,7 +4,7 @@ type
   HttpResponse = public partial class({$IF ECHOES OR ISLAND}IDisposable{$ENDIF})
   public
     property Headers: not nullable ImmutableDictionary<String,String> read private write;
-    property Code: Int32; readonly;
+    property Code: Int32 read private write;
     property Success: Boolean read (Exception = nil) and (Code < 300);
     property Exception: nullable Exception public read unit write;
 
@@ -491,12 +491,12 @@ type
     constructor(aData: NSData; aResponse: NSHTTPURLResponse);
     begin
       Data := LoadData(aData);
-      Code := aResponse.statusCode;
       Headers := LoadHeaders(aResponse);
     end;
 
     method LoadHeaders(aResponse: NSHTTPURLResponse): not nullable Dictionary<String,String>;
     begin
+      Code := aResponse.statusCode;
       if defined("TOFFEE") then begin
         result := aResponse.allHeaderFields as PlatformDictionary<String,String> as not nullable Dictionary<String,String>;
       end

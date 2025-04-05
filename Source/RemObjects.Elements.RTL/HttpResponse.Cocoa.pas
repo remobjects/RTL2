@@ -44,7 +44,7 @@ type
 
     method URLSession(session: NSURLSession) didReceiveChallenge(challenge: NSURLAuthenticationChallenge) completionHandler(completionHandler: block(disposition: NSURLSessionAuthChallengeDisposition; credential: NSURLCredential));
     begin
-      Log($"didReceiveChallenge");
+      //Log($"didReceiveChallenge");
       if (challenge.protectionSpace.authenticationMethod = NSURLAuthenticationMethodServerTrust) and (Request.Url.host = challenge.protectionSpace.host) then begin
         var trustResult: SecTrustResultType := 0;
         var err := SecTrustEvaluate(challenge.protectionSpace.serverTrust, var trustResult);
@@ -67,7 +67,7 @@ type
 
     method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didReceiveResponse(aResponse: NSURLResponse) completionHandler(completionHandler: block(disposition: NSURLSessionResponseDisposition));
     begin
-      //Log($"didReceiveResponse {response}");
+      //Log($"didReceiveResponse {aResponse}");
       fIncomingData := new;
       Headers := LoadHeaders(aResponse as NSHTTPURLResponse);
       if assigned(fGotResponseCallback) then
@@ -89,6 +89,7 @@ type
 
     method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didReceiveData(aData: NSData);
     begin
+      //Log($"didReceiveData {aData:length}");
       locking self do begin
         var lData := LoadData(aData);
         fIncomingData.Write(lData.ToArray);
