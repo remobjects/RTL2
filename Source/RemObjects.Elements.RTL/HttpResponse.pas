@@ -138,7 +138,7 @@ type
 
         locking self do begin
           if fIncomingData:Length > 0 then
-            aContentCallback(fIncomingData, true);
+            aContentCallback(fIncomingData, false);
           fIncomingDataCallback := (data) -> begin
             aContentCallback(data, false);
           end;
