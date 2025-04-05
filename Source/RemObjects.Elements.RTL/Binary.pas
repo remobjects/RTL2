@@ -25,7 +25,9 @@ type
   public
     {$IF TOFFEE OR ECHOES}constructor; mapped to constructor();{$ENDIF}
     {$IF NOT (TOFFEE OR ECHOES)}constructor; empty;{$ENDIF}
-    constructor(anArray: not nullable array of Byte);
+    constructor(aArray: not nullable array of Byte; aOffset: Integer; aCount: Integer);
+    constructor(aArray: not nullable array of Byte; aCount: Integer);
+    constructor(aArray: not nullable array of Byte);
     constructor(Bin: not nullable ImmutableBinary);
 
     method &Read(Range: Range): array of Byte;
@@ -56,7 +58,7 @@ type
   Binary = public class(ImmutableBinary) {$IF ECHOES OR ISLAND OR TOFFEE}mapped to PlatformBinary{$ENDIF}
   public
     constructor;
-    constructor(anArray: array of Byte);
+    constructor(aArray: array of Byte);
     constructor(Bin: ImmutableBinary);
 
     method Assign(Bin: ImmutableBinary);
@@ -76,22 +78,33 @@ implementation
 
 { Binary }
 
-constructor ImmutableBinary(anArray: not nullable array of Byte);
+constructor ImmutableBinary(aArray: not nullable array of Byte; aOffset: Integer; aCount: Integer);
 begin
   {$IF COOPER}
-  fData.Write(anArray, 0, anArray.Length);
+  fData.Write(aArray, aOffset, aCount);
   {$ELSEIF TOFFEE}
-  exit NSData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
+  var p := @aArray[0];
+  exit NSData.dataWithBytes(p+aOffset) length(aCount);
   {$ELSEIF ECHOES}
   var ms := new ImmutablePlatformBinary();
-  ms.Write(anArray, 0, anArray.Length);
+  ms.Write(aArray, aOffset, aCount);
   ms.Position := 0;
   exit ms;
   {$ELSEIF ISLAND}
   var ms := new ImmutablePlatformBinary();
-  ms.Write(anArray, anArray.Length);
+  ms.Write(@aArray[0]+aOffset, aCount);
   exit ms;
   {$ENDIF}
+end;
+
+constructor ImmutableBinary(aArray: not nullable array of Byte; aCount: Integer);
+begin
+  constructor(aArray, 0, aCount);
+end;
+
+constructor ImmutableBinary(aArray: not nullable array of Byte);
+begin
+  constructor(aArray, 0, aArray.Length);
 end;
 
 constructor ImmutableBinary(Bin: not nullable ImmutableBinary);
@@ -119,24 +132,24 @@ begin
   {$ENDIF}
 end;
 
-constructor Binary(anArray: array of Byte);
+constructor Binary(aArray: array of Byte);
 begin
-  if anArray = nil then
+  if aArray = nil then
     raise new ArgumentNullException("Array");
 
   {$IF COOPER}
-  inherited constructor(anArray);
+  inherited constructor(aArray);
   {$ELSEIF TOFFEE}
-  exit NSMutableData.dataWithBytes(anArray) length(RemObjects.Oxygene.System.length(anArray));
+  exit NSMutableData.dataWithBytes(aArray) length(RemObjects.Oxygene.System.length(aArray));
   {$ELSEIF ECHOES}
   var ms := new PlatformBinary();
-  ms.Write(anArray, 0, anArray.Length);
+  ms.Write(aArray, 0, aArray.Length);
   ms.Position := 0;
   exit ms;
   {$ELSEIF ISLAND}
   var ms := new PlatformBinary();
-  if RemObjects.Oxygene.System.length(anArray) > 0 then
-    ms.Write(anArray, 0, RemObjects.Oxygene.System.length(anArray));
+  if RemObjects.Oxygene.System.length(aArray) > 0 then
+    ms.Write(aArray, 0, RemObjects.Oxygene.System.length(aArray));
   exit ms;
   {$ENDIF}
 end;
