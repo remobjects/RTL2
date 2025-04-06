@@ -92,7 +92,8 @@ begin
   exit ms;
   {$ELSEIF ISLAND}
   var ms := new ImmutablePlatformBinary();
-  ms.Write(@aArray[0]+aOffset, aCount);
+  var p := @aArray[0];
+  ms.Write(p+aOffset, aCount);
   exit ms;
   {$ENDIF}
 end;
