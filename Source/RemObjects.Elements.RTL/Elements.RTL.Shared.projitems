@@ -232,5 +232,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpResponse.Cocoa.pas">
       <VirtualFolder>Http</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpResponse.Echoes.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
   </ItemGroup>
 </Project>
