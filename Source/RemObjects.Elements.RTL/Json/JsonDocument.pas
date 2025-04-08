@@ -51,7 +51,8 @@ type
     class method TryFromFile(aFile: not nullable File): nullable JsonDocument;
     begin
       try
-        result := new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize;
+        if aFile.Exists then
+          result := new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize;
       except
       end;
     end;
