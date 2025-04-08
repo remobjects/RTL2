@@ -201,8 +201,10 @@ type
         raise new HttpException($"No data received");
       {$ELSEIF ECHOES}
         var allData := new System.IO.MemoryStream();
+        if not assigned(Response) then
+          raise new Exception($"No response received from server");
         {$IF HTTPCLIENT}
-        var lTask := response.Content.ReadAsStreamAsync();
+        var lTask := Response.Content.ReadAsStreamAsync();
         using lStream := lTask.Result do
           lStream.CopyTo(allData);
         {$ELSE}
@@ -513,32 +515,6 @@ type
     begin
       result := if defined("TOFFEE") then aData else new ImmutableBinary(aData);
     end;
-    {$ELSEIF ECHOES}
-      {$IF HTTPCLIENT}
-      var Response: System.Net.Http.HttpResponseMessage;
-      constructor(aResponse: System.Net.Http.HttpResponseMessage);
-      begin
-        Response := aResponse;
-        Code := Int32(aResponse.StatusCode);
-        Headers := new Dictionary<String,String>();
-        //var lHeaders := new Dictionary<String,String>;
-        //for each k: String in aResponse.Headers.:AllKeys do
-          //lHeaders[k.ToString] := aResponse.Headers[k];
-        //Headers := lHeaders;
-      end;
-      {$ELSE}
-      var Response: HttpWebResponse;
-      constructor(aResponse: HttpWebResponse);
-      begin
-        Response := aResponse;
-        Code := Int32(aResponse.StatusCode);
-        Headers := new Dictionary<String,String>();
-        var lHeaders := new Dictionary<String,String>;
-        for each k: String in aResponse.Headers:AllKeys do
-          lHeaders[k.ToString] := aResponse.Headers[k];
-        Headers := lHeaders;
-      end;
-      {$ENDIF HTTPCLIENT}
     {$ELSEIF WEBASSEMBLY}
     var fOriginalRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest; private;
     constructor(aRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest);

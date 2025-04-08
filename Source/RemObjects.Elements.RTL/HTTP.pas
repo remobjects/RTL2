@@ -109,7 +109,7 @@ begin
 
         var lRepsonseMessage := await lClient.SendAsync(lRequestMessage, cts.Token);
         if lRepsonseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect then begin
-          aResponseCallback(new HttpResponse withException(new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest)));
+          aResponseCallback(new HttpResponse(lRepsonseMessage, new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest)));
         end
         else begin
           aResponseCallback(new HttpResponse(lRepsonseMessage));
@@ -165,6 +165,13 @@ begin
             aResponseCallback(new HttpResponse(webResponse));
           end;
         except
+          on E: WebException do begin
+            var lErrorResponse := E.Response as HttpWebResponse;
+            if assigned(lErrorResponse) then
+              aResponseCallback(new HttpResponse(lErrorResponse, E))
+            else
+              aResponseCallback(new HttpResponse withException(E));
+          end;
           on E: Exception do
             aResponseCallback(new HttpResponse withException(E));
         end;
