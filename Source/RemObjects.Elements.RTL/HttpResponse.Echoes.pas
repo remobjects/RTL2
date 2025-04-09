@@ -20,6 +20,8 @@ type
       {$IF HTTPCLIENT}
       for each k in aResponse.Headers do
         lHeaders[k.Key] := k.Value.JoinedString(", ");
+      for each k in aResponse.Content:Headers do
+        lHeaders[k.Key] := k.Value.JoinedString(", ");
       {$ELSE}
       for each k in aResponse.Headers:AllKeys do
         lHeaders[k.ToString] := aResponse.Headers[k];
