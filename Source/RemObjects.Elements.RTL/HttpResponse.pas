@@ -162,7 +162,6 @@ type
               aContentCallback(lData, false);
             end;
           until lBytesRead = 0;
-
           aContentCallback(nil, true);
         end;
         aContentCallback(allData, true);

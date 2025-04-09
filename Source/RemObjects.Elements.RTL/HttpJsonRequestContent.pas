@@ -4,7 +4,6 @@ type
   HttpJsonRequestContent = public class(HttpRequestContent, IHttpRequestContent)
   public
 
-    property ContentType: nullable String; readonly;
     property Json: not nullable JsonDocument; readonly;
     property Encoding: Encoding; readonly;
 
@@ -15,6 +14,12 @@ type
       Encoding := coalesce(aEncoding, Encoding.UTF8);
       ContentType := coalesce(aContentType, "application/json");
       Json := aJson;
+    end;
+
+    [ToString]
+    method ToString: String; override;
+    begin
+      result := $"<HttpJsonRequestContent {ContentType}: {Json}>";
     end;
 
   private

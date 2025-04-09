@@ -7,8 +7,10 @@ type
     property ContentType: nullable String read;
   end;
 
-  HttpRequestContent = public class
+  HttpRequestContent = public abstract class
   public
+
+    property ContentType: nullable String read protected write;
 
     operator Implicit(aBinary: not nullable ImmutableBinary): HttpRequestContent;
     begin
@@ -20,12 +22,21 @@ type
       result := new HttpBinaryRequestContent(aString, Encoding.UTF8);
     end;
 
+    operator Implicit(aJson: not nullable JsonNode): HttpRequestContent;
+    begin
+      result := new HttpJsonRequestContent(aJson, Encoding.UTF8);
+    end;
+
+    [ToString]
+    method ToString: String; override;
+    begin
+      result := $"<HttpRequestContent {ContentType}>";
+    end;
+
   end;
 
   HttpBinaryRequestContent = public class(HttpRequestContent, IHttpRequestContent)
   public
-
-    property ContentType: nullable String read private write;
 
     constructor(aBinary: not nullable ImmutableBinary; aContentType: nullable String := nil);
     begin
@@ -41,6 +52,12 @@ type
     begin
       if aEncoding = nil then aEncoding := Encoding.Default;
       &Array := aString.ToByteArray(aEncoding);
+    end;
+
+    [ToString]
+    method ToString: String; override;
+    begin
+      result := $"<HttpBinaryRequestContent {ContentType}: {if assigned(Binary) then Convert.ToHexString(Binary.ToArray) else Convert.ToHexString(&Array)}>";
     end;
 
   private

@@ -4,8 +4,6 @@ type
   HttpFormRequestContent = public class(HttpRequestContent, IHttpRequestContent)
   public
 
-    property ContentType: nullable String read private write;
-
     constructor(aValues: not nullable StringDictionary; aEncoding: Encoding := nil; aContentType: nullable String := nil);
     begin
       var sb := new StringBuilder;
@@ -16,13 +14,21 @@ type
         sb.Append("=");
         sb.Append(Url.AddPercentEncodingsToPath(aValues[k]));
       end;
-      fArray := coalesce(aEncoding, Encoding.UTF8).GetBytes(sb.ToString);
+      fEncoding := coalesce(aEncoding, Encoding.UTF8);
+      fArray := fEncoding.GetBytes(sb.ToString);
       ContentType := coalesce(aContentType, "text/form");
+    end;
+
+    [ToString]
+    method ToString: String; override;
+    begin
+      result := $"<HttpFormRequestContent {ContentType}: {fEncoding.GetString(fArray)}>";
     end;
 
   private
 
     var fArray: array of Byte;
+    var fEncoding: Encoding;
 
     method GetContentAsBinary: ImmutableBinary;
     begin
