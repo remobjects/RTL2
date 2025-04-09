@@ -415,9 +415,9 @@ begin
       rawString := lastIncompleteLogLine+rawString;
       lastIncompleteLogLine := nil;
     end;
-    var lines := rawString.Split(Environment.LineBreak);
+    var lines := rawString.Split(#10);
     for i: Int32 := 0 to lines.Count-1 do begin
-      var s := lines[i];
+      var s := lines[i].Trim(#13);
       if (i = lines.Count-1) and not s.EndsWith(Environment.LineBreak) then begin
         if length(s) > 0 then
           lastIncompleteLogLine := s;
