@@ -36,6 +36,13 @@ type
     {$IF JSON}method TryGetJson(aRequest: not nullable HttpRequest): nullable JsonDocument;{$ENDIF}
     //todo: method GetAndSaveAsFile(...);
     {$ENDIF}
+
+    {$IF HTTPCLIENT}
+    class constructor;
+    begin
+      ServicePointManager.SecurityProtocol := SecurityProtocolType.Tls11 or SecurityProtocolType.Tls12 or 12288;
+    end;
+    {$ENDIF}
   end;
 
 implementation
@@ -341,13 +348,25 @@ begin
         result := new HttpResponse(lResponseMessage);
       except
         on E: System.AggregateException do begin
-          var webEx := E.InnerException as System.Net.Http.HttpRequestException;
-          if assigned(webEx) and not aThrowOnError then begin
-            exit new HttpResponse withException(webEx);
+          var lWebException := E.InnerException as System.Net.Http.HttpRequestException;
+          if assigned(lWebException) then begin
+            if not aThrowOnError then
+              exit new HttpResponse withException(lWebException)
+            else
+              raise new HttpException(lWebException.Message, aRequest);
           end
           else begin
-            raise new HttpException(webEx.Message, aRequest);
+            if not aThrowOnError then
+              exit new HttpResponse withException(E.InnerException)
+            else
+              raise E.InnerException;
           end;
+        end;
+        on E: Exception do begin
+          if not aThrowOnError then
+            exit new HttpResponse withException(E.InnerException)
+          else
+            raise E.InnerException;
         end;
       end;
     end;

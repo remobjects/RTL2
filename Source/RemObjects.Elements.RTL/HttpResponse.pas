@@ -199,9 +199,9 @@ type
           exit Data as not nullable;
         raise new HttpException($"No data received");
       {$ELSEIF ECHOES}
-        var allData := new System.IO.MemoryStream();
         if not assigned(Response) then
-          raise new Exception($"No response received from server");
+          raise coalesce(Exception, new Exception($"No response received from server"));
+        var allData := new System.IO.MemoryStream();
         {$IF HTTPCLIENT}
         var lTask := Response.Content.ReadAsStreamAsync();
         using lStream := lTask.Result do
@@ -239,24 +239,26 @@ type
       fIncomingDataComplete.WaitFor;
       exit Data;
       {$ELSEIF ECHOES}
-        {$IF HTTPCLIENT}
-        var lTask := response.Content.ReadAsStreamAsync();
-          using lStream := lTask.Result do begin
-            if assigned(lStream) then begin
-              var allData := new System.IO.MemoryStream();
-              lStream.CopyTo(allData);
-              result := allData;
-            end;
-          end;
-          {$ELSE}
-          using lStream := Response:GetResponseStream do begin
-            if assigned(lStream) then begin
-              var allData := new System.IO.MemoryStream();
-              lStream.CopyTo(allData);
-              result := allData;
-            end;
-          end;
-        {$ENDIF}
+      if not assigned(Response) then
+        raise coalesce(Exception, new Exception($"No response received from server"));
+      {$IF HTTPCLIENT}
+      var lTask := Response.Content.ReadAsStreamAsync();
+      using lStream := lTask.Result do begin
+        if assigned(lStream) then begin
+          var allData := new System.IO.MemoryStream();
+          lStream.CopyTo(allData);
+          result := allData;
+        end;
+      end;
+      {$ELSE}
+      using lStream := Response:GetResponseStream do begin
+        if assigned(lStream) then begin
+          var allData := new System.IO.MemoryStream();
+          lStream.CopyTo(allData);
+          result := allData;
+        end;
+      end;
+      {$ENDIF}
       {$ELSEIF ISLAND AND WEBASSEMBLY}
       raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
       {$ELSEIF ISLAND}
