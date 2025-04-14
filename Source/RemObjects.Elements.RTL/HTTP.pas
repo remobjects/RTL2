@@ -103,9 +103,9 @@ begin
 
         if assigned(aRequest.UserAgent) then
           lRequestMessage.Headers.UserAgent.ParseAdd(aRequest.UserAgent);
-        if assigned(aRequest.ContentType) then begin
+        if assigned(aRequest.Content) then begin
           var lContent := new System.Net.Http.ByteArrayContent((aRequest.Content as IHttpRequestContent).GetContentAsArray());
-          lContent.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.ContentType);
+          lContent.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.Content.ContentType);
           lRequestMessage.Content := lContent;
         end;
 
@@ -331,10 +331,14 @@ begin
 
       if assigned(aRequest.UserAgent) then
         lRequestMessage.Headers.UserAgent.ParseAdd(aRequest.UserAgent);
-      if assigned(aRequest.ContentType) then
-        lRequestMessage.Content:Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.ContentType);
-      lRequestMessage.Headers.Accept.ParseAdd(aRequest.Accept);
 
+      if assigned(aRequest.Content) then begin
+        var lContent := new System.Net.Http.ByteArrayContent((aRequest.Content as IHttpRequestContent).GetContentAsArray());
+        lContent.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.Content.ContentType);
+        lRequestMessage.Content := lContent;
+      end;
+
+      lRequestMessage.Headers.Accept.ParseAdd(aRequest.Accept);
       for each k in aRequest.Headers.Keys do
         lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
 
