@@ -95,7 +95,16 @@ begin
   end;
   {$ELSEIF ECHOES}
     {$IF HTTPCLIENT}
-    using lClient := new System.Net.Http.HttpClient() do begin
+    var lHandler := new System.Net.Http.HttpClientHandler();
+    lHandler.ServerCertificateCustomValidationCallback := (sender, cert, chain, sslPolicyErrors) -> begin
+      result := if sslPolicyErrors = SslPolicyErrors.None then
+        true
+      else if assigned(aRequest.VerifyUntrustedCertificate) then
+        aRequest.VerifyUntrustedCertificate(new HttpCertificateInfo(cert, chain, sslPolicyErrors))
+      else
+        false;
+    end;
+    using lClient := new System.Net.Http.HttpClient(lHandler) do begin
       try
         var lRequestMessage := new System.Net.Http.HttpRequestMessage();
         lRequestMessage.RequestUri := aRequest.Url;
@@ -324,7 +333,16 @@ begin
 
   {$ELSEIF ECHOES}
     {$IF HTTPCLIENT}
-    using lClient := new System.Net.Http.HttpClient() do begin
+    var lHandler := new System.Net.Http.HttpClientHandler();
+    lHandler.ServerCertificateCustomValidationCallback := (sender, cert, chain, sslPolicyErrors) -> begin
+      result := if sslPolicyErrors = SslPolicyErrors.None then
+        true
+      else if assigned(aRequest.VerifyUntrustedCertificate) then
+        aRequest.VerifyUntrustedCertificate(new HttpCertificateInfo(cert, chain, sslPolicyErrors))
+      else
+        false;
+    end;
+    using lClient := new System.Net.Http.HttpClient(lHandler) do begin
       var lRequestMessage := new System.Net.Http.HttpRequestMessage();
       lRequestMessage.RequestUri := aRequest.Url;
       lRequestMessage.Method := new System.Net.Http.HttpMethod(aRequest.Method.ToHttpString);

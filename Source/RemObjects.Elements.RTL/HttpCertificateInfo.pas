@@ -1,5 +1,13 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF HTTPCLIENT}
+uses
+  System.Net.Security,
+  System.Security,
+  System.Security.Cryptography,
+  System.Security.Cryptography.X509Certificates;
+{$ENDIF}
+
 type
   HttpCertificateInfo = public class
   public
@@ -14,21 +22,32 @@ type
 
     property Sha1String: String read Convert.ToHexString(Sha1, 0, " ");
 
-  unit
+  assembly
 
     constructor withSubject(aSubject: String) issuer(aIssuer: String) expiration(aExpiration: DateTime) data(aData: array of Byte);
     begin
-      subject := aSubject;
-      issuer := aIssuer;
-      expiration := aExpiration;
-      data := aData;
-      sha1 := CalculateSha1();
+      Subject := aSubject;
+      Issuer := aIssuer;
+      Expiration := aExpiration;
+      Data := aData;
+      Sha1 := CalculateSha1();
     end;
 
     class method certificateInfoWithSubject(aSubject: String) issuer(aIssuer: String) expiration(aExpiration: DateTime) data(data: array of Byte): HttpCertificateInfo;
     begin
       result := new HttpCertificateInfo withSubject(aSubject) issuer(aIssuer) expiration(aExpiration) data(data);
     end;
+
+    {$IF HTTPCLIENT}
+    constructor (aCertificate: X509Certificate2; aChain: X509Chain; aErrors: SslPolicyErrors);
+    begin
+      Subject := aCertificate.Subject;
+      Expiration := DateTime.TryParseISO8601(aCertificate.GetExpirationDateString);
+      Issuer := aCertificate.Issuer;
+      Sha1 := aCertificate.GetCertHash;
+      Data := aCertificate.RawData;
+    end;
+    {$ENDIF}
 
     method CalculateSha1: array of Byte;
     begin
