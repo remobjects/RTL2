@@ -360,13 +360,10 @@ begin
       for each k in aRequest.Headers.Keys do
         lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
 
-      if assigned(aRequest.Content) then
-        lRequestMessage.Content := new System.Net.Http.ByteArrayContent((aRequest.Content as IHttpRequestContent).GetContentAsArray());
-
       try
         var lResponseMessage := lClient.SendAsync(lRequestMessage).Result;
         if (lResponseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect) and aThrowOnError then
-          raise new HttpException(String.Format("Unable to complete request. Error code: {0}", lResponseMessage.StatusCode), nil);
+          raise new HttpException($"Unable to complete request. Error code: {Integer(lResponseMessage.StatusCode)} ({lResponseMessage.StatusCode})");
         result := new HttpResponse(lResponseMessage);
       except
         on E: System.AggregateException do begin
