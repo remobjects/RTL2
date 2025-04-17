@@ -235,5 +235,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpResponse.Echoes.pas">
       <VirtualFolder>Http</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpCertificateInfo.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
   </ItemGroup>
 </Project>
