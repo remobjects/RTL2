@@ -33,6 +33,7 @@ type
     method GetDesktopFolder: Folder;
     method GetTempFolder: Folder;
     method GetUserApplicationSupportFolder: Folder;
+    method GetUserCachesFolder: Folder;
     method GetUserLibraryFolder: Folder;
     method GetUserDownloadsFolder: nullable Folder;
     method GetSystemApplicationSupportFolder: Folder;
@@ -64,7 +65,8 @@ type
     property UserHomeFolder: nullable Folder read GetUserHomeFolder;
     property DesktopFolder: nullable Folder read GetDesktopFolder;
     property TempFolder: nullable Folder read GetTempFolder;
-    property UserApplicationSupportFolder: nullable Folder read GetUserApplicationSupportFolder; // Mac only
+    property UserApplicationSupportFolder: nullable Folder read GetUserApplicationSupportFolder; // Mac and Windows only
+    property UserCachesFolder: nullable Folder read GetUserCachesFolder; // Mac only
     property UserLibraryFolder: nullable Folder read GetUserLibraryFolder; // Mac only
     property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder;
     property SystemApplicationSupportFolder: nullable Folder read GetSystemApplicationSupportFolder; // Mac only
@@ -383,10 +385,25 @@ begin
     OperatingSystem.macOS: result := Folder(MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType));
     OperatingSystem.Windows: result := Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData));
   end;
-  {$ELSEIF TOFFEE}
+  {$ELSEIF DARWIN}
   result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ELSEIF ISLAND AND WINDOWS}
   result := RemObjects.Elements.System.Environment.GetEnvironmentVariable('appdata');
+  {$ENDIF}
+  {$IF NOT WEBASSEMBLY}
+  if (length(result) > 0) and not Folder.Exists(result) then
+    Folder.Create(result);
+  {$ENDIF}
+end;
+
+method Environment.GetUserCachesFolder: Folder;
+begin
+  {$IF ECHOES}
+  case OS of
+    OperatingSystem.macOS: result := Folder(MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kCachedDataFolderType));
+  end;
+  {$ELSEIF DARWIN}
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
   {$ENDIF}
   {$IF NOT WEBASSEMBLY}
   if (length(result) > 0) and not Folder.Exists(result) then

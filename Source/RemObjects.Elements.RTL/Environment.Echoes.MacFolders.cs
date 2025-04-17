@@ -58,38 +58,36 @@
 		public static readonly uint kDocumentsFolderType = FourCharCode("docs");
 		*/
 		public static readonly uint kApplicationSupportFolderType = FourCharCode("asup");
-		/*
-		public static readonly uint kFavoritesFolderType = FourCharCode("favs");
-		public static readonly uint kInstallerLogsFolderType = FourCharCode("ilgf");
-		public static readonly uint kFolderActionsFolderType = FourCharCode("fasf");
-		public static readonly uint kKeychainFolderType = FourCharCode("kchn");
-		public static readonly uint kColorSyncFolderType = FourCharCode("sync");
-		public static readonly uint kPrintersFolderType = FourCharCode("impr");
-		public static readonly uint kSpeechFolderType = FourCharCode("spch");
-		public static readonly uint kDocumentationFolderType = FourCharCode("info");
-		public static readonly uint kUserSpecificTmpFolderType = FourCharCode("utmp");
+		//public static readonly uint kFavoritesFolderType = FourCharCode("favs");
+		//public static readonly uint kInstallerLogsFolderType = FourCharCode("ilgf");
+		//public static readonly uint kFolderActionsFolderType = FourCharCode("fasf");
+		//public static readonly uint kKeychainFolderType = FourCharCode("kchn");
+		//public static readonly uint kColorSyncFolderType = FourCharCode("sync");
+		//public static readonly uint kPrintersFolderType = FourCharCode("impr");
+		//public static readonly uint kSpeechFolderType = FourCharCode("spch");
+		//public static readonly uint kDocumentationFolderType = FourCharCode("info");
+		//public static readonly uint kUserSpecificTmpFolderType = FourCharCode("utmp");
 		public static readonly uint kCachedDataFolderType = FourCharCode("cach");
-		public static readonly uint kFrameworksFolderType = FourCharCode("fram");
-		public static readonly uint kDeveloperFolderType = FourCharCode("devf");
-		public static readonly uint kSystemSoundsFolderType = FourCharCode("ssnd");
-		public static readonly uint kComponentsFolderType = FourCharCode("cmpd");
-		public static readonly uint kQuickTimeComponentsFolderType = FourCharCode("wcmp");
-		public static readonly uint kPictureDocumentsFolderType = FourCharCode("pdoc");
-		public static readonly uint kMovieDocumentsFolderType = FourCharCode("mdoc");
-		public static readonly uint kMusicDocumentsFolderType = FourCharCode("µdoc");
-		public static readonly uint kInternetSitesFolderType = FourCharCode("site");
-		public static readonly uint kPublicFolderType = FourCharCode("pubb");
-		public static readonly uint kAudioSupportFolderType = FourCharCode("adio");
-		public static readonly uint kAudioSoundsFolderType = FourCharCode("asnd");
-		public static readonly uint kAudioSoundBanksFolderType = FourCharCode("bank");
-		public static readonly uint kAudioAlertSoundsFolderType = FourCharCode("alrt");
-		public static readonly uint kAudioPlugInsFolderType = FourCharCode("aplg");
-		public static readonly uint kAudioComponentsFolderType = FourCharCode("acmp");
-		public static readonly uint kKernelExtensionsFolderType = FourCharCode("kext");
-		public static readonly uint kInstallerReceiptsFolderType = FourCharCode("rcpt");
-		public static readonly uint kFileSystemSupportFolderType = FourCharCode("fsys");
-		public static readonly uint kMIDIDriversFolderType = FourCharCode("midi");
-		*/
+		//public static readonly uint kFrameworksFolderType = FourCharCode("fram");
+		//public static readonly uint kDeveloperFolderType = FourCharCode("devf");
+		//public static readonly uint kSystemSoundsFolderType = FourCharCode("ssnd");
+		//public static readonly uint kComponentsFolderType = FourCharCode("cmpd");
+		//public static readonly uint kQuickTimeComponentsFolderType = FourCharCode("wcmp");
+		//public static readonly uint kPictureDocumentsFolderType = FourCharCode("pdoc");
+		//public static readonly uint kMovieDocumentsFolderType = FourCharCode("mdoc");
+		//public static readonly uint kMusicDocumentsFolderType = FourCharCode("µdoc");
+		//public static readonly uint kInternetSitesFolderType = FourCharCode("site");
+		//public static readonly uint kPublicFolderType = FourCharCode("pubb");
+		//public static readonly uint kAudioSupportFolderType = FourCharCode("adio");
+		//public static readonly uint kAudioSoundsFolderType = FourCharCode("asnd");
+		//public static readonly uint kAudioSoundBanksFolderType = FourCharCode("bank");
+		//public static readonly uint kAudioAlertSoundsFolderType = FourCharCode("alrt");
+		//public static readonly uint kAudioPlugInsFolderType = FourCharCode("aplg");
+		//public static readonly uint kAudioComponentsFolderType = FourCharCode("acmp");
+		//public static readonly uint kKernelExtensionsFolderType = FourCharCode("kext");
+		//public static readonly uint kInstallerReceiptsFolderType = FourCharCode("rcpt");
+		//public static readonly uint kFileSystemSupportFolderType = FourCharCode("fsys");
+		//public static readonly uint kMIDIDriversFolderType = FourCharCode("midi");
 		public static uint FourCharCode(string p)
 		{
 			unchecked
