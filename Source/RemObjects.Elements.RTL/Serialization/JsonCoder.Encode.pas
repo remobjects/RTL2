@@ -239,4 +239,21 @@ type
   end;
   {$ENDIF}
 
+  ISequence_Json_Extension<T> = public extension class(ISequence<T>) where T is ICodable;
+  public
+
+    method ToJson: JsonArray;
+    begin
+      result := new;
+      for each v in self do
+        result.Add(v.ToJson);
+    end;
+
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+    begin
+      result := ToJson.ToJsonString(aFormat);
+    end;
+
+  end;
+
 end.
