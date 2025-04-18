@@ -239,6 +239,7 @@ type
   end;
   {$ENDIF}
 
+  {$IF SERIALIZATION}
   ISequence_Json_Extension<T> = public extension class(ISequence<T>) where T is ICodable;
   public
 
@@ -255,5 +256,6 @@ type
     end;
 
   end;
+  {$ENDIF}
 
 end.
