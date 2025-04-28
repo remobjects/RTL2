@@ -41,17 +41,20 @@ type
     constructor(aBinary: not nullable ImmutableBinary; aContentType: nullable String := nil);
     begin
       Binary := aBinary;
+      ContentType := aContentType;
     end;
 
     constructor(aArray: not nullable array of Byte; aContentType: nullable String := nil);
     begin
       &Array := aArray;
+      ContentType := aContentType;
     end;
 
-    constructor(aString: not nullable String; aEncoding: Encoding; aContentType: nullable String := nil);
+    constructor(aString: not nullable String; aEncoding: nullable Encoding := nil; aContentType: nullable String := nil);
     begin
       if aEncoding = nil then aEncoding := Encoding.Default;
       &Array := aString.ToByteArray(aEncoding);
+      ContentType := aContentType;
     end;
 
     [ToString]

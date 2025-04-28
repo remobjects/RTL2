@@ -11,7 +11,7 @@ type
     property &Method: HttpRequestMethod := HttpRequestMethod.Get;
     property Headers: not nullable Dictionary<String,String> := new Dictionary<String,String>; readonly;
     property Content: nullable HttpRequestContent;
-    property ContentType: nullable String read coalesce(fContentType, IHttpRequestContent(Content):ContentType) write fContentType;
+    //property ContentType: nullable String read coalesce(fContentType, IHttpRequestContent(Content):ContentType) write fContentType;
     property Url: not nullable Url;
     property FollowRedirects: Boolean := true;
     property AllowCellularAccess: Boolean := true;
@@ -35,8 +35,14 @@ type
   assembly
     method ApplyAuthehtication;
 
-  private
-    var fContentType: String;
+    {$IF ISLAND}
+    property Monitor := new Monitor; readonly;
+    {$ELSE}
+    property Monitor: Object read self;
+    {$ENDIF}
+
+  //private
+    //var fContentType: String;
   end;
 
   HttpVerifyUntrustedCertificateBlock nested in httpRequest = public block(aCertificateInfo: HttpCertificateInfo): Boolean;
