@@ -114,7 +114,8 @@ begin
           lRequestMessage.Headers.UserAgent.ParseAdd(aRequest.UserAgent);
         if assigned(aRequest.Content) then begin
           var lContent := new System.Net.Http.ByteArrayContent((aRequest.Content as IHttpRequestContent).GetContentAsArray());
-          lContent.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.Content.ContentType);
+          if length(aRequest.Content.ContentType) > 0 then
+            lContent.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.Content.ContentType);
           lRequestMessage.Content := lContent;
         end;
 
@@ -352,7 +353,8 @@ begin
 
       if assigned(aRequest.Content) then begin
         var lContent := new System.Net.Http.ByteArrayContent((aRequest.Content as IHttpRequestContent).GetContentAsArray());
-        lContent.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.Content.ContentType);
+        if length(aRequest.Content.ContentType) > 0 then
+          lContent.Headers.ContentType := new System.Net.Http.Headers.MediaTypeHeaderValue(aRequest.Content.ContentType);
         lRequestMessage.Content := lContent;
       end;
 
@@ -376,16 +378,16 @@ begin
           end
           else begin
             if not aThrowOnError then
-              exit new HttpResponse withException(E.InnerException)
+              exit new HttpResponse withException(coalesce(E.InnerException, E))
             else
-              raise E.InnerException;
+              raise coalesce(E.InnerException, E);
           end;
         end;
         on E: Exception do begin
           if not aThrowOnError then
-            exit new HttpResponse withException(E.InnerException)
+            exit new HttpResponse withException(E)
           else
-            raise E.InnerException;
+            raise E;
         end;
       end;
     end;
