@@ -22,6 +22,12 @@ type
 
     property Sha1String: String read Convert.ToHexString(Sha1, 0, " ");
 
+    [ToString]
+    method ToString: String; override;
+    begin
+      result := $"<HttpCertificateInfo {Subject}, {Issuer} {Expiration} {Sha1String}>";
+    end;
+
   assembly
 
     constructor withSubject(aSubject: String) issuer(aIssuer: String) expiration(aExpiration: DateTime) data(aData: array of Byte);
