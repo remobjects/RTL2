@@ -53,8 +53,6 @@ uses
   {$ENDIF}
   RemObjects.Elements;
 
-{ Http }
-
 method Http.ExecuteRequest(aRequest: not nullable HttpRequest; aResponseCallback: not nullable HttpResponseBlock);
 begin
   aRequest.ApplyAuthehtication;
@@ -73,8 +71,8 @@ begin
       lConnection.setRequestProperty("Accept", aRequest.Accept);
     if assigned(aRequest.UserAgent) then
       lConnection.setRequestProperty("User-Agent", aRequest.UserAgent);
-    if assigned(aRequest.ContentType) then
-      lConnection.setRequestProperty("Content-Type", aRequest.ContentType);
+    if length(aRequest.Content:ContentType) > 0 then
+      lConnection.setRequestProperty("Content-Type", aRequest.Content.ContentType);
 
     if assigned(aRequest.Content) then begin
       lConnection.getOutputStream().write((aRequest.Content as IHttpRequestContent).GetContentAsArray());
@@ -223,8 +221,8 @@ begin
       nsUrlRequest.setValue(aRequest.Accept) forHTTPHeaderField("Accept");
     if assigned(aRequest.UserAgent) then
       nsUrlRequest.setValue(aRequest.UserAgent) forHTTPHeaderField("User-Agent");
-    if assigned(aRequest.ContentType) then
-      nsUrlRequest.setValue(aRequest.ContentType) forHTTPHeaderField("Content-Type");
+    if length(aRequest.Content:ContentType) > 0 then
+      nsUrlRequest.setValue(aRequest.Content.ContentType) forHTTPHeaderField("Content-Type");
 
     var lResponse: HttpResponse;
     lResponse := new HttpResponse(aRequest, (aResponse) -> begin
@@ -249,8 +247,8 @@ begin
     lRequest.setRequestHeader("Accept", aRequest.Accept);
   if assigned(aRequest.UserAgent) then
     lRequest.setRequestHeader("User-Agent", aRequest.UserAgent);
-  if assigned(aRequest.ContentType) then
-    lRequest.setRequestHeader("Content-Type", aRequest.ContentType);
+  if length(aRequest.Content:ContentType) > 0 then
+    lRequest.setRequestHeader("Content-Type", aRequest.Content.ContentType);
 
   lRequest.onload := method begin
     //writeLn("Wasm HTTP Success");
@@ -318,8 +316,8 @@ begin
     lConnection.setRequestProperty("Accept", aRequest.Accept);
   if assigned(aRequest.UserAgent) then
     lConnection.setRequestProperty("User-Agent", aRequest.UserAgent);
-  if assigned(aRequest.ContentType) then
-    lConnection.setRequestProperty("Content-Type", aRequest.ContentType);
+  if length(aRequest.Content:ContentType) > 0 then
+    lConnection.setRequestProperty("Content-Type", aRequest.Content.ContentType);
 
   if assigned(aRequest.Content) then begin
     lConnection.getOutputStream().write((aRequest.Content as IHttpRequestContent).GetContentAsArray());
@@ -633,8 +631,8 @@ begin
     nsUrlRequest.setValue(aRequest.Accept) forHTTPHeaderField("Accept");
   if assigned(aRequest.UserAgent) then
     nsUrlRequest.setValue(aRequest.UserAgent) forHTTPHeaderField("User-Agent");
-  if assigned(aRequest.ContentType) then
-    nsUrlRequest.setValue(aRequest.ContentType) forHTTPHeaderField("Content-Type");
+  if length(aRequest.Content:ContentType) > 0 then
+    nsUrlRequest.setValue(aRequest.Content.ContentType) forHTTPHeaderField("Content-Type");
 
   {$HIDE W28}
   // we're aware it's deprecated. but async calls do have their use in console apps.
