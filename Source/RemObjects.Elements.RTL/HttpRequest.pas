@@ -26,6 +26,7 @@ type
     constructor(aUrlString: not nullable String; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
     constructor(aUrl: not nullable Url; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
     operator Implicit(aUrl: not nullable Url): HttpRequest;
+    operator Implicit(aString: not nullable String): HttpRequest;
 
     property VerifyUntrustedCertificate: HttpVerifyUntrustedCertificateBlock;
 
@@ -73,6 +74,11 @@ end;
 operator HttpRequest.Implicit(aUrl: not nullable Url): HttpRequest;
 begin
   result := new HttpRequest(aUrl, HttpRequestMethod.Get);
+end;
+
+operator HttpRequest.Implicit(aString: not nullable String): HttpRequest;
+begin
+  result := new HttpRequest(aString, HttpRequestMethod.Get);
 end;
 
 method HttpRequest.ToString: String;
