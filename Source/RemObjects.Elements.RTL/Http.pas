@@ -691,7 +691,7 @@ begin
         contentCallback(content)
       end);
     end else begin
-      contentCallback(new HttpResponseContent<String>(Exception := response.Exception));
+      contentCallback(new HttpResponseContent<String>(Exception := coalesce(response.Exception, new HttpException(response.Code, aRequest))));
     end;
   end);
 end;
@@ -708,7 +708,7 @@ begin
         contentCallback(content)
       end);
     end else begin
-      contentCallback(new HttpResponseContent<ImmutableBinary>(Exception := response.Exception));
+      contentCallback(new HttpResponseContent<ImmutableBinary>(Exception := coalesce(response.Exception, new HttpException(response.Code, aRequest))));
     end;
   end);
   {$ENDIF}
@@ -722,8 +722,9 @@ begin
       response.GetContentAsXml( (content) -> begin
         contentCallback(content)
       end);
-    end else begin
-      contentCallback(new HttpResponseContent<XmlDocument>(Exception := response.Exception));
+    end
+    else begin
+      contentCallback(new HttpResponseContent<XmlDocument>(Exception := coalesce(response.Exception, new HttpException(response.Code, aRequest))));
     end;
   end);
 end;

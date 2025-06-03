@@ -68,6 +68,7 @@ type
     method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didReceiveResponse(aResponse: NSURLResponse) completionHandler(completionHandler: block(disposition: NSURLSessionResponseDisposition));
     begin
       //Log($"didReceiveResponse {aResponse}");
+      Code := NSHTTPURLResponse(aResponse):StatusCode;
       fIncomingData := new;
       Headers := LoadHeaders(aResponse as NSHTTPURLResponse);
       if assigned(fGotResponseCallback) then
