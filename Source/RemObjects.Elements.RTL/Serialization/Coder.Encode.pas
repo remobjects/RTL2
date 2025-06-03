@@ -70,12 +70,20 @@ type
             EncodeGuid(aName, lGuid as Guid)
           else if defined("ECHOES") and (aValue is var lDateTime: RemObjects.Elements.System.GenericNullable<DateTime>) then
             EncodeDateTime(aName, lDateTime as DateTime)
-          else if defined("TOFFEE") and aValue is PlatformGuid then
-            EncodeGuid(aName, aValue as Guid) // sometimes a Guid is __NSConcreteUUID and doesnt hit the "case"
-          else if defined("TOFFEE") and aValue is PlatformString then
-            EncodeString(aName, aValue as PlatformString) // sometimes a Guid is __NSCFConstantString and doesnt hit the "case"
-          else if defined("TOFFEE") and aValue is NSArray then
+          //else if defined("TOFFEE") and aValue is PlatformGuid then
+            //EncodeGuid(aName, aValue as Guid) // sometimes a Guid is __NSConcreteUUID and doesnt hit the "case"
+          //else if defined("TOFFEE") and aValue is PlatformString then
+            //EncodeString(aName, aValue as PlatformString) // sometimes a Guid is __NSCFConstantString and doesnt hit the "case"
+          //else if defined("TOFFEE") and aValue is NSArray then
+            //EncodeList(aName, aValue as ImmutableList, nil) // sometimes a List is __NSArrayM & Co and doesnt hit the "case"
+          else if defined("TOFFEE") then begin
+            if aValue is PlatformGuid then
+              EncodeGuid(aName, aValue as Guid) // sometimes a Guid is __NSConcreteUUID and doesnt hit the "case"
+            else if aValue is PlatformString then
+              EncodeString(aName, aValue as PlatformString) // sometimes a Guid is __NSCFConstantString and doesnt hit the "case"
+            else if aValue is NSArray then
               EncodeList(aName, aValue as ImmutableList, nil) // sometimes a List is __NSArrayM & Co and doesnt hit the "case"
+          end
           else if assigned(aName) then
             raise new CodingExeption($"Type '{lType}' for field or property '{aName}' is not encodable.")
           else
