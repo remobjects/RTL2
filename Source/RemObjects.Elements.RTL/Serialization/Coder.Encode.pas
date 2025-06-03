@@ -74,6 +74,8 @@ type
             EncodeGuid(aName, aValue as Guid) // sometimes a Guid is __NSConcreteUUID and doesnt hit the "case"
           else if defined("TOFFEE") and aValue is PlatformString then
             EncodeString(aName, aValue as PlatformString) // sometimes a Guid is __NSCFConstantString and doesnt hit the "case"
+          else if defined("TOFFEE") and aValue is NSArray then
+              EncodeList(aName, aValue as ImmutableList, nil) // sometimes a List is __NSArrayM & Co and doesnt hit the "case"
           else if assigned(aName) then
             raise new CodingExeption($"Type '{lType}' for field or property '{aName}' is not encodable.")
           else
@@ -122,7 +124,7 @@ type
 
     //
 
-    method EncodeList<T>(aName: String; aValue: List<T>; aExpectedType: &Type := nil);
+    method EncodeList<T>(aName: String; aValue: ImmutableList<T>; aExpectedType: &Type := nil);
     begin
       if assigned(aValue) then begin
         EncodeListStart(aName);

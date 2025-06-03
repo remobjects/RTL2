@@ -89,11 +89,6 @@ type
 
     //
 
-    method EncodeList<T>(aName: String; aValue: List<T>);
-    begin
-      raise new NotImplementedException("EncodeList<T>");
-    end;
-
     class method ToJsonString(aObject: IEncodable; aFormat: JsonFormat := JsonFormat.HumanReadable): String;
     begin
       {$IF NOT TOFFEEV2}
