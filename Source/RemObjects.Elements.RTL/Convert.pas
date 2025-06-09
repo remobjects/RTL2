@@ -63,6 +63,7 @@ type
     method ToDoubleInvariant(aValue: not nullable String): Double; inline;
 
     method MillisecondsToTimeString(aMS: Double): String;
+    method DaysToPrettyString(aDays: Integer): String;
     method MemorySizeToString(aSize: UInt64): String;
 
     method ToByte(aValue: Boolean): Byte;
@@ -946,6 +947,18 @@ begin
   result := result+lSecondsString+".";
   result := result+Convert.ToString(lMilliSeconds).PadStart(3, '0');
 end;
+
+method Convert.DaysToPrettyString(aDays: Integer): String;
+begin
+  aDays := Math.Abs(aDays);
+  if aDays < 31 then
+    result := $"{aDays} {"day".PluralInvariant(aDays)}"
+  else if aDays < 365 then
+    result := $"{aDays/30} {"month".PluralInvariant(aDays/30)}"
+  else
+    result := $"{aDays/365} {"year".PluralInvariant(aDays/365)}";
+end;
+
 
 method Convert.MemorySizeToString(aSize: UInt64): String;
 begin
