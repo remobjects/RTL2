@@ -66,16 +66,27 @@ type
         else begin
           if aValue is IEncodable then
             EncodeObject(aName, aValue as IEncodable, aExpectedType)
-          else if defined("ECHOES") and (aValue is var lGuid: RemObjects.Elements.System.GenericNullable<Guid>) then
-            EncodeGuid(aName, lGuid as Guid)
-          else if defined("ECHOES") and (aValue is var lDateTime: RemObjects.Elements.System.GenericNullable<DateTime>) then
-            EncodeDateTime(aName, lDateTime as DateTime)
-          //else if defined("TOFFEE") and aValue is PlatformGuid then
-            //EncodeGuid(aName, aValue as Guid) // sometimes a Guid is __NSConcreteUUID and doesnt hit the "case"
-          //else if defined("TOFFEE") and aValue is PlatformString then
-            //EncodeString(aName, aValue as PlatformString) // sometimes a Guid is __NSCFConstantString and doesnt hit the "case"
-          //else if defined("TOFFEE") and aValue is NSArray then
-            //EncodeList(aName, aValue as ImmutableList, nil) // sometimes a List is __NSArrayM & Co and doesnt hit the "case"
+          else if defined("ECHOES") then begin
+            if aValue is var lGuid: RemObjects.Elements.System.GenericNullable<Guid> then
+              EncodeGuid(aName, lGuid as Guid)
+            else if aValue is var lDateTime: RemObjects.Elements.System.GenericNullable<DateTime> then
+              EncodeDateTime(aName, lDateTime as DateTime)
+            else begin
+              //pendign E27210: Echoes: Internal error: IOE->D201 with typeOf() on generic
+              //if (lType as System.Type).IsGenericType then begin
+                //var lType1 := (lType as System.Type).GetGenericTypeDefinition;
+                //if (lType as System.Type).GetGenericTypeDefinition = (typeOf(System.Collections.Generic.List<Object>) as  System.Type).GetGenericTypeDefinition() then begin
+                  //var lGenericArguments := (lType as System.Type).GetGenericArguments();
+                  //if length(lGenericArguments) = 1 then begin
+                    //var lGenericType := lGenericArguments[0];
+                    //// Assuming you have a method named 'ProcessGenericList' that takes a List<T>
+                    //var lMethod := (typeOf(Self) as System.Type).GetMethod('EncodeList').MakeGenericMethod(lGenericType);
+                    //lMethod.Invoke(Self, [aValue]);
+                  //end;
+                //end;
+              //end;
+            end;
+          end
           else if defined("TOFFEE") then begin
             if aValue is PlatformGuid then
               EncodeGuid(aName, aValue as Guid) // sometimes a Guid is __NSConcreteUUID and doesnt hit the "case"
