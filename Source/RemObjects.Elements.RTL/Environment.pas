@@ -683,7 +683,7 @@ begin
   result := result:Trim();
   {$ELSEIF ISLAND}
   case Environment.OS of
-    OperatingSystem.Windows: result := {$IF i386}"i386"{$ELSEIF x86_64}"x86_64"{$ELSE}nil{$ENDIF};
+    OperatingSystem.Windows: result := {$IF arm64}"arm64"{$ELSEIF i386}"i386"{$ELSEIF x86_64}"x86_64"{$ELSE}nil{$ENDIF};
     OperatingSystem.Linux: result := {$IF x86_64}"x86_64"{$ELSEIF aarch64}"aarch64"{$ELSEIF armv7}"armv7"{$ELSE}nil{$ENDIF};
     OperatingSystem.Android: result := {$IF arm64_v8a}"arm64-v8a"{$ELSEIF armeabi}"armeabi"{$ELSEIF armeabi_v7a}"armeabi-v7a"{$ELSEIF x86}"x86"{$ELSEIF x86_64}"x86_64"{$ELSE}nil{$ENDIF}
     OperatingSystem.Browser: result := "wasm32";
@@ -754,15 +754,56 @@ begin
   end;
   result := result:Trim();
   {$ELSEIF ISLAND}
+  {$IF WINDOWS}
+  var hProcess := rtl.GetCurrentProcess();
+
+  var hKernel32 := rtl.LoadLibrary('kernel32.dll');
+  var isWow64Process2 := if assigned(hKernel32) then
+    IsWow64Process2Func(rtl.GetProcAddress(hKernel32, 'IsWow64Process2'));
+
+  // Preferred: IsWow64Process2 (Windows 10+)
+  if assigned(isWow64Process2) then begin
+    var processMachine, nativeMachine: Word;
+    if isWow64Process2(hProcess, @processMachine, @nativeMachine) then begin
+      case nativeMachine of
+        rtl.IMAGE_FILE_MACHINE_I386: exit "i386";
+        rtl.IMAGE_FILE_MACHINE_AMD64: exit "x86_64";
+        rtl.IMAGE_FILE_MACHINE_ARM64: exit "arm64";
+        rtl.IMAGE_FILE_MACHINE_ARM:   exit "arm";
+        rtl.IMAGE_FILE_MACHINE_IA64:  exit "ia64";
+        else exit nil
+      end;
+    end;
+    exit nil;
+  end;
+
+  var sysInfo: rtl.SYSTEM_INFO;
+  rtl.GetNativeSystemInfo(@sysInfo);
+    case sysInfo.u.s.wProcessorArchitecture of
+      rtl.PROCESSOR_ARCHITECTURE_INTEL:   exit "i386";
+      rtl.PROCESSOR_ARCHITECTURE_AMD64:   exit "x86_64";
+      rtl.PROCESSOR_ARCHITECTURE_ARM64:   exit "arm64";
+      rtl.PROCESSOR_ARCHITECTURE_ARM:     exit "arm";
+      rtl.PROCESSOR_ARCHITECTURE_IA64:    exit "ia64";
+      else exit nil;
+    end;
+
+  exit "i386";
+  {$ELSE}
   case Environment.OS of
-    OperatingSystem.Windows: result := if Environment.ProcessBitness = 64 then "x86_64" else "i386"; {$HINT Does not cover WIndows/ARM yet}
     OperatingSystem.Linux: result := nil;//Process.Run("/bin/uname", ["-m"], out result);
     OperatingSystem.Android: result := nil;
     OperatingSystem.Browser: result := "wasm32";
   end;
+  {$ENDIF}
   result := result:Trim();
   {$ENDIF}
 end;
+
+{$IF WINDOWS}
+type IsWow64Process2Func = function(hProcess: rtl.HANDLE; lpProcessMachine: ^Word; lpNativeMachine: ^Word): Boolean; stdcall;
+
+{$ENDIF}
 
 method Environment.GetProcessBitness: Int32;
 begin
