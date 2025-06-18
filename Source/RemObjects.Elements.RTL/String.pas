@@ -971,12 +971,16 @@ type
           aPluralVersion := self+"es"
         else if EndsWith('s') then
           aPluralVersion := self+"ses"
+        else if EndsWith('ay') then
+          aPluralVersion := self+"s"
         else if EndsWith('y') then
           aPluralVersion := self.Substring(0, length-1)+"ies"
         else if EndsWith("SS") then
           aPluralVersion := self+"ES"
         else if EndsWith('S') then
           aPluralVersion := self+"SES"
+        else if EndsWith('AY') then
+          aPluralVersion := self+"S"
         else if EndsWith('Y') then
           aPluralVersion := self.Substring(0, length-1)+"IES"
         else if (length > 0) and self[length-1].IsUpper then
