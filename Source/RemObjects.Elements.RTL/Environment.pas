@@ -664,14 +664,21 @@ begin
     OperatingSystem.Linux: begin {$HINT WRONG, returns OS Architecture}
         if not assigned(fProcessArchitecture) then begin
           Process.Run("/bin/uname", ["-m"], out fProcessArchitecture);
-          fProcessArchitecture := fProcessArchitecture:Trim;
+          fProcessArchitecture := case fProcessArchitecture:Trim of
+            "aarch64": "arm64";
+            else fProcessArchitecture:Trim;
+          end;
         end;
         result := fProcessArchitecture;
       end;
     OperatingSystem.macOS: begin // uname returns x86_64 when run from an x86_64 process, even omn arm,. so we're good.
         if not assigned(fProcessArchitecture) then begin
-          Process.Run("/usr/bin/uname", ["-m"], out fProcessArchitecture);
-          fProcessArchitecture := fProcessArchitecture:Trim;
+          fProcessArchitecture := case System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture of
+            System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.X86: "i386";
+            System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.X64: "x86_64";
+            System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.Arm: "arm";
+            System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.Arm64: "arm64";
+          end;
         end;
         result := fProcessArchitecture;
       end;
