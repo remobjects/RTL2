@@ -20,7 +20,7 @@ type
     [ToString]
     method ToString: String; override;
     begin
-      result := Convert.MillisecondsToTimeString(ElapsedTime);
+      result := Convert.MillisecondsToTimeString(ElapsedTime)+"s";
 
     end;
 
