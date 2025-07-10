@@ -730,7 +730,10 @@ begin
     OperatingSystem.Linux: begin
         if not assigned(fOSArchitecture) then begin
           Process.Run("/bin/uname", ["-m"], out fOSArchitecture);
-          fOSArchitecture := fOSArchitecture:Trim;
+          fOSArchitecture := case fOSArchitecture:Trim of
+            "aarch64": "arm64";
+            else fOSArchitecture:Trim;
+          end;
         end;
         result := fOSArchitecture;
       end;
