@@ -26,6 +26,28 @@ type
 
     //
 
+    class method FromString(aString: not nullable String): not nullable JsonObject;
+    begin
+      result := JsonDocument.FromString(aString) as JsonObject;
+    end;
+
+    class method TryFromString(aString: nullable String; aAllowPartialJson: Boolean := false): nullable JsonObject;
+    begin
+        result := JsonObject(JsonDocument.TryFromString(aString, aAllowPartialJson));
+    end;
+
+    class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonObject;
+    begin
+      try
+        result := JsonDocument.TryFromString(aString, out aException) as JsonObject;
+      except
+        on E: Exception do
+          aException := E;
+      end;
+    end;
+
+    //
+
     method &Add(aKey: not nullable String; aValue: not nullable JsonNode);
     begin
       fItems[aKey] := aValue;

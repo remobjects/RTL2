@@ -65,6 +65,28 @@ type
 
     //
 
+    class method FromString(aString: not nullable String): not nullable JsonArray;
+    begin
+      result := JsonDocument.FromString(aString) as JsonArray;
+    end;
+
+    class method TryFromString(aString: nullable String; aAllowPartialJson: Boolean := false): nullable JsonArray;
+    begin
+        result := JsonArray(JsonDocument.TryFromString(aString, aAllowPartialJson));
+    end;
+
+    class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonArray;
+    begin
+      try
+        result := JsonDocument.TryFromString(aString, out aException) as JsonArray;
+      except
+        on E: Exception do
+          aException := E;
+      end;
+    end;
+
+    //
+
     method &Add(aValue: not nullable JsonNode);
     begin
       fItems.Add(aValue);
@@ -113,6 +135,11 @@ type
     method Clear;
     begin
       fItems.RemoveAll;
+    end;
+
+    method &Remove(aNode: JsonNode);
+    begin
+      fItems.Remove(aNode);
     end;
 
     method &RemoveAt(aIndex: Integer);
