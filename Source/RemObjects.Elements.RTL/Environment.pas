@@ -53,6 +53,7 @@ type
     {$ENDIF}
 
     {$IF COOPER}
+    var fProcessArchitecture: String;
     method GetJavaSystemProperty(aName: not nullable String): nullable String;
     {$ENDIF}
   public
@@ -639,7 +640,16 @@ end;
 method Environment.GetProcessArchitecture: String;
 begin
   {$IF COOPER}
-  result := "jvm";
+  if not assigned(fProcessArchitecture) then begin
+    fProcessArchitecture := GetJavaSystemProperty("os.arch"):ToLowerInvariant:Trim;
+    fProcessArchitecture := case fProcessArchitecture of
+      "amd64", "x86_64": "x86_64";
+      "x86", "i386", "i486", "i586", "i686": "i386";
+      "aarch64", "arm64", "arm64-v8a": "arm64";
+      "armv7", "arm": "arm";
+      else fProcessArchitecture
+    end;
+  end;
   {$ELSEIF DARWIN}
     {$IF OSX OR UIKITFORMAC OR IOS OR TVOS OR VISIONOS}
     result := {$IF __arm64__}"arm64"{$ELSE}"x86_64"{$ENDIF};
