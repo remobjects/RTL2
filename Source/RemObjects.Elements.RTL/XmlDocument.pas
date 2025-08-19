@@ -1305,6 +1305,11 @@ method XmlElement.GetValue(aWithNested: Boolean): nullable String;
 begin
   if IsEmpty then
     exit nil;
+
+  if (Nodes.Count = 1) and (Nodes[0].NodeType = XmlNodeType.CData) then begin
+    exit XmlCData(Nodes[0]).Value;
+  end;
+
   result := "";
   for each lNode in Nodes do begin
     if (lNode.NodeType = XmlNodeType.Text) and ((PreserveSpace) or (length(XmlText(lNode).Value:Trim) > 0)) then begin
