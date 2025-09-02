@@ -144,7 +144,7 @@ type
     method WindowsPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
     method UnixPathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 
-    method FilePathRelativeToUrlIfPossible(aUrl: not nullable Url): nullable String;
+    //method FilePathRelativeToUrlIfPossible(aUrl: not nullable Url): nullable String;
 
     /* Needed for fire
 
@@ -389,7 +389,7 @@ end;
 
 method Url.ToAbsoluteString: String;
 begin
- if not assigned(fCachedAbsoluteString) then begin
+  if not assigned(fCachedAbsoluteString) then begin
     var lResult := new StringBuilder();
     lResult.Append(fScheme);
     lResult.Append("://");
@@ -411,7 +411,7 @@ begin
   if length(fHost) > 0 then
     result := if fHost.Contains(':') then String('['+fHost+']') else fHost;
   if assigned(fPort) then
-    result := result+':'+fPort.ToString();
+    result := coalesce(result, "")+':'+fPort.ToString();
 end;
 
 method Url.GetPathAndQueryString: nullable String;
@@ -565,11 +565,11 @@ begin
   end;
 end;
 
-method Url.FilePathRelativeToUrlIfPossible(aUrl: not nullable Url): nullable String;
-begin
-  if CanGetPathRelativeToUrl(aUrl) then
-    result := coalesce(FilePathRelativeToUrl(aUrl) Threshold(Consts.MaxInt32), FilePath)
-end;
+//method Url.FilePathRelativeToUrlIfPossible(aUrl: not nullable Url): nullable String;
+//begin
+  //if CanGetPathRelativeToUrl(aUrl) then
+    //result := FilePathRelativeToUrl(aUrl) Threshold(Consts.MaxInt32);
+//end;
 
 method Url.FilePathRelativeToUrl(aUrl: not nullable Url) Always(aAlways: Boolean): String;
 begin
@@ -859,14 +859,14 @@ begin
   while i < lParts.Count do begin
     case lParts[i] of
       "..": if (i > 0) and (lParts[i-1] ≠ "..") and (lParts[i-1] ≠ "") then begin
-              lParts.RemoveRange(i-1, 2);
-              dec(i);
-              continue;
-            end;
+        lParts.RemoveRange(i-1, 2);
+        dec(i);
+        continue;
+      end;
       ".": begin
-             lParts.RemoveAt(i);
-             continue;
-           end;
+        lParts.RemoveAt(i);
+        continue;
+        end;
     end;
     inc(i);
   end;
