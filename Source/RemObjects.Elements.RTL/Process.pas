@@ -290,7 +290,7 @@ begin
         d := stdErr.availableData;
       end;
       if length(lastIncompleteLogLine) > 0 then
-        aStdOutCallback(lastIncompleteLogLine);
+        aStdErrCallback(lastIncompleteLogLine);
       var lError: NSError;
       if available("macOS 10.15") then
         stdErr.closeAndReturnError(var lError)
