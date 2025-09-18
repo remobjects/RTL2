@@ -236,75 +236,73 @@ begin
   result := lTask;
 
   {$IF TOFFEE}
+  method HandleOutput(aOutput: NSPipe; aCallback: block(aLine: String); aEvent: &Event);
+  begin
+    var lHandle := aOutput.fileHandleForReading;
+    var lastIncompleteLogLine: String;
+    try
+      loop begin
+        using autoreleasepool do begin
+          var d := lHandle.availableData;
+          if (d = nil) or (d.length = 0) then begin
+            if not (lTask as PlatformProcess).isRunning then
+              break;
+            NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
+            continue;
+          end;
+          ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aCallback);
+        end;
+      end;
+
+      lTask.WaitFor();
+
+      var d := lHandle.availableData;
+      while (d ≠ nil) and (d.length > 0) do begin
+        ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aCallback);
+        d := lHandle.availableData;
+      end;
+
+      if length(lastIncompleteLogLine) > 0 then
+        aCallback(lastIncompleteLogLine);
+
+      var lError: NSError;
+      if available("macOS 10.15") then
+        lHandle.closeAndReturnError(var lError)
+      else
+        lHandle.closeFile();
+    except
+      on E: Exception do begin
+        Log($"Exception processing output from '{aCommand.LastPathComponent}': {E.Message}");
+      end;
+    end;
+    aEvent.Set();
+  end;
+
   var lStdOutFinished := if assigned(aStdOutCallback) then new &Event;
   var lStdErrFinished := if assigned(aStdErrCallback) then new &Event;
-  if assigned(aStdOutCallback) then
-    (lTask as PlatformProcess).standardOutput := NSPipe.pipe();
-  if assigned(aStdErrCallback) then
-    (lTask as PlatformProcess).standardError := NSPipe.pipe();
 
-  if assigned(aStdOutCallback) then
-    dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
-      var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
-      var lastIncompleteLogLine: String;
-      while (lTask as PlatformProcess).isRunning do begin
-        using autoreleasepool do begin
-          var d := stdOut.availableData;
-          if (d ≠ nil) and (d.length > 0) then
-            ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aStdOutCallback);
-          NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
-        end;
-      end;
-      lTask.WaitFor();
-      var d := stdOut.availableData;
-      while (d ≠ nil) and (d.length > 0) do begin
-        ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aStdOutCallback);
-        d := stdOut.availableData;
-      end;
-      if length(lastIncompleteLogLine) > 0 then
-        aStdOutCallback(lastIncompleteLogLine);
-      var lError: NSError;
-      if available("macOS 10.15") then
-        stdOut.closeAndReturnError(var lError)
-      else
-        stdOut.closeFile();
-      lStdOutFinished.Set();
-    end);
+  if assigned(aStdOutCallback) then begin
+    (lTask as PlatformProcess).standardOutput := NSPipe.pipe;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
+      HandleOutput((lTask as NSTask).standardOutput, aStdOutCallback, lStdOutFinished)
+    end;
+  end;
 
-  if assigned(aStdErrCallback) then
-    dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
-      var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
-      var lastIncompleteLogLine: String;
-      while (lTask as PlatformProcess).isRunning do begin
-        using autoreleasepool do begin
-          var d := stdErr.availableData;
-          if (d ≠ nil) and (d.length > 0) then
-            ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aStdErrCallback);
-          NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
-        end;
-      end;
-      lTask.WaitFor();
-      var d := stdErr.availableData;
-      while (d ≠ nil) and (d.length > 0) do begin
-        ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aStdErrCallback);
-        d := stdErr.availableData;
-      end;
-      if length(lastIncompleteLogLine) > 0 then
-        aStdErrCallback(lastIncompleteLogLine);
-      var lError: NSError;
-      if available("macOS 10.15") then
-        stdErr.closeAndReturnError(var lError)
-      else
-        stdErr.closeFile();
-      lStdErrFinished.Set();
-    end);
+  if assigned(aStdErrCallback) then begin
+    (lTask as PlatformProcess).standardError := NSPipe.pipe;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
+      HandleOutput((lTask as NSTask).standardError, aStdErrCallback, lStdErrFinished)
+    end;
+  end;
 
   lTask.Start();
 
   if assigned(aFinishedCallback) then async begin
     lTask.WaitFor();
-    lStdOutFinished:WaitFor();
-    lStdErrFinished:WaitFor();
+    if assigned(lStdOutFinished) then
+      lStdOutFinished:WaitFor();
+    if assigned(lStdErrFinished) then
+      lStdErrFinished:WaitFor();
     aFinishedCallback(lTask.ExitCode);
   end;
   {$ELSEIF ECHOES}
