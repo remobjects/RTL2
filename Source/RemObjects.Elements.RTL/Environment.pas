@@ -30,7 +30,8 @@ type
     method GetIsMono: Boolean;
 
     method GetUserHomeFolder: Folder;
-    method GetDesktopFolder: Folder;
+    method GetUserDesktopFolder: Folder;
+    method GetUserDocumentsFolder: Folder;
     method GetTempFolder: Folder;
     method GetUserApplicationSupportFolder: Folder;
     method GetUserCachesFolder: Folder;
@@ -63,14 +64,18 @@ type
     property FullUserName: String read GetFullUserName;
     property MachineName: String read GetMachineName;
 
+    [Obsolete("Use UserDesktopFolder")]
+    property DesktopFolder: nullable Folder read GetUserDesktopFolder;
+
     property UserHomeFolder: nullable Folder read GetUserHomeFolder;
-    property DesktopFolder: nullable Folder read GetDesktopFolder;
-    property TempFolder: nullable Folder read GetTempFolder;
+    property UserDesktopFolder: nullable Folder read GetUserDesktopFolder;
+    property UserDocumentsFolder: nullable Folder read GetUserDocumentsFolder;
     property UserApplicationSupportFolder: nullable Folder read GetUserApplicationSupportFolder; // Mac and Windows only
     property UserCachesFolder: nullable Folder read GetUserCachesFolder; // Mac only
     property UserLibraryFolder: nullable Folder read GetUserLibraryFolder; // Mac only
     property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder;
     property SystemApplicationSupportFolder: nullable Folder read GetSystemApplicationSupportFolder; // Mac only
+    property TempFolder: nullable Folder read GetTempFolder;
 
     property OS: OperatingSystem read GetOS;
     property OSName: String read GetOSName;
@@ -334,7 +339,7 @@ begin
 end;
 
 {$IF (ISLAND AND POSIX) OR COOPER}[Warning("Not Implemented for Cooper, Linux and Android")]{$ENDIF}
-method Environment.GetDesktopFolder: Folder;
+method Environment.GetUserDesktopFolder: Folder;
 begin
   {$IF COOPER}
     {$IF ANDROID}
@@ -352,6 +357,36 @@ begin
   var lTmp := new Char[rtl.MAX_PATH + 1];
   if rtl.SHGetMalloc(@lAllocator) = rtl.NOERROR then begin
     rtl.SHGetSpecialFolderLocation(nil, rtl.CSIDL_DESKTOPDIRECTORY, @lDir);
+    rtl.SHGetPathFromIDList(lDir, @lTmp[0]);
+    lAllocator.Free(lDir);
+    result := Folder(new String(lTmp).TrimEnd([Chr(0)]));
+  end
+  else
+    result := Folder('');
+  {$ELSEIF ISLAND AND POSIX}
+  {$WARNING Not Implemented for Island yet}
+  {$ENDIF}
+end;
+
+{$IF (ISLAND AND POSIX) OR COOPER}[Warning("Not Implemented for Cooper, Linux and Android")]{$ENDIF}
+method Environment.GetUserDocumentsFolder: Folder;
+begin
+  {$IF COOPER}
+    {$IF ANDROID}
+    result := nil;
+    {$ELSE}
+    result := nil;
+    {$ENDIF}
+  {$ELSEIF TOFFEE}
+  result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
+  {$ELSEIF ECHOES}
+  exit Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments));
+  {$ELSEIF ISLAND AND WINDOWS}
+  var lAllocator: rtl.IMalloc;
+  var lDir: rtl.LPCITEMIDLIST;
+  var lTmp := new Char[rtl.MAX_PATH + 1];
+  if rtl.SHGetMalloc(@lAllocator) = rtl.NOERROR then begin
+    rtl.SHGetSpecialFolderLocation(nil, rtl.CSIDL_MYDOCUMENTS, @lDir);
     rtl.SHGetPathFromIDList(lDir, @lTmp[0]);
     lAllocator.Free(lDir);
     result := Folder(new String(lTmp).TrimEnd([Chr(0)]));
