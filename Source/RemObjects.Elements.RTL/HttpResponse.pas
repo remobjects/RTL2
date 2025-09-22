@@ -401,6 +401,8 @@ type
       end;
       {$ELSEIF DARWIN}
       async begin
+        if not assigned(Data) then
+          fIncomingDataComplete.WaitFor;
         File.WriteBinary(aTargetFile, data);
         aContentCallback(new HttpResponseContent<File>(Content := File(aTargetFile)))
       end;
