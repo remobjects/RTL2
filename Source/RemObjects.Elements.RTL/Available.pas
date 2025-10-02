@@ -86,14 +86,14 @@ end;
 method __ElementsPlatformVersionString: String; public;
 begin
   __ElementsLoadPlatformVersion;
-  result := $"{__ElementsPlatformVersion[1]}.{__ElementsPlatformVersion[2]},{__ElementsPlatformVersion[3]}";
+  result := $"{__ElementsPlatformVersion[1]}.{__ElementsPlatformVersion[2]}.{__ElementsPlatformVersion[3]}";
 end;
 
 {$IFDEF ECHOES}
 method __ElementsNetFrameworkVersionString: String; public;
 begin
   __ElementsLoadPlatformVersion;
-  result := $"{__ElementsManagedRuntimeVersion[1]}.{__ElementsManagedRuntimeVersion[2]},{__ElementsManagedRuntimeVersion[3]}";
+  result := $"{__ElementsManagedRuntimeVersion[1]}.{__ElementsManagedRuntimeVersion[2]}.{__ElementsManagedRuntimeVersion[3]}";
 end;
 {$ENDIF}
 
@@ -101,7 +101,7 @@ end;
 method __ElementsJavaRuntimeVersionString: String; public;
 begin
   __ElementsLoadPlatformVersion;
-  result := $"{__ElementsManagedRuntimeVersion[1]}.{__ElementsManagedRuntimeVersion[2]},{__ElementsManagedRuntimeVersion[3]}";
+  result := $"{__ElementsManagedRuntimeVersion[1]}.{__ElementsManagedRuntimeVersion[2]}.{__ElementsManagedRuntimeVersion[3]}";
 end;
 {$ENDIF}
 
@@ -211,6 +211,7 @@ begin
     {$ELSEIF ECHOES}
     if Environment.OS = OperatingSystem.macOS then begin
       Process.Run("/usr/bin/sw_vers", ["-productVersion"], out var fOSVersion);
+      Log($"fOSVersion {fOSVersion}");
       lVersion := fOSVersion:Trim.Split("."); // on macOS, System.Environment.OSVersion returns the Darwin kernel version :(.
     end
     else begin
