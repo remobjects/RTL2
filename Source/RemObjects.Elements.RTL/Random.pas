@@ -51,18 +51,16 @@ end;
 
 method Random.NextInt(MaxValuePlusOne: Integer): Integer;
 begin
-  if MaxValuePlusOne <= 0 then
+  if MaxValuePlusOne ≤ 0 then
     raise new ArgumentException("MaxValuePlusOne must be positive");
 
-  var Bits: Int64;
-  var Val: Int64;
+  var lMax := UInt32(MaxValuePlusOne);
+  var lBits: UInt32;
 
   repeat
-    Bits := Next(31);
-    Val := Bits mod UInt32(MaxValuePlusOne);
-  until not (Bits - Val + (MaxValuePlusOne - 1) < 0);
-
-  exit Integer(Val);
+    lBits := UInt32(Next(31));
+    result := lBits mod lMax;
+  until not (lBits - result + (lMax-1) < 0);
 end;
 
 method Random.NextDouble: Double;
