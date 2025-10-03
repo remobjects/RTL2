@@ -142,9 +142,14 @@ type
       fItems.Remove(aNode);
     end;
 
-    method &RemoveAt(aIndex: Integer);
+    method RemoveAt(aIndex: Integer);
     begin
       fItems.RemoveAt(aIndex);
+    end;
+
+    method IndexOf(aNode: JsonNode): Integer;
+    begin
+      result := fItems.IndexOf(aNode);
     end;
 
     //
