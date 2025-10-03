@@ -387,6 +387,16 @@ type
         exit true;
     end;
 
+    operator Equal(lhs: Guid; rhs: JsonNode): Boolean;
+    begin
+      result := lhs = Guid.TryParse(rhs);
+    end;
+
+    operator Equal(lhs: JsonNode; rhs: Guid): Boolean;
+    begin
+      result := Guid.TryParse(lhs) = rhs;
+    end;
+
     operator NotEqual(lhs: JsonNode; rhs: JsonNode): Boolean;
     begin
       result := not (lhs = rhs);
@@ -401,6 +411,17 @@ type
     begin
       result := not (lhs = rhs);
     end;
+
+    operator NotEqual(lhs: Guid; rhs: JsonNode): Boolean;
+    begin
+      result := not (lhs = Guid.TryParse(rhs));
+    end;
+
+    operator NotEqual(lhs: JsonNode; rhs: Guid): Boolean;
+    begin
+      result := not (Guid.TryParse(lhs) = rhs);
+    end;
+
 
     method Any(aName: not nullable String): sequence of JsonNode; empty; virtual; iterator;
 
