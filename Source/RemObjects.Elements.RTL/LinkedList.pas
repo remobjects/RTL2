@@ -148,6 +148,7 @@ type
     method AddLast(aNewNode: LinkedListNode<T>);
     begin
       aNewNode.Previous := fLast;
+      fLast:Next := aNewNode;
       aNewNode.Next := nil;
       fLast := aNewNode;
       if not assigned(fFirst) then

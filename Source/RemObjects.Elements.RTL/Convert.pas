@@ -252,8 +252,8 @@ begin
 
   if aMinWidth > 0 then
     result := result.PadStart(aMinWidth, ' ')
-  else if aMinWidth > 0 then
-    result := result.PadEnd(aMinWidth, ' ');
+  else if aMinWidth < 0 then
+    result := result.PadEnd(-aMinWidth, ' ');
 end;
 
 method Convert.ToString(aValue: Char): not nullable String;
@@ -958,7 +958,6 @@ begin
   else
     result := $"{aDays/365} {"year".PluralInvariant(aDays/365)}";
 end;
-
 
 method Convert.MemorySizeToString(aSize: UInt64): String;
 begin
