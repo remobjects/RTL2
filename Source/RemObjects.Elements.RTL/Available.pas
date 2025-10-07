@@ -211,7 +211,6 @@ begin
     {$ELSEIF ECHOES}
     if Environment.OS = OperatingSystem.macOS then begin
       Process.Run("/usr/bin/sw_vers", ["-productVersion"], out var fOSVersion);
-      Log($"fOSVersion {fOSVersion}");
       lVersion := fOSVersion:Trim.Split("."); // on macOS, System.Environment.OSVersion returns the Darwin kernel version :(.
     end
     else begin
