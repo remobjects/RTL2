@@ -420,6 +420,7 @@ begin
   case OS of
     OperatingSystem.macOS: result := Folder(MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kApplicationSupportFolderType));
     OperatingSystem.Windows: result := Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData));
+    OperatingSystem.Linux: result := Folder(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData));
   end;
   {$ELSEIF DARWIN}
   result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
