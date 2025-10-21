@@ -80,7 +80,8 @@ end;
 method Process.Start;
 begin
   {$IF TOFFEE}
-  mapped.launch();
+  var error: NSError;
+  mapped.launchAndReturnError(var error);
   {$ELSEIF ECHOES}
   mapped.Start();
   {$ELSEIF ISLAND}
@@ -377,13 +378,16 @@ class method Process.SetUpTask(aCommand: String; aArguments: ImmutableList<Strin
 begin
   {$IF TOFFEE}
   var lResult := new PlatformProcess();
-  lResult.launchPath := aCommand;
+  lResult.executableURL := NSURL.fileURLWithPath(aCommand);
   if assigned(aArguments) then
     lResult.arguments := aArguments;
-  if assigned(aEnvironment) then
-    lResult.environment := aEnvironment;
+  var lEnvironment := if assigned(aEnvironment) then aEnvironment.mutableCopy else NSMutableDictionary.dictionaryWithDictionary(NSProcessInfo.processInfo.environment);
+  if not assigned(lEnvironment["LANG"]) then lEnvironment["LANG"] := "en_US.UTF-8";
+  if not assigned(lEnvironment["LC_ALL"]) then lEnvironment["LC_ALL"] := "en_US.UTF-8";
+  if not assigned(lEnvironment["LC_CTYPE"]) then lEnvironment["LC_CTYPE"] := "UTF-8";
+  lResult.environment := lEnvironment;
   if (length(aWorkingDirectory) > 0) and aWorkingDirectory.FolderExists then
-    lResult.currentDirectoryPath := aWorkingDirectory;
+    lResult.currentDirectoryURL := NSURL.fileURLWithPath(aWorkingDirectory) isDirectory(true);
   result := lResult;
   {$ELSEIF ECHOES}
   var lResult := new PlatformProcess();
