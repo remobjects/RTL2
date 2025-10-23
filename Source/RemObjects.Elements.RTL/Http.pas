@@ -227,7 +227,10 @@ begin
     var lResponse: HttpResponse;
     lResponse := new HttpResponse(aRequest, (aResponse) -> begin
       var nsHttpUrlResponse := NSHTTPURLResponse(aResponse);
-      dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> aResponseCallback(lResponse));
+      lResponse.Code := nsHttpUrlResponse.statusCode;
+      dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
+        aResponseCallback(lResponse)
+      end);
     end);
 
     var lSession := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration) &delegate(lResponse) delegateQueue(nil);
@@ -739,7 +742,7 @@ begin
         contentCallback(content)
       end);
     end else begin
-      contentCallback(new HttpResponseContent<JsonDocument>(Exception := response.Exception));
+      contentCallback(new HttpResponseContent<JsonDocument>(Exception := coalesce(response.Exception, new HttpException(response.Code, aRequest))));
     end;
   end);
 end;
@@ -757,7 +760,7 @@ begin
         contentCallback(content)
       end);
     end else begin
-      contentCallback(new HttpResponseContent<File>(Exception := response.Exception));
+      contentCallback(new HttpResponseContent<File>(Exception := coalesce(response.Exception, new HttpException(response.Code, aRequest))));
     end;
   end);
   {$ENDIF}
