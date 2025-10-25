@@ -157,8 +157,12 @@ type
 
     property CloseTagRange: XmlRange := new XmlRange;
     property Attributes: not nullable sequence of XmlAttribute read GetAttributes;
+
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
+    property Attribute[aName: not nullable String]: nullable String write begin SetAttribute(aName, nil, Value); end;
+    property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable String write begin SetAttribute(aName, aNamespace, Value); end;
+
     property Elements: not nullable sequence of XmlElement read GetElements;
     property Nodes: ImmutableList<XmlNode> read GetNodes;
     [Obsolete]property &Namespace[aUri: Uri]: nullable XmlNamespace read &NamespaceByUri[aUri.ToString];
@@ -246,6 +250,16 @@ type
     method ToString(): String; override;
     method ToString(aFormatInsideTags: Boolean; aFormatOptions: XmlFormattingOptions := new XmlFormattingOptions{aPreserveExactStringsForUnchnagedValues: Boolean := false}): String;
     method UniqueCopy: not nullable XmlNode; override;
+
+    operator Equal(a: XmlAttribute; b: String): Boolean;
+    begin
+      result := a:Value = b;
+    end;
+
+    operator Equal(a: String; b: XmlAttribute): Boolean;
+    begin
+      result := a = b:Value;
+    end;
   end;
 
   XmlComment = public class(XmlNode)
@@ -977,13 +991,24 @@ end;
 
 method XmlElement.SetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace := nil; aValue: not nullable String);
 begin
-  if assigned(Attributes) then begin
-    var lAttribute := GetAttributes.Where(a -> a.LocalName = aName).FirstOrDefault();
-    if assigned(lAttribute) then lAttribute.Value := aValue
-    else fAttributesAndNamespaces.Add(new XmlAttribute(aName, aNamespace, aValue, fParent := self));
+  if assigned(aValue) then begin
+    if assigned(Attributes) then begin
+      var lAttribute := GetAttributes.Where(a -> a.LocalName = aName).FirstOrDefault();
+      if assigned(lAttribute) then
+        lAttribute.Value := aValue
+      else
+        fAttributesAndNamespaces.Add(new XmlAttribute(aName, aNamespace, aValue, fParent := self));
+    end
+    else begin
+      fAttributesAndNamespaces.Add(new XmlAttribute(aName, aNamespace, aValue, fParent := self));
+    end;
   end
   else begin
-    fAttributesAndNamespaces.Add( new XmlAttribute(aName, aNamespace, aValue, fParent := self));
+    if assigned(Attributes) then begin
+      var lAttribute := GetAttributes.Where(a -> a.LocalName = aName).FirstOrDefault();
+      if assigned(lAttribute) then
+        RemoveAttribute(lAttribute);
+    end;
   end;
 end;
 
