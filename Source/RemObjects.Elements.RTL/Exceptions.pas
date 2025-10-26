@@ -70,11 +70,6 @@ type
     property StackTrace: String read (callStackSymbols as ImmutableList<String>).JoinedString(Environment.LineBreak);
     {$ENDIF}
 
-    constructor (aMessage: PlatformString; params aParams: array of Object);
-    begin
-      new Exception(PlatformString(String.Format(aMessage, aParams)));
-    end;
-
     {$IF ISLAND}[Warning("Not Implemented for Island")]{$ENDIF}
     property CallStack: ImmutableList<String> read begin
       {$IF COOPER}

@@ -366,7 +366,7 @@ begin
       try
         var lResponseMessage := lClient.SendAsync(lRequestMessage).Result;
         if (lResponseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect) and aThrowOnError then
-          raise new HttpException($"Unable to complete request. Error code: {Integer(lResponseMessage.StatusCode)} ({lResponseMessage.StatusCode})");
+          raise new HttpException($"Unable to complete request. Error code: {Integer(lResponseMessage.StatusCode)} ({lResponseMessage.StatusCode})", aRequest);
         result := new HttpResponse(lResponseMessage);
       except
         on E: System.AggregateException do begin
