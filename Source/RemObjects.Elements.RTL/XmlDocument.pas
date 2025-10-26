@@ -161,7 +161,9 @@ type
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String]: nullable String write begin SetAttribute(aName, nil, Value); end;
+    {$IF NOT TOFFEE}
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable String write begin SetAttribute(aName, aNamespace, Value); end;
+    {$ENDIF}
 
     property Elements: not nullable sequence of XmlElement read GetElements;
     property Nodes: ImmutableList<XmlNode> read GetNodes;
@@ -1278,7 +1280,7 @@ end;
 method XmlElement.SetLocalName(aValue: not nullable String);
 begin
   if (not CheckName(aValue) and not(aValue.Contains("[ERROR]"))) then
-    raise new Exception('"{0}" is not valid XmlElement name', aValue);
+    raise new Exception($"'{aValue}' is not valid XmlElement name");
   fLocalName := aValue;
   EndTagName := nil;
   WSAfterName := nil;
@@ -1775,7 +1777,7 @@ end;
 method XmlAttribute.SetLocalName(aValue: not nullable String);
 begin
   if not CheckName(aValue) and not(aValue.Contains("[ERROR]")) then
-    raise new Exception('"{0}" is not a valid XMLAttribute name', aValue);
+    raise new Exception($"'{0}' is not a valid XMLAttribute name");
   fLocalName := aValue;
 end;
 
