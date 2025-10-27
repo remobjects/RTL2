@@ -161,8 +161,8 @@ type
     property Attribute[aName: not nullable String]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable XmlAttribute read GetAttribute;
     property Attribute[aName: not nullable String]: nullable String write begin SetAttribute(aName, nil, Value); end;
-    {$IF NOT TOFFEE}
-    property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable String write begin SetAttribute(aName, aNamespace, Value); end;
+    {$IF NOT (TOFFEE OR COOPER)}
+    //property Attribute[aName: not nullable String; aNamespace: nullable XmlNamespace]: nullable String write begin SetAttribute(aName, aNamespace, Value); end;
     {$ENDIF}
 
     property Elements: not nullable sequence of XmlElement read GetElements;
