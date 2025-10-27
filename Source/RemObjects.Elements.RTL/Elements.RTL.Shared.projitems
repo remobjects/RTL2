@@ -238,5 +238,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpCertificateInfo.pas">
       <VirtualFolder>Http</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HttpStringRequestContent.pas">
+      <VirtualFolder>Http</VirtualFolder>
+    </Compile>
   </ItemGroup>
 </Project>
