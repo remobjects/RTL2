@@ -330,7 +330,7 @@ begin
   result := new HttpResponse(lConnection);
   if lConnection.ResponseCode >= 300 then begin
     if not aThrowOnError then exit nil;
-    raise new HttpException(String.Format("Unable to complete request. Error code: {0}", lConnection.responseCode), aRequest, result)
+    raise new HttpException(Integer(lConnection.responseCode), aRequest, result)
   end;
 
   {$ELSEIF ECHOES}
@@ -366,7 +366,7 @@ begin
       try
         var lResponseMessage := lClient.SendAsync(lRequestMessage).Result;
         if (lResponseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect) and aThrowOnError then
-          raise new HttpException($"Unable to complete request. Error code: {Integer(lResponseMessage.StatusCode)} ({lResponseMessage.StatusCode})", aRequest);
+          raise new HttpException(Integer(lResponseMessage.StatusCode), aRequest);
         result := new HttpResponse(lResponseMessage);
       except
         on E: System.AggregateException do begin
@@ -659,7 +659,7 @@ begin
       result := new HttpResponse(data, nsHttpUrlResponse);
     if nsHttpUrlResponse.statusCode >= 300 then begin
       if aThrowOnError then
-        raise new HttpException(String.Format("Unable to complete request. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, result)
+        raise new HttpException(nsHttpUrlResponse.statusCode, aRequest, result);
     end;
   end
   else if assigned(error) then begin
@@ -927,7 +927,7 @@ begin
     exit new HttpResponse<ImmutableBinary> withException(Exception(new SugarNSErrorException(lError)));
 
   if NSHTTPURLResponse(lResponse).statusCode <> 200 then
-    exit new HttpResponse<ImmutableBinary> withException(Exception(new SugarIOException("Unable to complete request. Error code: {0}", NSHTTPURLResponse(lResponse).statusCode)));
+    exit new HttpResponse<ImmutableBinary> withException(Exception(new SugarIOException(" . Error code: {0}", NSHTTPURLResponse(lResponse).statusCode)));
 
   exit new HttpResponse<ImmutableBinary>(ImmutableBinary(NSMutableData.dataWithData(lData)));
   {$ENDIF}

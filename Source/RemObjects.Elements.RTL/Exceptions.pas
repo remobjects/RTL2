@@ -180,10 +180,11 @@ type
       Response := aResponse;
     end;
 
-    constructor(aCode: Integer; aRequest: nullable HttpRequest/* := nil*/);
+    constructor(aCode: Integer; aRequest: nullable HttpRequest/* := nil*/; aResponse: nullable HttpResponse := nil);
     begin
-      inherited constructor(String.Format("Unable to complete request, error code: {0}", aCode));
+      inherited constructor(String.Format("Unable to complete request. Error code {0}", aCode));
       Request := aRequest;
+      Response := aResponse;
       fCode := aCode;
     end;
 
