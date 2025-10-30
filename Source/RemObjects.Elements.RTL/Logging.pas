@@ -67,16 +67,16 @@ type
   end;
 
   SimpleLogger = partial class(IAndroidLogger)
-  private
+  public
     property AppName: String;
+
   end;
   {$ENDIF}
 
-{$GLOBALS ON}
-  __Global = public static partial class
-  public
-    class property Logger: ILogger := new SimpleLogger(); lazy;
-  end;
+__Global = public static partial class
+public
+  class property Logger: ILogger := new SimpleLogger(); lazy;
+end;
 
 method Log(aMessage: String); public;
 begin
