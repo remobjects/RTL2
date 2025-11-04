@@ -167,8 +167,8 @@ type
 
     property Elements: not nullable sequence of XmlElement read GetElements;
     property Nodes: ImmutableList<XmlNode> read GetNodes;
-    [Obsolete]property &Namespace[aUri: Uri]: nullable XmlNamespace read &NamespaceByUri[aUri.ToString];
-    property &NamespaceByUri[aUri: String]: nullable XmlNamespace read GetNamespaceByUri;
+    property &Namespace[aUri: Uri]: nullable XmlNamespace read GetNamespaceByUri(aUri.ToString);
+    //property &NamespaceByUri[aUri: String]: nullable XmlNamespace read GetNamespaceByUri;
     property &Namespace[aPrefix: String]: nullable XmlNamespace read GetNamespace;
     property FullName: not nullable String read GetFullName;
     property ChildIndex: Integer read fChildIndex;
