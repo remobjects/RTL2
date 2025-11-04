@@ -13,7 +13,14 @@ type
 
     constructor(aItems: Dictionary<String, JsonNode>);
     begin
-      fItems := aItems;
+      fItems := coalesce(aItems, new Dictionary<String, JsonNode>);
+    end;
+
+    constructor(aItems: Dictionary<String, String>);
+    begin
+      fItems := new Dictionary<String, JsonNode> withCapacity(aItems:Count);
+      for each k in aItems.Keys do
+        fItems[k] := new JsonStringValue(aItems[k]);
     end;
 
     method UniqueCopy: InstanceType; override;
