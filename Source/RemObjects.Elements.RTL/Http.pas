@@ -741,7 +741,8 @@ begin
       response.GetContentAsJson( (content) -> begin
         contentCallback(content)
       end);
-    end else begin
+    end
+    else begin
       contentCallback(new HttpResponseContent<JsonDocument>(Exception := coalesce(response.Exception, new HttpException(response.Code, aRequest))));
     end;
   end);
