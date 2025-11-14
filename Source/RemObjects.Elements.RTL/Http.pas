@@ -55,7 +55,8 @@ uses
 
 method Http.ExecuteRequest(aRequest: not nullable HttpRequest; aResponseCallback: not nullable HttpResponseBlock);
 begin
-  aRequest.ApplyAuthehtication;
+  aRequest.ApplyAuthentication;
+  aRequest.DebugLog;
 
   {$IF COOPER}
   async try
@@ -304,7 +305,8 @@ end;
 {$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
 method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
 begin
-  aRequest.ApplyAuthehtication;
+  aRequest.ApplyAuthentication;
+  aRequest.DebugLog;
 
   {$IF COOPER}
   var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;

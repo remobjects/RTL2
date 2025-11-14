@@ -33,14 +33,29 @@ type
     [ToString]
     method ToString: String;
 
+    property DebugHeaders: Boolean;
+    property DebugPayloads: Boolean;
+
   assembly
-    method ApplyAuthehtication;
+
+    method ApplyAuthentication;
 
     {$IF ISLAND}
     property Monitor := new Monitor; readonly;
     {$ELSE}
     property Monitor: Object read self;
     {$ENDIF}
+
+    method DebugLog;
+    begin
+      if DebugHeaders then begin
+        Log($"> {Url}");
+        for each h in Headers.Keys do
+          Log($"> {h}={Headers[h]}");
+      end;
+      if DebugPayloads and assigned(Content) then
+        Log($"> {Content}");
+    end;
 
   //private
     //var fContentType: String;
@@ -86,7 +101,7 @@ begin
   result := Url.ToString();
 end;
 
-method HttpRequest.ApplyAuthehtication;
+method HttpRequest.ApplyAuthentication;
 begin
   Authorization:ApplyToRequest(self);
 end;
