@@ -55,8 +55,8 @@ function runEBuild(project, out, params)
 function compileRTL2()
 {
 	msbuild.updateAssemblyVersion("../Source/RemObjects.Elements.RTL/Properties/AssemblyInfo.pas", elementsVersion);
-	fileReplaceCopyright2('../Source/RemObjects.Elements.RTL/Properties/AssemblyInfo.pas");
-	fileReplaceCopyright2('../Source/RemObjects.Elements.Serialization/Properties/AssemblyInfo.pas");
+	fileReplaceCopyright2("../Source/RemObjects.Elements.RTL/Properties/AssemblyInfo.pas");
+	fileReplaceCopyright2("../Source/RemObjects.Elements.Serialization/Properties/AssemblyInfo.pas");
 	runEBuild("../Source/RTL2.sln", "../Bin", expand('--output-folder-uses-mode-name --output-folder-uses-sdk-name --setting:Architecture=Legacy'));
 	file.move("../Bin/Cooper/Plain/*.*", "../Bin/Cooper/"); // flatten
 }
