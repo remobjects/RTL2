@@ -54,7 +54,9 @@ function runEBuild(project, out, params)
 
 function compileRTL2()
 {
-	msbuild.updateAssemblyVersion("../Source/Properties/AssemblyInfo.pas", elementsVersion);
+	msbuild.updateAssemblyVersion("../Source/RemObjects.Elements.RTL/Properties/AssemblyInfo.pas", elementsVersion);
+	fileReplaceCopyright2('../Source/RemObjects.Elements.RTL/Properties/AssemblyInfo.pas");
+	fileReplaceCopyright2('../Source/RemObjects.Elements.Serialization/Properties/AssemblyInfo.pas");
 	runEBuild("../Source/RTL2.sln", "../Bin", expand('--output-folder-uses-mode-name --output-folder-uses-sdk-name --setting:Architecture=Legacy'));
 	file.move("../Bin/Cooper/Plain/*.*", "../Bin/Cooper/"); // flatten
 }
@@ -67,3 +69,11 @@ zip.compress(zipName, "../Bin", "*.*", true);
 var s3 = getSharedS3Bucket();
 s3.uploadFile(zipName, ciSharedPrefix);
 
+function fileReplaceCopyright2(filename)
+{
+	var contents = file.read(filename);
+	contents = contents.replace('%%copyright%%', getCopyrightString(2023) + '.');
+	contents = contents.replace('%%companyname%%', getCompanyName());
+	contents = contents.replace('%%trademark%%', /* getLegalTrademarks() */ '');
+	file.write(filename, contents);
+}
