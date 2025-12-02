@@ -1145,6 +1145,22 @@ type
       end;
     end;
 
+    method CollapseSpaces: String;
+    begin
+      var lLast := #0;
+      var lResult := new StringBuilder(Length);
+      var lChars := ToCharArray;
+
+      for i := 0 to lChars.Length-1 do begin
+        var lChar := lChars[i];
+        if (lChar not in [#9, #32]) or (lLast not in [#9, #10, #13, #32]) then
+          lResult.Append(lChar);
+        lLast := lChar;
+      end;
+
+      result := lResult.ToString();
+    end;
+
     //
     // Starts/EndsWith
     //
