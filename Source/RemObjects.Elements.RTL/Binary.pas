@@ -136,7 +136,7 @@ end;
 constructor Binary(aArray: array of Byte);
 begin
   if aArray = nil then
-    raise new ArgumentNullException("Array");
+    exit new Binary();
 
   {$IF COOPER}
   inherited constructor(aArray);
