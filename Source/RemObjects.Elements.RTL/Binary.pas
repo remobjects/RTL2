@@ -135,8 +135,12 @@ end;
 
 constructor Binary(aArray: array of Byte);
 begin
-  if aArray = nil then
+  {$IF TOFFEE OR ECHOES OR ISLAND}
+  if RemObjects.Elements.System.length(aArray) = 0 then
     exit new Binary();
+  {$ELSE}
+  exit;
+  {$ENDIF}
 
   {$IF COOPER}
   inherited constructor(aArray);
