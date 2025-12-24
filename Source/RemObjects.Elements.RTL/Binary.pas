@@ -139,6 +139,7 @@ begin
   if RemObjects.Elements.System.length(aArray) = 0 then
     exit new Binary();
   {$ELSE}
+  inherited; // WHY??????
   exit;
   {$ENDIF}
 
