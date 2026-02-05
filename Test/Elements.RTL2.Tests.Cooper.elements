@@ -62,8 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
-    <Compile Include="..\Source\Cooper\EnumerationSequence.pas" />
-    <Compile Include="..\Source\Cooper\LocaleUtils.pas" />
+    <Compile Include="..\Source\RemObjects.Elements.RTL\Cooper\EnumerationSequence.pas" />
+    <Compile Include="..\Source\RemObjects.Elements.RTL\Cooper\LocaleUtils.pas" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Cooper.targets" />
   <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared" />
