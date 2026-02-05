@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <RootNamespace>RemObjects.Elements.RTL.Tests</RootNamespace>
-    <ProjectGuid>ACFD95B4-2D7F-4C23-9AA1-86C6615A1DA5</ProjectGuid>
+    <ProjectGuid>{ACFD95B4-2D7F-4C23-9AA1-86C6615A1DA5}</ProjectGuid>
     <OutputType>executable</OutputType>
     <AssemblyName>Elements.RTL2.Tests.Toffee.macOS</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -41,11 +41,11 @@
     <Reference Include="libxml2" />
     <Reference Include="libToffee" />
     <Reference Include="rtl" />
-    <ProjectReference Include="Elements.RTL.Toffee.macOS">
+    <ProjectReference Include="..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.macOS.elements">
       <Name>Elements.RTL.Toffee.macOS</Name>
       <HintPath>..\Source\bin\Debug\macOS\libElements.fx</HintPath>
       <Project>{58D52FE5-E87E-4D9C-8FBB-280980F6762B}</Project>
-      <ProjectFile>..\Source\Elements.RTL.Toffee.macOS.elements</ProjectFile>
+      <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.macOS.elements</ProjectFile>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
