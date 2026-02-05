@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <RootNamespace>Elements.RTL2.Tests</RootNamespace>
-    <ProjectGuid>54C9267B-E5C0-44BE-8D1B-A6EF55B9336D</ProjectGuid>
+    <ProjectGuid>{54C9267B-E5C0-44BE-8D1B-A6EF55B9336D}</ProjectGuid>
     <OutputType>Executable</OutputType>
     <AssemblyName>Test</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
@@ -13,7 +13,6 @@
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <SDK>iOS</SDK>
     <MangleTypeNames>True</MangleTypeNames>
-    <CreateAppBundle>True</CreateAppBundle>
     <InfoPListFile>.\Resources\Info.plist</InfoPListFile>
     <BundleIdentifier>com.remobjects.test</BundleIdentifier>
     <DefaultUses>Foundation;RemObjects.Elements.EUnit;RemObjects.Elements.Linq;RemObjects.Elements.RTL</DefaultUses>
@@ -45,17 +44,15 @@
     <Reference Include="libToffee" />
     <Reference Include="UIKit" />
     <Reference Include="rtl" />
-    <ProjectReference Include="Elements.RTL.Toffee.iOS">
+    <ProjectReference Include="..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.iOS.elements">
       <Name>Elements.RTL.Toffee.iOS</Name>
       <HintPath />
       <Project>{EC0982C8-700B-4085-A401-59460E394DAA}</Project>
-      <ProjectFile>..\Source\Elements.RTL.Toffee.iOS.elements</ProjectFile>
+      <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.iOS.elements</ProjectFile>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Resources\Info.plist" />
     <Xib Include="Resources\LaunchScreen.xib" />
   </ItemGroup>

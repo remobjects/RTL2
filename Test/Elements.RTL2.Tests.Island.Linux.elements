@@ -51,11 +51,11 @@
     <Reference Include="EUnit">
       <HintPath>..\..\git\EUnit\bin\Debug\Linux\x86_64\EUnit.fx</HintPath>
     </Reference>
-    <ProjectReference Include="..\Source\Elements.RTL.Island.Linux.elements">
+    <ProjectReference Include="..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Linux.elements">
       <Name>Elements.RTL.Island.Linux</Name>
       <HintPath />
       <Project>{163F84DC-DC6B-4535-994F-0865D3A84D20}</Project>
-      <ProjectFile>..\Source\Elements.RTL.Island.Linux.elements</ProjectFile>
+      <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Linux.elements</ProjectFile>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

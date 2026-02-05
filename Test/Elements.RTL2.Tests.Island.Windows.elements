@@ -49,11 +49,11 @@
     <Reference Include="gc" />
     <Reference Include="Island" />
     <Reference Include="rtl" />
-    <ProjectReference Include="..\Source\Elements.RTL.Island.Windows.elements">
+    <ProjectReference Include="..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Windows.elements">
       <Name>Elements.RTL.Island.Windows</Name>
       <HintPath />
       <Project>{6F888992-4293-4097-8AA3-6667E0187D4F}</Project>
-      <ProjectFile>..\Source\Elements.RTL.Island.Windows.elements</ProjectFile>
+      <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Windows.elements</ProjectFile>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

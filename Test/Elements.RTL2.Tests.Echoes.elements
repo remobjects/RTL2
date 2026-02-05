@@ -66,10 +66,10 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Web" />
-    <ProjectReference Include="Elements.RTL.Echoes">
+    <ProjectReference Include="..\Source\RemObjects.Elements.RTL\Elements.RTL.Echoes.elements">
       <HintPath>..\Source\bin\Debug\Elements.dll</HintPath>
       <Project>{A0B2BF66-F2B1-4EF9-A9CE-792AB3094233}</Project>
-      <ProjectFile>..\Source\Elements.RTL.Echoes.elements</ProjectFile>
+      <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Echoes.elements</ProjectFile>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
