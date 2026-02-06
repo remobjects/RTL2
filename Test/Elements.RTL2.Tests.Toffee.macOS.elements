@@ -17,6 +17,7 @@
     <DefaultUses>Foundation;RemObjects.Elements.Linq;RemObjects.Elements.RTL</DefaultUses>
     <DebugZombieEnabled>True</DebugZombieEnabled>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <CrossPlatform>True</CrossPlatform>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>False</Optimize>

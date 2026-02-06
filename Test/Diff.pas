@@ -1,5 +1,8 @@
 ﻿namespace Elements.RTL2.Tests.Shared;
 
+{$IF NOT TOFFEE}
+// String is not IComparable<T> on Toffee.
+
 uses
   RemObjects.Elements.RTL,
   RemObjects.Elements.EUnit;
@@ -89,5 +92,7 @@ type
       Check.AreEqual(diff.Removed.JoinedString(","), '');
     end;
   end;
+
+{$ENDIF}
 
 end.
