@@ -163,6 +163,7 @@ type
       var s1 := "VIPVC does not contain a declaration that matches this method signature: method VIPVC.didRecˆeiveMemoryWarning";
       var s2 := Url.AddPercentEncodingsToPath(s1);
       var s3 := Url.RemovePercentEncodingsFromPath(s2);
+      Check.AreEqual(s1,s3);
 
       {$IF NOT COOPER}
       s1 := "Pro🙉gram";

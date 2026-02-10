@@ -1,7 +1,7 @@
 ﻿namespace Elements.RTL2.Tests.Shared;
 
-{$IF NOT TOFFEE}
-// String is not IComparable<T> on Toffee.
+{$IF NOT TOFFEE AND NOT JAVA}
+// String is not IComparable<T> on Toffee and Cooper.
 
 uses
   RemObjects.Elements.RTL,

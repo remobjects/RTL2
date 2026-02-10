@@ -12,13 +12,13 @@ type
 
     method EmptyGuids;
     begin
-      var e := Guid.EmptyGuid;
+      var e := Guid.Empty;
       Check.AreEqual(e.ToString, "00000000-0000-0000-0000-000000000000");
       Check.AreEqual(e.ToString(GuidFormat.Default), "00000000-0000-0000-0000-000000000000");
       Check.AreEqual(e.ToString(GuidFormat.Braces), "{00000000-0000-0000-0000-000000000000}");
       Check.AreEqual(e.ToString(GuidFormat.Parentheses), "(00000000-0000-0000-0000-000000000000)");
 
-      var e2 := Guid.EmptyGuid;
+      var e2 := Guid.Empty;
       Check.AreEqual(e, e2);
       Check.AreNotEqual(e, Guid.NewGuid);
       Check.IsTrue(e = e2);

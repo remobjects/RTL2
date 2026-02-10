@@ -1,0 +1,20 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# RemObjects Fire
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL2.Tests.Island.Darwin.macOS", "Elements.RTL2.Tests.Island.Darwin.macOS.elements", "{46df78fe-f074-498d-b963-1b3bcf267740}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{46df78fe-f074-498d-b963-1b3bcf267740}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{46df78fe-f074-498d-b963-1b3bcf267740}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{46df78fe-f074-498d-b963-1b3bcf267740}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{46df78fe-f074-498d-b963-1b3bcf267740}.Release|AnyCPU.Build.0 = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

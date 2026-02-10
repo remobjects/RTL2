@@ -114,8 +114,8 @@ type
       //1F9B8 1F3FB 200D 2640 FE0F 79
 
       var lCPs: array of UnicodeCodePoint := [UnicodeCodePoint(2640)];
-      //var x := new String(lCPs); // E400 No overloaded constructor with 1 parameter for type "String"
-      //Check.AreEqual(ord(x[0]), 2640);
+      var x := new String(lCPs);
+      Check.AreEqual(ord(x[0]), 2640);
 
       Check.AreEqual("🇨🇼🇨🇼".IndexAfterJoinedUnicodeCharacterCoveringIndex(0), 0);
       Check.AreEqual("🇨🇼🇨🇼".IndexAfterJoinedUnicodeCharacterCoveringIndex(2), 4);

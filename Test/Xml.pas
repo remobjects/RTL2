@@ -28,7 +28,7 @@ type
       var four := xml.Root.AddElement("four", nil, "F4or");
       Check.IsNotNil(xml.Root.FirstElementWithName("four"));
       Check.AreEqual(xml.Root.FirstElementWithName("four").Value, "F4or");
-      Check.AreEqual(four.ToString(), "<four>F4or</four>");
+      Check.AreEqual(four.toString(), "<four>F4or</four>");
     end;
 
   end;

@@ -1,0 +1,22 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# RemObjects Fire
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL2.Tests.Echoes", "Elements.RTL2.Tests.Echoes.elements", "{4fe86a5e-1886-47ec-921e-d93ae32079b2}"
+EndProject
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL2.Tests.Shared", "Elements.RTL2.Tests.Shared.elements", "{9eafe57a-81ab-42b5-a0fa-2fd186093d91}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4fe86a5e-1886-47ec-921e-d93ae32079b2}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{4fe86a5e-1886-47ec-921e-d93ae32079b2}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{4fe86a5e-1886-47ec-921e-d93ae32079b2}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{4fe86a5e-1886-47ec-921e-d93ae32079b2}.Release|AnyCPU.Build.0 = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

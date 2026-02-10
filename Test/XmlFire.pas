@@ -11,7 +11,7 @@ type
     method AddNamespaces;
     begin
       var xml := XmlDocument.WithRootElement("Project");
-      xml.Root.AddNamespace(nil, Url.UrlWithString("http://schemas.microsoft.com/developer/msbuild/2003"));
+      xml.Root.AddNamespace(nil, "http://schemas.microsoft.com/developer/msbuild/2003");
       xml.Version := "1.0";
       //xml.Encoding := Encoding.UTF8;
       //xml.Standalone := true;
@@ -65,7 +65,7 @@ type
 
     method DeleteHintPath;
     begin
-      var lXml := XmlDocument.FromString('<ItemGroup>'#13#10#9'<Reference Include="atk">'#13#10#9#9'<HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Linux\x86_64\atk.fx</HintPath>'#13#10#9'</Reference>#13#10</ItemGroup>');
+      var lXml := XmlDocument.FromString('<ItemGroup>'#13#10#9'<Reference Include="atk">'#13#10#9#9'<HintPath>C:\Program Files (x86)\RemObjects Software\Elements\Island\Reference Libraries\Linux\x86_64\atk.fx</HintPath>'#13#10#9'</Reference>'#13#10'</ItemGroup>');
       var r := lXml.Root.FirstElementWithName("Reference");
       r.RemoveElement(r.FirstElementWithName("HintPath"));
 
@@ -79,8 +79,8 @@ type
       XmlStyleVisualStudio.SpaceBeforeSlashInEmptyTags := true;
       XmlStyleVisualStudio.WriteNewLineAtEnd := false;
       XmlStyleVisualStudio.WriteBOM := true;
-      Check.AreEqual(lXml.ToString(),'<ItemGroup>'#13#10#9'<Reference Include="atk">'#13#10#9#9#13#10#9'</Reference>#13#10</ItemGroup>');
-      Check.AreEqual(lXml.ToString(XmlStyleVisualStudio), '<ItemGroup>'#13#10#9'<Reference Include="atk" />#13#10</ItemGroup>');
+      Check.AreEqual(lXml.ToString(),'<ItemGroup>'#13#10#9'<Reference Include="atk">'#13#10#9#9#13#10#9'</Reference>'#13#10'</ItemGroup>');
+      Check.AreEqual(lXml.ToString(XmlStyleVisualStudio), '<ItemGroup>'#13#10#32#32'<Reference Include="atk" />'#13#10'</ItemGroup>');
     end;
   end;
 
