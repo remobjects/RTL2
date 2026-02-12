@@ -5,7 +5,6 @@
     <RootNamespace>Elements.RTL2.Tests.Island.Linux</RootNamespace>
     <ProjectGuid>{46DF78FE-F074-498D-B963-1B3BCF267740}</ProjectGuid>
     <OutputType>Executable</OutputType>
-    <AssemblyName>Elements.RTL2.Tests.Island.Linux</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
     <AllowLegacyWith>False</AllowLegacyWith>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
@@ -14,6 +13,7 @@
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <DefaultUses>RemObjects.Elements.RTL</DefaultUses>
+    <BinaryName>Elements.RTL2.Tests.Island.macOS</BinaryName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
