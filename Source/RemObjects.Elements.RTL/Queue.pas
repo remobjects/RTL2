@@ -42,6 +42,19 @@ type
   public
     constructor; mapped to constructor();
 
+    constructor withCapacity(aCapacity: Integer);
+    begin
+      {$IF COOPER}
+      result := new PlatformQueue<T>;
+      {$ELSEIF TOFFEE}
+      result := Foundation.NSMutableArray.arrayWithCapacity(aCapacity);
+      {$ELSEIF ECHOES}
+      exit new PlatformQueue<T>(aCapacity);
+      {$ELSEIF ISLAND}
+      exit new PlatformQueue<T>;
+      {$ENDIF}
+    end;
+
     method Clear;
     method Enqueue(Item: T);
     method Dequeue: T;
