@@ -63,6 +63,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)List.pas">
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HashSet.pas">
+      <VirtualFolder>Collections</VirtualFolder>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Queue.pas">
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
@@ -104,6 +107,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonSerializer.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonTokenizer.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonValue.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\YamlSerializer.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlException.pas">
       <VirtualFolder>Xml</VirtualFolder>
     </Compile>
