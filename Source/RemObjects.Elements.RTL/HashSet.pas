@@ -72,10 +72,13 @@ implementation
 type
   HashSetHelpers = static class
   public
-    method ValidateSet<T>(aSet: nullable HashSet<T>);
+
+    method CoalesceSet<T>(aSet: nullable HashSet<T>): not nullable HashSet<T>;
     begin
-      if not assigned(aSet) then
-        raise new ArgumentNullException("aSet");
+      if assigned(aSet) then
+        exit aSet;
+
+      exit new HashSet<T>;
     end;
 
     method Foreach<T>(aSelf: HashSet<T>; aAction: Action<T>);
@@ -86,16 +89,17 @@ type
 
     method IsSubsetOf<T>(aSelf, aSet: nullable HashSet<T>): Boolean;
     begin
-      ValidateSet(aSet);
+      var lSelf := CoalesceSet(aSelf);
+      var lSet := CoalesceSet(aSet);
 
-      if aSelf.Count = 0 then
+      if lSelf.Count = 0 then
         exit true;
 
-      if aSelf.Count > aSet.Count then
+      if lSelf.Count > lSet.Count then
         exit false;
 
-      for each lItem in aSelf do
-        if not aSet.Contains(lItem) then
+      for each lItem in lSelf do
+        if not lSet.Contains(lItem) then
           exit false;
 
       exit true;
@@ -184,18 +188,18 @@ end;
 
 method HashSet<T>.Intersect(aSet: nullable HashSet<T>);
 begin
-  HashSetHelpers.ValidateSet(aSet);
+  var lSet := HashSetHelpers.CoalesceSet(aSet);
 
   {$IF COOPER}
-  mapped.retainAll(aSet);
+  mapped.retainAll(lSet);
   {$ELSEIF ECHOES}
-  mapped.IntersectWith(aSet);
+  mapped.IntersectWith(lSet);
   {$ELSEIF TOFFEE}
-  mapped.intersectSet(aSet);
+  mapped.intersectSet(lSet);
   {$ELSEIF ISLAND}
   var lItems := ToArray;
   for each lItem in lItems do
-    if not aSet.Contains(lItem) then
+    if not lSet.Contains(lItem) then
       mapped.Remove(lItem);
   {$ENDIF}
 end;
@@ -215,19 +219,19 @@ end;
 
 method HashSet<T>.SetEquals(aSet: nullable HashSet<T>): Boolean;
 begin
-  HashSetHelpers.ValidateSet(aSet);
+  var lSet := HashSetHelpers.CoalesceSet(aSet);
 
   {$IF COOPER}
-  exit mapped.equals(aSet);
+  exit mapped.equals(lSet);
   {$ELSEIF ECHOES}
-  exit mapped.SetEquals(aSet);
+  exit mapped.SetEquals(lSet);
   {$ELSEIF TOFFEE}
-  exit mapped.isEqualToSet(aSet);
+  exit mapped.isEqualToSet(lSet);
   {$ELSEIF ISLAND}
-  if Count <> aSet.Count then
+  if Count <> lSet.Count then
     exit false;
 
-  exit HashSetHelpers.IsSubsetOf(self, aSet);
+  exit HashSetHelpers.IsSubsetOf(self, lSet);
   {$ENDIF}
 end;
 
@@ -251,16 +255,16 @@ end;
 
 method HashSet<T>.Union(aSet: nullable HashSet<T>);
 begin
-  HashSetHelpers.ValidateSet(aSet);
+  var lSet := HashSetHelpers.CoalesceSet(aSet);
 
   {$IF COOPER}
-  mapped.addAll(aSet);
+  mapped.addAll(lSet);
   {$ELSEIF ECHOES}
-  mapped.UnionWith(aSet);
+  mapped.UnionWith(lSet);
   {$ELSEIF TOFFEE}
-  mapped.unionSet(aSet);
+  mapped.unionSet(lSet);
   {$ELSEIF ISLAND}
-  for each lItem in aSet do
+  for each lItem in lSet do
     mapped[lItem] := 1;
   {$ENDIF}
 end;
