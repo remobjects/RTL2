@@ -48,6 +48,11 @@
       <Project>{58D52FE5-E87E-4D9C-8FBB-280980F6762B}</Project>
       <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.macOS.elements</ProjectFile>
     </ProjectReference>
+    <Reference Include="RemObjects.Elements.Serialization">
+      <HintPath>..\Bin\Echoes\NETStandard2.0\RemObjects.Elements.Serialization.dll</HintPath>
+      <Cirrus>True</Cirrus>
+      <IsCirrusRef>True</IsCirrusRef>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />

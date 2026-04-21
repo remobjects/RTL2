@@ -57,6 +57,11 @@
       <Project>{163F84DC-DC6B-4535-994F-0865D3A84D20}</Project>
       <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Linux.elements</ProjectFile>
     </ProjectReference>
+    <Reference Include="RemObjects.Elements.Serialization">
+      <HintPath>..\Bin\Echoes\NETStandard2.0\RemObjects.Elements.Serialization.dll</HintPath>
+      <Cirrus>True</Cirrus>
+      <IsCirrusRef>True</IsCirrusRef>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />

@@ -53,6 +53,11 @@
       <Project>{731df15e-9ee5-452a-a74d-bcbc95afaa23}</Project>
       <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.macOS.elements</ProjectFile>
     </ProjectReference>
+    <Reference Include="RemObjects.Elements.Serialization">
+      <HintPath>..\Bin\Echoes\NETStandard2.0\RemObjects.Elements.Serialization.dll</HintPath>
+      <Cirrus>True</Cirrus>
+      <IsCirrusRef>True</IsCirrusRef>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />

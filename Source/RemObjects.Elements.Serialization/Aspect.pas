@@ -210,6 +210,9 @@ type
           end;
         end;
 
+        if ImplementEnumEncoding(lBody, p, lParameterName, lPosition) then
+          continue;
+
         var (lEncoderFunction, lEncoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Encode);
         //Log($"{p.Name}: {lEncoderFunction}");
 
@@ -328,6 +331,9 @@ type
           end;
         end;
 
+        if ImplementEnumDecoding(lBody, p, lParameterName, lPosition) then
+          continue;
+
         var (lDecoderFunction, lDecoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Decode);
 
         if not assigned(lDecoderFunction) then begin
@@ -418,6 +424,101 @@ type
       result := aType;
     end;
 
+    method ImplementEnumEncoding(aBody: BeginStatement; aProperty: IPropertyDefinition; aParameterName: String; aPosition: IPosition): Boolean;
+    begin
+      var lEnumType := GetEnumType(aProperty.Type);
+      if not assigned(lEnumType) then
+        exit false;
+
+      var lEnumMembers := GetEnumMembers(lEnumType).ToArray;
+      if length(lEnumMembers) = 0 then
+        exit false;
+
+      var lNumericCoderFunction := GetEnumNumericCoderFunction(lEnumType, Direction.Encode);
+      if not assigned(lNumericCoderFunction) then
+        exit false;
+
+      var lPropertyValue := new IdentifierValue(aProperty.Name);
+      var lElse := new StandaloneStatement(new ProcValue(new ParamValue(0), "Encode"+lNumericCoderFunction, nil, [aParameterName, CreateEnumNumericValue(lEnumType, lPropertyValue)]));
+      var lItems := new List<CaseItem>;
+      for each lEnumMember in lEnumMembers do
+        lItems.Add(new CaseItem(new StandaloneStatement(new ProcValue(new ParamValue(0), "EncodeString", nil, [aParameterName, new DataValue(lEnumMember[0])])), CreateEnumMemberValue(lEnumType, lEnumMember[0])));
+
+      var lStatement := new CaseStatement(lPropertyValue, lElse, lItems.ToArray);
+      if assigned(aPosition) then
+        lStatement.Position := aPosition;
+      aBody.Add(lStatement);
+
+      result := true;
+    end;
+
+    method ImplementEnumDecoding(aBody: BeginStatement; aProperty: IPropertyDefinition; aParameterName: String; aPosition: IPosition): Boolean;
+    begin
+      var lEnumType := GetEnumType(aProperty.Type);
+      if not assigned(lEnumType) then
+        exit false;
+
+      var lEnumMembers := GetEnumMembers(lEnumType).ToArray;
+      if length(lEnumMembers) = 0 then
+        exit false;
+
+      var lNumericCoderFunction := GetEnumNumericCoderFunction(lEnumType, Direction.Decode);
+      if not assigned(lNumericCoderFunction) then
+        exit false;
+
+      var lPropertyValue := new IdentifierValue(aProperty.Name);
+      var lStringItems := new List<CaseItem>;
+      for each lEnumMember in lEnumMembers do
+        lStringItems.Add(new CaseItem(new AssignmentStatement(lPropertyValue, CreateEnumMemberValue(lEnumType, lEnumMember[0])), new DataValue(lEnumMember[0])));
+
+      var lStringCase := new CaseStatement(new ProcValue(new ParamValue(0), "DecodeString", nil, [aParameterName]), nil, lStringItems.ToArray);
+      var lNumericAssignment := new AssignmentStatement(lPropertyValue, new UnaryValue(new ProcValue(new ParamValue(0), "Decode"+lNumericCoderFunction, nil, [aParameterName]), UnaryOperator.Cast, aProperty.Type));
+      var lNumericCheck := new BinaryValue(new ProcValue(new ParamValue(0), "TryDecodeInt64", nil, [aParameterName]), new NilValue, BinaryOperator.NotEqual);
+      var lIfStatement := new IfStatement(lNumericCheck, lNumericAssignment, lStringCase);
+      if assigned(aPosition) then
+        lIfStatement.Position := aPosition;
+      aBody.Add(lIfStatement);
+
+      result := true;
+    end;
+
+    method GetEnumType(aType: IType): ITypeReference;
+    begin
+      var lType := FlattenType(aType);
+      if (lType is ITypeReference) and ((lType as ITypeReference).TypeKind = TypeDefKind.Enum) then
+        result := lType as ITypeReference;
+    end;
+
+    method GetEnumMembers(aType: ITypeReference): sequence of tuple of (String, Int64); iterator;
+    begin
+      for each lMember in aType.GetMembers() do begin
+        if (lMember is not IConstant) or not lMember.Static then
+          continue;
+
+        yield (lMember.Name, System.Convert.ToInt64((lMember as IConstant).Value));
+      end;
+    end;
+
+    method GetEnumUnderlyingType(aType: ITypeReference): IType;
+    begin
+      result := coalesce(FlattenType(aType.EnumUnderlyingType), fServices.GetType("System.Int32"));
+    end;
+
+    method GetEnumNumericCoderFunction(aType: ITypeReference; aDirection: Direction): String;
+    begin
+      result := GetCoderFunctionName(GetEnumUnderlyingType(aType), aDirection)[0];
+    end;
+
+    method CreateEnumMemberValue(aType: ITypeReference; aName: String): Value;
+    begin
+      result := new IdentifierValue(new TypeValue(aType), aName);
+    end;
+
+    method CreateEnumNumericValue(aType: ITypeReference; aValue: Value): Value;
+    begin
+      result := new UnaryValue(aValue, UnaryOperator.Cast, GetEnumUnderlyingType(aType));
+    end;
+
     method GetCoderFunctionName(aType: IType; aDirection: Direction): tuple of (String, IType, IType);
     begin
 
@@ -472,6 +573,7 @@ type
 
         "System.Single": lCoderFunction := "Single";
         "System.Double": lCoderFunction := "Double";
+        "System.Decimal": lCoderFunction := "Decimal";
         "System.Boolean": lCoderFunction := "Boolean";
 
         else begin

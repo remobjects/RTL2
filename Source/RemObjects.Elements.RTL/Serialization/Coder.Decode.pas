@@ -250,6 +250,11 @@ type
       result := Convert.TryToInt64(DecodeString(aName));
     end;
 
+    method TryDecodeInt64(aName: String): nullable Int64; virtual;
+    begin
+      result := Convert.TryToInt64(DecodeString(aName));
+    end;
+
     method DecodeUInt64(aName: String): nullable UInt64; virtual;
     begin
       result := Convert.TryToUInt64(DecodeString(aName));
@@ -304,6 +309,13 @@ type
     begin
       result := DecodeDouble(aName);
     end;
+
+    {$IF ECHOES}
+    method DecodeDecimal(aName: String): nullable Decimal; virtual;
+    begin
+      result := DecodeDouble(aName) as nullable Decimal;
+    end;
+    {$ENDIF}
 
     method DecodeString(aName: String): String; abstract;
 

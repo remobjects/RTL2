@@ -171,9 +171,15 @@ type
       result := DoGetValue(aName):IntegerValue
     end;
 
+    method TryDecodeInt64(aName: String): nullable Int64; override;
+    begin
+      if DoGetValue(aName) is JsonIntegerValue then
+        result := DoGetValue(aName):IntegerValue;
+    end;
+
     method DecodeUInt64(aName: String): nullable UInt64; override;
     begin
-      result := DoGetValue(aName):IntegerValue {$HINT Handle UInt properly}
+      result := DoGetValue(aName):IntegerValue; {$HINT Handle UInt properly}
     end;
 
     method DecodeDouble(aName: String): nullable Double; override;

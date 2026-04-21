@@ -214,6 +214,13 @@ type
         EncodeNil(aName);
     end;
 
+    {$IF ECHOES}
+    method EncodeDecimal(aName: String; aValue: nullable Decimal); virtual;
+    begin
+      EncodeDouble(aName, aValue as nullable Double);
+    end;
+    {$ENDIF}
+
     method EncodeBoolean(aName: String; aValue: nullable Boolean); virtual;
     begin
       EncodeString(aName, if assigned(aValue) then (if aValue then "True" else "False"));

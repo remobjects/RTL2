@@ -60,6 +60,11 @@
       <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Cooper.elements</ProjectFile>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="RemObjects.Elements.Serialization">
+      <HintPath>..\Bin\Echoes\NETStandard2.0\RemObjects.Elements.Serialization.dll</HintPath>
+      <Cirrus>True</Cirrus>
+      <IsCirrusRef>True</IsCirrusRef>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
