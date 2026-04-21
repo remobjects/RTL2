@@ -3,7 +3,7 @@
 interface
 
 type
-  PlatformHashSet<T> = public {$IF COOPER}java.util.HashSet<T>{$ELSEIF TOFFEE}Foundation.NSMutableSet{$ELSEIF ECHOES}System.Collections.Generic.HashSet<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T, Byte>{$ENDIF};
+  PlatformHashSet<T> = public {$IF COOPER}java.util.HashSet<T>{$ELSEIF TOFFEE}Foundation.NSMutableSet<T>{$ELSEIF ECHOES}System.Collections.Generic.HashSet<T>{$ELSEIF ISLAND}RemObjects.Elements.System.Dictionary<T, Byte>{$ENDIF};
 
   IHashSet<T> = public interface(PlatformSequence<T>)
     method &Add(aItem: T): Boolean;
@@ -21,10 +21,22 @@ type
     property Count: Integer read;
   end;
 
-  HashSet<T> = public class(PlatformSequence<T>, IHashSet<T>) mapped to PlatformHashSet<T>
+  HashSet<T> = public class(PlatformSequence<T>, IHashSet<T>) {$IF NOT TOFFEE}mapped to PlatformHashSet<T>{$ENDIF}
   {$IFDEF TOFFEE} where T is class;{$ENDIF}
+  private
+    {$IF TOFFEE}
+    fSet: not nullable PlatformHashSet<T>;
+    constructor(aPlatformSet: not nullable PlatformHashSet<T>);
+    method GetCount: Integer; inline;
+    method GetPlatformSet: not nullable PlatformHashSet<T>; inline;
+    {$ENDIF}
   public
+    {$IF TOFFEE}
+    constructor;
+    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger;
+    {$ELSE}
     constructor; mapped to constructor();
+    {$ENDIF}
     constructor(aSet: nullable HashSet<T>);
     constructor(aItems: nullable sequence of T);
     constructor(params aItems: nullable array of T);
@@ -42,7 +54,7 @@ type
     method IsSubsetOf(aSet: nullable HashSet<T>): Boolean;
     method IsSupersetOf(aSet: nullable HashSet<T>): Boolean;
 
-    property Count: Integer read {$IF COOPER}mapped.size{$ELSEIF TOFFEE}mapped.count{$ELSE}mapped.Count{$ENDIF};
+    property Count: Integer read {$IF COOPER}mapped.size{$ELSEIF TOFFEE}GetCount{$ELSE}mapped.Count{$ENDIF};
 
     method GetSequence: sequence of T; iterator;
     begin
@@ -50,7 +62,7 @@ type
       for each lItem in mapped do
         yield lItem;
       {$ELSEIF TOFFEE}
-      for each lItem in mapped do begin
+      for each lItem in fSet do begin
         var lValue := id(lItem);
         if lValue = NSNull.null then
           lValue := nil;
@@ -106,20 +118,51 @@ type
     end;
   end;
 
+{$IF TOFFEE}
+constructor HashSet<T>(aPlatformSet: not nullable PlatformHashSet<T>);
+begin
+  fSet := aPlatformSet;
+end;
+
+constructor HashSet<T>;
+begin
+  fSet := Foundation.NSMutableSet<T>.&set as not nullable;
+end;
+
+method HashSet<T>.GetCount: Integer;
+begin
+  exit fSet.count;
+end;
+
+method HashSet<T>.GetPlatformSet: not nullable PlatformHashSet<T>;
+begin
+  exit fSet;
+end;
+
+method HashSet<T>.countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger;
+begin
+  exit fSet.countByEnumeratingWithState(aState) objects(stackbuf) count(len);
+end;
+{$ENDIF}
+
 constructor HashSet<T>(aSet: nullable HashSet<T>);
 begin
+  {$IF COOPER}
   if not assigned(aSet) then
     exit new HashSet<T>;
-
-  {$IF COOPER}
   exit new java.util.HashSet<T>(aSet);
   {$ELSEIF ECHOES}
+  if not assigned(aSet) then
+    exit new HashSet<T>;
   exit new System.Collections.Generic.HashSet<T>(aSet);
   {$ELSEIF TOFFEE}
-  var lNewSet := new Foundation.NSMutableSet();
-  lNewSet.setSet(aSet);
-  exit lNewSet;
+  fSet := Foundation.NSMutableSet<T>.&set as not nullable;
+
+  if assigned(aSet) then
+    fSet.setSet(aSet.GetPlatformSet);
   {$ELSEIF ISLAND}
+  if not assigned(aSet) then
+    exit new HashSet<T>;
   result := new HashSet<T>;
   result.Add(aSet);
   {$ENDIF}
@@ -127,13 +170,25 @@ end;
 
 constructor HashSet<T>(aItems: nullable sequence of T);
 begin
+  {$IF TOFFEE}
+  fSet := Foundation.NSMutableSet<T>.&set as not nullable;
+  Add(aItems);
+  {$ELSE}
   result := new HashSet<T>;
   result.Add(aItems);
+  {$ENDIF}
 end;
 
 constructor HashSet<T>(params aItems: nullable array of T);
 begin
+  {$IF TOFFEE}
+  fSet := Foundation.NSMutableSet<T>.&set as not nullable;
+  if assigned(aItems) then
+    for each lItem in aItems do
+      Add(lItem);
+  {$ELSE}
   result := new HashSet<T>(aItems as sequence of T);
+  {$ENDIF}
 end;
 
 method HashSet<T>.Add(aItem: T): Boolean;
@@ -141,9 +196,9 @@ begin
   {$IF COOPER OR ECHOES}
   exit mapped.Add(aItem);
   {$ELSEIF TOFFEE}
-  var lCount := mapped.count;
-  mapped.addObject(NullHelper.coalesce(aItem, NSNull.null));
-  exit lCount < mapped.count;
+  var lCount := fSet.count;
+  fSet.addObject(NullHelper.coalesce(aItem, NSNull.null));
+  exit lCount < fSet.count;
   {$ELSEIF ISLAND}
   if mapped.ContainsKey(aItem) then
     exit false;
@@ -166,7 +221,7 @@ begin
   {$IF NOT TOFFEE}
   mapped.Clear;
   {$ELSE}
-  mapped.removeAllObjects;
+  fSet.removeAllObjects;
   {$ENDIF}
 end;
 
@@ -175,7 +230,7 @@ begin
   {$IF COOPER OR ECHOES}
   exit mapped.Contains(aItem);
   {$ELSEIF TOFFEE}
-  exit mapped.containsObject(NullHelper.coalesce(aItem, NSNull.null));
+  exit fSet.containsObject(NullHelper.coalesce(aItem, NSNull.null));
   {$ELSEIF ISLAND}
   exit mapped.ContainsKey(aItem);
   {$ENDIF}
@@ -195,7 +250,7 @@ begin
   {$ELSEIF ECHOES}
   mapped.IntersectWith(lSet);
   {$ELSEIF TOFFEE}
-  mapped.intersectSet(lSet);
+  fSet.intersectSet(lSet.GetPlatformSet);
   {$ELSEIF ISLAND}
   var lItems := ToArray;
   for each lItem in lItems do
@@ -209,9 +264,9 @@ begin
   {$IF COOPER OR ECHOES}
   exit mapped.Remove(aItem);
   {$ELSEIF TOFFEE}
-  var lCount := mapped.count;
-  mapped.removeObject(NullHelper.coalesce(aItem, NSNull.null));
-  exit lCount > mapped.count;
+  var lCount := fSet.count;
+  fSet.removeObject(NullHelper.coalesce(aItem, NSNull.null));
+  exit lCount > fSet.count;
   {$ELSEIF ISLAND}
   exit mapped.Remove(aItem);
   {$ENDIF}
@@ -226,7 +281,7 @@ begin
   {$ELSEIF ECHOES}
   exit mapped.SetEquals(lSet);
   {$ELSEIF TOFFEE}
-  exit mapped.isEqualToSet(lSet);
+  exit fSet.isEqualToSet(lSet.GetPlatformSet);
   {$ELSEIF ISLAND}
   if Count <> lSet.Count then
     exit false;
@@ -240,7 +295,7 @@ begin
   {$IF COOPER}
   exit mapped.toArray(new T[0]) as not nullable;
   {$ELSEIF TOFFEE}
-  exit ListHelpers.ToArray<T>(mapped.allObjects);
+  exit ListHelpers.ToArray<T>(fSet.allObjects);
   {$ELSEIF ECHOES}
   exit mapped.ToArray as not nullable;
   {$ELSEIF ISLAND}
@@ -262,7 +317,7 @@ begin
   {$ELSEIF ECHOES}
   mapped.UnionWith(lSet);
   {$ELSEIF TOFFEE}
-  mapped.unionSet(lSet);
+  fSet.unionSet(lSet.GetPlatformSet);
   {$ELSEIF ISLAND}
   for each lItem in lSet do
     mapped[lItem] := 1;
@@ -282,10 +337,10 @@ end;
 {$IF TOFFEE}
 operator HashSet<T>.Implicit(aSet: Foundation.NSSet<T>): HashSet<T>;
 begin
-  if aSet is Foundation.NSMutableSet then
-    result := HashSet<T>(aSet)
+  if aSet is Foundation.NSMutableSet<T> then
+    result := new HashSet<T>(Foundation.NSMutableSet<T>(aSet))
   else
-    result := HashSet<T>(aSet.mutableCopy);
+    result := new HashSet<T>(Foundation.NSMutableSet<T>(aSet.mutableCopy));
 end;
 {$ENDIF}
 
