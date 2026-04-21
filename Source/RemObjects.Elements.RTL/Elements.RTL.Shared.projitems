@@ -63,9 +63,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)List.pas">
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)HashSet.pas">
+    <None Include="$(MSBuildThisFileDirectory)HashSet.pas">
       <VirtualFolder>Collections</VirtualFolder>
-    </Compile>
+    </None>
     <Compile Include="$(MSBuildThisFileDirectory)Queue.pas">
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
