@@ -14,6 +14,11 @@ type
       result := Value.ToString as not nullable;
     end;
 
+    method ToYamlString(aOptions: YamlOptions): not nullable String; override;
+    begin
+      result := ToJsonString;
+    end;
+
     [ToString]
     method ToString: String;
     begin
@@ -84,6 +89,11 @@ type
       result := sb.ToString();
     end;
 
+    method ToYamlString(aOptions: YamlOptions): String; override;
+    begin
+      result := YamlSerializer.RenderString(Value, coalesce(aOptions, new YamlOptions()).AlwaysQuoteStrings);
+    end;
+
     operator Implicit(aValue: nullable String): JsonStringValue;
     begin
       if assigned(aValue) then
@@ -143,6 +153,11 @@ type
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := Convert.ToString(Value);
+    end;
+
+    method ToYamlString(aOptions: YamlOptions): String; override;
+    begin
+      result := ToJsonString;
     end;
 
     operator Implicit(aValue: Int64): JsonIntegerValue;
@@ -232,6 +247,11 @@ type
       if not result.Contains(".") and not result.Contains("E") and not result.Contains("N") and not result.Contains("I") then result := result+".0";
     end;
 
+    method ToYamlString(aOptions: YamlOptions): String; override;
+    begin
+      result := ToJsonString;
+    end;
+
     operator Implicit(aValue: Double): JsonFloatValue;
     begin
       result := new JsonFloatValue(aValue);
@@ -288,6 +308,11 @@ type
       result := if Value as Boolean then JsonConsts.TRUE_VALUE else JsonConsts.FALSE_VALUE;
     end;
 
+    method ToYamlString(aOptions: YamlOptions): String; override;
+    begin
+      result := ToJsonString;
+    end;
+
     operator Implicit(aValue: Boolean): JsonBooleanValue;
     begin
       result := new JsonBooleanValue(aValue);
@@ -333,6 +358,11 @@ type
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
     begin
       result := JsonConsts.NULL_VALUE;
+    end;
+
+    method ToYamlString(aOptions: YamlOptions): String; override;
+    begin
+      result := ToJsonString;
     end;
 
     class property Null: not nullable JsonNullValue := new JsonNullValue; lazy;
