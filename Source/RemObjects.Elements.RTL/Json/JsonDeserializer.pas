@@ -62,7 +62,9 @@ type
 
       var Properties := ReadProperties;
 
-      if not Tokenizer.IsPartialJson then
+      if (Tokenizer.Token = JsonTokenKind.EOF) and Tokenizer.AllowPartialJson then
+        Tokenizer.IsPartialJson := true
+      else if not Tokenizer.IsPartialJson then
         Expected(JsonTokenKind.ObjectEnd);
 
       for Item in Properties do
@@ -81,7 +83,10 @@ type
 
       var Values := ReadValues;
 
-      Expected(JsonTokenKind.ArrayEnd);
+      if (Tokenizer.Token = JsonTokenKind.EOF) and Tokenizer.AllowPartialJson then
+        Tokenizer.IsPartialJson := true
+      else
+        Expected(JsonTokenKind.ArrayEnd);
 
       for Item in Values do
         result.Add(Item);
