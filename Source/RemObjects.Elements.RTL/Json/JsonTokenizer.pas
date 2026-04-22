@@ -22,6 +22,7 @@ type
     method ParseNumber;
     method ParseString;
     method ParseDigits(aPos: Integer): Integer;
+    method PositionString(aPosition: Integer): String;
   public
     constructor (aJson: String);
     constructor (aJson: String; SkipWhitespaces: Boolean);
@@ -130,8 +131,12 @@ begin
     fLastRow := fRow;
     fLastRowStart := fRowStart;
 
-    if fPos ≥ length(fData) then
+    if fPos ≥ length(fData) then begin
+      Token := JsonTokenKind.EOF;
+      Value := nil;
+      fLength := 0;
       exit false;
+    end;
 
     Parse;
     if IsPartialJson then
@@ -216,9 +221,38 @@ begin
   exit aPos;
 end;
 
+method JsonTokenizer.PositionString(aPosition: Integer): String;
+begin
+  var lRow := 1;
+  var lColumn := 1;
+  var lPosition := 0;
+
+  while (lPosition < aPosition) and (lPosition < length(fData)) do begin
+    case fData[lPosition] of
+      #13: begin
+        if ((lPosition + 1) < length(fData)) and (fData[lPosition + 1] = #10) then
+          inc(lPosition);
+        inc(lRow);
+        lColumn := 1;
+      end;
+      #10: begin
+        inc(lRow);
+        lColumn := 1;
+      end;
+      else
+        inc(lColumn);
+    end;
+
+    inc(lPosition);
+  end;
+
+  exit $"{lRow}/{lColumn}";
+end;
+
 method JsonTokenizer.ParseString;
 begin
   var sb := new StringBuilder;
+  var lStartPosition := fPos;
   var lPosition := fPos + 1;
 
   while (lPosition < length(fData)) and (fData[lPosition] <> #0) and (fData[lPosition] <> '"') do begin
@@ -253,7 +287,7 @@ begin
     if AllowPartialJson then
       IsPartialJson := true
     else
-      raise new JsonUnexpectedEndOfFileException($"Unexpected end of string at {Row}/{Column}.");
+      raise new JsonUnexpectedEndOfFileException($"Unexpected end of string at {PositionString(lPosition)} for string node started at {PositionString(lStartPosition)}.");
   end;
 
   Value := sb.ToString;
