@@ -158,9 +158,9 @@ begin
 
   var lPosition := fPos;
 
-  while CharIsWhitespace(fData[lPosition]) do begin
+  while (lPosition < length(fData)) and CharIsWhitespace(fData[lPosition]) do begin
     if fData[lPosition] = #13 then begin
-      if fData[lPosition + 1] = #10 then
+      if ((lPosition + 1) < length(fData)) and (fData[lPosition + 1] = #10) then
         inc(lPosition);
 
       fRowStart := lPosition + 1;

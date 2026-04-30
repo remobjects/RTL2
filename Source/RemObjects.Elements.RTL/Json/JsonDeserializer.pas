@@ -12,12 +12,18 @@ type
     method Deserialize: not nullable JsonNode;
     begin
       Tokenizer.Next;
+      var lAdvancePastContainerEnd := false;
       //Expected(JsonTokenKind.ObjectStart, JsonTokenKind.ArrayStart);
       case Tokenizer.Token of
-        JsonTokenKind.ObjectStart: exit ReadObject();
-        JsonTokenKind.ArrayStart: exit ReadArray();
+        JsonTokenKind.ObjectStart: begin
+          result := ReadObject();
+          lAdvancePastContainerEnd := Tokenizer.Token <> JsonTokenKind.EOF;
+        end;
+        JsonTokenKind.ArrayStart: begin
+          result := ReadArray();
+          lAdvancePastContainerEnd := Tokenizer.Token <> JsonTokenKind.EOF;
+        end;
         else begin
-          var lToken := Tokenizer.Token;
           case Tokenizer.Token of
             JsonTokenKind.String: result := ReadValue as not nullable;
             JsonTokenKind.Number: result := ReadValue as not nullable;
@@ -26,15 +32,53 @@ type
             JsonTokenKind.False: result := ReadValue as not nullable;
             else raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}.");
           end;
-          if (Tokenizer.Token <> lToken) or Tokenizer.Next then
-            raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}.");
         end;
       end;
+
+      if lAdvancePastContainerEnd then
+        Tokenizer.Next;
+
+      if (Tokenizer.Token <> JsonTokenKind.EOF) and not Tokenizer.IsPartialJson then
+        raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}.");
     end;
 
   private
 
     Tokenizer: JsonTokenizer;
+
+    method TokenKindString(aValue: JsonTokenKind): not nullable String;
+    begin
+      case aValue of
+        JsonTokenKind.BOF: exit "BOF";
+        JsonTokenKind.EOF: exit "EOF";
+        JsonTokenKind.SyntaxError: exit "SyntaxError";
+        JsonTokenKind.Whitespace: exit "Whitespace";
+        JsonTokenKind.String: exit "String";
+        JsonTokenKind.Number: exit "Number";
+        JsonTokenKind.Null: exit "Null";
+        JsonTokenKind.True: exit "True";
+        JsonTokenKind.False: exit "False";
+        JsonTokenKind.Identifier: exit "Identifier";
+        JsonTokenKind.ArrayStart: exit "ArrayStart";
+        JsonTokenKind.ArrayEnd: exit "ArrayEnd";
+        JsonTokenKind.ObjectStart: exit "ObjectStart";
+        JsonTokenKind.ObjectEnd: exit "ObjectEnd";
+        JsonTokenKind.NameSeperator: exit "NameSeperator";
+        JsonTokenKind.ValueSeperator: exit "ValueSeperator";
+        else exit aValue.ToString;
+      end;
+    end;
+
+    method ExpectedTokensString(aValues: array of JsonTokenKind): not nullable String;
+    begin
+      var lResult := new StringBuilder;
+      for i: Integer := 0 to length(aValues)-1 do begin
+        if i > 0 then
+          lResult.Append(", ");
+        lResult.Append(TokenKindString(aValues[i]));
+      end;
+      exit lResult.ToString;
+    end;
 
     method Expected(params Values: array of JsonTokenKind);
     begin
@@ -45,7 +89,7 @@ type
       {$IF COOPER}
       raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}.");
       {$ELSE}
-      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}; expected '{Values.Select(v -> v.ToString).JoinedString(", ")}', got '{Tokenizer.Token}'.");
+      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}; expected '{ExpectedTokensString(Values)}', got '{TokenKindString(Tokenizer.Token)}'.");
       {$ENDIF}
     end;
 
