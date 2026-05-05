@@ -724,31 +724,31 @@ type
       {$ENDIF}
     end;
 
-    method Split(aSeparators: array of Char; aRemoveEmptyEntries: Boolean := false): not nullable ImmutableList<String>;
-    begin
-      if not assigned(aSeparators) or (RemObjects.Elements.System.length(aSeparators) = 0) then
-        exit new ImmutableList<String>(self);
-      if IsNullOrEmpty(self) then
-        exit if aRemoveEmptyEntries then new ImmutableList<String>() else new ImmutableList<String>("");
+    //method Split(aSeparators: array of Char; aRemoveEmptyEntries: Boolean := false): not nullable ImmutableList<String>;
+    //begin
+      //if not assigned(aSeparators) or (RemObjects.Elements.System.length(aSeparators) = 0) then
+        //exit new ImmutableList<String>(self);
+      //if IsNullOrEmpty(self) then
+        //exit if aRemoveEmptyEntries then new ImmutableList<String>() else new ImmutableList<String>("");
 
-      var lResult := new List<String>;
-      var lStartIndex := 0;
+      //var lResult := new List<String>;
+      //var lStartIndex := 0;
 
-      for lIndex: Integer := 0 to Length-1 do begin
-        if aSeparators.Contains(Chars[lIndex]) then begin
-          var lPart := Substring(lStartIndex, lIndex-lStartIndex);
-          if (not aRemoveEmptyEntries) or (lPart.Length > 0) then
-            lResult.Add(lPart);
-          lStartIndex := lIndex+1;
-        end;
-      end;
+      //for lIndex: Integer := 0 to Length-1 do begin
+        //if aSeparators.Contains(Chars[lIndex]) then begin
+          //var lPart := Substring(lStartIndex, lIndex-lStartIndex);
+          //if (not aRemoveEmptyEntries) or (lPart.Length > 0) then
+            //lResult.Add(lPart);
+          //lStartIndex := lIndex+1;
+        //end;
+      //end;
 
-      var lLastPart := Substring(lStartIndex);
-      if (not aRemoveEmptyEntries) or (lLastPart.Length > 0) then
-        lResult.Add(lLastPart);
+      //var lLastPart := Substring(lStartIndex);
+      //if (not aRemoveEmptyEntries) or (lLastPart.Length > 0) then
+        //lResult.Add(lLastPart);
 
-      result := lResult as not nullable;
-    end;
+      //result := lResult as not nullable;
+    //end;
 
     method SplitAtFirstOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
     begin
