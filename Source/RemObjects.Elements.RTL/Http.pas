@@ -11,8 +11,9 @@ type
   private
     {$IF DARWIN}
     //property Session := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration); lazy;
-    {$ELSEIF ISLAND AND WINDOWS}
-    property Session := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0); lazy;
+    {$ENDIF}
+    {$IF ISLAND AND WINDOWS}
+    class method CreateSessionForProxy(aProxy: HttpProxySettings): rtl.HINTERNET;
     {$ENDIF}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
   public
@@ -53,6 +54,27 @@ uses
   {$ENDIF}
   RemObjects.Elements;
 
+{$IF ISLAND AND WINDOWS}
+class method Http.CreateSessionForProxy(aProxy: HttpProxySettings): rtl.HINTERNET;
+begin
+  var lProxyMode := if assigned(aProxy) then aProxy.Mode else HttpProxyMode.System;
+
+  case lProxyMode of
+    HttpProxyMode.None:
+      result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0);
+
+    HttpProxyMode.System:
+      result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, nil, nil, 0);
+
+    HttpProxyMode.Custom:
+      begin
+        var lProxyString := RemObjects.Elements.System.String(aProxy.Host + ':' + aProxy.Port.ToString);
+        result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NAMED_PROXY, lProxyString.FirstChar, nil, 0);
+      end;
+  end;
+end;
+{$ENDIF}
+
 method Http.ExecuteRequest(aRequest: not nullable HttpRequest; aResponseCallback: not nullable HttpResponseBlock);
 begin
   aRequest.ApplyAuthentication;
@@ -60,7 +82,21 @@ begin
 
   {$IF COOPER}
   async try
-    var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
+    // Configure proxy
+    var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+    var lConnection: java.net.HttpURLConnection;
+    case lProxyMode of
+      HttpProxyMode.None:
+        lConnection := java.net.URL(aRequest.Url).openConnection(java.net.Proxy.NO_PROXY) as java.net.HttpURLConnection;
+      HttpProxyMode.System:
+        lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection; // Uses default proxy selector
+      HttpProxyMode.Custom:
+        begin
+          var lProxyAddr := new java.net.InetSocketAddress(aRequest.Proxy.Host, aRequest.Proxy.Port);
+          var lProxy := new java.net.Proxy(java.net.Proxy.Type.HTTP, lProxyAddr);
+          lConnection := java.net.URL(aRequest.Url).openConnection(lProxy) as java.net.HttpURLConnection;
+        end;
+    end;
 
     if aRequest.Method = HttpRequestMethod.Post then
       lConnection.DoOutput := true;
@@ -103,6 +139,19 @@ begin
       else
         false;
     end;
+    // Configure proxy settings
+    var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+    case lProxyMode of
+      HttpProxyMode.None:
+        lHandler.UseProxy := false;
+      HttpProxyMode.System:
+        lHandler.UseProxy := true; // Proxy = null uses system default
+      HttpProxyMode.Custom:
+        begin
+          lHandler.UseProxy := true;
+          lHandler.Proxy := new System.Net.WebProxy(aRequest.Proxy.Host, aRequest.Proxy.Port);
+        end;
+    end;
     using lClient := new System.Net.Http.HttpClient(lHandler) do begin
       try
         var lRequestMessage := new System.Net.Http.HttpRequestMessage();
@@ -141,6 +190,16 @@ begin
     end;
     {$ELSE}
     using lWebRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do try
+      // Configure proxy settings
+      var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+      case lProxyMode of
+        HttpProxyMode.None:
+          lWebRequest.Proxy := nil;
+        HttpProxyMode.System:
+          ; // Default behavior uses system proxy
+        HttpProxyMode.Custom:
+          lWebRequest.Proxy := new System.Net.WebProxy(aRequest.Proxy.Host, aRequest.Proxy.Port);
+      end;
       {$IF NOT NETFX_CORE}
       lWebRequest.AllowAutoRedirect := aRequest.FollowRedirects;
       {$ENDIF}
@@ -234,7 +293,25 @@ begin
       end);
     end);
 
-    var lSession := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration) &delegate(lResponse) delegateQueue(nil);
+    // Configure session with proxy settings
+    var lConfig := NSURLSessionConfiguration.defaultSessionConfiguration;
+    var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+    case lProxyMode of
+      HttpProxyMode.None:
+        lConfig.connectionProxyDictionary := NSDictionary.dictionaryWithObjects([NSNumber.numberWithBool(false), NSNumber.numberWithBool(false)])
+                                                                        forKeys([NSString.stringWithString('HTTPEnable'), NSString.stringWithString('HTTPSEnable')]);
+      HttpProxyMode.System:
+        ; // Default configuration uses system proxy
+      HttpProxyMode.Custom:
+        begin
+          var lProxyHost := NSString.stringWithString(aRequest.Proxy.Host);
+          lConfig.connectionProxyDictionary := NSDictionary.dictionaryWithObjects([NSNumber.numberWithBool(true), lProxyHost, NSNumber.numberWithInt(aRequest.Proxy.Port),
+                                                                                    NSNumber.numberWithBool(true), lProxyHost, NSNumber.numberWithInt(aRequest.Proxy.Port)])
+                                                                          forKeys([NSString.stringWithString('HTTPEnable'), NSString.stringWithString('HTTPProxy'), NSString.stringWithString('HTTPPort'),
+                                                                                   NSString.stringWithString('HTTPSEnable'), NSString.stringWithString('HTTPSProxy'), NSString.stringWithString('HTTPSPort')]);
+        end;
+    end;
+    var lSession := NSURLSession.sessionWithConfiguration(lConfig) &delegate(lResponse) delegateQueue(nil);
     var lRequest := lSession.dataTaskWithRequest(nsUrlRequest);// completionHandler((data, nsUrlResponse, error) -> begin
     lRequest.resume();
   except
@@ -309,7 +386,21 @@ begin
   aRequest.DebugLog;
 
   {$IF COOPER}
-  var lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection;
+  // Configure proxy
+  var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+  var lConnection: java.net.HttpURLConnection;
+  case lProxyMode of
+    HttpProxyMode.None:
+      lConnection := java.net.URL(aRequest.Url).openConnection(java.net.Proxy.NO_PROXY) as java.net.HttpURLConnection;
+    HttpProxyMode.System:
+      lConnection := java.net.URL(aRequest.Url).openConnection as java.net.HttpURLConnection; // Uses default proxy selector
+    HttpProxyMode.Custom:
+      begin
+        var lProxyAddr := new java.net.InetSocketAddress(aRequest.Proxy.Host, aRequest.Proxy.Port);
+        var lProxy := new java.net.Proxy(java.net.Proxy.Type.HTTP, lProxyAddr);
+        lConnection := java.net.URL(aRequest.Url).openConnection(lProxy) as java.net.HttpURLConnection;
+      end;
+  end;
 
   if aRequest.Method = HttpRequestMethod.Post then
     lConnection.DoOutput := true;
@@ -345,6 +436,19 @@ begin
         aRequest.VerifyUntrustedCertificate(new HttpCertificateInfo(cert, chain, sslPolicyErrors))
       else
         false;
+    end;
+    // Configure proxy settings
+    var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+    case lProxyMode of
+      HttpProxyMode.None:
+        lHandler.UseProxy := false;
+      HttpProxyMode.System:
+        lHandler.UseProxy := true; // Proxy = null uses system default
+      HttpProxyMode.Custom:
+        begin
+          lHandler.UseProxy := true;
+          lHandler.Proxy := new System.Net.WebProxy(aRequest.Proxy.Host, aRequest.Proxy.Port);
+        end;
     end;
     using lClient := new System.Net.Http.HttpClient(lHandler) do begin
       var lRequestMessage := new System.Net.Http.HttpRequestMessage();
@@ -396,6 +500,16 @@ begin
     end;
     {$ELSE}
     using webRequest := System.Net.WebRequest.Create(aRequest.Url) as HttpWebRequest do begin
+      // Configure proxy settings
+      var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+      case lProxyMode of
+        HttpProxyMode.None:
+          webRequest.Proxy := nil;
+        HttpProxyMode.System:
+          ; // Default behavior uses system proxy
+        HttpProxyMode.Custom:
+          webRequest.Proxy := new System.Net.WebProxy(aRequest.Proxy.Host, aRequest.Proxy.Port);
+      end;
       {$IF NOT NETFX_CORE}
       webRequest.AllowAutoRedirect := aRequest.FollowRedirects;
       {$ENDIF}
@@ -450,88 +564,104 @@ begin
     end;
     {$ENDIF}
   {$ELSEIF ISLAND AND WINDOWS}
-  var lFlags := if aRequest.Url.Scheme.EqualsIgnoringCase('https') then rtl.WINHTTP_FLAG_SECURE else 0;
-  var lPort := 80;
-  if aRequest.Url.Port <> nil then
-    lPort := aRequest.Url.Port
-  else
-    if lFlags <> 0 then
-      lPort := 443;
-  var lConnect := rtl.WinHttpConnect(Session, RemObjects.Elements.System.String(aRequest.Url.Host).FirstChar, lPort, 0);
-  if lConnect = nil then
-    raise new RTLException('Unable to connect to ' + aRequest.Url.Host);
-
-  var lMethod := RemObjects.Elements.System.String(aRequest.Method.ToHttpString);
-  var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString);
-  var lRequest := rtl.WinHttpOpenRequest(lConnect, LMethod.FirstChar, lPath.FirstChar, nil, nil, nil, lFlags);
-  if lRequest = nil then
-    raise new RTLException('Can not open request to ' + aRequest.Url.Host);
-
-  var lHeader: RemObjects.Elements.System.String;
-  for each k in aRequest.Headers.Keys do begin
-    lHeader := k + ':' + aRequest.Headers[k];
-    if not rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, high(Cardinal), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA) then
-      raise new RTLException('Error adding headers to request');
-  end;
-
-  var lTotalLength := 0;
-  var lData: array of Byte;
-  if assigned(aRequest.Content) then begin
-    lData := (aRequest.Content as IHttpRequestContent).GetContentAsArray;
-    lTotalLength := lData.Length;
-  end;
-
-  if not aRequest.FollowRedirects then begin
-    var lValue: rtl.DWORD := rtl.WINHTTP_DISABLE_REDIRECTS;
-    rtl.WinHttpSetOption(LRequest, rtl.WINHTTP_OPTION_DISABLE_FEATURE, @lValue, sizeOf(lValue));
-  end;
-
-  if not rtl.WinHttpSendRequest(lRequest, nil, 0, nil, 0, lTotalLength, 0) then
-    raise new RTLException('Can not send request to ' + aRequest.Url.Host);
-
-  if lTotalLength > 0 then begin
-    var lPassed := 0;
-    var lBytes: rtl.DWORD := 0;
-    while lPassed < lTotalLength do begin
-      if not rtl.WinHttpWriteData(lRequest, @lData[lPassed], lTotalLength, @lBytes) then
-        raise new RTLException('Error sending data to ' + aRequest.Url.Host);
-      inc(lPassed, lBytes);
-    end;
-  end;
-
-  if not rtl.WinHttpReceiveResponse(lRequest, nil) then
-    raise new RTLException('Can not receive data from ' + aRequest.Url.Host);
-
-  var lStatusCode: rtl.DWORD := 0;
-  var lSize: rtl.DWORD := sizeOf(lStatusCode);
-
-  rtl.WinHttpQueryHeaders(lRequest, rtl.WINHTTP_QUERY_STATUS_CODE or rtl.WINHTTP_QUERY_FLAG_NUMBER,
-    nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lStatusCode, @lSize, nil {rtl.WINHTTP_NO_HEADER_INDEX});
-
-  var lStream := new MemoryStream();
-  var lBuffered: rtl.DWORD := 0;
-  if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
-    raise new RTLException('Can not get data from ' + aRequest.Url.Host);
-  while lSize <> 0 do begin
-    var lBuffer := new Byte[lSize];
-    if not rtl.WinHttpReadData(lRequest, @lBuffer[0], lSize, @lBuffered) then
-      raise new RTLException('Can not get data from ' + aRequest.Url.Host);
-    lStream.Write(lBuffer, lBuffered);
-    if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
-      raise new RTLException('Can not get data from ' + aRequest.Url.Host);
-  end;
+  var lSession := CreateSessionForProxy(aRequest.Proxy);
+  if lSession = nil then
+    raise new RTLException('Unable to create HTTP session');
 
   try
-    result := new HttpResponse(lRequest, lStatusCode, lStream);
-    if lStatusCode >= 300 then begin
-      if not aThrowOnError then exit nil;
-      raise new RTLException(String.Format("Unable to complete request. Error code: {0}", lStatusCode), result)
+    var lFlags := if aRequest.Url.Scheme.EqualsIgnoringCase('https') then rtl.WINHTTP_FLAG_SECURE else 0;
+    var lPort := 80;
+    if aRequest.Url.Port <> nil then
+      lPort := aRequest.Url.Port
+    else
+      if lFlags <> 0 then
+        lPort := 443;
+    var lConnect := rtl.WinHttpConnect(lSession, RemObjects.Elements.System.String(aRequest.Url.Host).FirstChar, lPort, 0);
+    if lConnect = nil then
+      raise new RTLException('Unable to connect to ' + aRequest.Url.Host);
+
+    try
+      var lMethod := RemObjects.Elements.System.String(aRequest.Method.ToHttpString);
+      var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString);
+      var lRequest := rtl.WinHttpOpenRequest(lConnect, LMethod.FirstChar, lPath.FirstChar, nil, nil, nil, lFlags);
+      if lRequest = nil then
+        raise new RTLException('Can not open request to ' + aRequest.Url.Host);
+
+      try
+        var lHeader: RemObjects.Elements.System.String;
+        for each k in aRequest.Headers.Keys do begin
+          lHeader := k + ':' + aRequest.Headers[k];
+          if not rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, high(Cardinal), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA) then
+            raise new RTLException('Error adding headers to request');
+        end;
+
+        var lTotalLength := 0;
+        var lData: array of Byte;
+        if assigned(aRequest.Content) then begin
+          lData := (aRequest.Content as IHttpRequestContent).GetContentAsArray;
+          lTotalLength := lData.Length;
+        end;
+
+        if not aRequest.FollowRedirects then begin
+          var lValue: rtl.DWORD := rtl.WINHTTP_DISABLE_REDIRECTS;
+          rtl.WinHttpSetOption(LRequest, rtl.WINHTTP_OPTION_DISABLE_FEATURE, @lValue, sizeOf(lValue));
+        end;
+
+        if not rtl.WinHttpSendRequest(lRequest, nil, 0, nil, 0, lTotalLength, 0) then
+          raise new RTLException('Can not send request to ' + aRequest.Url.Host);
+
+        if lTotalLength > 0 then begin
+          var lPassed := 0;
+          var lBytes: rtl.DWORD := 0;
+          while lPassed < lTotalLength do begin
+            if not rtl.WinHttpWriteData(lRequest, @lData[lPassed], lTotalLength, @lBytes) then
+              raise new RTLException('Error sending data to ' + aRequest.Url.Host);
+            inc(lPassed, lBytes);
+          end;
+        end;
+
+        if not rtl.WinHttpReceiveResponse(lRequest, nil) then
+          raise new RTLException('Can not receive data from ' + aRequest.Url.Host);
+
+        var lStatusCode: rtl.DWORD := 0;
+        var lSize: rtl.DWORD := sizeOf(lStatusCode);
+
+        rtl.WinHttpQueryHeaders(lRequest, rtl.WINHTTP_QUERY_STATUS_CODE or rtl.WINHTTP_QUERY_FLAG_NUMBER,
+          nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lStatusCode, @lSize, nil {rtl.WINHTTP_NO_HEADER_INDEX});
+
+        var lStream := new MemoryStream();
+        var lBuffered: rtl.DWORD := 0;
+        if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
+          raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+        while lSize <> 0 do begin
+          var lBuffer := new Byte[lSize];
+          if not rtl.WinHttpReadData(lRequest, @lBuffer[0], lSize, @lBuffered) then
+            raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+          lStream.Write(lBuffer, lBuffered);
+          if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
+            raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+        end;
+
+        try
+          result := new HttpResponse(lRequest, lStatusCode, lStream);
+          if lStatusCode >= 300 then begin
+            if not aThrowOnError then exit nil;
+            raise new RTLException(String.Format("Unable to complete request. Error code: {0}", lStatusCode), result)
+          end;
+        except
+          on E: Exception do begin
+            if not aThrowOnError then exit nil;
+            raise new RTLException(E.Message);
+          end;
+        end;
+      finally
+        rtl.WinHttpCloseHandle(lRequest);
+      end;
+    finally
+      rtl.WinHttpCloseHandle(lConnect);
     end;
-  except
-    on E: Exception do begin
-      if not aThrowOnError then exit nil;
-      raise new RTLException(E.Message);
-    end;
+  finally
+    rtl.WinHttpCloseHandle(lSession);
   end;
   {$ELSEIF ISLAND AND WEBASSEMBLY}
   raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
@@ -548,6 +678,25 @@ begin
   CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOPROGRESS, 1);
   var lUrl := RemObjects.Elements.System.String(aRequest.Url.ToString).ToAnsiChars(true);
   CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_URL, @lUrl[0]);
+
+  // Configure proxy settings
+  var lProxyUrl: array of AnsiChar;
+  var lNoProxy: array of AnsiChar;
+  var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+  case lProxyMode of
+    HttpProxyMode.None: begin
+      // Disable proxy by setting NOPROXY to "*" (all hosts bypass proxy)
+      lNoProxy := RemObjects.Elements.System.String('*').ToAnsiChars(true);
+      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_NOPROXY, @lNoProxy[0]);
+    end;
+    HttpProxyMode.System:
+      ; // libcurl automatically uses http_proxy/https_proxy environment variables
+    HttpProxyMode.Custom: begin
+      // Set custom proxy as "host:port" (libcurl defaults to HTTP proxy type)
+      lProxyUrl := RemObjects.Elements.System.String(aRequest.Proxy.Host + ':' + aRequest.Proxy.Port.ToString).ToAnsiChars(true);
+      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_PROXY, @lProxyUrl[0]);
+    end;
+  end;
 
   if aRequest.FollowRedirects then
     CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_FOLLOWLOCATION, 1);
@@ -639,37 +788,58 @@ begin
   if length(aRequest.Content:ContentType) > 0 then
     nsUrlRequest.setValue(aRequest.Content.ContentType) forHTTPHeaderField("Content-Type");
 
-  {$HIDE W28}
-  // we're aware it's deprecated. but async calls do have their use in console apps.
-  var lDelegate := new ConnectionDelegate(aRequest);
-  var lConnection := new NSURLConnection withRequest(nsUrlRequest) &delegate(lDelegate);
-  lConnection.start;
-  while not lDelegate.Done do
-    NSRunLoop.currentRunLoop.runMode(NSDefaultRunLoopMode) beforeDate(NSDate.distantFuture);
-  var data := lDelegate.ResponseData;
-  var nsUrlResponse := lDelegate.Response;
-  var error := lDelegate.Error;
-  _ := lConnection;
-  //NSURLConnection.sendSynchronousRequest(nsUrlRequest) returningResponse(var nsUrlResponse) error(var error);
-  {$SHOW W28}
+  // Configure session with proxy settings
+  var lConfig := NSURLSessionConfiguration.defaultSessionConfiguration;
+  var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+  case lProxyMode of
+    HttpProxyMode.None:
+      lConfig.connectionProxyDictionary := NSDictionary.dictionaryWithObjects([NSNumber.numberWithBool(false), NSNumber.numberWithBool(false)])
+                                                                      forKeys([NSString.stringWithString('HTTPEnable'), NSString.stringWithString('HTTPSEnable')]);
+    HttpProxyMode.System:
+      ; // Default configuration uses system proxy
+    HttpProxyMode.Custom:
+      begin
+        var lProxyHost := NSString.stringWithString(aRequest.Proxy.Host);
+        lConfig.connectionProxyDictionary := NSDictionary.dictionaryWithObjects([NSNumber.numberWithBool(true), lProxyHost, NSNumber.numberWithInt(aRequest.Proxy.Port),
+                                                                                  NSNumber.numberWithBool(true), lProxyHost, NSNumber.numberWithInt(aRequest.Proxy.Port)])
+                                                                        forKeys([NSString.stringWithString('HTTPEnable'), NSString.stringWithString('HTTPProxy'), NSString.stringWithString('HTTPPort'),
+                                                                                 NSString.stringWithString('HTTPSEnable'), NSString.stringWithString('HTTPSProxy'), NSString.stringWithString('HTTPSPort')]);
+      end;
+  end;
 
-  var nsHttpUrlResponse := NSHTTPURLResponse(nsUrlResponse);
-  if assigned(data) and assigned(nsHttpUrlResponse) then begin
+  // Use NSURLSession with semaphore to make sync call
+  var lSemaphore := dispatch_semaphore_create(0);
+  var lResponseData: NSData;
+  var lUrlResponse: NSURLResponse;
+  var lError: NSError;
+
+  var lSession := NSURLSession.sessionWithConfiguration(lConfig);
+  var lTask := lSession.dataTaskWithRequest(nsUrlRequest) completionHandler((data, response, error) -> begin
+    lResponseData := data;
+    lUrlResponse := response;
+    lError := error;
+    dispatch_semaphore_signal(lSemaphore);
+  end);
+  lTask.resume();
+  dispatch_semaphore_wait(lSemaphore, DISPATCH_TIME_FOREVER);
+
+  var nsHttpUrlResponse := NSHTTPURLResponse(lUrlResponse);
+  if assigned(lResponseData) and assigned(nsHttpUrlResponse) then begin
     if defined("TOFFEE") then
-      result := new HttpResponse(data, nsHttpUrlResponse)
+      result := new HttpResponse(lResponseData, nsHttpUrlResponse)
     else
-      result := new HttpResponse(data, nsHttpUrlResponse);
+      result := new HttpResponse(lResponseData, nsHttpUrlResponse);
     if nsHttpUrlResponse.statusCode >= 300 then begin
       if aThrowOnError then
         raise new HttpException(nsHttpUrlResponse.statusCode, aRequest, result);
     end;
   end
-  else if assigned(error) then begin
+  else if assigned(lError) then begin
     if not aThrowOnError then exit nil;
     if assigned(nsHttpUrlResponse) then
-      raise new HttpException(error.description, aRequest, new HttpResponse(nil, nsHttpUrlResponse))
+      raise new HttpException(lError.description, aRequest, new HttpResponse(nil, nsHttpUrlResponse))
     else
-      raise new RTLException withError(error);
+      raise new RTLException withError(lError);
   end
   else begin
     if not aThrowOnError then exit nil;

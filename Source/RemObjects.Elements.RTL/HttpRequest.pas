@@ -3,6 +3,21 @@
 interface
 
 type
+  HttpProxyMode = public enum (None, System, Custom);
+
+  HttpProxySettings = public class
+  public
+    property Mode: HttpProxyMode := HttpProxyMode.System;
+    property Host: String;
+    property Port: Integer := 8080;
+
+    constructor;
+    constructor(aMode: HttpProxyMode);
+    constructor(aHost: String; aPort: Integer);
+
+    class property Default: HttpProxySettings := new HttpProxySettings(HttpProxyMode.System);
+  end;
+
   HttpRequest = public class
   public
 
@@ -20,6 +35,8 @@ type
     property Accept: String;
 
     property Authorization: IHttpAuthorization;
+
+    property Proxy: HttpProxySettings;
 
     property Timeout: Double := 10.0; // Seconds
 
@@ -71,6 +88,25 @@ type
 extension method HttpRequestMethod.ToHttpString: String; public;
 
 implementation
+
+{ HttpProxySettings }
+
+constructor HttpProxySettings;
+begin
+  Mode := HttpProxyMode.System;
+end;
+
+constructor HttpProxySettings(aMode: HttpProxyMode);
+begin
+  Mode := aMode;
+end;
+
+constructor HttpProxySettings(aHost: String; aPort: Integer);
+begin
+  Mode := HttpProxyMode.Custom;
+  Host := aHost;
+  Port := aPort;
+end;
 
 { HttpRequest }
 

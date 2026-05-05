@@ -28,5 +28,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Json.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Formatter.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Variables.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Http.pas" />
   </ItemGroup>
 </Project>
