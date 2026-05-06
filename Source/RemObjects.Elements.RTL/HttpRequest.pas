@@ -59,11 +59,7 @@ type
 
     method ApplyAuthentication;
 
-    {$IF ISLAND}
     property Monitor := new Monitor; readonly;
-    {$ELSE}
-    property Monitor: Object read self;
-    {$ENDIF}
 
     // Platform handle stored here while request is in-flight, for Cancel() support.
     // Protected by Monitor; cleared (and closed/cancelled) by whichever side — Cancel()
