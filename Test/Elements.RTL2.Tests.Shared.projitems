@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)XmlNamespaces.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlFire.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Trim.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Strings.CollapseSpaces.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Guids.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlEntities.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlFormatting.pas" />
@@ -29,5 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Formatter.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Variables.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Http.pas" />
+    <None Include="$(MSBuildThisFileDirectory)HashSet.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Codable.Enums.pas" />
   </ItemGroup>
 </Project>

@@ -1,54 +1,57 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
-    <RootNamespace>Elements.RTL2.Tests</RootNamespace>
-    <ProjectGuid>{54C9267B-E5C0-44BE-8D1B-A6EF55B9336D}</ProjectGuid>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>Elements.RTL2.Tests.Island.Linux</RootNamespace>
+    <ProjectGuid>{46DF78FE-F074-498D-B963-1B3BCF267740}</ProjectGuid>
     <OutputType>Executable</OutputType>
-    <AssemblyName>Test</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
     <AllowLegacyWith>False</AllowLegacyWith>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
     <AllowLegacyCreate>False</AllowLegacyCreate>
     <AllowUnsafeCode>False</AllowUnsafeCode>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-    <SDK>iOS</SDK>
-    <MangleTypeNames>True</MangleTypeNames>
-    <InfoPListFile>.\Resources\Info.plist</InfoPListFile>
-    <BundleIdentifier>com.remobjects.test</BundleIdentifier>
-    <DefaultUses>Foundation;RemObjects.Elements.EUnit;RemObjects.Elements.Linq;RemObjects.Elements.RTL</DefaultUses>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <DefaultUses>RemObjects.Elements.RTL</DefaultUses>
+    <BinaryName>Elements.RTL2.Tests.Island.macOS</BinaryName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <OutputPath>.\bin\Debug</OutputPath>
     <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <Architecture>x86_64</Architecture>
+    <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
     <OutputPath>.\bin\Release</OutputPath>
-    <GenerateDebugInfo>True</GenerateDebugInfo>
-    <GenerateDSym>True</GenerateDSym>
+    <GenerateDebugInfo>False</GenerateDebugInfo>
     <EnableAsserts>False</EnableAsserts>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
-    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-    <CreateIPA>True</CreateIPA>
+    <StartMode>Project</StartMode>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CoreGraphics" />
-    <Reference Include="Foundation" />
-    <Reference Include="libEUnit" />
-    <Reference Include="libxml2" />
-    <Reference Include="libToffee" />
-    <Reference Include="UIKit" />
+    <Reference Include="gc" />
+    <Reference Include="Island" />
     <Reference Include="rtl" />
-    <ProjectReference Include="..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.iOS.elements">
-      <Name>Elements.RTL.Toffee.iOS</Name>
-      <HintPath />
-      <Project>{EC0982C8-700B-4085-A401-59460E394DAA}</Project>
-      <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.iOS.elements</ProjectFile>
+    <Reference Include="EUnit" />
+    <ProjectReference Include="..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.macOS.elements">
+      <Project>{731df15e-9ee5-452a-a74d-bcbc95afaa23}</Project>
+      <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.macOS.elements</ProjectFile>
     </ProjectReference>
     <Reference Include="RemObjects.Elements.Serialization">
       <HintPath>..\Bin\Echoes\NETStandard2.0\RemObjects.Elements.Serialization.dll</HintPath>
@@ -58,9 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
-    <Content Include="Resources\Info.plist" />
-    <Xib Include="Resources\LaunchScreen.xib" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Darwin.targets" />
   <Import Project="Elements.RTL2.Tests.Shared.projitems" Label="Shared" />
 </Project>

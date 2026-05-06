@@ -26,8 +26,8 @@ public class Notification {
 }
 #endif
 
-#if TOFFEE
 fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
+	#if TOFFEE
 	weak var receiver: Object?
 	weak var object: Object?
 	var token: id;
@@ -36,9 +36,7 @@ fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
 		self.object = object
 		self.token = token
 	}
-}
-#else
-fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
+	#else
 	var receiver: Object
 	var object: Object?
 	var block: (Notification)->()
@@ -47,8 +45,8 @@ fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
 		self.object = object
 		self.block = block
 	}
+	#endif
 }
-#endif
 
 public static class RemObjects.Elements.RTL.BroadcastManager {
 

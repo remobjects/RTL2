@@ -695,18 +695,18 @@ type
       //exit mapped.split(java.util.regex.Pattern.quote(aSeparator)) as not nullable;
       //Custom implementation because `mapped.split` strips empty oparts at the end, making it incomopatible with the other three platfroms.
       var lResult := new List<String>;
-      var i := 0;
+      var lIndex := 0;
       var lSeparatorLength := aSeparator.Length;
       loop begin
-        var p := IndexOf(aSeparator, i);
-        if p > -1 then begin
-          var lPart := self.Substring(i, p-i);
+        var lPosition := IndexOf(aSeparator, lIndex);
+        if lPosition > -1 then begin
+          var lPart := self.Substring(lIndex, lPosition-lIndex);
           if (not aRemoveEmptyEntries) or (lPart.length > 0) then
             lResult.Add(lPart);
-          i := p+lSeparatorLength;
+          lIndex := lPosition+lSeparatorLength;
         end
         else begin
-          var lPart := self.Substring(i);
+          var lPart := self.Substring(lIndex);
           if (not aRemoveEmptyEntries) or (lPart.length > 0) then
             lResult.Add(lPart);
           break;
@@ -723,6 +723,32 @@ type
       result := mapped.Split(aSeparator, aRemoveEmptyEntries).ToList() as not nullable;
       {$ENDIF}
     end;
+
+    //method Split(aSeparators: array of Char; aRemoveEmptyEntries: Boolean := false): not nullable ImmutableList<String>;
+    //begin
+      //if not assigned(aSeparators) or (RemObjects.Elements.System.length(aSeparators) = 0) then
+        //exit new ImmutableList<String>(self);
+      //if IsNullOrEmpty(self) then
+        //exit if aRemoveEmptyEntries then new ImmutableList<String>() else new ImmutableList<String>("");
+
+      //var lResult := new List<String>;
+      //var lStartIndex := 0;
+
+      //for lIndex: Integer := 0 to Length-1 do begin
+        //if aSeparators.Contains(Chars[lIndex]) then begin
+          //var lPart := Substring(lStartIndex, lIndex-lStartIndex);
+          //if (not aRemoveEmptyEntries) or (lPart.Length > 0) then
+            //lResult.Add(lPart);
+          //lStartIndex := lIndex+1;
+        //end;
+      //end;
+
+      //var lLastPart := Substring(lStartIndex);
+      //if (not aRemoveEmptyEntries) or (lLastPart.Length > 0) then
+        //lResult.Add(lLastPart);
+
+      //result := lResult as not nullable;
+    //end;
 
     method SplitAtFirstOccurrenceOf(aSeparator: not nullable String): not nullable ImmutableList<String>;
     begin

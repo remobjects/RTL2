@@ -91,6 +91,12 @@ type
       result := Serializer.Serialize;
     end;
 
+    method ToYamlString(aOptions: YamlOptions): not nullable String; override;
+    begin
+      var Serializer := new YamlSerializer(self, aOptions);
+      result := Serializer.Serialize;
+    end;
+
     {$IF NOT TOFFEE}[&Sequence]{$ENDIF}
     method GetSequence: sequence of tuple of (String, JsonNode); iterator; reintroduce;
     begin

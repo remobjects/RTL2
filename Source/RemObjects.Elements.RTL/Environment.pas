@@ -827,8 +827,8 @@ begin
 end;
 
 {$IF WINDOWS}
-type IsWow64Process2Func = function(hProcess: rtl.HANDLE; lpProcessMachine: ^Word; lpNativeMachine: ^Word): Boolean; stdcall;
-
+[CallingConvention(CallingConvention.Stdcall)]
+type IsWow64Process2Func = function(hProcess: rtl.HANDLE; lpProcessMachine: ^Word; lpNativeMachine: ^Word): Boolean;
 {$ENDIF}
 
 method Environment.GetProcessBitness: Int32;

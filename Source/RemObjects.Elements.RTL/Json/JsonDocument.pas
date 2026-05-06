@@ -236,6 +236,11 @@ type
     end;
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; abstract;
+    method ToYamlString: not nullable String;
+    begin
+      result := ToYamlString(nil);
+    end;
+    method ToYamlString(aOptions: YamlOptions): not nullable String; abstract;
 
     method ToJsonBytes(aFormat: JsonFormat := JsonFormat.Minimal; aEncoding: Encoding := Encoding.UTF8; aIncludeBOM: Boolean := false): not nullable array of Byte;
     begin

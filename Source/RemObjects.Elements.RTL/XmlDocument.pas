@@ -1414,9 +1414,10 @@ end;
 
 method XmlElement.GetAttribute(aName: not nullable String; aNamespace: nullable XmlNamespace): nullable XmlAttribute;
 begin
-  result := Attributes.Where(a -> (a.LocalName = aName) and
-    (((aNamespace = nil) and (a.Namespace = nil)) or
-      ((aNamespace <> nil) and (a.Namespace.Prefix = aNamespace.Prefix) and (a.Namespace.Uri = aNamespace.Uri)))).FirstOrDefault;
+  result := Attributes.Where(a -> (a.LocalName = aName) and (
+    (not assigned(aNamespace) and not assigned(a.Namespace)) or
+    (assigned(aNamespace) and assigned(a.Namespace) and (a.Namespace.Prefix = aNamespace.Prefix) and (a.Namespace.Uri = aNamespace.Uri))
+  )).FirstOrDefault;
 end;
 
 method XmlElement.GetElements: not nullable sequence of XmlElement;
