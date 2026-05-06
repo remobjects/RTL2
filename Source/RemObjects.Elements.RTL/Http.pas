@@ -293,7 +293,7 @@ begin
 
     var lResponse: HttpResponse;
     lResponse := new HttpResponse(aRequest, (aResponse) -> begin
-      locking aRequest.Monitor do aRequest.fCancelTask := nil;
+      aRequest.fCancelTask := nil;
       var nsHttpUrlResponse := NSHTTPURLResponse(aResponse);
       lResponse.Code := nsHttpUrlResponse.statusCode;
       dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
@@ -321,7 +321,7 @@ begin
     end;
     var lSession := NSURLSession.sessionWithConfiguration(lConfig) &delegate(lResponse) delegateQueue(nil);
     var lRequest := lSession.dataTaskWithRequest(nsUrlRequest);// completionHandler((data, nsUrlResponse, error) -> begin
-    locking aRequest.Monitor do aRequest.fCancelTask := lRequest;
+    aRequest.fCancelTask := lRequest;
     lRequest.resume();
   except
     on E: Exception do
@@ -852,10 +852,10 @@ begin
     lError := error;
     dispatch_semaphore_signal(lSemaphore);
   end);
-  locking aRequest.Monitor do aRequest.fCancelTask := lTask;
+  aRequest.fCancelTask := lTask;
   lTask.resume();
   dispatch_semaphore_wait(lSemaphore, DISPATCH_TIME_FOREVER);
-  locking aRequest.Monitor do aRequest.fCancelTask := nil;
+  aRequest.fCancelTask := nil;
 
   var nsHttpUrlResponse := NSHTTPURLResponse(lUrlResponse);
   if assigned(lResponseData) and assigned(nsHttpUrlResponse) then begin
