@@ -2,7 +2,7 @@
 
 interface
 
-{$IF (ECHOES OR MACOS OR WINDOWS) AND NOT MACCATALYST} // OR LINUX
+{$IF (ECHOES OR MACOS OR WINDOWS OR LINUX) AND NOT MACCATALYST} // OR LINUX
 
 type
   {$IF JAVA}
@@ -22,7 +22,7 @@ type
     method Start; inline;
     method Stop; inline;
 
-    {$IF ECHOES}
+    {$IF ECHOES OR ISLAND}
     property PID: Integer read mapped.Id;
     {$ELSEIF TOFFEE}
     property PID: Integer read mapped.processIdentifier;
@@ -71,7 +71,7 @@ type
 
 implementation
 
-{$IF (ECHOES OR MACOS OR WINDOWS) AND NOT MACCATALYST} // OR LINUX
+{$IF (ECHOES OR MACOS OR WINDOWS OR LINUX) AND NOT MACCATALYST} // OR LINUX
 
 method Process.WaitFor;
 begin
