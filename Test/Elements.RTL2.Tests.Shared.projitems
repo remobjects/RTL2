@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)XmlNamespaces.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlFire.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Trim.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Strings.CollapseSpaces.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Guids.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlEntities.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)XmlFormatting.pas" />
