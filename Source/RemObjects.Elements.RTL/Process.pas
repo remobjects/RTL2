@@ -16,14 +16,17 @@ type
   {$ENDIF}
 
   Process = public partial class {$IF ECHOES OR COCOA OR ISLAND}mapped to PlatformProcess{$ENDIF}
-  private
-    class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
-  protected
   public
 
     method WaitFor; inline;
     method Start; inline;
     method Stop; inline;
+
+    {$IF ECHOES}
+    property PID: Integer read mapped.Id;
+    {$ELSEIF TOFFEE}
+    property PID: Integer read mapped.processIdentifier;
+    {$ENDIF}
 
     property ExitCode: Integer read {$IF TOFFEE}mapped.terminationStatus{$ELSEIF ECHOES OR ISLAND}mapped.ExitCode{$ENDIF};
     property IsRunning: Boolean read {$IF TOFFEE}mapped.isRunning{$ELSEIF ECHOES}not mapped.HasExited{$ELSEIF ISLAND}mapped.IsRunning{$ENDIF};
@@ -43,6 +46,10 @@ type
     class method Run(aCommand: not nullable String; aArguments: array of string; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer; inline;
     class method Run(aCommand: not nullable String; aArguments: array of string; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil): Integer; inline;
     class method RunAsync(aCommand: not nullable String; aArguments: array of string; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process; inline;
+
+  private
+
+    class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
 
   end;
 
