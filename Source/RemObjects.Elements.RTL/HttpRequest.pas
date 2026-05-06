@@ -53,6 +53,8 @@ type
     property DebugHeaders: Boolean;
     property DebugPayloads: Boolean;
 
+    method Cancel;
+
   assembly
 
     method ApplyAuthentication;
@@ -61,6 +63,20 @@ type
     property Monitor := new Monitor; readonly;
     {$ELSE}
     property Monitor: Object read self;
+    {$ENDIF}
+
+    // Platform handle stored here while request is in-flight, for Cancel() support.
+    // Protected by Monitor; cleared (and closed/cancelled) by whichever side — Cancel()
+    // or the completion path — gets there first.
+    {$IF ISLAND AND WINDOWS}
+    var fCancelHandle: rtl.HINTERNET;
+    {$ELSEIF DARWIN}
+    var fCancelTask: NSURLSessionDataTask;
+    {$ELSEIF ECHOES}
+    var fCancelSource: System.Threading.CancellationTokenSource;
+    var fCancelWebRequest: System.Net.HttpWebRequest;
+    {$ELSEIF COOPER}
+    var fCancelConnection: java.net.HttpURLConnection;
     {$ENDIF}
 
     method DebugLog;
@@ -135,6 +151,44 @@ end;
 method HttpRequest.ToString: String;
 begin
   result := Url.ToString();
+end;
+
+method HttpRequest.Cancel;
+begin
+  {$IF ISLAND AND WINDOWS}
+  var h: rtl.HINTERNET;
+  locking Monitor do begin
+    h := fCancelHandle;
+    fCancelHandle := nil;
+  end;
+  if h <> nil then
+    rtl.WinHttpCloseHandle(h);
+  {$ELSEIF DARWIN}
+  var task: NSURLSessionDataTask;
+  locking Monitor do begin
+    task := fCancelTask;
+    fCancelTask := nil;
+  end;
+  task:cancel();
+  {$ELSEIF ECHOES}
+  var src: System.Threading.CancellationTokenSource;
+  var req: System.Net.HttpWebRequest;
+  locking Monitor do begin
+    src := fCancelSource;
+    fCancelSource := nil;
+    req := fCancelWebRequest;
+    fCancelWebRequest := nil;
+  end;
+  src:Cancel();
+  req:Abort();
+  {$ELSEIF COOPER}
+  var conn: java.net.HttpURLConnection;
+  locking Monitor do begin
+    conn := fCancelConnection;
+    fCancelConnection := nil;
+  end;
+  conn:disconnect();
+  {$ENDIF}
 end;
 
 method HttpRequest.ApplyAuthentication;

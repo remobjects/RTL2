@@ -84,4 +84,33 @@ type
 
   end;
 
+  HttpCancelTests = public class(Test)
+  public
+
+    method TestCancelOnFreshRequestIsNoOp;
+    begin
+      // Calling Cancel() before a request is started should not raise
+      var request := new HttpRequest(Url.UrlWithString('https://example.com'));
+      Check.That( () -> request.Cancel() ).DoesNotRaise();
+    end;
+
+    method TestCancelCalledTwiceIsNoOp;
+    begin
+      // Cancel() must be idempotent — second call should not raise or double-free
+      var request := new HttpRequest(Url.UrlWithString('https://example.com'));
+      request.Cancel();
+      Check.That( () -> request.Cancel() ).DoesNotRaise();
+    end;
+
+    method TestRequestRemainsUsableAfterCancel;
+    begin
+      // Properties on the request should still be readable after Cancel()
+      var request := new HttpRequest(Url.UrlWithString('https://example.com'));
+      request.Cancel();
+      Check.AreEqual(request.Url.ToString, 'https://example.com');
+      Check.AreEqual(request.Timeout, 10.0);
+    end;
+
+  end;
+
 end.

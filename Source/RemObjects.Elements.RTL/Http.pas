@@ -98,6 +98,7 @@ begin
         end;
     end;
 
+    locking aRequest.Monitor do aRequest.fCancelConnection := lConnection;
     if aRequest.Method = HttpRequestMethod.Post then
       lConnection.DoOutput := true;
     lConnection.RequestMethod := aRequest.Method.ToHttpString;
@@ -122,6 +123,8 @@ begin
     except
       on E: Exception do
         aResponseCallback(new HttpResponse withException(E));
+    finally
+      locking aRequest.Monitor do aRequest.fCancelConnection := nil;
     end;
 
   except
@@ -173,6 +176,7 @@ begin
 
         var cts := new System.Threading.CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout));
+        locking aRequest.Monitor do aRequest.fCancelSource := cts;
 
         var lRepsonseMessage := await lClient.SendAsync(lRequestMessage, cts.Token);
         if lRepsonseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect then begin
@@ -186,6 +190,8 @@ begin
           aResponseCallback(new HttpResponse withException(new HttpException('Request timed out', aRequest)));
         on E: Exception do
           aResponseCallback(new HttpResponse withException(E));
+      finally
+        locking aRequest.Monitor do aRequest.fCancelSource := nil;
       end;
     end;
     {$ELSE}
@@ -230,8 +236,9 @@ begin
         end;
       end;
 
+      locking aRequest.Monitor do aRequest.fCancelWebRequest := lWebRequest;
       lWebRequest.BeginGetResponse( (ar) -> begin
-
+        locking aRequest.Monitor do aRequest.fCancelWebRequest := nil;
         try
           var webResponse := lWebRequest.EndGetResponse(ar) as HttpWebResponse;
           if webResponse.StatusCode >= 300 then begin
@@ -286,6 +293,7 @@ begin
 
     var lResponse: HttpResponse;
     lResponse := new HttpResponse(aRequest, (aResponse) -> begin
+      locking aRequest.Monitor do aRequest.fCancelTask := nil;
       var nsHttpUrlResponse := NSHTTPURLResponse(aResponse);
       lResponse.Code := nsHttpUrlResponse.statusCode;
       dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
@@ -313,6 +321,7 @@ begin
     end;
     var lSession := NSURLSession.sessionWithConfiguration(lConfig) &delegate(lResponse) delegateQueue(nil);
     var lRequest := lSession.dataTaskWithRequest(nsUrlRequest);// completionHandler((data, nsUrlResponse, error) -> begin
+    locking aRequest.Monitor do aRequest.fCancelTask := lRequest;
     lRequest.resume();
   except
     on E: Exception do
@@ -402,28 +411,33 @@ begin
       end;
   end;
 
-  if aRequest.Method = HttpRequestMethod.Post then
-    lConnection.DoOutput := true;
-  lConnection.RequestMethod := aRequest.Method.ToHttpString;
-  lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
-  for each k in aRequest.Headers.Keys do
-    lConnection.setRequestProperty(k, aRequest.Headers[k]);
-  if assigned(aRequest.Accept) then
-    lConnection.setRequestProperty("Accept", aRequest.Accept);
-  if assigned(aRequest.UserAgent) then
-    lConnection.setRequestProperty("User-Agent", aRequest.UserAgent);
-  if length(aRequest.Content:ContentType) > 0 then
-    lConnection.setRequestProperty("Content-Type", aRequest.Content.ContentType);
+  locking aRequest.Monitor do aRequest.fCancelConnection := lConnection;
+  try
+    if aRequest.Method = HttpRequestMethod.Post then
+      lConnection.DoOutput := true;
+    lConnection.RequestMethod := aRequest.Method.ToHttpString;
+    lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
+    for each k in aRequest.Headers.Keys do
+      lConnection.setRequestProperty(k, aRequest.Headers[k]);
+    if assigned(aRequest.Accept) then
+      lConnection.setRequestProperty("Accept", aRequest.Accept);
+    if assigned(aRequest.UserAgent) then
+      lConnection.setRequestProperty("User-Agent", aRequest.UserAgent);
+    if length(aRequest.Content:ContentType) > 0 then
+      lConnection.setRequestProperty("Content-Type", aRequest.Content.ContentType);
 
-  if assigned(aRequest.Content) then begin
-    lConnection.getOutputStream().write((aRequest.Content as IHttpRequestContent).GetContentAsArray());
-    lConnection.getOutputStream().flush();
-  end;
+    if assigned(aRequest.Content) then begin
+      lConnection.getOutputStream().write((aRequest.Content as IHttpRequestContent).GetContentAsArray());
+      lConnection.getOutputStream().flush();
+    end;
 
-  result := new HttpResponse(lConnection);
-  if lConnection.ResponseCode >= 300 then begin
-    if not aThrowOnError then exit nil;
-    raise new HttpException(Integer(lConnection.responseCode), aRequest, result)
+    result := new HttpResponse(lConnection);
+    if lConnection.ResponseCode >= 300 then begin
+      if not aThrowOnError then exit nil;
+      raise new HttpException(Integer(lConnection.responseCode), aRequest, result)
+    end;
+  finally
+    locking aRequest.Monitor do aRequest.fCancelConnection := nil;
   end;
 
   {$ELSEIF ECHOES}
@@ -469,8 +483,11 @@ begin
       for each k in aRequest.Headers.Keys do
         lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
 
+      var lCts := new System.Threading.CancellationTokenSource();
+      lCts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout));
+      locking aRequest.Monitor do aRequest.fCancelSource := lCts;
       try
-        var lResponseMessage := lClient.SendAsync(lRequestMessage).Result;
+        var lResponseMessage := lClient.SendAsync(lRequestMessage, lCts.Token).Result;
         if (lResponseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect) and aThrowOnError then
           raise new HttpException(Integer(lResponseMessage.StatusCode), aRequest);
         result := new HttpResponse(lResponseMessage);
@@ -496,6 +513,8 @@ begin
           else
             raise E;
         end;
+      finally
+        locking aRequest.Monitor do aRequest.fCancelSource := nil;
       end;
     end;
     {$ELSE}
@@ -534,6 +553,7 @@ begin
         end;
       end;
 
+      locking aRequest.Monitor do aRequest.fCancelWebRequest := webRequest;
       try
         var lWebResponse := webRequest.GetResponse() as HttpWebResponse;
         if (lWebResponse.StatusCode ≥ 300) and aThrowOnError then begin
@@ -588,6 +608,10 @@ begin
         raise new RTLException('Can not open request to ' + aRequest.Url.Host);
 
       try
+        var lTimeoutMs: rtl.DWORD := rtl.DWORD(aRequest.Timeout * 1000);
+        rtl.WinHttpSetOption(lRequest, 5 {WINHTTP_OPTION_SEND_TIMEOUT}, @lTimeoutMs, sizeOf(lTimeoutMs));
+        rtl.WinHttpSetOption(lRequest, 8 {WINHTTP_OPTION_RECEIVE_TIMEOUT}, @lTimeoutMs, sizeOf(lTimeoutMs));
+
         var lHeader: RemObjects.Elements.System.String;
         for each k in aRequest.Headers.Keys do begin
           lHeader := k + ':' + aRequest.Headers[k];
@@ -606,6 +630,8 @@ begin
           var lValue: rtl.DWORD := rtl.WINHTTP_DISABLE_REDIRECTS;
           rtl.WinHttpSetOption(LRequest, rtl.WINHTTP_OPTION_DISABLE_FEATURE, @lValue, sizeOf(lValue));
         end;
+
+        locking aRequest.Monitor do aRequest.fCancelHandle := lRequest;
 
         if not rtl.WinHttpSendRequest(lRequest, nil, 0, nil, 0, lTotalLength, 0) then
           raise new RTLException('Can not send request to ' + aRequest.Url.Host);
@@ -655,7 +681,13 @@ begin
           end;
         end;
       finally
-        rtl.WinHttpCloseHandle(lRequest);
+        var lCancelHandle: rtl.HINTERNET;
+        locking aRequest.Monitor do begin
+          lCancelHandle := aRequest.fCancelHandle;
+          aRequest.fCancelHandle := nil;
+        end;
+        if lCancelHandle <> nil then
+          rtl.WinHttpCloseHandle(lCancelHandle);
       end;
     finally
       rtl.WinHttpCloseHandle(lConnect);
@@ -820,8 +852,10 @@ begin
     lError := error;
     dispatch_semaphore_signal(lSemaphore);
   end);
+  locking aRequest.Monitor do aRequest.fCancelTask := lTask;
   lTask.resume();
   dispatch_semaphore_wait(lSemaphore, DISPATCH_TIME_FOREVER);
+  locking aRequest.Monitor do aRequest.fCancelTask := nil;
 
   var nsHttpUrlResponse := NSHTTPURLResponse(lUrlResponse);
   if assigned(lResponseData) and assigned(nsHttpUrlResponse) then begin
