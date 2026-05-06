@@ -22,10 +22,10 @@ type
     method Start; inline;
     method Stop; inline;
 
-    {$IF ECHOES OR ISLAND}
-    property PID: Integer read mapped.Id;
-    {$ELSEIF TOFFEE}
+    {$IF TOFFEEV1 OR TOFFEEV2}
     property PID: Integer read mapped.processIdentifier;
+    {$ELSEIF ECHOES OR ISLAND}
+    property PID: Integer read mapped.Id;
     {$ENDIF}
 
     property ExitCode: Integer read {$IF TOFFEE}mapped.terminationStatus{$ELSEIF ECHOES OR ISLAND}mapped.ExitCode{$ENDIF};
