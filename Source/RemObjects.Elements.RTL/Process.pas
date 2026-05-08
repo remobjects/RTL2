@@ -244,6 +244,8 @@ begin
   result := lTask;
 
   {$IF TOFFEE}
+  var lClosingOutput := false;
+
   method HandleOutput(aOutput: NSPipe; aCallback: block(aLine: String); aEvent: &Event);
   begin
     var lHandle := aOutput.fileHandleForReading;
@@ -278,7 +280,8 @@ begin
         lHandle.closeFile();
     except
       on E: Exception do begin
-        Log($"Exception processing output from '{aCommand.LastPathComponent}': {E.Message}");
+        if not lClosingOutput then
+          Log($"Exception processing output from '{aCommand.LastPathComponent}': {E.Message}");
       end;
     finally
       aEvent.Set();
@@ -290,6 +293,7 @@ begin
     if not assigned(aOutput) then
       exit;
     try
+      lClosingOutput := true;
       var lError: NSError;
       var lHandle := aOutput.fileHandleForReading;
       if available("macOS 10.15") then
