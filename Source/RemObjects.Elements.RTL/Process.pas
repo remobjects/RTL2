@@ -280,24 +280,57 @@ begin
       on E: Exception do begin
         Log($"Exception processing output from '{aCommand.LastPathComponent}': {E.Message}");
       end;
+    finally
+      aEvent.Set();
     end;
-    aEvent.Set();
+  end;
+
+  method CloseOutput(aOutput: NSPipe);
+  begin
+    if not assigned(aOutput) then
+      exit;
+    try
+      var lError: NSError;
+      var lHandle := aOutput.fileHandleForReading;
+      if available("macOS 10.15") then
+        lHandle.closeAndReturnError(var lError)
+      else
+        lHandle.closeFile();
+    except
+      on E: Exception do begin
+        Log($"Exception closing output from '{aCommand.LastPathComponent}': {E.Message}");
+      end;
+    end;
+  end;
+
+  method WaitForOutput(aEvent: &Event; aOutput: NSPipe);
+  begin
+    if not assigned(aEvent) then
+      exit;
+    if not aEvent:WaitFor(1000) then begin
+      CloseOutput(aOutput);
+      aEvent:WaitFor(1000);
+    end;
   end;
 
   var lStdOutFinished := if assigned(aStdOutCallback) then new &Event;
   var lStdErrFinished := if assigned(aStdErrCallback) then new &Event;
+  var lStdOutPipe: NSPipe;
+  var lStdErrPipe: NSPipe;
 
   if assigned(aStdOutCallback) then begin
-    (lTask as PlatformProcess).standardOutput := NSPipe.pipe;
+    lStdOutPipe := NSPipe.pipe;
+    (lTask as PlatformProcess).standardOutput := lStdOutPipe;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
-      HandleOutput((lTask as NSTask).standardOutput, aStdOutCallback, lStdOutFinished)
+      HandleOutput(lStdOutPipe, aStdOutCallback, lStdOutFinished)
     end;
   end;
 
   if assigned(aStdErrCallback) then begin
-    (lTask as PlatformProcess).standardError := NSPipe.pipe;
+    lStdErrPipe := NSPipe.pipe;
+    (lTask as PlatformProcess).standardError := lStdErrPipe;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
-      HandleOutput((lTask as NSTask).standardError, aStdErrCallback, lStdErrFinished)
+      HandleOutput(lStdErrPipe, aStdErrCallback, lStdErrFinished)
     end;
   end;
 
@@ -305,10 +338,8 @@ begin
 
   if assigned(aFinishedCallback) then async begin
     lTask.WaitFor();
-    if assigned(lStdOutFinished) then
-      lStdOutFinished:WaitFor();
-    if assigned(lStdErrFinished) then
-      lStdErrFinished:WaitFor();
+    WaitForOutput(lStdOutFinished, lStdOutPipe);
+    WaitForOutput(lStdErrFinished, lStdErrPipe);
     aFinishedCallback(lTask.ExitCode);
   end;
   {$ELSEIF ECHOES}
