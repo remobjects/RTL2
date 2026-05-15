@@ -193,17 +193,40 @@ begin
     (lTask as NSTask).standardError := NSPipe.pipe();
     var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
     var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
+    var lStdOutData: NSData;
+    var lStdErrData: NSData;
+    var lStdOutFinished := new &Event;
+    var lStdErrFinished := new &Event;
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
+      try
+        var error: NSError;
+        lStdOutData := stdOut.readDataToEndOfFileAndReturnError(var error);
+      finally
+        lStdOutFinished.Set();
+      end;
+    end;
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
+      try
+        var error: NSError;
+        lStdErrData := stdErr.readDataToEndOfFileAndReturnError(var error);
+      finally
+        lStdErrFinished.Set();
+      end;
+    end;
+
     lTask.Start();
     lTask.WaitFor();
 
     var error: NSError;
-    var lStdOutData := stdOut.readDataToEndOfFileAndReturnError(var error);
+    lStdOutFinished.WaitFor();
     //aStdOut := new array of Byte withNSData(stdOutData);
     aStdOut := new Byte[lStdOutData.length];
     lStdOutData.getBytes(@aStdOut[0]) length(lStdOutData.length);
     stdOut.closeAndReturnError(var error);
 
-    var lStdErrData := stdErr.readDataToEndOfFileAndReturnError(var error);
+    lStdErrFinished.WaitFor();
     //aStdErr := new array of Byte withNSData(stdErrData);
     aStdErr := new Byte[lStdErrData.length];
     lStdErrData.getBytes(@aStdErr[0]) length(lStdErrData.length);
