@@ -39,6 +39,8 @@ type
     property Proxy: HttpProxySettings;
 
     property Timeout: Double := 10.0; // Seconds
+    property UploadProgress: HttpProgressBlock;
+    property DownloadProgress: HttpProgressBlock;
 
     constructor(aUrlString: not nullable String; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
     constructor(aUrl: not nullable Url; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
@@ -91,6 +93,7 @@ type
   end;
 
   HttpVerifyUntrustedCertificateBlock nested in httpRequest = public block(aCertificateInfo: HttpCertificateInfo): Boolean;
+  HttpProgressBlock nested in httpRequest = public block(aBytesDone: Int64; aBytesTotal: nullable Int64);
 
   HttpRequestMethod = public enum (Get, Post, Head, Put, Delete, Patch, Options, Trace);
 

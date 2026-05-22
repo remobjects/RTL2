@@ -1,6 +1,8 @@
 ﻿namespace RemObjects.Elements.RTL;
 
 {$IF DARWIN}
+uses Foundation;
+
 type
   HttpResponse = public partial class(INSURLSessionDelegate, INSURLSessionDataDelegate, INSURLSessionTaskDelegate)
   assembly
@@ -18,6 +20,8 @@ type
     var fGotResponseCallback: block(aResponse: NSHTTPURLResponse); private;
 
     var fIncomingData: Binary;
+    var fBytesReceived: Int64;
+    var fBytesExpectedToReceive: nullable Int64;
 
     var fIncomingDataCallback: block(aData: not nullable ImmutableBinary);
     var fIncomingDataCompleteCallback: block(aException: nullable Exception);
@@ -70,10 +74,26 @@ type
       //Log($"didReceiveResponse {aResponse}");
       Code := NSHTTPURLResponse(aResponse):StatusCode;
       fIncomingData := new;
+      fBytesReceived := 0;
+      fBytesExpectedToReceive := nil;
+      if aResponse.expectedContentLength >= 0 then
+        fBytesExpectedToReceive := aResponse.expectedContentLength;
       Headers := LoadHeaders(aResponse as NSHTTPURLResponse);
+      if assigned(Request.DownloadProgress) then
+        Request.DownloadProgress(0, fBytesExpectedToReceive);
       if assigned(fGotResponseCallback) then
         fGotResponseCallback(aResponse as NSHTTPURLResponse);
       completionHandler(NSURLSessionResponseDisposition.Allow);
+    end;
+
+    method URLSession(session: NSURLSession) task(task: NSURLSessionTask) didSendBodyData(bytesSent: Int64) totalBytesSent(totalBytesSent: Int64) totalBytesExpectedToSend(totalBytesExpectedToSend: Int64);
+    begin
+      if assigned(Request.UploadProgress) then begin
+        var lBytesTotal: nullable Int64 := nil;
+        if totalBytesExpectedToSend >= 0 then
+          lBytesTotal := totalBytesExpectedToSend;
+        Request.UploadProgress(totalBytesSent, lBytesTotal);
+      end;
     end;
 
     method URLSession(session: NSURLSession) task(task: NSURLSessionTask) didCompleteWithError(error: nullable NSError);
@@ -94,6 +114,9 @@ type
       locking self do begin
         var lData := LoadData(aData);
         fIncomingData.Write(lData.ToArray);
+        inc(fBytesReceived, aData.length);
+        if assigned(Request.DownloadProgress) then
+          Request.DownloadProgress(fBytesReceived, fBytesExpectedToReceive);
         if assigned(fIncomingDataCallback) then
           fIncomingDataCallback(lData);
       end;
