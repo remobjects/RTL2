@@ -27,6 +27,18 @@ type
     var fIncomingDataCompleteCallback: block(aException: nullable Exception);
     var fIncomingDataComplete := new &Event;
 
+    method completeWithException(aException: nullable Exception);
+    begin
+      Exception := aException;
+      fIncomingDataComplete.Set;
+      if assigned(fIncomingDataCompleteCallback) then begin
+        try
+          fIncomingDataCompleteCallback(aException);
+        except
+        end;
+      end;
+    end;
+
     //constructor(aData: NSData; aResponse: NSHTTPURLResponse);
     //begin
       //Data := aData;
@@ -79,20 +91,32 @@ type
       if aResponse.expectedContentLength >= 0 then
         fBytesExpectedToReceive := aResponse.expectedContentLength;
       Headers := LoadHeaders(aResponse as NSHTTPURLResponse);
-      if assigned(Request.DownloadProgress) then
-        Request.DownloadProgress(0, fBytesExpectedToReceive);
-      if assigned(fGotResponseCallback) then
-        fGotResponseCallback(aResponse as NSHTTPURLResponse);
+      try
+        if assigned(Request.DownloadProgress) then
+          Request.DownloadProgress(0, fBytesExpectedToReceive);
+        if assigned(fGotResponseCallback) then
+          fGotResponseCallback(aResponse as NSHTTPURLResponse);
+      except
+        on e: Exception do
+          completeWithException(e);
+      end;
       completionHandler(NSURLSessionResponseDisposition.Allow);
     end;
 
     method URLSession(session: NSURLSession) task(task: NSURLSessionTask) didSendBodyData(bytesSent: Int64) totalBytesSent(totalBytesSent: Int64) totalBytesExpectedToSend(totalBytesExpectedToSend: Int64);
     begin
-      if assigned(Request.UploadProgress) then begin
-        var lBytesTotal: nullable Int64 := nil;
-        if totalBytesExpectedToSend >= 0 then
-          lBytesTotal := totalBytesExpectedToSend;
-        Request.UploadProgress(totalBytesSent, lBytesTotal);
+      try
+        if assigned(Request.UploadProgress) then begin
+          var lBytesTotal: nullable Int64 := nil;
+          if totalBytesExpectedToSend >= 0 then
+            lBytesTotal := totalBytesExpectedToSend;
+          Request.UploadProgress(totalBytesSent, lBytesTotal);
+        end;
+      except
+        on e: Exception do begin
+          locking self do
+            completeWithException(e);
+        end;
       end;
     end;
 
@@ -101,10 +125,7 @@ type
       //Log($"didCompleteWithError {error}");
       locking self do begin
         Data := fIncomingData;
-        Exception := if assigned(error) then new Exception(error.description);
-        fIncomingDataComplete.Set;
-        if assigned(fIncomingDataCompleteCallback) then
-          fIncomingDataCompleteCallback(Exception);
+        completeWithException(if assigned(error) then new Exception(error.description));
       end;
     end;
 
@@ -112,13 +133,18 @@ type
     begin
       //Log($"didReceiveData {aData:length}");
       locking self do begin
-        var lData := LoadData(aData);
-        fIncomingData.Write(lData.ToArray);
-        inc(fBytesReceived, aData.length);
-        if assigned(Request.DownloadProgress) then
-          Request.DownloadProgress(fBytesReceived, fBytesExpectedToReceive);
-        if assigned(fIncomingDataCallback) then
-          fIncomingDataCallback(lData);
+        try
+          var lData := LoadData(aData);
+          fIncomingData.Write(lData.ToArray);
+          inc(fBytesReceived, aData.length);
+          if assigned(Request.DownloadProgress) then
+            Request.DownloadProgress(fBytesReceived, fBytesExpectedToReceive);
+          if assigned(fIncomingDataCallback) then
+            fIncomingDataCallback(lData);
+        except
+          on e: Exception do
+            completeWithException(e);
+        end;
       end;
     end;
 

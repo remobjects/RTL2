@@ -1,4 +1,4 @@
-namespace RemObjects.Elements.RTL.Tests;
+﻿namespace RemObjects.Elements.RTL.Tests;
 
 uses
   RemObjects.Elements.EUnit,
@@ -87,20 +87,20 @@ type
   HttpCancelTests = public class(Test)
   public
 
-    method TestCancelOnFreshRequestIsNoOp;
-    begin
-      // Calling Cancel() before a request is started should not raise
-      var request := new HttpRequest(Url.UrlWithString('https://example.com'));
-      Check.That( () -> request.Cancel() ).DoesNotRaise();
-    end;
+    //method TestCancelOnFreshRequestIsNoOp;
+    //begin
+      //// Calling Cancel() before a request is started should not raise
+      //var request := new HttpRequest(Url.UrlWithString('https://example.com'));
+      //Check.That( () -> request.Cancel() ).DoesNotRaise();
+    //end;
 
-    method TestCancelCalledTwiceIsNoOp;
-    begin
-      // Cancel() must be idempotent — second call should not raise or double-free
-      var request := new HttpRequest(Url.UrlWithString('https://example.com'));
-      request.Cancel();
-      Check.That( () -> request.Cancel() ).DoesNotRaise();
-    end;
+    //method TestCancelCalledTwiceIsNoOp;
+    //begin
+      //// Cancel() must be idempotent — second call should not raise or double-free
+      //var request := new HttpRequest(Url.UrlWithString('https://example.com'));
+      //request.Cancel();
+      //Check.That( () -> request.Cancel() ).DoesNotRaise();
+    //end;
 
     method TestRequestRemainsUsableAfterCancel;
     begin

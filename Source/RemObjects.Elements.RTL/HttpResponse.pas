@@ -21,10 +21,16 @@ type
         aEncoding := Encoding.Default;
 
       GetContentAsBinary begin
-        if aResponseContent.Success then
-          aContentCallback(new HttpResponseContent<String>(Content := aEncoding.GetString(aResponseContent.Content.ToArray)))
+        if aResponseContent.Success then begin
+          try
+            aContentCallback(new HttpResponseContent<String>(Content := aEncoding.GetString(aResponseContent.Content.ToArray)))
+          except
+            on e: Exception do
+              aContentCallback(new HttpResponseContent<String>(Exception := e));
+          end;
+        end
         else
-          aContentCallback(new HttpResponseContent<String>(Exception := aResponseContent.Exception))
+          aContentCallback(new HttpResponseContent<String>(Exception := aResponseContent.Exception));
       end;
     end;
 
@@ -33,11 +39,36 @@ type
       if aEncoding = nil then
         aEncoding := Encoding.Default;
 
+      var lPendingData := new Binary;
       GetContentAsStreamedBinary begin
         if aData:Length > 0 then begin
-          var s := aEncoding.GetString(aData);
-          if assigned(s) then
-            aContentCallback(s, aDone);
+          lPendingData.Write(aData.ToArray);
+          try
+            var s := aEncoding.GetString(lPendingData);
+            if assigned(s) then begin
+              lPendingData.Clear;
+              aContentCallback(s, false);
+            end;
+          except
+            on e: FormatException do begin
+              if aDone then
+                lPendingData.Clear;
+            end;
+          end;
+        end;
+        if aDone then begin
+          if lPendingData.Length > 0 then begin
+            try
+              var s := aEncoding.GetString(lPendingData);
+              if assigned(s) then
+                aContentCallback(s, false);
+            except
+              on e: FormatException do begin
+              end;
+            end;
+            lPendingData.Clear;
+          end;
+          aContentCallback(nil, true);
         end;
       end;
     end;
