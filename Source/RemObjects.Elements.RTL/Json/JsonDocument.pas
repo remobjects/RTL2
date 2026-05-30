@@ -48,19 +48,22 @@ type
     end;
 
     {$IF NOT WEBASSEMBLY}
-    class method TryFromFile(aFile: not nullable File): nullable JsonDocument;
+    class method TryFromFile(aFile: nullable File): nullable JsonDocument;
     begin
       try
-        if aFile.Exists then
+        if aFile:Exists then
           result := new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize;
       except
       end;
     end;
 
-    class method TryFromFile(aFile: not nullable File; out aException: Exception): nullable JsonDocument;
+    class method TryFromFile(aFile: nullable File; out aException: Exception): nullable JsonDocument;
     begin
       try
-        result := new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize;
+        if aFile:Exists then
+          result := new JsonDeserializer(aFile.ReadText(Encoding.Default)).Deserialize
+        else
+          aException := if length(aFile) > 0 then new Exception($"File {aFile} not found.") else new Exception($"No filename specified.")
       except
         on E: Exception do
           aException := E;
