@@ -740,12 +740,16 @@ end;
 
 class method DateTime.ToUnixDate(aDateTime: not nullable DateTime): Integer;
 begin
-  aDateTime.ToUnixDate;
+  result := aDateTime.ToUnixDate;
 end;
 
 method DateTime.ToUnixDate: Integer;
 begin
-  raise new NotImplementedException("DateTime.ToUnixDate");
+  {$IF TOFFEE}
+  result := Integer(mapped.timeIntervalSince1970);
+  {$ELSE}
+  result := Integer((Ticks - TicksTill1970) / TimeSpan.TicksPerSecond);
+  {$ENDIF}
 end;
 
 class method DateTime.FromUnixDate(aUnixDate: Integer): not nullable DateTime;
