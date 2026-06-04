@@ -73,11 +73,13 @@ type
     fNumberFormat: NumberFormatInfo;
     fDateTimeFormat: DateTimeFormatInfo;
     fLocaleID: PlatformLocale;
+    class method BuildInvariant: not nullable Locale;
+    class method BuildCurrent: not nullable Locale;
     class method GetInvariant: not nullable Locale;
     class method GetCurrent: not nullable Locale;
     method GetIdentifier: not nullable String;
-    class var fCurrent: Locale;
-    class var fInvariant: Locale;
+    class property CachedCurrent: not nullable Locale := BuildCurrent; lazy;
+    class property CachedInvariant: not nullable Locale := BuildInvariant; lazy;
   public
     operator Implicit(aValue: Locale): PlatformLocale;
     operator Implicit(aValue: PlatformLocale): Locale;
@@ -229,36 +231,40 @@ begin
   fDateTimeFormat.IsReadOnly := true;
 end;
 
+class method Locale.BuildInvariant: not nullable Locale;
+begin
+  {$IF COOPER}
+  result := new Locale(java.util.Locale.ROOT);
+  {$ELSEIF ECHOES}
+  result := new Locale(System.Globalization.CultureInfo.InvariantCulture);
+  {$ELSEIF TOFFEE}
+  result := new Locale(NSLocale.systemLocale);
+  {$ELSEIF ISLAND}
+  result := new Locale(RemObjects.Elements.System.Locale.Invariant);
+  {$ENDIF}
+end;
+
+class method Locale.BuildCurrent: not nullable Locale;
+begin
+  {$IF COOPER}
+  result := new Locale(java.util.Locale.getDefault());
+  {$ELSEIF ECHOES}
+  result := new Locale(System.Threading.Thread.CurrentThread.CurrentCulture);
+  {$ELSEIF TOFFEE}
+  result := new Locale(NSLocale.currentLocale); // maybe autoupdatingCurrentLocale?
+  {$ELSEIF ISLAND}
+  result := new Locale(RemObjects.Elements.System.Locale.Current);
+  {$ENDIF}
+end;
+
 class method Locale.GetInvariant: not nullable Locale;
 begin
-  if fInvariant = nil then begin
-    {$IF COOPER}
-    fInvariant := new Locale(java.util.Locale.ROOT);
-    {$ELSEIF ECHOES}
-    fInvariant := new Locale(System.Globalization.CultureInfo.InvariantCulture);
-    {$ELSEIF TOFFEE}
-    fInvariant := new Locale(NSLocale.systemLocale);
-    {$ELSEIF ISLAND}
-    fInvariant := new Locale(RemObjects.Elements.System.Locale.Invariant);
-    {$ENDIF}
-  end;
-  result := fInvariant as not nullable;
+  result := CachedInvariant;
 end;
 
 class method Locale.GetCurrent: not nullable Locale;
 begin
-  if fCurrent = nil then begin
-    {$IF COOPER}
-    fCurrent := new Locale(java.util.Locale.getDefault());
-    {$ELSEIF ECHOES}
-    fCurrent := new Locale(System.Threading.Thread.CurrentThread.CurrentCulture);
-    {$ELSEIF TOFFEE}
-    fCurrent := new Locale(NSLocale.currentLocale); // maybe autoupdatingCurrentLocale?
-    {$ELSEIF ISLAND}
-    fCurrent := new Locale(RemObjects.Elements.System.Locale.Current);
-    {$ENDIF}
-  end;
-  result := fCurrent as not nullable;
+  result := CachedCurrent;
 end;
 
 method Locale.GetIdentifier: not nullable String;
