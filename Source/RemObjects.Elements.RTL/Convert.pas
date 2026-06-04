@@ -12,8 +12,6 @@ type
     method ParseInt32(aValue: not nullable String): Int32;
     method ParseInt64(aValue: not nullable String): Int64;
 
-    property fCachedInvariantNumberFormatters := new Dictionary<Integer,NSNumberFormatter>; lazy;
-    property fCachedCurrentNumberFormatters := new Dictionary<Integer,NSNumberFormatter>; lazy;
     {$ENDIF}
 
     method ParseDecimalStringToBytes(s:String; out aSign: Boolean; out arr: array of Byte): Boolean;
@@ -210,30 +208,11 @@ begin
     end;
   end;
 
-  if aLocale = nil then begin
-    numberFormatter := fCachedCurrentNumberFormatters[aDigitsAfterDecimalPoint];
-    if not assigned(numberFormatter) then begin
-      numberFormatter := new NSNumberFormatter();
-      SetupNumberFormatter();
-      numberFormatter.locale := Locale.Current;
-      fCachedCurrentNumberFormatters[aDigitsAfterDecimalPoint] := numberFormatter;
-    end;
-  end
-  else if aLocale = Locale.Invariant then begin
-    numberFormatter := fCachedInvariantNumberFormatters[aDigitsAfterDecimalPoint];
-    if not assigned(numberFormatter) then begin
-      numberFormatter := new NSNumberFormatter();
-      SetupNumberFormatter();
-      numberFormatter.locale := Locale.Invariant;
-      numberFormatter.usesGroupingSeparator := false; // only for invariant
-      fCachedCurrentNumberFormatters[aDigitsAfterDecimalPoint] := numberFormatter;
-    end;
-  end
-  else begin
-    numberFormatter := new NSNumberFormatter();
-    SetupNumberFormatter();
-    numberFormatter.locale := aLocale;
-  end;
+  numberFormatter := new NSNumberFormatter();
+  SetupNumberFormatter();
+  numberFormatter.locale := coalesce(aLocale, Locale.Current);
+  if aLocale = Locale.Invariant then
+    numberFormatter.usesGroupingSeparator := false;
 
   result := numberFormatter.stringFromNumber(aValue) as not nullable;
   {$ELSEIF ECHOES}
