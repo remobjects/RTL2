@@ -187,6 +187,11 @@ type
       exit List;
     end;
 
+    method IsJsonFloatToken(aValue: not nullable String): Boolean;
+    begin
+      result := aValue.Contains(".") or aValue.Contains("e") or aValue.Contains("E");
+    end;
+
     method ReadValue: JsonNode;
     begin
       Expected(JsonTokenKind.String, JsonTokenKind.Number, JsonTokenKind.Null, JsonTokenKind.True, JsonTokenKind.False, JsonTokenKind.ArrayStart, JsonTokenKind.ObjectStart, JsonTokenKind.Identifier);
@@ -194,16 +199,14 @@ type
       case Tokenizer.Token of
         JsonTokenKind.String: result := new JsonStringValue(Tokenizer.Value);
         JsonTokenKind.Number: begin
-          var lValue := Convert.ToDoubleInvariant(Tokenizer.Value);
-          if Tokenizer.Value.Contains(".") or Tokenizer.Value.Contains("e") or Tokenizer.Value.Contains("E") then
-            result := new JsonFloatValue(lValue) // force float of valiue had a decimal point!
-          else if Consts.IsInfinity(lValue) or Consts.IsNaN(lValue) then
-            result := new JsonFloatValue(lValue)
+          if IsJsonFloatToken(Tokenizer.Value) then
+            result := new JsonFloatValue(Convert.ToDoubleInvariant(Tokenizer.Value)) // force float if value had a decimal point!
           else begin
-            if lValue > Consts.MaxInt64 then
-              result := new JsonFloatValue(lValue)
+            var lIntegerValue := Convert.TryToInt64(Tokenizer.Value);
+            if assigned(lIntegerValue) then
+              result := new JsonIntegerValue(lIntegerValue)
             else
-              result := new JsonIntegerValue(Convert.ToInt64(Tokenizer.Value))
+              result := new JsonFloatValue(Convert.ToDoubleInvariant(Tokenizer.Value));
           end;
         end;
         JsonTokenKind.Null: result := JsonNullValue.Null;

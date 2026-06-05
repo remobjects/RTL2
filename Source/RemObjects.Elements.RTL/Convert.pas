@@ -7,6 +7,7 @@ type
   private
     {$IF TOFFEE}
     method TryParseNumber(aValue: not nullable String; aLocale: Locale := nil): NSNumber;
+    method TryParseInteger(aValue: not nullable String; out aResult: Int64): Boolean;
     method TryParseInt32(aValue: not nullable String): nullable Int32;
     method TryParseInt64(aValue: not nullable String): nullable Int64;
     method ParseInt32(aValue: not nullable String): Int32;
@@ -1116,6 +1117,44 @@ begin
   result := Formatter.numberFromString(aValue);
 end;
 
+method Convert.TryParseInteger(aValue: not nullable String; out aResult: Int64): Boolean;
+begin
+  if length(aValue) = 0 then
+    exit false;
+
+  var lNegative := false;
+  var lIndex := 0;
+  if (aValue[0] = '-') or (aValue[0] = '+') then begin
+    lNegative := aValue[0] = '-';
+    inc(lIndex);
+    if lIndex = length(aValue) then
+      exit false;
+  end;
+
+  var lLimit := if lNegative then Consts.MinInt64 else -Consts.MaxInt64;
+  var lMultMin := lLimit div 10;
+  var lResult: Int64 := 0;
+
+  while lIndex < length(aValue) do begin
+    var lDigit := Integer(aValue[lIndex]) - Integer('0');
+    if (lDigit < 0) or (lDigit > 9) then
+      exit false;
+
+    if lResult < lMultMin then
+      exit false;
+    lResult := lResult * 10;
+
+    if lResult < lLimit + lDigit then
+      exit false;
+    lResult := lResult - lDigit;
+
+    inc(lIndex);
+  end;
+
+  aResult := if lNegative then lResult else -lResult;
+  exit true;
+end;
+
 method Convert.TryParseInt32(aValue: not nullable String): nullable Int32;
 begin
   var i64 := TryParseInt64(aValue);
@@ -1128,17 +1167,9 @@ end;
 
 method Convert.TryParseInt64(aValue: not nullable String): nullable Int64;
 begin
-  var Number := TryParseNumber(aValue, Locale.Invariant);
-
-  if Number = nil then
-    exit nil;
-
-  var obj: id := Number;
-  var NumberType := CFNumberGetType(bridge<CFNumberRef>(obj));
-
-  if NumberType in [CFNumberType.kCFNumberIntType, CFNumberType.kCFNumberNSIntegerType, CFNumberType.kCFNumberSInt8Type, CFNumberType.kCFNumberSInt32Type,
-                    CFNumberType.kCFNumberSInt16Type, CFNumberType.kCFNumberShortType, CFNumberType.kCFNumberSInt64Type, CFNumberType.kCFNumberCharType] then
-    exit Number.longLongValue;
+  var lResult: Int64;
+  if TryParseInteger(aValue, out lResult) then
+    exit lResult;
 end;
 
 method Convert.ParseInt32(aValue: not nullable String): Int32;
