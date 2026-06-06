@@ -63,13 +63,13 @@ type
 
     property NodeKind: JsonNodeKind read JsonNodeKind.String; override;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    class method RenderString(aValue: not nullable String): not nullable String;
     begin
       var sb := new StringBuilder;
 
       sb.Append(JsonConsts.STRING_QUOTE);
-      for i: Int32 := 0 to Value.Length-1 do begin
-        var c := Value[i];
+      for i: Int32 := 0 to aValue.Length-1 do begin
+        var c := aValue[i];
         case c of
           '\': sb.Append("\\");
           '"': sb.Append('\"');
@@ -86,7 +86,12 @@ type
       end;
       sb.Append(JsonConsts.STRING_QUOTE);
 
-      result := sb.ToString();
+      result := sb.ToString as not nullable;
+    end;
+
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    begin
+      result := RenderString(Value);
     end;
 
     method ToYamlString(aOptions: YamlOptions): String; override;
@@ -290,7 +295,6 @@ type
     begin
       result := lhs = rhs:Value;
     end;
-
 
   end;
 

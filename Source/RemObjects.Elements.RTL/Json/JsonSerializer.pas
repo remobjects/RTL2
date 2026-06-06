@@ -119,7 +119,7 @@ end;
 method JsonSerializer.VisitName(Value: not nullable String);
 begin
   AppendOffset;
-  VisitString(Value);
+  Builder.Append(JsonStringValue.RenderString(Value));
   Builder.Append(JsonConsts.NAME_SEPARATOR);
   if fFormat = JsonFormat.HumanReadable then
     Builder.Append(" ");
