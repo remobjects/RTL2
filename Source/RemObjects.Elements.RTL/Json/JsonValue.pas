@@ -99,6 +99,11 @@ type
       result := YamlSerializer.RenderString(Value, coalesce(aOptions, new YamlOptions()).AlwaysQuoteStrings);
     end;
 
+    method UniqueCopy: InstanceType; override;
+    begin
+      result := new JsonStringValue(Value) as InstanceType;
+    end;
+
     operator Implicit(aValue: nullable String): JsonStringValue;
     begin
       if assigned(aValue) then
@@ -163,6 +168,11 @@ type
     method ToYamlString(aOptions: YamlOptions): String; override;
     begin
       result := ToJsonString;
+    end;
+
+    method UniqueCopy: InstanceType; override;
+    begin
+      result := new JsonIntegerValue(Value) as InstanceType;
     end;
 
     operator Implicit(aValue: Int64): JsonIntegerValue;
@@ -257,6 +267,11 @@ type
       result := ToJsonString;
     end;
 
+    method UniqueCopy: InstanceType; override;
+    begin
+      result := new JsonFloatValue(Value) as InstanceType;
+    end;
+
     operator Implicit(aValue: Double): JsonFloatValue;
     begin
       result := new JsonFloatValue(aValue);
@@ -315,6 +330,11 @@ type
     method ToYamlString(aOptions: YamlOptions): String; override;
     begin
       result := ToJsonString;
+    end;
+
+    method UniqueCopy: InstanceType; override;
+    begin
+      result := new JsonBooleanValue(Value) as InstanceType;
     end;
 
     operator Implicit(aValue: Boolean): JsonBooleanValue;
