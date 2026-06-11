@@ -914,12 +914,18 @@ begin
   var lSeconds := lValue div 1000;
   var lMinutes := lSeconds div 60;
   lSeconds := lSeconds mod 60;
+
+  result := "";
+
   var lHours := lMinutes div 60;
   lMinutes := lMinutes mod 60;
-  result := "";
-  if lHours > 0 then
+  var lDays := lHours div 24;
+  lHours := lHours mod 24;
+  if lDays > 0 then
+    result := result+lHours.ToString+" "+"days".PluralInvariant(lDays);
+  if (lHours > 0) or (lDays > 0) then
     result := result+lHours.ToString+":";
-  if lMinutes > 0 then begin
+  if (lMinutes > 0) or (lHours > 0) or (lDays > 0) then begin
     var lMinutesString := if length(result) > 0 then Convert.ToString(lMinutes).PadStart(2, '0') else lMinutes.ToString;
     result := result+lMinutesString+":";
   end;
