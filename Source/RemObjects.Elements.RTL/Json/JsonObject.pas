@@ -23,6 +23,7 @@ type
         fItems[k] := new JsonStringValue(aItems[k]);
     end;
 
+    {$IF NOT TOFFEEV2}
     method UniqueCopy: InstanceType; override;
     begin
       var lValues := new Dictionary<String, JsonNode> withCapacity(fItems.Count);
@@ -30,20 +31,21 @@ type
         lValues[k] := fItems[k].UniqueCopy;
       result := new JsonObject(lValues);
     end;
+    {$ENDIF}
 
     //
 
-    class method FromString(aString: not nullable String): not nullable JsonObject;
+    class method FromString(aString: not nullable String): not nullable JsonObject; reintroduce;
     begin
       result := JsonDocument.FromString(aString) as JsonObject;
     end;
 
-    class method TryFromString(aString: nullable String; aAllowPartialJson: Boolean := false): nullable JsonObject;
+    class method TryFromString(aString: nullable String; aAllowPartialJson: Boolean := false): nullable JsonObject; reintroduce;
     begin
         result := JsonObject(JsonDocument.TryFromString(aString, aAllowPartialJson));
     end;
 
-    class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonObject;
+    class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonObject; reintroduce;
     begin
       try
         result := JsonDocument.TryFromString(aString, out aException) as JsonObject;

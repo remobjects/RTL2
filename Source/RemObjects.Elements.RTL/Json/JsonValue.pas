@@ -47,10 +47,12 @@ type
       result := aValue:Value;
     end;
 
+    {$IF NOT TOFFEEV2}
     method UniqueCopy: InstanceType; override;
     begin
       result := self;
     end;
+    {$ENDIF}
 
   end;
 
@@ -99,10 +101,12 @@ type
       result := YamlSerializer.RenderString(Value, coalesce(aOptions, new YamlOptions()).AlwaysQuoteStrings);
     end;
 
+    {$IF NOT TOFFEEV2 AND NOT ISLAND AND NOT ISLAND}
     method UniqueCopy: InstanceType; override;
     begin
       result := new JsonStringValue(Value) as InstanceType;
     end;
+    {$ENDIF}
 
     operator Implicit(aValue: nullable String): JsonStringValue;
     begin
@@ -170,10 +174,12 @@ type
       result := ToJsonString;
     end;
 
+    {$IF NOT TOFFEEV2 AND NOT ISLAND}
     method UniqueCopy: InstanceType; override;
     begin
       result := new JsonIntegerValue(Value) as InstanceType;
     end;
+    {$ENDIF}
 
     operator Implicit(aValue: Int64): JsonIntegerValue;
     begin
@@ -267,10 +273,12 @@ type
       result := ToJsonString;
     end;
 
+    {$IF NOT TOFFEEV2 AND NOT ISLAND}
     method UniqueCopy: InstanceType; override;
     begin
       result := new JsonFloatValue(Value) as InstanceType;
     end;
+    {$ENDIF}
 
     operator Implicit(aValue: Double): JsonFloatValue;
     begin
@@ -332,10 +340,12 @@ type
       result := ToJsonString;
     end;
 
+    {$IF NOT TOFFEEV2 AND NOT ISLAND}
     method UniqueCopy: InstanceType; override;
     begin
       result := new JsonBooleanValue(Value) as InstanceType;
     end;
+    {$ENDIF}
 
     operator Implicit(aValue: Boolean): JsonBooleanValue;
     begin

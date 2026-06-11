@@ -267,10 +267,9 @@ type
     end;
     {$ENDIF}
 
+    {$IF NOT TOFFEEV2}
     method UniqueCopy: InstanceType; abstract;
-    //begin
-      //result := FromString(ToString);
-    //end;
+    {$ENDIF}
 
     //property Item[aIndex: Integer]: nullable JsonNode read GetRootArrayItem; default; virtual;
     //property Item[aKey: not nullable String]: nullable JsonNode read GetRootObjectItem write SetRootObjectItem; default; virtual;

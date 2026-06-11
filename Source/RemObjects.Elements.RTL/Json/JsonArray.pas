@@ -55,27 +55,29 @@ type
       fItems := aItems.Select(v -> new JsonStringValue(v) as JsonNode).ToList as not nullable;
     end;
 
-    method UniqueCopy: InstanceType; override;
+    {$IF NOT TOFFEEV2}
+    method UniqueCopy: not nullable InstanceType; override;
     begin
       var lValues := new List<JsonNode> withCapacity(fItems.Count);
       for i := 0 to fItems.Count-1 do
         lValues.Add(fItems[i].UniqueCopy);
       result := new JsonArray(lValues);
     end;
+    {$ENDIF}
 
     //
 
-    class method FromString(aString: not nullable String): not nullable JsonArray;
+    class method FromString(aString: not nullable String): not nullable JsonArray; reintroduce;
     begin
       result := JsonDocument.FromString(aString) as JsonArray;
     end;
 
-    class method TryFromString(aString: nullable String; aAllowPartialJson: Boolean := false): nullable JsonArray;
+    class method TryFromString(aString: nullable String; aAllowPartialJson: Boolean := false): nullable JsonArray; reintroduce;
     begin
         result := JsonArray(JsonDocument.TryFromString(aString, aAllowPartialJson));
     end;
 
-    class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonArray;
+    class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonArray; reintroduce;
     begin
       try
         result := JsonDocument.TryFromString(aString, out aException) as JsonArray;
