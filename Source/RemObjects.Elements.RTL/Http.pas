@@ -15,6 +15,10 @@ type
     {$IF ISLAND AND WINDOWS}
     class method CreateSessionForProxy(aProxy: HttpProxySettings): rtl.HINTERNET;
     {$ENDIF}
+    {$IF ECHOES AND HTTPCLIENT}
+    method HandleEchoesHttpClientException(aException: not nullable Exception; aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
+    method UnwrapAggregateException(aException: not nullable System.AggregateException): not nullable Exception;
+    {$ENDIF}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
   public
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
@@ -72,6 +76,41 @@ begin
         result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NAMED_PROXY, lProxyString.FirstChar, nil, 0);
       end;
   end;
+end;
+{$ENDIF}
+
+{$IF ECHOES AND HTTPCLIENT}
+method Http.HandleEchoesHttpClientException(aException: not nullable Exception; aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
+begin
+  var lException: not nullable Exception := if aException is System.AggregateException then UnwrapAggregateException(System.AggregateException(aException)) else aException;
+
+  if lException is System.OperationCanceledException then begin
+    var lTimeoutException := new HttpException('Request timed out', aRequest);
+    if not aThrowOnError then
+      exit new HttpResponse withException(lTimeoutException);
+    raise lTimeoutException;
+  end;
+
+  if lException is System.Net.Http.HttpRequestException then begin
+    var lWebException := System.Net.Http.HttpRequestException(lException);
+    if not aThrowOnError then
+      exit new HttpResponse withException(lWebException);
+    raise new HttpException(lWebException.Message, aRequest);
+  end;
+
+  if not aThrowOnError then
+    exit new HttpResponse withException(lException);
+  raise lException;
+end;
+
+method Http.UnwrapAggregateException(aException: not nullable System.AggregateException): not nullable Exception;
+begin
+  var lFlattened := aException.Flatten();
+  if lFlattened.InnerExceptions.Count = 1 then
+    exit lFlattened.InnerExceptions[0] as not nullable;
+  if lFlattened.InnerExceptions.Count > 1 then
+    exit lFlattened as not nullable;
+  exit coalesce(aException.InnerException, aException) as not nullable;
 end;
 {$ENDIF}
 
@@ -492,27 +531,8 @@ begin
           raise new HttpException(Integer(lResponseMessage.StatusCode), aRequest);
         result := new HttpResponse(lResponseMessage);
       except
-        on E: System.AggregateException do begin
-          var lWebException := E.InnerException as System.Net.Http.HttpRequestException;
-          if assigned(lWebException) then begin
-            if not aThrowOnError then
-              exit new HttpResponse withException(lWebException)
-            else
-              raise new HttpException(lWebException.Message, aRequest);
-          end
-          else begin
-            if not aThrowOnError then
-              exit new HttpResponse withException(coalesce(E.InnerException, E))
-            else
-              raise coalesce(E.InnerException, E);
-          end;
-        end;
-        on E: Exception do begin
-          if not aThrowOnError then
-            exit new HttpResponse withException(E)
-          else
-            raise E;
-        end;
+        on E: Exception do
+          exit HandleEchoesHttpClientException(E, aRequest, aThrowOnError);
       finally
         locking aRequest.Monitor do aRequest.fCancelSource := nil;
       end;
