@@ -338,7 +338,7 @@ type
 
   private
 
-    method FindType(aName: String): &Type;
+    method FindType(aName: String): nullable &Type;
     begin
       {$IF TOFFEEV1 OR COOPER}
       if not assigned(fTypesCache) then
@@ -348,6 +348,8 @@ type
         result := &Type.GetType(aName);
         fTypesCache[aName] := result;
       end;
+      if not assigned(result) then
+        result := fRegisteredTypes:[aName];
       {$ELSEIF NOT TOFFEEV2}
       if not assigned(fTypesCache) then
         fTypesCache := &Type.AllTypes;
@@ -356,15 +358,30 @@ type
         fTypesCache := &Type.AllTypes; // load again, maye we have new types now
         result := fTypesCache.FirstOrDefault(t -> t.FullName = aName);
       end;
+      if not assigned(result) then locking self do
+        result := fRegisteredTypes:[aName];
       {$ELSE}
       raise new NotImplementedException($"Serialization is not fully implemented for this platform, yet.");
       {$ENDIF}
     end;
 
     {$IF TOFFEEV1 OR COOPER}
-    var fTypesCache: Dictionary<String, &Type>;
+    field fTypesCache: Dictionary<String, &Type>;
+    class field fRegisteredTypes: Dictionary<String, &Type>;
     {$ELSEIF NOT TOFFEEV2} // E671 Type "RemObjects.Elements.RTL.ImmutableList<T>" has a different class model than "Type" (Cocoa vs Island)
-    var fTypesCache: ImmutableList<&Type>;
+    field fTypesCache: ImmutableList<&Type>;
+    class field fRegisteredTypes: Dictionary<String, &Type>;
+    {$ENDIF}
+
+  public
+
+    {$IF NOT TOFFEEV2}
+    class method RegisterType(aType: &Type); locked on self;
+    begin
+      if not assigned(fRegisteredTypes) then
+        fRegisteredTypes := new;
+      fRegisteredTypes[aType.Name] := aType;
+    end;
     {$ENDIF}
 
   end;
