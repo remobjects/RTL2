@@ -380,7 +380,7 @@ type
     begin
       if not assigned(fRegisteredTypes) then
         fRegisteredTypes := new;
-      fRegisteredTypes[aType.Name] := aType;
+      fRegisteredTypes[aType.FullName] := aType;
     end;
     {$ENDIF}
 
