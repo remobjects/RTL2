@@ -22,6 +22,23 @@
     <GenerateMDB>True</GenerateMDB>
     <OutputType>StaticLibrary</OutputType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>False</Optimize>
+    <EnableAsserts>True</EnableAsserts>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <XmlDoc>False</XmlDoc>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <ConditionalDefines>DEBUG;TRACE</ConditionalDefines>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>True</Optimize>
+    <EnableAsserts>False</EnableAsserts>
+    <GeneratePDB>False</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <XmlDoc>False</XmlDoc>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Echoes.Full' ">
     <Mode>Echoes</Mode>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -174,36 +191,6 @@
     <DeploymentTargetVersion>1.0</DeploymentTargetVersion>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <Optimize>false</Optimize>
-    <EnableAsserts>True</EnableAsserts>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    <CaptureConsoleOutput>False</CaptureConsoleOutput>
-    <StartMode>Project</StartMode>
-    <RegisterForComInterop>False</RegisterForComInterop>
-    <CpuType>anycpu</CpuType>
-    <RuntimeVersion>v25</RuntimeVersion>
-    <XmlDoc>False</XmlDoc>
-    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-    <ConditionalDefines>DEBUG;TRACE</ConditionalDefines>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <Optimize>true</Optimize>
-    <GeneratePDB>False</GeneratePDB>
-    <GenerateMDB>False</GenerateMDB>
-    <EnableAsserts>False</EnableAsserts>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    <CaptureConsoleOutput>False</CaptureConsoleOutput>
-    <StartMode>Project</StartMode>
-    <RegisterForComInterop>False</RegisterForComInterop>
-    <XmlDoc>False</XmlDoc>
-    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-    <ConditionalDefines>SERIALIZATION</ConditionalDefines>
   </PropertyGroup>
   <ItemGroup Condition="'$(Target)' == 'Cooper'">
     <Compile Include="Cooper\EnumerationSequence.pas" />
