@@ -374,6 +374,7 @@ begin
   var lErrorWaitHandle := if assigned(aFinishedCallback) then new System.Threading.AutoResetEvent(false);
   if assigned(aStdOutCallback) then begin
     (lTask as PlatformProcess).StartInfo.RedirectStandardOutput := true;
+    (lTask as PlatformProcess).StartInfo.StandardOutputEncoding := System.Text.Encoding.UTF8;
     (lTask as PlatformProcess).OutputDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
       if assigned(e.Data) then
         aStdOutCallback(e.Data)
@@ -384,6 +385,7 @@ begin
   end;
   if assigned(aStdErrCallback) then begin
     (lTask as PlatformProcess).StartInfo.RedirectStandardError := true;
+    (lTask as PlatformProcess).StartInfo.StandardErrorEncoding := System.Text.Encoding.UTF8;
     (lTask as PlatformProcess).ErrorDataReceived += method (sender: Object; e: System.Diagnostics.DataReceivedEventArgs) begin
       if assigned(e.Data) then
         aStdErrCallback(e.Data)
