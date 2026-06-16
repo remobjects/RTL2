@@ -39,7 +39,7 @@
     <XmlDoc>False</XmlDoc>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Target)' == 'Echoes.Full' ">
+  <PropertyGroup Condition=" '$(Target)' == 'Echoes.Classic' ">
     <Mode>Echoes</Mode>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
@@ -47,6 +47,13 @@
     <TargetFramework>.NETFramework4.8</TargetFramework>
     <ConditionalDefines>SERIALIZATION;HTTPCLIENT</ConditionalDefines>
     <KnownConditionalDefines>SERIALIZATION;HTTPCLIENT</KnownConditionalDefines>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Echoes.Core' ">
+    <Mode>Echoes</Mode>
+    <TargetFramework>.NETCore6.0</TargetFramework>
+    <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
+    <OutputType>Library</OutputType>
+    <ConditionalDefines>NETCORE;NETSTANDARD;SERIALIZATION;HTTPCLIENT</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Echoes.Standard' ">
     <Mode>Echoes</Mode>
@@ -204,7 +211,7 @@
       <Private>True</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup Condition="'$(Target)' == 'Echoes.Full'">
+  <ItemGroup Condition="'$(Target)' == 'Echoes.Classic'">
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -221,6 +228,12 @@
       <Private>True</Private>
     </Reference>
     <NuGetReference Include="Microsoft.Win32.Registry:*" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Echoes.Core'">
+    <NuGetReference Include="NETStandard.Library:2.0.0" />
+    <Reference Include="Echoes">
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Toffee.iOS'">
     <Reference Include="Foundation" />
