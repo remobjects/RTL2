@@ -289,13 +289,17 @@ begin
             NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
             continue;
           end;
-          ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aCallback);
+          var lOutputString := new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
+          if assigned(lOutputString) then
+            ProcessStringToLines(lOutputString) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aCallback);
         end;
       end;
 
       var d := lHandle.availableData;
       while (d ≠ nil) and (d.length > 0) do begin
-        ProcessStringToLines(new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding)) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aCallback);
+        var lRemainingOutputString := new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
+        if assigned(lRemainingOutputString) then
+          ProcessStringToLines(lRemainingOutputString) LastIncompleteLogLine(out lastIncompleteLogLine) Callback(aCallback);
         d := lHandle.availableData;
       end;
 
