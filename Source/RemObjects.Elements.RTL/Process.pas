@@ -269,8 +269,14 @@ begin
   {$IF TOFFEE}
   var lClosingOutput := false;
 
-  method HandleOutput(aOutput: NSPipe; aCallback: block(aLine: String); aEvent: &Event);
+  method HandleOutput(aOutput: nullable NSPipe; aCallback: block(aLine: String); aEvent: nullable &Event);
   begin
+    if not assigned(aOutput) then begin
+      if assigned(aEvent) then
+        aEvent.Set();
+      exit;
+    end;
+
     var lHandle := aOutput.fileHandleForReading;
     var lastIncompleteLogLine: String;
     try
@@ -307,11 +313,12 @@ begin
           Log($"Exception processing output from '{aCommand.LastPathComponent}': {E.Message}");
       end;
     finally
-      aEvent.Set();
+      if assigned(aEvent) then
+        aEvent.Set();
     end;
   end;
 
-  method CloseOutput(aOutput: NSPipe);
+  method CloseOutput(aOutput: nullable NSPipe);
   begin
     if not assigned(aOutput) then
       exit;
@@ -330,7 +337,7 @@ begin
     end;
   end;
 
-  method WaitForOutput(aEvent: &Event; aOutput: NSPipe);
+  method WaitForOutput(aEvent: nullable &Event; aOutput: nullable NSPipe);
   begin
     if not assigned(aEvent) then
       exit;
@@ -340,24 +347,32 @@ begin
     end;
   end;
 
-  var lStdOutFinished := if assigned(aStdOutCallback) then new &Event;
-  var lStdErrFinished := if assigned(aStdErrCallback) then new &Event;
+  var lStdOutFinished: nullable &Event;
+  var lStdErrFinished: nullable &Event;
   var lStdOutPipe: NSPipe;
   var lStdErrPipe: NSPipe;
 
   if assigned(aStdOutCallback) then begin
+    lStdOutFinished := new &Event;
     lStdOutPipe := NSPipe.pipe;
     (lTask as PlatformProcess).standardOutput := lStdOutPipe;
+    var lStdOutOutput := lStdOutPipe;
+    var lStdOutCallback := aStdOutCallback;
+    var lStdOutEvent := lStdOutFinished;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
-      HandleOutput(lStdOutPipe, aStdOutCallback, lStdOutFinished)
+      HandleOutput(lStdOutOutput, lStdOutCallback, lStdOutEvent)
     end;
   end;
 
   if assigned(aStdErrCallback) then begin
+    lStdErrFinished := new &Event;
     lStdErrPipe := NSPipe.pipe;
     (lTask as PlatformProcess).standardError := lStdErrPipe;
+    var lStdErrOutput := lStdErrPipe;
+    var lStdErrCallback := aStdErrCallback;
+    var lStdErrEvent := lStdErrFinished;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
-      HandleOutput(lStdErrPipe, aStdErrCallback, lStdErrFinished)
+      HandleOutput(lStdErrOutput, lStdErrCallback, lStdErrEvent)
     end;
   end;
 
