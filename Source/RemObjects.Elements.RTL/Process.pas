@@ -497,9 +497,53 @@ end;
 
 class method Process.QuoteArgumentIfNeeded(aArgument: not nullable String): not nullable String;
 begin
-  result := aArgument;
-  if result.Contains(" ") or result.Contains(";") then
-    result := String('"'+result.Replace('"', '\"')+'"')
+  var lNeedsQuoting := length(aArgument) = 0;
+  var lBackslashCount := 0;
+
+  if not lNeedsQuoting then begin
+    for i: Integer := 0 to length(aArgument)-1 do begin
+      var lCharacter := aArgument.Substring(i, 1);
+      if (lCharacter = " ") or (lCharacter = #9) or (lCharacter = #10) or (lCharacter = #13) or (lCharacter = #34) or (lCharacter = ";") then begin
+        lNeedsQuoting := true;
+        break;
+      end;
+    end;
+  end;
+
+  if not lNeedsQuoting then begin
+    result := aArgument;
+    exit;
+  end;
+
+  var lResult := new StringBuilder;
+  lResult.Append(#34);
+
+  for i: Integer := 0 to length(aArgument)-1 do begin
+    var lCharacter := aArgument.Substring(i, 1);
+    if lCharacter = #92 then begin
+      inc(lBackslashCount);
+    end
+    else begin
+      if lCharacter = #34 then begin
+        for j: Integer := 0 to (lBackslashCount*2) do
+          lResult.Append(#92);
+        lResult.Append(#34);
+        lBackslashCount := 0;
+      end
+      else begin
+        for j: Integer := 0 to lBackslashCount-1 do
+          lResult.Append(#92);
+        lBackslashCount := 0;
+        lResult.Append(lCharacter);
+      end;
+    end;
+  end;
+
+  for j: Integer := 0 to (lBackslashCount*2)-1 do
+    lResult.Append(#92);
+
+  lResult.Append(#34);
+  result := lResult.ToString as not nullable;
 end;
 
 class method Process.SplitQuotedArgumentString(aArgumentString: not nullable String): not nullable ImmutableList<String>;
@@ -507,29 +551,33 @@ begin
   var lResult := new List<String>;
   var lCurrent: String := ""; // why is this needed for lCurrent to not become an NSString?
   var lInQuotes := false;
+  var lArgumentStarted := false;
   for i: Integer := 0 to length(aArgumentString)-1 do begin
     var ch := aArgumentString[i];
     case ch of
-      ' ': begin
+      ' ', #9: begin
           if lInQuotes then begin
             lCurrent := lCurrent+ch;
           end
           else begin
-            lCurrent := lCurrent.Trim();
-            if length(lCurrent) > 0 then
+            if lArgumentStarted then
               lResult.Add(lCurrent);
             lCurrent := "";
+            lArgumentStarted := false;
           end;
         end;
-      '"': lInQuotes := not lInQuotes;
+      '"': begin
+          lInQuotes := not lInQuotes;
+          lArgumentStarted := true;
+        end;
       else begin
           lCurrent := lCurrent+ch;
+          lArgumentStarted := true;
         end;
     end;
   end;
 
-  lCurrent := lCurrent.Trim();
-  if length(lCurrent) > 0 then
+  if lArgumentStarted then
     lResult.Add(lCurrent);
 
   result := lResult;
@@ -540,43 +588,63 @@ begin
   var lResult := new List<String>;
   var lCurrent: String := ""; // why is this needed for lCurrent to not become an NSString?
   var lInQuotes := false;
-  var lEscaped := false;
+  var lArgumentStarted := false;
+  var lBackslashCount := 0;
   for i: Integer := 0 to length(aArgumentString)-1 do begin
     var ch := aArgumentString[i];
-    if lEscaped then begin
-      lCurrent := lCurrent+ch;
+    if ch = '\' then begin
+      inc(lBackslashCount);
+      lArgumentStarted := true;
     end
     else begin
-      case ch of
-        ' ': begin
-            if lInQuotes then begin
-              lCurrent := lCurrent+ch;
-            end
-            else begin
-              lCurrent := lCurrent.Trim();
-              if length(lCurrent) > 0 then
-                lResult.Add(lCurrent);
-              lCurrent := "";
-            end;
-          end;
-        '\': begin
-            if lInQuotes then begin
-              lEscaped := true;
-            end
-            else begin
-              lCurrent := lCurrent+ch;
-            end;
-          end;
-        '"': lInQuotes := not lInQuotes;
+      if ch = '"' then begin
+        for j: Integer := 0 to (lBackslashCount div 2)-1 do
+          lCurrent := lCurrent+'\';
+
+        if (lBackslashCount mod 2) = 0 then begin
+          lInQuotes := not lInQuotes;
+        end
         else begin
-            lCurrent := lCurrent+ch;
-          end;
+          lCurrent := lCurrent+'"';
+        end;
+
+        lArgumentStarted := true;
+        lBackslashCount := 0;
+      end
+      else begin
+        for j: Integer := 0 to lBackslashCount-1 do
+          lCurrent := lCurrent+'\';
+        lBackslashCount := 0;
+
+        case ch of
+          ' ', #9: begin
+              if lInQuotes then begin
+                lCurrent := lCurrent+ch;
+                lArgumentStarted := true;
+              end
+              else begin
+                if lArgumentStarted then
+                  lResult.Add(lCurrent);
+                lCurrent := "";
+                lArgumentStarted := false;
+              end;
+            end;
+          else begin
+              lCurrent := lCurrent+ch;
+              lArgumentStarted := true;
+            end;
+        end;
       end;
     end;
   end;
 
-  lCurrent := lCurrent.Trim();
-  if length(lCurrent) > 0 then
+  if lBackslashCount > 0 then begin
+    for j: Integer := 0 to lBackslashCount-1 do
+      lCurrent := lCurrent+'\';
+    lArgumentStarted := true;
+  end;
+
+  if lArgumentStarted then
     lResult.Add(lCurrent);
 
   result := lResult;
@@ -586,7 +654,7 @@ class method Process.JoinAndQuoteArgumentsForCommandLine(aArguments: not nullabl
 begin
   result := "";
   for each a in aArguments do begin
-    if length(a) > 0 then begin
+    if assigned(a) then begin
       if length(result) > 0 then
         result := result+" ";
       result := result+QuoteArgumentIfNeeded(a);
@@ -596,11 +664,9 @@ end;
 
 class method Process.StringForCommand(aCommand: not nullable String) Parameters(aArguments: nullable ImmutableList<String>): not nullable String;
 begin
-  if aCommand.Contains(" ") then
-    aCommand := String.Format('"{0}"', aCommand);
+  result := QuoteArgumentIfNeeded(aCommand);
   if length(aArguments) > 0 then
-    aCommand := aCommand+" "+JoinAndQuoteArgumentsForCommandLine(aArguments);
-  result := aCommand;
+    result := result+" "+JoinAndQuoteArgumentsForCommandLine(aArguments);
 end;
 
 end.
