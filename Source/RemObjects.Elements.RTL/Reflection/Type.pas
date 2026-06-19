@@ -187,7 +187,12 @@ begin
   for each a in AppDomain.CurrentDomain.GetAssemblies do try
     (result as List<&Type>).Add(a.GetTypes());
   except
-    on System.Reflection.ReflectionTypeLoadException do;
+    on lException: System.Reflection.ReflectionTypeLoadException do begin
+      if assigned(lException.Types) then
+        for each lType in lException.Types do
+          if assigned(lType) then
+            (result as List<&Type>).Add(lType);
+    end;
   end;
   {$ELSEIF ISLAND}
   result := sequence of &Type(mapped.AllTypes).ToList();
