@@ -42,13 +42,17 @@ type
 
     class method TryFromString(aString: nullable String; aAllowPartialJson: Boolean := false): nullable JsonObject; reintroduce;
     begin
+      aString := aString:Trim;
+      if aString:StartsWith("{") and aString:EndsWith("}") then
         result := JsonObject(JsonDocument.TryFromString(aString, aAllowPartialJson));
     end;
 
     class method TryFromString(aString: nullable String; out aException: Exception): nullable JsonObject; reintroduce;
     begin
       try
-        result := JsonDocument.TryFromString(aString, out aException) as JsonObject;
+        aString := aString:Trim;
+        if aString:StartsWith("{") and aString:EndsWith("}") then
+          result := JsonDocument.TryFromString(aString, out aException) as JsonObject;
       except
         on E: Exception do
           aException := E;
