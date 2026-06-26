@@ -87,8 +87,12 @@ end;
 method Process.Start;
 begin
   {$IF TOFFEE}
-  var error: NSError;
-  mapped.launchAndReturnError(var error);
+  var lError: NSError;
+  if not mapped.launchAndReturnError(var lError) then begin
+    if assigned(lError) then
+      raise new NSErrorException withError(lError);
+    raise new Exception($"Could not start process '{mapped.executableURL:path}'.");
+  end;
   {$ELSEIF ECHOES}
   mapped.Start();
   {$ELSEIF ISLAND}
@@ -356,10 +360,43 @@ begin
   var lStdOutPipe: NSPipe;
   var lStdErrPipe: NSPipe;
 
+  (lTask as PlatformProcess).standardInput := NSFileHandle.fileHandleWithNullDevice;
+
   if assigned(aStdOutCallback) then begin
     lStdOutFinished := new &Event;
     lStdOutPipe := NSPipe.pipe;
     (lTask as PlatformProcess).standardOutput := lStdOutPipe;
+  end;
+
+  if assigned(aStdErrCallback) then begin
+    lStdErrFinished := new &Event;
+    lStdErrPipe := NSPipe.pipe;
+    (lTask as PlatformProcess).standardError := lStdErrPipe;
+  end;
+
+  var lStartError: NSError;
+  if not (lTask as PlatformProcess).launchAndReturnError(var lStartError) then begin
+    if not assigned(aFinishedCallback) then begin
+      CloseOutput(lStdOutPipe);
+      CloseOutput(lStdErrPipe);
+
+      if assigned(lStartError) then
+        raise new NSErrorException withError(lStartError);
+      raise new Exception($"Could not start process '{(lTask as PlatformProcess).executableURL:path}'.");
+    end;
+
+    var lStartErrorMessage := if assigned(lStartError) then lStartError.description else $"Could not start process '{(lTask as PlatformProcess).executableURL:path}'.";
+    async begin
+      CloseOutput(lStdOutPipe);
+      CloseOutput(lStdErrPipe);
+      if assigned(aStdErrCallback) then
+        aStdErrCallback(lStartErrorMessage);
+      aFinishedCallback(-1);
+    end;
+    exit;
+  end;
+
+  if assigned(aStdOutCallback) then begin
     var lStdOutOutput := lStdOutPipe;
     var lStdOutCallback := aStdOutCallback;
     var lStdOutEvent := lStdOutFinished;
@@ -369,9 +406,6 @@ begin
   end;
 
   if assigned(aStdErrCallback) then begin
-    lStdErrFinished := new &Event;
-    lStdErrPipe := NSPipe.pipe;
-    (lTask as PlatformProcess).standardError := lStdErrPipe;
     var lStdErrOutput := lStdErrPipe;
     var lStdErrCallback := aStdErrCallback;
     var lStdErrEvent := lStdErrFinished;
@@ -379,8 +413,6 @@ begin
       HandleOutput(lStdErrOutput, lStdErrCallback, lStdErrEvent)
     end;
   end;
-
-  lTask.Start();
 
   if assigned(aFinishedCallback) then async begin
     lTask.WaitFor();
