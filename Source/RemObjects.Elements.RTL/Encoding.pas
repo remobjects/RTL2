@@ -27,13 +27,18 @@ type
     method GetBytes(aValue: String): not nullable array of Byte; inline;
     method GetBytes(aValue: String) includeBOM(aIncludeBOM: Boolean): not nullable array of Byte;
 
-    method GetString(aValue: nullable array of Byte): String;
-    method GetString(aValue: nullable array of Byte; aOffset: Integer): String;
-    method GetString(aValue: nullable array of Byte; aOffset: Integer; aCount: Integer): String;
+    method GetString(aValue: nullable array of Byte): not nullable String;
+    method GetString(aValue: nullable array of Byte; aOffset: Integer): not nullable String;
+    method GetString(aValue: nullable array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
+    method TryGetString(aValue: nullable array of Byte): nullable String;
+    method TryGetString(aValue: nullable array of Byte; aOffset: Integer): nullable String;
+    method TryGetString(aValue: nullable array of Byte; aOffset: Integer; aCount: Integer): nullable String;
 
-    method GetString(aValue: not nullable ImmutableBinary): String;
+    method GetString(aValue: not nullable ImmutableBinary): not nullable String;
+    method TryGetString(aValue: not nullable ImmutableBinary): nullable String;
     {$IF ISLAND AND DARWIN AND NOT TOFFEE}
-    method GetString(aValue: not nullable Foundation.NSData): String;
+    method GetString(aValue: not nullable Foundation.NSData): not nullable String;
+    method TryGetString(aValue: not nullable Foundation.NSData): nullable String;
     {$ENDIF}
 
     class method GetEncoding(aName: not nullable String): nullable Encoding;
@@ -131,7 +136,15 @@ begin
   {$ENDIF}
 end;
 
-method Encoding.GetString(aValue: nullable array of Byte; aOffset: Integer; aCount: Integer): String;
+method Encoding.GetString(aValue: nullable array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
+begin
+  var lResult := TryGetString(aValue, aOffset, aCount);
+  if not assigned(lResult) then
+    raise new FormatException("Unable to convert input data");
+  result := lResult as not nullable;
+end;
+
+method Encoding.TryGetString(aValue: nullable array of Byte; aOffset: Integer; aCount: Integer): nullable String;
 begin
   if not assigned(aValue) or (aCount = 0) then
     exit "";
@@ -146,8 +159,6 @@ begin
   result := Buffer.toString;
   {$ELSEIF TOFFEE}
   result := new NSString withBytes(@aValue[aOffset]) length(aCount) encoding(self.AsNSStringEncoding);
-  if not assigned(result) then
-    raise new FormatException("Unable to convert input data");
   {$ELSEIF ECHOES}
   SkipBOM(aValue, var aOffset, var aCount);
   result := mapped.GetString(aValue, aOffset, aCount);
@@ -185,34 +196,58 @@ begin
   end
 end;
 
-method Encoding.GetString(aValue: not nullable ImmutableBinary): String;
+method Encoding.GetString(aValue: not nullable ImmutableBinary): not nullable String;
+begin
+  var lResult := TryGetString(aValue);
+  if not assigned(lResult) then
+    raise new FormatException("Unable to convert input data");
+  result := lResult as not nullable;
+end;
+
+method Encoding.TryGetString(aValue: not nullable ImmutableBinary): nullable String;
 begin
   {$IF NOT TOFFEE}
-  result := GetString(aValue.ToArray());
+  result := TryGetString(aValue.ToArray());
   {$ELSE}
   result := new NSString withData(aValue) encoding(self.AsNSStringEncoding);
-  if not assigned(result) then
-    raise new FormatException("Unable to convert input data");
   {$ENDIF}
 end;
 
 {$IF ISLAND AND DARWIN AND NOT TOFFEE}
-method Encoding.GetString(aValue: not nullable Foundation.NSData): String;
+method Encoding.GetString(aValue: not nullable Foundation.NSData): not nullable String;
+begin
+  var lResult := TryGetString(aValue);
+  if not assigned(lResult) then
+    raise new FormatException("Unable to convert input data");
+  result := lResult as not nullable;
+end;
+
+method Encoding.TryGetString(aValue: not nullable Foundation.NSData): nullable String;
 begin
   var lArray := new byte[aValue.length];
   aValue.getBytes(@lArray[0]) length(aValue.length);
-  result := GetString(lArray);
+  result := TryGetString(lArray);
 end;
 {$ENDIF}
 
-method Encoding.GetString(aValue: nullable array of Byte): String;
+method Encoding.GetString(aValue: nullable array of Byte): not nullable String;
 begin
   exit GetString(aValue, 0, length(aValue));
 end;
 
-method Encoding.GetString(aValue: nullable array of Byte; aOffset: Integer): String;
+method Encoding.GetString(aValue: nullable array of Byte; aOffset: Integer): not nullable String;
 begin
   exit GetString(aValue, aOffset, length(aValue)-aOffset);
+end;
+
+method Encoding.TryGetString(aValue: nullable array of Byte): nullable String;
+begin
+  exit TryGetString(aValue, 0, length(aValue));
+end;
+
+method Encoding.TryGetString(aValue: nullable array of Byte; aOffset: Integer): nullable String;
+begin
+  exit TryGetString(aValue, aOffset, length(aValue)-aOffset);
 end;
 
 class method Encoding.GetEncoding(aName: not nullable String): nullable Encoding;
