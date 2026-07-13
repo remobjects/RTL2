@@ -922,7 +922,7 @@ begin
   var lDays := lHours div 24;
   lHours := lHours mod 24;
   if lDays > 0 then
-    result := result+lHours.ToString+" "+"days".PluralInvariant(lDays);
+    result := result+lHours.ToString+" "+"day".PluralInvariant(lDays)+" ";
   if (lHours > 0) or (lDays > 0) then
     result := result+lHours.ToString+":";
   if (lMinutes > 0) or (lHours > 0) or (lDays > 0) then begin
