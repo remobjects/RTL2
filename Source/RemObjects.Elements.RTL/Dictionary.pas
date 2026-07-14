@@ -300,7 +300,7 @@ type
     method GetSequence<T, U>(aSelf: NSDictionary<T,U>) : sequence of KeyValuePair<T,U>; where T is NSObject, U is NSObject; iterator;
     begin
       for each el in aSelf.allKeys do
-       yield new KeyValuePair<T,U>(T(el), aSelf[el]);
+        yield new KeyValuePair<T,U>(T(el), aSelf[el]);
     end;
     {$ELSEIF ECHOES}
     method GetSequence<T, U>(aSelf: System.Collections.Generic.Dictionary<T,U>) : sequence of KeyValuePair<T,U>; iterator;
