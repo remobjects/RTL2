@@ -245,5 +245,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpStringRequestContent.pas">
       <VirtualFolder>Http</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Units.pas" />
   </ItemGroup>
 </Project>
