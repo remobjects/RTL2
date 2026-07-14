@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL.Units;
 
+{$IF ELEMENTS130UP}
+
 type
   Distance = public dimension(Double);
   Area = public dimension(Distance**2);
@@ -323,5 +325,7 @@ type
   const c = 299792458mps; public;
   const g0 = 9.80665mps²; public;
   const G = 0.000000000066743 GravitationalConstantUnits; public;
+
+{$ENDIF}
 
 end.
