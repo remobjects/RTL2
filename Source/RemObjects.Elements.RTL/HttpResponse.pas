@@ -36,18 +36,36 @@ type
 
     method GetContentAsStreamedString(aEncoding: Encoding := nil; aContentCallback: not nullable HttpStringStreamResponseBlock<String>);
     begin
+      GetContentAsStreamedStringControlled(aEncoding) begin
+        aContentCallback(aData, aDone);
+        result := HttpStreamCallbackResult.ContinueReading;
+      end;
+    end;
+
+    method GetContentAsStreamedStringControlled(aEncoding: Encoding := nil; aContentCallback: not nullable HttpControlledStringStreamResponseBlock<String>);
+    begin
       if aEncoding = nil then
         aEncoding := Encoding.Default;
 
       var lPendingData := new Binary;
-      GetContentAsStreamedBinary begin
+      var lStopped := false;
+      GetContentAsStreamedBinaryControlled begin
+        result := HttpStreamCallbackResult.ContinueReading;
+        if lStopped then begin
+          result := HttpStreamCallbackResult.StopReading;
+          exit;
+        end;
         if aData:Length > 0 then begin
           lPendingData.Write(aData.ToArray);
           try
             var s := aEncoding.GetString(lPendingData);
             if assigned(s) then begin
               lPendingData.Clear;
-              aContentCallback(s, false);
+              result := aContentCallback(s, false);
+              if result = HttpStreamCallbackResult.StopReading then begin
+                lStopped := true;
+                exit;
+              end;
             end;
           except
             on e: FormatException do begin
@@ -61,29 +79,56 @@ type
             try
               var s := aEncoding.GetString(lPendingData);
               if assigned(s) then
-                aContentCallback(s, false);
+                result := aContentCallback(s, false);
+              if result = HttpStreamCallbackResult.StopReading then begin
+                lStopped := true;
+                exit;
+              end;
             except
               on e: FormatException do begin
               end;
             end;
             lPendingData.Clear;
           end;
-          aContentCallback(nil, true);
+          result := aContentCallback(nil, true);
+          if result = HttpStreamCallbackResult.StopReading then
+            lStopped := true;
         end;
       end;
     end;
 
     method GetContentAsLines(aEncoding: Encoding := nil; aContentCallback: not nullable HttpStringStreamResponseBlock<String>);
     begin
+      GetContentAsLinesControlled(aEncoding) begin
+        aContentCallback(aData, aDone);
+        result := HttpStreamCallbackResult.ContinueReading;
+      end;
+    end;
+
+    method GetContentAsLinesControlled(aEncoding: Encoding := nil; aContentCallback: not nullable HttpControlledStringStreamResponseBlock<String>);
+    begin
       var lLastIncompleteLine: String;
-      GetContentAsStreamedString begin
+      var lStopped := false;
+      GetContentAsStreamedStringControlled(aEncoding) begin
+        result := HttpStreamCallbackResult.ContinueReading;
+        if lStopped then begin
+          result := HttpStreamCallbackResult.StopReading;
+          exit;
+        end;
         if aData:Length > 0 then begin
           Process.ProcessStringToLines(aData) LastIncompleteLogLine(out lLastIncompleteLine) begin
-            aContentCallback(aLine, false);
+            if not lStopped then begin
+              if aContentCallback(aLine, false) = HttpStreamCallbackResult.StopReading then
+                lStopped := true;
+            end;
           end;
         end;
+        if lStopped then begin
+          result := HttpStreamCallbackResult.StopReading;
+          exit;
+        end;
         if aDone then
-          aContentCallback(nil, true);
+          result := aContentCallback(nil, true);
       end;
     end;
 
@@ -146,6 +191,15 @@ type
     {$IF WEBASSEMBLY}[Warning("Binary data is not supported on WebAssembly")]{$ENDIF}
     method GetContentAsStreamedBinary(aContentCallback: not nullable HttpStringStreamResponseBlock<ImmutableBinary>);
     begin
+      GetContentAsStreamedBinaryControlled begin
+        aContentCallback(aData, aDone);
+        result := HttpStreamCallbackResult.ContinueReading;
+      end;
+    end;
+
+    {$IF WEBASSEMBLY}[Warning("Binary data is not supported on WebAssembly")]{$ENDIF}
+    method GetContentAsStreamedBinaryControlled(aContentCallback: not nullable HttpControlledStringStreamResponseBlock<ImmutableBinary>);
+    begin
       {$IF COOPER}
       async begin
         var allData := new Binary;
@@ -156,32 +210,39 @@ type
           allData.Write(data, len);
           len := stream.read(data);
         end;
-        aContentCallback(allData, true);
+        if aContentCallback(allData, true) = HttpStreamCallbackResult.StopReading then
+          Cancel();
         {$HINT implement proper streaming}
       end;
       {$ELSEIF COCOA}
       if assigned(Data) then begin
 
-        aContentCallback(Data, true);
+        if aContentCallback(Data, true) = HttpStreamCallbackResult.StopReading then
+          Cancel();
 
       end
       else begin
 
+        var lCancel := false;
         locking self do begin
-          if fIncomingData:Length > 0 then
-            aContentCallback(fIncomingData, false);
-          fIncomingDataCallback := (data) -> begin
-            aContentCallback(data, false);
+          if fIncomingData:Length > 0 then begin
+            lCancel := aContentCallback(fIncomingData, false) = HttpStreamCallbackResult.StopReading;
           end;
-          fIncomingDataCompleteCallback := (error) -> begin
-            aContentCallback(nil, true);
+          if not lCancel then begin
+            fIncomingDataCallback := (data) -> begin
+              result := aContentCallback(data, false);
+            end;
+            fIncomingDataCompleteCallback := (error) -> begin
+              aContentCallback(nil, true);
+            end;
           end;
         end;
+        if lCancel then
+          Cancel();
 
       end;
       {$ELSEIF ECHOES}
       async begin
-        var allData := new System.IO.MemoryStream();
         using lStream := {$IF HTTPCLIENT}await response.Content.ReadAsStreamAsync(){$ELSE}Response.GetResponseStream(){$ENDIF} do begin
           var lBytesRead: Int64;
           var lBufferSize := 8192; // You can choose an appropriate buffer size
@@ -190,12 +251,14 @@ type
             lBytesRead := lStream.Read(lBuffer, 0, lBufferSize);
             if lBytesRead > 0 then begin
               var lData := new ImmutableBinary(lBuffer, 0, lBytesRead);
-              aContentCallback(lData, false);
+              if aContentCallback(lData, false) = HttpStreamCallbackResult.StopReading then begin
+                Cancel();
+                exit;
+              end;
             end;
           until lBytesRead = 0;
           aContentCallback(nil, true);
         end;
-        aContentCallback(allData, true);
         {$HINT implement proper streaming}
       end;
       {$ELSEIF WEBASSEMBLY}
@@ -203,7 +266,8 @@ type
       {$ELSEIF ISLAND}
       async begin
         var allData := new Binary(Data.ToArray);
-        aContentCallback(allData, true);
+        if aContentCallback(allData, true) = HttpStreamCallbackResult.StopReading then
+          Cancel();
         {$HINT implement proper streaming}
       end;
       {$ENDIF}
@@ -483,11 +547,35 @@ type
       {$ENDIF}
     end;
 
+    method Cancel;
+    begin
+      {$IF COOPER}
+      Connection:disconnect();
+      {$ELSEIF DARWIN}
+      var lTask: NSURLSessionDataTask;
+      var lSession: NSURLSession;
+      locking self do begin
+        lTask := fTask;
+        fTask := nil;
+        lSession := fSession;
+        fSession := nil;
+      end;
+      lTask:cancel();
+      lSession:invalidateAndCancel();
+      {$ELSEIF ECHOES}
+      CancelResponse();
+      {$ELSEIF WEBASSEMBLY}
+      fOriginalRequest:abort();
+      {$ELSEIF ISLAND}
+      Dispose();
+      {$ENDIF}
+    end;
+
     {$IF ECHOES OR ISLAND}
     method Dispose;
     begin
       {$IF ECHOES}
-      (Response as IDisposable):Dispose;
+      CancelResponse(false);
       {$ENDIF}
     end;
 
@@ -618,5 +706,7 @@ type
   HttpResponseBlock = public block (aResponse: not nullable HttpResponse);
   HttpContentResponseBlock<T> = public block (aResponseContent: not nullable HttpResponseContent<T>);
   HttpStringStreamResponseBlock<T> = public block (aData: nullable T; aDone: Boolean);
+  HttpControlledStringStreamResponseBlock<T> = public block (aData: nullable T; aDone: Boolean): HttpStreamCallbackResult;
+  HttpStreamCallbackResult = public enum(ContinueReading, StopReading);
 
 end.

@@ -14,16 +14,26 @@ type
       fGotResponseCallback := aGotResponseCallback;
     end;
 
+    method SetTask(aTask: NSURLSessionDataTask; aSession: NSURLSession);
+    begin
+      locking self do begin
+        fTask := aTask;
+        fSession := aSession;
+      end;
+    end;
+
   private
 
     property Request: HttpRequest read private write;
+    var fTask: NSURLSessionDataTask;
+    var fSession: NSURLSession;
     var fGotResponseCallback: block(aResponse: NSHTTPURLResponse); private;
 
     var fIncomingData: Binary;
     var fBytesReceived: Int64;
     var fBytesExpectedToReceive: nullable Int64;
 
-    var fIncomingDataCallback: block(aData: not nullable ImmutableBinary);
+    var fIncomingDataCallback: block(aData: not nullable ImmutableBinary): HttpStreamCallbackResult;
     var fIncomingDataCompleteCallback: block(aException: nullable Exception);
     var fIncomingDataComplete := new &Event;
 
@@ -124,6 +134,8 @@ type
     begin
       //Log($"didCompleteWithError {error}");
       locking self do begin
+        fTask := nil;
+        fSession := nil;
         Data := fIncomingData;
         completeWithException(if assigned(error) then new Exception(error.description));
       end;
@@ -132,6 +144,7 @@ type
     method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didReceiveData(aData: NSData);
     begin
       //Log($"didReceiveData {aData:length}");
+      var lCancel := false;
       locking self do begin
         try
           var lData := LoadData(aData);
@@ -140,12 +153,14 @@ type
           if assigned(Request.DownloadProgress) then
             Request.DownloadProgress(fBytesReceived, fBytesExpectedToReceive);
           if assigned(fIncomingDataCallback) then
-            fIncomingDataCallback(lData);
+            lCancel := fIncomingDataCallback(lData) = HttpStreamCallbackResult.StopReading;
         except
           on e: Exception do
             completeWithException(e);
         end;
       end;
+      if lCancel then
+        Cancel();
     end;
 
   end;
