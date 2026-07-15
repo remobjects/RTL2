@@ -141,7 +141,7 @@ begin
     if aRequest.Method = HttpRequestMethod.Post then
       lConnection.DoOutput := true;
     lConnection.RequestMethod := aRequest.Method.ToHttpString;
-    lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
+    lConnection.ConnectTimeout := Integer((aRequest.Timeout as Double)*1000);
     for each k in aRequest.Headers.Keys do
       lConnection.setRequestProperty(k, aRequest.Headers[k]);
     if assigned(aRequest.Accept) then
@@ -194,7 +194,10 @@ begin
           lHandler.Proxy := new System.Net.WebProxy(aRequest.Proxy.Host, aRequest.Proxy.Port);
         end;
     end;
-    using lClient := new System.Net.Http.HttpClient(lHandler) do begin
+    var lClient := new System.Net.Http.HttpClient(lHandler);
+    var lResponseOwnsClient := false;
+    var cts: System.Threading.CancellationTokenSource;
+    try
       try
         var lRequestMessage := new System.Net.Http.HttpRequestMessage();
         lRequestMessage.RequestUri := aRequest.Url;
@@ -213,16 +216,21 @@ begin
         for each k in aRequest.Headers.Keys do
           lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
 
-        var cts := new System.Threading.CancellationTokenSource();
-        cts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout));
+        cts := new System.Threading.CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout as Double));
         locking aRequest.Monitor do aRequest.fCancelSource := cts;
 
-        var lRepsonseMessage := await lClient.SendAsync(lRequestMessage, cts.Token);
+        var lRepsonseMessage := await lClient.SendAsync(lRequestMessage, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        locking aRequest.Monitor do aRequest.fCancelSource := nil;
         if lRepsonseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect then begin
-          aResponseCallback(new HttpResponse(lRepsonseMessage, new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest)));
+          var lResponse := new HttpResponse(lRepsonseMessage, new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest), cts, lClient);
+          lResponseOwnsClient := true;
+          aResponseCallback(lResponse);
         end
         else begin
-          aResponseCallback(new HttpResponse(lRepsonseMessage));
+          var lResponse := new HttpResponse(lRepsonseMessage, cts, lClient);
+          lResponseOwnsClient := true;
+          aResponseCallback(lResponse);
         end;
       except
         on E: System.OperationCanceledException do
@@ -231,6 +239,11 @@ begin
           aResponseCallback(new HttpResponse withException(E));
       finally
         locking aRequest.Monitor do aRequest.fCancelSource := nil;
+      end;
+    finally
+      if not lResponseOwnsClient then begin
+        lClient:Dispose();
+        cts:Dispose();
       end;
     end;
     {$ELSE}
@@ -312,7 +325,7 @@ begin
     //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
     nsUrlRequest.allowsCellularAccess := aRequest.AllowCellularAccess;
     nsUrlRequest.HTTPMethod := aRequest.Method.ToHttpString;
-    nsUrlRequest.timeoutInterval := aRequest.Timeout;
+    nsUrlRequest.timeoutInterval := aRequest.Timeout as Double;
 
     if assigned(aRequest.Content) then begin
       if defined("TOFFEE") then
@@ -332,7 +345,8 @@ begin
 
     var lResponse: HttpResponse;
     lResponse := new HttpResponse(aRequest, (aResponse) -> begin
-      aRequest.fCancelTask := nil;
+      locking aRequest.Monitor do
+        aRequest.fCancelTask := nil;
       var nsHttpUrlResponse := NSHTTPURLResponse(aResponse);
       lResponse.Code := nsHttpUrlResponse.statusCode;
       dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
@@ -360,7 +374,9 @@ begin
     end;
     var lSession := NSURLSession.sessionWithConfiguration(lConfig) &delegate(lResponse) delegateQueue(nil);
     var lRequest := lSession.dataTaskWithRequest(nsUrlRequest);// completionHandler((data, nsUrlResponse, error) -> begin
-    aRequest.fCancelTask := lRequest;
+    lResponse.SetTask(lRequest, lSession);
+    locking aRequest.Monitor do
+      aRequest.fCancelTask := lRequest;
     lRequest.resume();
   except
     on E: Exception do
@@ -455,7 +471,7 @@ begin
     if aRequest.Method = HttpRequestMethod.Post then
       lConnection.DoOutput := true;
     lConnection.RequestMethod := aRequest.Method.ToHttpString;
-    lConnection.ConnectTimeout := Integer(aRequest.Timeout*1000);
+    lConnection.ConnectTimeout := Integer((aRequest.Timeout as Double)*1000);
     for each k in aRequest.Headers.Keys do
       lConnection.setRequestProperty(k, aRequest.Headers[k]);
     if assigned(aRequest.Accept) then
@@ -503,7 +519,10 @@ begin
           lHandler.Proxy := new System.Net.WebProxy(aRequest.Proxy.Host, aRequest.Proxy.Port);
         end;
     end;
-    using lClient := new System.Net.Http.HttpClient(lHandler) do begin
+    var lClient := new System.Net.Http.HttpClient(lHandler);
+    var lResponseOwnsClient := false;
+    var lCts: System.Threading.CancellationTokenSource;
+    try
       var lRequestMessage := new System.Net.Http.HttpRequestMessage();
       lRequestMessage.RequestUri := aRequest.Url;
       lRequestMessage.Method := new System.Net.Http.HttpMethod(aRequest.Method.ToHttpString);
@@ -522,19 +541,26 @@ begin
       for each k in aRequest.Headers.Keys do
         lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
 
-      var lCts := new System.Threading.CancellationTokenSource();
-      lCts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout));
+      lCts := new System.Threading.CancellationTokenSource();
+      lCts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout as Double));
       locking aRequest.Monitor do aRequest.fCancelSource := lCts;
       try
-        var lResponseMessage := lClient.SendAsync(lRequestMessage, lCts.Token).Result;
+        var lResponseMessage := lClient.SendAsync(lRequestMessage, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, lCts.Token).Result;
+        locking aRequest.Monitor do aRequest.fCancelSource := nil;
         if (lResponseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect) and aThrowOnError then
           raise new HttpException(Integer(lResponseMessage.StatusCode), aRequest);
-        result := new HttpResponse(lResponseMessage);
+        result := new HttpResponse(lResponseMessage, lCts, lClient);
+        lResponseOwnsClient := true;
       except
         on E: Exception do
           exit HandleEchoesHttpClientException(E, aRequest, aThrowOnError);
       finally
         locking aRequest.Monitor do aRequest.fCancelSource := nil;
+      end;
+    finally
+      if not lResponseOwnsClient then begin
+        lClient:Dispose();
+        lCts:Dispose();
       end;
     end;
     {$ELSE}
@@ -822,7 +848,7 @@ begin
   //nsUrlRequest.AllowAutoRedirect := aRequest.FollowRedirects;
   nsUrlRequest.allowsCellularAccess := aRequest.AllowCellularAccess;
   nsUrlRequest.HTTPMethod := aRequest.Method.ToHttpString;
-  nsUrlRequest.timeoutInterval := aRequest.Timeout;
+  nsUrlRequest.timeoutInterval := aRequest.Timeout as Double;
 
   if assigned(aRequest.Content) then begin
     if defined("TOFFEE") then

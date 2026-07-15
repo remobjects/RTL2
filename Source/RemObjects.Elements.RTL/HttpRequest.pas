@@ -2,6 +2,9 @@
 
 interface
 
+uses
+    RemObjects.Elements.RTL.Units;
+
 type
   HttpProxyMode = public enum (None, System, Custom);
 
@@ -38,7 +41,7 @@ type
 
     property Proxy: HttpProxySettings;
 
-    property Timeout: Double := 10.0; // Seconds
+    property Timeout: Seconds := 10.0;
     property UploadProgress: HttpProgressBlock;
     property DownloadProgress: HttpProgressBlock;
 

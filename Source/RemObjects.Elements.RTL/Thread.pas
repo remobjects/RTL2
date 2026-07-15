@@ -4,6 +4,9 @@
 
 interface
 
+uses
+  RemObjects.Elements.RTL.Units;
+
 type
   {$IF COOPER}
   PlatformThread = public java.lang.Thread;
@@ -28,11 +31,15 @@ type
 
     {$IF COOPER OR ECHOES}
     method &Join; mapped to &Join;
-    method &Join(Timeout: Integer);  mapped to &Join(Timeout);
+    [Obsolete]
+    method &Join(aTimeoutInMilliseconds: Integer);  mapped to &Join(aTimeoutInMilliseconds);
+    method &Join(aTimeout: Milliseconds);  mapped to &Join(aTimeout as Double as Integer);
     {$ENDIF}
     {$IF TOFFEE}
     method &Join;
-    method &Join(Timeout: Integer);
+    [Obsolete]
+    method &Join(aTimeoutInMilliseconds: Integer);
+    method &Join(aTimeout: Milliseconds);
     {$ENDIF}
 
     {$HIDE W28}
@@ -188,7 +195,12 @@ method Thread.&Join;
 begin
 end;
 
-method Thread.&Join(Timeout: Integer);
+method Thread.&Join(aTimeoutInMilliseconds: Integer);
+begin
+
+end;
+
+method Thread.&Join(aTimeout: Milliseconds);
 begin
 
 end;

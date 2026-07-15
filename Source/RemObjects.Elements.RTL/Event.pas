@@ -4,6 +4,9 @@
 
 interface
 
+uses
+  RemObjects.Elements.RTL.Units;
+
 {$IF COOPER}
 type PlatformEvent = public java.util.concurrent.locks.ReentrantLock;
 {$ELSEIF TOFFEE}
@@ -34,7 +37,9 @@ type
     method &Set;
     method Reset;
     method WaitFor;
+    [Obsolete]
     method WaitFor(aTimeoutInMilliseconds: Int32): Boolean;
+    method WaitFor(aTimeout: Milliseconds): Boolean;
     method WaitFor(aTimeout: TimeSpan): Boolean;
 
     method Dispose();
@@ -108,28 +113,33 @@ end;
 
 method &Event.WaitFor(aTimeoutInMilliseconds: Int32): Boolean;
 begin
+  WaitFor(Milliseconds(aTimeoutInMilliseconds));
+end;
+
+method &Event.WaitFor(aTimeout: Milliseconds): Boolean;
+begin
   {$IF COOPER}
   fPlatformEvent.lock();
   if not fState then
-    result := fCond.await(aTimeoutInMilliseconds, java.util.concurrent.TimeUnit.MILLISECONDS)
+    result := fCond.await(aTimeout as Double as Integer, java.util.concurrent.TimeUnit.MILLISECONDS)
   else
     result :=  true;
   if fMode = EventMode.AutoReset then
     fState := false;
   fPlatformEvent.unlock();
   {$ELSEIF TOFFEE}
-  result := WaitFor(TimeSpan.FromMilliseconds(aTimeoutInMilliseconds));
+  result := WaitFor(TimeSpan.FromMilliseconds(aTimeout as Double as Integer));
   {$ELSEIF ECHOES}
-  result := fPlatformEvent.WaitOne(aTimeoutInMilliseconds);
+  result := fPlatformEvent.WaitOne(aTimeout as Double as Integer);
   {$ELSEIF ISLAND}
-  result := fPlatformEvent.Wait(aTimeoutInMilliseconds);
+  result := fPlatformEvent.Wait(aTimeout as Double as Integer);
   {$ENDIF}
 end;
 
 method &Event.WaitFor(aTimeout: Timespan): Boolean;
 begin
   {$IF COOPER}
-  result := WaitFor(Int32(aTimeout.TotalMilliSeconds));
+  result := WaitFor(aTimeout);
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
   var lWaitTime := DateTime.UtcNow.Add(aTimeout);
@@ -143,7 +153,7 @@ begin
   {$ELSEIF ECHOES}
   result := fPlatformEvent.WaitOne(aTimeout);
   {$ELSEIF ISLAND}
-  result := fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds));
+  result := fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds as Double));
   {$ENDIF}
 end;
 

@@ -1,5 +1,8 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+uses
+    RemObjects.Elements.RTL.Units;
+
 type
   Stopwatch = public class
   public
@@ -14,7 +17,7 @@ type
       StartTime := DateTime.UtcNow;
     end;
 
-    property ElapsedTime: Double read (DateTime.UtcNow-StartTime).TotalMilliSeconds;
+    property ElapsedTime: Milliseconds read (DateTime.UtcNow-StartTime).TotalMilliSeconds;
     property StartTime: DateTime read private write;
 
     [ToString]

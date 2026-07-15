@@ -2,21 +2,24 @@
 
 interface
 
+uses
+  RemObjects.Elements.RTL.Units;
+
 type
   TimeSpan = public record mapped to {$IFDEF ECHOES}System.TimeSpan{$ELSEIF TOFFEE}NSTimeInterval{$ELSE}Int64{$ENDIF}
   private
 
-    method get_TotalMilliSeconds: Double;
     method get_Days: Integer;
     method get_Hours: Integer;
     method get_Minutes: Integer;
     method get_Seconds: Integer;
     method get_Milliseconds: Integer;
     method get_Ticks: Int64;
-    method get_TotalDays: Double;
-    method get_TotalHours: Double;
-    method get_TotalMinutes: Double;
-    method get_TotalSeconds: Double;
+    method get_TotalDays: Days;
+    method get_TotalHours: Hours;
+    method get_TotalMinutes: Minutes;
+    method get_TotalSeconds: Seconds;
+    method get_TotalMilliSeconds: Milliseconds;
 
   public
 
@@ -34,11 +37,11 @@ type
     property Milliseconds: Integer read get_Milliseconds;
     property Ticks: Int64 read get_Ticks;
 
-    property TotalDays: Double read get_TotalDays;
-    property TotalHours: Double read get_TotalHours;
-    property TotalMinutes: Double read get_TotalMinutes;
-    property TotalSeconds: Double read get_TotalSeconds;
-    property TotalMilliSeconds: Double read get_TotalMilliSeconds;
+    property TotalDays: Days read get_TotalDays;
+    property TotalHours: Hours read get_TotalHours;
+    property TotalMinutes: Minutes read get_TotalMinutes;
+    property TotalSeconds: Seconds read get_TotalSeconds;
+    property TotalMilliSeconds: Milliseconds read get_TotalMilliSeconds;
 
     constructor(aTicks: Int64);
     constructor(h,m,s: Int32);
@@ -94,27 +97,27 @@ begin
   exit new TimeSpan(((((((((Int64(d) * 24) + h) * 60) + m) * 60) + s) * 1000) + ms) * TicksPerMillisecond);
 end;
 
-method TimeSpan.get_TotalMilliSeconds: Double;
+method TimeSpan.get_TotalMilliSeconds: Milliseconds;
 begin
   exit Double(Ticks) / TicksPerMillisecond;
 end;
 
-method TimeSpan.get_TotalSeconds: Double;
+method TimeSpan.get_TotalSeconds: Seconds;
 begin
   exit Double(Ticks) / TicksPerSecond;
 end;
 
-method TimeSpan.get_TotalMinutes: Double;
+method TimeSpan.get_TotalMinutes: Minutes;
 begin
   exit Double(Ticks) / TicksPerMinute;
 end;
 
-method TimeSpan.get_TotalHours: Double;
+method TimeSpan.get_TotalHours: Hours;
 begin
   exit Double(Ticks) / TicksPerHour;
 end;
 
-method TimeSpan.get_TotalDays: Double;
+method TimeSpan.get_TotalDays: Days;
 begin
   exit Double(Ticks) / TicksPerDay;
 end;

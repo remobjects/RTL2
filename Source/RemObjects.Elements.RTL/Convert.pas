@@ -2,6 +2,9 @@
 
 interface
 
+uses
+    RemObjects.Elements.RTL.Units;
+
 type
   Convert = public static class
   private
@@ -61,7 +64,7 @@ type
     method ToDouble(aValue: not nullable String; aLocale: Locale := Locale.Current): Double;
     method ToDoubleInvariant(aValue: not nullable String): Double; inline;
 
-    method MillisecondsToTimeString(aMS: Double): String;
+    method MillisecondsToTimeString(aMS: Milliseconds): String;
     method DaysToPrettyString(aDays: Integer): String;
     method MemorySizeToString(aSize: UInt64): String;
 
@@ -907,9 +910,9 @@ begin
   {$ENDIF}
 end;
 
-method Convert.MillisecondsToTimeString(aMS: Double): String;
+method Convert.MillisecondsToTimeString(aMS: Milliseconds): String;
 begin
-  var lValue := aMS as Int64;
+  var lValue := aMS as Double as Int64;
   var lMilliSeconds := lValue mod 1000;
   var lSeconds := lValue div 1000;
   var lMinutes := lSeconds div 60;
