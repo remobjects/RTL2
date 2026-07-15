@@ -7,8 +7,7 @@ type
     constructor;
     constructor (aRoot : not nullable XmlElement);
   assembly
-    fXmlParser: XmlParser;
-    //fFormatOptions: XmlFormattingOptions;
+    fFormatOptions: XmlFormattingOptions;
     fLineBreak: String;
   private
     fNodes: List<XmlNode> := new List<XmlNode>;
@@ -413,7 +412,6 @@ begin
       var XmlStr:String := aFileName.ReadText();
       var lXmlParser := new XmlParser(XmlStr);
       result := lXmlParser.Parse();
-      result.fXmlParser := lXmlParser;
       if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
     end;
   except
@@ -511,7 +509,6 @@ begin
   try
     var lXmlParser := new XmlParser(aString);
     result := lXmlParser.Parse();
-    result.fXmlParser := lXmlParser;
     if (not aAllowBrokenDocument) and assigned(result.ErrorInfo) then result := nil;
   except
     on E: Exception do
@@ -563,8 +560,9 @@ end;
 
 method XmlDocument.ToString(aSaveFormatted: Boolean; aFormatOptions: XmlFormattingOptions): String;
 begin
-  fLineBreak := aFormatOptions.NewLineString;
-  if (fLineBreak = nil) and (fXmlParser <> nil) then fLineBreak := fXmlParser.fLineBreak;
+  var lNewLine := aFormatOptions.NewLineString;
+  if lNewLine <> nil then fLineBreak := lNewLine
+  else if fLineBreak = nil then fLineBreak := Environment.LineBreak;
   var Sb := new StringBuilder;
   result:="";
   var lFormatInsideTags := false;
@@ -596,14 +594,14 @@ begin
   if Sb.Length > 0 then Sb.Append("?>");
   if not(aSaveFormatted) or
     (aSaveFormatted and
-      (fXmlParser <> nil) and
+      (fFormatOptions <> nil) and
       (
         (aFormatOptions.WhitespaceStyle <> XmlWhitespaceStyle.PreserveWhitespaceAroundText) or
         (
-          (fXmlParser.FormatOptions.WhitespaceStyle = aFormatOptions.WhitespaceStyle) and
-          (fXmlParser.FormatOptions.NewLineForElements = aFormatOptions.NewLineForElements) and
-          (fXmlParser.FormatOptions.Indentation = aFormatOptions.Indentation) and
-          (fXmlParser.FormatOptions.NewLineSymbol = aFormatOptions.NewLineSymbol)
+          (fFormatOptions.WhitespaceStyle = aFormatOptions.WhitespaceStyle) and
+          (fFormatOptions.NewLineForElements = aFormatOptions.NewLineForElements) and
+          (fFormatOptions.Indentation = aFormatOptions.Indentation) and
+          (fFormatOptions.NewLineSymbol = aFormatOptions.NewLineSymbol)
         )
       )
      ) then begin
@@ -1099,25 +1097,25 @@ begin
   aElement.Document := Document;
   aElement.fChildIndex := Elements.Count;
   if self.PreserveSpace then aElement.PreserveSpace := true;
-  if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then begin
+  if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fFormatOptions <> nil) then begin
     if fNodes.Count > 0 then begin
       var LastNodePos := fNodes.Count-1;
       if XmlText(fNodes.Item[LastNodePos]):Value = aElement.fParent.Indent then begin
         //It doesn't work on Island
-        {fNodes.Insert(LastNodePos,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
+        {fNodes.Insert(LastNodePos,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fFormatOptions.Indentation));
         fNodes.Insert(LastNodePos+1,aElement);
-        fNodes.Insert(LastNodePos+2 ,new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));}
-        fNodes.Add(new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
+        fNodes.Insert(LastNodePos+2 ,new XmlText(self, Value := aElement.Document.fLineBreak));}
+        fNodes.Add(new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fFormatOptions.Indentation));
         fNodes.Add(aElement);
-        fNodes.Add(new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));
+        fNodes.Add(new XmlText(self, Value := aElement.Document.fLineBreak));
         fNodes.Add(new XmlText(self, Value := aElement.fParent.Indent));
         fNodes.RemoveAt(LastNodePos);
       end;
      end
      else begin
-        fNodes.Add(new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
+        fNodes.Add(new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fFormatOptions.Indentation));
         fNodes.Add(aElement);
-        fNodes.Add(new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));
+        fNodes.Add(new XmlText(self, Value := aElement.Document.fLineBreak));
      end;
   end
   else fNodes.Add(aElement);
@@ -1143,7 +1141,7 @@ begin
     for i: Integer := aIndex+1 to fElements.Count -1 do
       fElements[i].FChildIndex := fElements[i].fChildIndex +1;
     var lFormat := false;
-    if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then
+    if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fFormatOptions <> nil) then
       lFormat := true;
     var i,j: Integer;
     for i:=0 to fNodes.Count-1 do begin
@@ -1153,9 +1151,9 @@ begin
       end;
     end;
     if lFormat and (fNodes.Item[i-1].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[i-1]).Value:StartsWith(aElement.fParent.Indent)) then begin
-      fNodes.Insert(i-1,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fXmlParser.FormatOptions.Indentation));
+      fNodes.Insert(i-1,new XmlText(self, Value := aElement.fParent.Indent+ aElement.Document.fFormatOptions.Indentation));
       fNodes.Insert(i,aElement);
-      fNodes.Insert(i+1 ,new XmlText(self, Value := aElement.Document.fXmlParser.fLineBreak));
+      fNodes.Insert(i+1 ,new XmlText(self, Value := aElement.Document.fLineBreak));
     end
     else fNodes.Insert(i,aElement);
   end;
@@ -1187,7 +1185,7 @@ begin
   for i: Integer := aElement.ChildIndex+1 to fElements.count -1 do
     fElements[i].fChildIndex := fElements[i].fChildIndex-1;
   fElements.Remove(aElement);
-  if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fXmlParser <> nil) then begin
+  if (self.Indent <> nil) and (aElement.Document <> nil) and (aElement.Document.fFormatOptions <> nil) then begin
     var i := 0;
     var found := false;
     while (i < fNodes.Count) and not(found) do begin
@@ -1196,7 +1194,7 @@ begin
     end;
     i:= i-1;
     if found and (i > 0) and (i < fNodes.Count-1)  and
-      (fNodes.Item[i-1].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[i-1]).Value:StartsWith(self.Document.fXmlParser.FormatOptions.Indentation) and
+      (fNodes.Item[i-1].NodeType = XmlNodeType.Text) and  (XmlText(fNodes.Item[i-1]).Value:StartsWith(self.Document.fFormatOptions.Indentation) and
       (fNodes.Item[i+1].NodeType = XmlNodeType.Text) and (XmlText(fNodes.Item[i+1]).Value:EndsWith(#10))) then begin
        fNodes.RemoveAt(i-1);
        fNodes.RemoveAt(i-1);
@@ -1585,7 +1583,7 @@ begin
         Sb.Append("/>");
       end
       else begin
-        if (Document.fXmlParser <> nil) and (Document.fXmlParser.FormatOptions.SpaceBeforeSlashInEmptyTags) and
+        if (Document.fFormatOptions <> nil) and (Document.fFormatOptions.SpaceBeforeSlashInEmptyTags) and
           not (CharIsWhitespace(Sb.Substring(Sb.Length-1,1))) then
             Sb.Append(' ');
         Sb.Append("/>");

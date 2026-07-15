@@ -192,7 +192,8 @@ begin
   var lError: XmlErrorInfo;
   Tokenizer.Next;
   result := new XmlDocument();
-  result.fXmlParser := self;
+  result.fLineBreak := fLineBreak;
+  result.fFormatOptions := FormatOptions;
   if not Expected(out lError, XmlTokenKind.DeclarationStart, XmlTokenKind.ProcessingInstruction, XmlTokenKind.DocumentType, XmlTokenKind.TagOpen, XmlTokenKind.Comment, XmlTokenKind.Whitespace) then begin
     result.Root := new XmlElement withName('[ERROR]');
     result.ErrorInfo := lError;
