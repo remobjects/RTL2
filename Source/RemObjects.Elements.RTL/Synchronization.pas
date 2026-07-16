@@ -5,12 +5,12 @@ interface
 type
   {$IF COOPER}
   PlatformMonitor = public java.util.concurrent.locks.ReentrantLock;
+  {$ELSEIF ISLAND}
+  PlatformMonitor = public RemObjects.Elements.System.Monitor;
   {$ELSEIF TOFFEE}
   PlatformMonitor = public Foundation.NSRecursiveLock;
   {$ELSEIF ECHOES}
   PlatformMonitor = public System.Threading.ManualResetEvent;
-  {$ELSEIF ISLAND}
-  PlatformMonitor = public RemObjects.Elements.System.Monitor;
   {$ENDIF}
 
   Monitor = public class({$IF ISLAND AND NOT TOFFEE}RemObjects.Elements.System.IMonitor{$ENDIF}) mapped to PlatformMonitor
@@ -26,34 +26,34 @@ constructor Monitor;
 begin
   {$IF COOPER}
   result := new java.util.concurrent.locks.ReentrantLock();
+  {$ELSEIF ISLAND}
+  result := new RemObjects.Elements.System.Monitor();
   {$ELSEIF TOFFEE}
   result := new Foundation.NSRecursiveLock();
   {$ELSEIF ECHOES}
   result := new System.Threading.ManualResetEvent(true);
-  {$ELSEIF ISLAND}
-  result := new RemObjects.Elements.System.Monitor();
   {$ENDIF}
 end;
 
 method Monitor.Lock;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF ISLAND}
+  mapped.Wait;
+  {$ELSEIF COOPER OR TOFFEE}
   mapped.lock;
   {$ELSEIF ECHOES}
   mapped.WaitOne;
-  {$ELSEIF ISLAND}
-  mapped.Wait;
   {$ENDIF}
 end;
 
 method Monitor.Unlock;
 begin
-  {$IF COOPER OR TOFFEE}
+  {$IF ISLAND}
+  mapped.Release;
+  {$ELSEIF COOPER OR TOFFEE}
   mapped.unlock;
   {$ELSEIF ECHOES}
   mapped.Set;
-  {$ELSEIF ISLAND}
-  mapped.Release;
   {$ENDIF}
 end;
 
