@@ -113,7 +113,7 @@ end;
 
 method &Event.WaitFor(aTimeoutInMilliseconds: Int32): Boolean;
 begin
-  WaitFor(Milliseconds(aTimeoutInMilliseconds));
+  result := WaitFor(Milliseconds(aTimeoutInMilliseconds));
 end;
 
 method &Event.WaitFor(aTimeout: Milliseconds): Boolean;
