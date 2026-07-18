@@ -42,7 +42,7 @@ type
         lEvent.Set;
       end;
 
-      Check.IsTrue(lEvent.WaitFor(TimeSpan.FromSeconds(2 Seconds)));
+      Check.IsTrue(lEvent.WaitFor(TimeSpan.From(2 Seconds)));
     end;
 
   end;

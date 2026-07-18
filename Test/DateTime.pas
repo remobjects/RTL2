@@ -33,9 +33,9 @@ type
 
     method TestTimeSpanFactoriesUseUnits;
     begin
-      Check.AreEqual(TimeSpan.FromDays(2 Days).Ticks, TimeSpan.TicksPerDay*2);
-      Check.AreEqual(TimeSpan.FromMinutes(2 Minutes).Ticks, TimeSpan.TicksPerMinute*2);
-      Check.AreEqual(TimeSpan.FromHours(5 Hours).Ticks, TimeSpan.TicksPerHour*5);
+      Check.AreEqual(TimeSpan.From(2 Days).Ticks, TimeSpan.TicksPerDay*2);
+      Check.AreEqual(TimeSpan.From(2 Minutes).Ticks, TimeSpan.TicksPerMinute*2);
+      Check.AreEqual(TimeSpan.From(5 Hours).Ticks, TimeSpan.TicksPerHour*5);
     end;
 
     method TestUnixTimeSecondsSupportsInt64;
