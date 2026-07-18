@@ -45,7 +45,10 @@ type
     {$HIDE W28}
     method Abort; mapped to {$IF COOPER}stop{$ELSEIF TOFFEE}cancel{$ELSEIF ECHOES OR ISLAND}Abort{$ENDIF};
     {$SHOW W28}
-    class method Sleep(aTimeout: Integer); mapped to {$IF NOT TOFFEE}Sleep(aTimeout){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeout / 1000){$ENDIF};
+
+    [Obsolete]
+    class method Sleep(aTimeoutInMillisconds: Integer); mapped to {$IF NOT TOFFEE}Sleep(aTimeoutInMillisconds){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeoutInMillisconds / 1000){$ENDIF};
+    class method Sleep(aTimeout: Milliseconds); mapped to {$IF ISLAND AND NOT TOFFEEV2}Sleep(aTimeout as Integer){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeout / 1000.0){$ELSE}Sleep(TimeSpan.FromMilliseconds(aTimeout)){$ENDIF};
 
     //property State: ThreadState read GetState write SetState;
     property IsAlive: Boolean read {$IF NOT TOFFEE}mapped.IsAlive{$ELSEIF TOFFEE}mapped.isExecuting{$ENDIF};
