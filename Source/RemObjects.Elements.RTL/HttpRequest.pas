@@ -41,7 +41,7 @@ type
 
     property Proxy: HttpProxySettings;
 
-    property Timeout: Seconds := 10.0;
+    property Timeout: Seconds := 10s;
     property UploadProgress: HttpProgressBlock;
     property DownloadProgress: HttpProgressBlock;
 

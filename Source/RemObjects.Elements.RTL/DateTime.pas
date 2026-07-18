@@ -67,14 +67,27 @@ type
 
     class method Compare(Value1, Value2: DateTime): Integer;
 
+    [Obsolete("Use Add with a unit value")]
     method AddDays(aValue: Integer): not nullable DateTime;
+    [Obsolete("Use Add with a unit value")]
     method AddHours(aValue: Integer): not nullable DateTime;
+    [Obsolete("Use Add with a unit value")]
     method AddMinutes(aValue: Integer): not nullable DateTime;
     method AddMonths(aValue: Integer): not nullable DateTime;
+    [Obsolete("Use Add with a unit value")]
     method AddSeconds(aValue: Integer): not nullable DateTime;
+    [Obsolete("Use Add with a unit value")]
     method AddMilliSeconds(aValue: Integer): not nullable DateTime;
     method AddYears(aValue: Integer): not nullable DateTime;
+    method &Add(aValue: Shakes): not nullable DateTime;
+    method &Add(aValue: Microseconds): not nullable DateTime;
     method &Add(aValue: Milliseconds): not nullable DateTime;
+    method &Add(aValue: Seconds): not nullable DateTime;
+    method &Add(aValue: Minutes): not nullable DateTime;
+    method &Add(aValue: Hours): not nullable DateTime;
+    method &Add(aValue: Days): not nullable DateTime;
+    method &Add(aValue: Weeks): not nullable DateTime;
+    method &Add(aValue: Fortnights): not nullable DateTime;
     method &Add(aValue: TimeSpan): not nullable DateTime;
 
     method CompareTo(aValue: DateTime): Integer;
@@ -100,8 +113,14 @@ type
     class method ToOADate(aDateTime: not nullable DateTime): Double;
     class method FromOADate(aOADate: Double): not nullable DateTime;
 
+    method ToUnixTimeSeconds: Int64;
+    class method ToUnixTimeSeconds(aDateTime: not nullable DateTime): Int64;
+    class method FromUnixTimeSeconds(aUnixTimeSeconds: Int64): not nullable DateTime;
+    [Obsolete("Use ToUnixTimeSeconds")]
     method ToUnixDate: Integer;
+    [Obsolete("Use ToUnixTimeSeconds")]
     class method ToUnixDate(aDateTime: not nullable DateTime): Integer;
+    [Obsolete("Use FromUnixTimeSeconds")]
     class method FromUnixDate(aUnixDate: Integer): not nullable DateTime;
 
     class method TryParse(aDateTime: String; aOptions: DateParserOptions := []): nullable DateTime;
@@ -139,12 +158,12 @@ type
     property IsUTC: Boolean read
       {$IF COOPER}mapped.TimeZone.RawOffset = 0
       {$ELSEIF TOFFEE OR ISLAND}True
-      {$ELSEIF ECHOES}(fDateTime.Kind = DateTimeKind.Utc) or (OffsetToUTC = 0)
+      {$ELSEIF ECHOES}(fDateTime.Kind = DateTimeKind.Utc) or (OffsetToUTC.Ticks = 0)
       {$ENDIF};
-    property OffsetToUTC: Integer read
-      {$IF COOPER}mapped.TimeZone.RawOffset/1000
-      {$ELSEIF TOFFEE OR ISLAND}0
-      {$ELSEIF ECHOES}Int32((fDateTime.ToUniversalTime-fDateTime).TotalSeconds)
+    property OffsetToUTC: TimeSpan read
+      {$IF COOPER}TimeSpan.From(Milliseconds(mapped.TimeZone.RawOffset))
+      {$ELSEIF TOFFEE OR ISLAND}TimeSpan.From(0 Milliseconds)
+      {$ELSEIF ECHOES}(fDateTime.ToUniversalTime-fDateTime)
       {$ENDIF};
 
     class operator &Add(a: DateTime; b: TimeSpan): not nullable DateTime;
@@ -292,8 +311,8 @@ begin
   {$IFDEF COOPER}
   var lCalendar := Calendar.Instance;
   var dt := (aTicks - TicksTill1970) / TimeSpan.TicksPerMillisecond;
-  lCalendar.Time := new Date(dt - lCalendar.TimeZone.getOffset(dt));
   lCalendar.TimeZone := TimeZone.Utc;
+  lCalendar.Time := new Date(dt);
   result := lCalendar;
   {$ELSEIF TOFFEE}
   result := NSDate.dateWithTimeIntervalSince1970(Double(aTicks - TicksTill1970) / TimeSpan.TicksPerSecond);
@@ -559,9 +578,49 @@ begin
   {$ENDIF}
 end;
 
+method DateTime.Add(aValue: Shakes): not nullable DateTime;
+begin
+  result := Add(Milliseconds(aValue));
+end;
+
+method DateTime.Add(aValue: Microseconds): not nullable DateTime;
+begin
+  result := Add(Milliseconds(aValue));
+end;
+
 method DateTime.Add(aValue: Milliseconds): not nullable DateTime;
 begin
-  result := AddMilliSeconds(aValue as Integer);
+  result := new DateTime(self.Ticks + Int64(Double(aValue) * TimeSpan.TicksPerMillisecond));
+end;
+
+method DateTime.Add(aValue: Seconds): not nullable DateTime;
+begin
+  result := Add(Milliseconds(aValue));
+end;
+
+method DateTime.Add(aValue: Minutes): not nullable DateTime;
+begin
+  result := Add(Milliseconds(aValue));
+end;
+
+method DateTime.Add(aValue: Hours): not nullable DateTime;
+begin
+  result := Add(Milliseconds(aValue));
+end;
+
+method DateTime.Add(aValue: Days): not nullable DateTime;
+begin
+  result := Add(Milliseconds(aValue));
+end;
+
+method DateTime.Add(aValue: Weeks): not nullable DateTime;
+begin
+  result := Add(Milliseconds(aValue));
+end;
+
+method DateTime.Add(aValue: Fortnights): not nullable DateTime;
+begin
+  result := Add(Milliseconds(aValue));
 end;
 
 method DateTime.Add(aValue: TimeSpan): not nullable DateTime;
@@ -745,24 +804,39 @@ begin
   result := new DateTime(lMillis * TICKS_PER_MILLISECOND);
 end;
 
+class method DateTime.ToUnixTimeSeconds(aDateTime: not nullable DateTime): Int64;
+begin
+  result := aDateTime.ToUnixTimeSeconds;
+end;
+
+method DateTime.ToUnixTimeSeconds: Int64;
+begin
+  {$IF TOFFEE}
+  result := Int64(mapped.timeIntervalSince1970);
+  {$ELSE}
+  result := (Ticks - TicksTill1970) / TimeSpan.TicksPerSecond;
+  {$ENDIF}
+end;
+
+class method DateTime.FromUnixTimeSeconds(aUnixTimeSeconds: Int64): not nullable DateTime;
+begin
+  var lUnixEpoc := new DateTime(1970, 1, 1, 0, 0, 0, 0);
+  result := lUnixEpoc.Add(Seconds(aUnixTimeSeconds));
+end;
+
 class method DateTime.ToUnixDate(aDateTime: not nullable DateTime): Integer;
 begin
-  result := aDateTime.ToUnixDate;
+  result := Integer(aDateTime.ToUnixTimeSeconds);
 end;
 
 method DateTime.ToUnixDate: Integer;
 begin
-  {$IF TOFFEE}
-  result := Integer(mapped.timeIntervalSince1970);
-  {$ELSE}
-  result := Integer((Ticks - TicksTill1970) / TimeSpan.TicksPerSecond);
-  {$ENDIF}
+  result := Integer(ToUnixTimeSeconds);
 end;
 
 class method DateTime.FromUnixDate(aUnixDate: Integer): not nullable DateTime;
 begin
-  var lUnixEpoc := new DateTime(1970, 1, 1, 0, 0, 0, 0);
-  result := lUnixEpoc.AddSeconds(aUnixDate);
+  result := FromUnixTimeSeconds(aUnixDate);
 end;
 
 class method DateTime.TryParse(aDateTime: String; aOptions: DateParserOptions := []): nullable DateTime;

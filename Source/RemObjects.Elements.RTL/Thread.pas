@@ -31,13 +31,13 @@ type
 
     {$IF COOPER OR ECHOES}
     method &Join; mapped to &Join;
-    [Obsolete]
+    [Obsolete("Use the unit-typed timeout overload")]
     method &Join(aTimeoutInMilliseconds: Integer);  mapped to &Join(aTimeoutInMilliseconds);
-    method &Join(aTimeout: Milliseconds);  mapped to &Join(aTimeout as Double as Integer);
+    method &Join(aTimeout: Milliseconds);  mapped to &Join(Int32(aTimeout));
     {$ENDIF}
     {$IF TOFFEE}
     method &Join;
-    [Obsolete]
+    [Obsolete("Use the unit-typed timeout overload")]
     method &Join(aTimeoutInMilliseconds: Integer);
     method &Join(aTimeout: Milliseconds);
     {$ENDIF}
@@ -46,9 +46,9 @@ type
     method Abort; mapped to {$IF COOPER}stop{$ELSEIF TOFFEE}cancel{$ELSEIF ECHOES OR ISLAND}Abort{$ENDIF};
     {$SHOW W28}
 
-    [Obsolete]
+    [Obsolete("Use the unit-typed timeout overload")]
     class method Sleep(aTimeoutInMillisconds: Integer); mapped to {$IF NOT TOFFEE}Sleep(aTimeoutInMillisconds){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeoutInMillisconds / 1000){$ENDIF};
-    class method Sleep(aTimeout: Milliseconds); mapped to {$IF ISLAND AND NOT TOFFEEV2}Sleep(aTimeout as Integer){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeout / 1000.0){$ELSE}Sleep(TimeSpan.FromMilliseconds(aTimeout)){$ENDIF};
+    class method Sleep(aTimeout: Milliseconds); mapped to {$IF ISLAND AND NOT TOFFEEV2}Sleep(Int32(aTimeout)){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeout / 1000.0){$ELSE}Sleep(TimeSpan.From(aTimeout)){$ENDIF};
 
     //property State: ThreadState read GetState write SetState;
     property IsAlive: Boolean read {$IF NOT TOFFEE}mapped.IsAlive{$ELSEIF TOFFEE}mapped.isExecuting{$ENDIF};

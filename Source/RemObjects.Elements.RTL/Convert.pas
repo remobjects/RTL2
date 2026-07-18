@@ -64,7 +64,11 @@ type
     method ToDouble(aValue: not nullable String; aLocale: Locale := Locale.Current): Double;
     method ToDoubleInvariant(aValue: not nullable String): Double; inline;
 
+    method DurationToTimeString(aDuration: Milliseconds): String;
+    method DurationToPrettyString(aDuration: Days): String;
+    [Obsolete("Use DurationToTimeString")]
     method MillisecondsToTimeString(aMS: Milliseconds): String;
+    [Obsolete("Use DurationToPrettyString")]
     method DaysToPrettyString(aDays: Integer): String;
     method MemorySizeToString(aSize: UInt64): String;
 
@@ -910,9 +914,9 @@ begin
   {$ENDIF}
 end;
 
-method Convert.MillisecondsToTimeString(aMS: Milliseconds): String;
+method Convert.DurationToTimeString(aDuration: Milliseconds): String;
 begin
-  var lValue := aMS as Double as Int64;
+  var lValue := Int64(aDuration);
   var lMilliSeconds := lValue mod 1000;
   var lSeconds := lValue div 1000;
   var lMinutes := lSeconds div 60;
@@ -925,7 +929,7 @@ begin
   var lDays := lHours div 24;
   lHours := lHours mod 24;
   if lDays > 0 then
-    result := result+lHours.ToString+" "+"day".PluralInvariant(lDays)+" ";
+    result := result+lDays.ToString+" "+"day".PluralInvariant(lDays)+" ";
   if (lHours > 0) or (lDays > 0) then
     result := result+lHours.ToString+":";
   if (lMinutes > 0) or (lHours > 0) or (lDays > 0) then begin
@@ -937,15 +941,25 @@ begin
   result := result+Convert.ToString(lMilliSeconds).PadStart(3, '0');
 end;
 
+method Convert.DurationToPrettyString(aDuration: Days): String;
+begin
+  var lDays := Math.Abs(Int32(aDuration));
+  if lDays < 31 then
+    result := $"{lDays} {"day".PluralInvariant(lDays)}"
+  else if lDays < 365 then
+    result := $"{lDays/30} {"month".PluralInvariant(lDays/30)}"
+  else
+    result := $"{lDays/365} {"year".PluralInvariant(lDays/365)}";
+end;
+
+method Convert.MillisecondsToTimeString(aMS: Milliseconds): String;
+begin
+  result := DurationToTimeString(aMS);
+end;
+
 method Convert.DaysToPrettyString(aDays: Integer): String;
 begin
-  aDays := Math.Abs(aDays);
-  if aDays < 31 then
-    result := $"{aDays} {"day".PluralInvariant(aDays)}"
-  else if aDays < 365 then
-    result := $"{aDays/30} {"month".PluralInvariant(aDays/30)}"
-  else
-    result := $"{aDays/365} {"year".PluralInvariant(aDays/365)}";
+  result := DurationToPrettyString(Days(aDays));
 end;
 
 method Convert.MemorySizeToString(aSize: UInt64): String;

@@ -2,6 +2,9 @@
 
 interface
 
+uses
+  RemObjects.Elements.RTL.Units;
+
 type
   PlatformTimeZone = public {$IFDEF ECHOES}System.TimeZoneInfo{$ELSEIF TOFFEE}Foundation.NSTimeZone{$ELSEIF COOPER}java.util.TimeZone{$ELSEIF ISLAND}RemObjects.Elements.System.TimeZone{$ENDIF};
 
@@ -23,11 +26,11 @@ type
     {$IF COOPER}
     property Name: String read mapped.DisplayName;
     property Identifier: String read mapped.getID;
-    property OffsetToUTC: TimeSpan read TimeSpan.FromMilliseconds(mapped.RawOffset);
+    property OffsetToUTC: TimeSpan read TimeSpan.From(Milliseconds(mapped.RawOffset));
     {$ELSEIF TOFFEE}
     property Name: String read mapped.name;
     property Identifier: String read mapped.abbreviation;
-    property OffsetToUTC: TimeSpan read TimeSpan.FromSeconds(mapped.secondsFromGMT);
+    property OffsetToUTC: TimeSpan read TimeSpan.From(Seconds(mapped.secondsFromGMT));
     {$ELSEIF ECHOES}
     property Name: String read mapped.DisplayName;
     property Identifier: String read mapped.Id;

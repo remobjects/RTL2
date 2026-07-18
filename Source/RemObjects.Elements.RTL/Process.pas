@@ -2,6 +2,9 @@
 
 interface
 
+uses
+  RemObjects.Elements.RTL.Units;
+
 {$IF (ECHOES OR MACOS OR WINDOWS OR LINUX) AND NOT MACCATALYST} // OR LINUX
 
 type
@@ -19,6 +22,8 @@ type
   public
 
     method WaitFor; inline;
+    method WaitFor(aTimeout: Milliseconds): Boolean;
+    method WaitFor(aTimeout: TimeSpan): Boolean;
     method Start; inline;
     method Stop; inline;
 
@@ -82,6 +87,24 @@ begin
   {$ELSEIF ISLAND}
   mapped.WaitFor();
   {$ENDIF}
+end;
+
+method Process.WaitFor(aTimeout: Milliseconds): Boolean;
+begin
+  var lDeadline := DateTime.UtcNow.Add(aTimeout);
+  while IsRunning do begin
+    var lRemaining := (lDeadline-DateTime.UtcNow).TotalMilliSeconds;
+    if lRemaining <= 0ms then
+      exit false;
+    Thread.Sleep(if lRemaining > 10ms then 10ms else lRemaining);
+  end;
+  WaitFor;
+  result := true;
+end;
+
+method Process.WaitFor(aTimeout: TimeSpan): Boolean;
+begin
+  result := WaitFor(aTimeout.TotalMilliSeconds);
 end;
 
 method Process.Start;
@@ -349,9 +372,9 @@ begin
   begin
     if not assigned(aEvent) then
       exit;
-    if not aEvent:WaitFor(1000) then begin
+    if not aEvent:WaitFor(1s) then begin
       CloseOutput(aOutput);
-      aEvent:WaitFor(1000);
+      aEvent:WaitFor(1s);
     end;
   end;
 

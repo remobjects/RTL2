@@ -217,7 +217,7 @@ begin
           lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
 
         cts := new System.Threading.CancellationTokenSource();
-        cts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout as Double));
+        cts.CancelAfter(TimeSpan.From(aRequest.Timeout));
         locking aRequest.Monitor do aRequest.fCancelSource := cts;
 
         var lRepsonseMessage := await lClient.SendAsync(lRequestMessage, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cts.Token);
@@ -542,7 +542,7 @@ begin
         lRequestMessage.Headers.Add(k, aRequest.Headers[k]);
 
       lCts := new System.Threading.CancellationTokenSource();
-      lCts.CancelAfter(TimeSpan.FromSeconds(aRequest.Timeout as Double));
+      lCts.CancelAfter(TimeSpan.From(aRequest.Timeout));
       locking aRequest.Monitor do aRequest.fCancelSource := lCts;
       try
         var lResponseMessage := lClient.SendAsync(lRequestMessage, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, lCts.Token).Result;

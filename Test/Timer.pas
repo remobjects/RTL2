@@ -2,6 +2,7 @@
 
 uses
   RemObjects.Elements.RTL,
+  RemObjects.Elements.RTL.Units,
   RemObjects.Elements.EUnit;
 
 {$IF NOT TOFFEE}
@@ -13,9 +14,9 @@ type
     method TestBasicTimer;
     begin
       var lTest := 0;
-      var lTimer := new RemObjects.Elements.RTL.Timer(100, (aData) -> begin inc(lTest, 1); end);
+      var lTimer := new RemObjects.Elements.RTL.Timer(100 Milliseconds, (aData) -> begin inc(lTest, 1); end);
       lTimer.Start;
-      Thread.Sleep(350);
+      Thread.Sleep(350 Milliseconds);
       lTimer.Stop;
       Check.IsTrue(lTest > 1);
     end;
@@ -23,9 +24,9 @@ type
     method TestNoRepeatTimer;
     begin
       var lTest := 0;
-      var lTimer := new RemObjects.Elements.RTL.Timer(100, false, (aData) -> begin inc(lTest, 1); end);
+      var lTimer := new RemObjects.Elements.RTL.Timer(100 Milliseconds, false, (aData) -> begin inc(lTest, 1); end);
       lTimer.Start;
-      Thread.Sleep(500);
+      Thread.Sleep(500 Milliseconds);
       lTimer.Stop;
       Check.AreEqual(lTest, 1);
     end;

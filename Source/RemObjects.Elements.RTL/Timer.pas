@@ -2,6 +2,9 @@
 
 interface
 
+uses
+  RemObjects.Elements.RTL.Units;
+
 type
   PlatformTimer = public {$IF COOPER}java.util.Timer{$ELSEIF TOFFEE}NSTimer{$ELSEIF ECHOES}System.Timers.Timer{$ELSEIF ISLAND}RemObjects.Elements.System.Timer{$ENDIF};
 
@@ -9,15 +12,17 @@ type
   private
     fTimer: PlatformTimer;
     fEnabled: Boolean;
-    fInterval: Integer;
+    fInterval: Milliseconds;
     fRepeat: Boolean;
     fCallback: block(aTimer: Timer); unit;
     method CheckIfEnabled;
   public
+    [Obsolete("Use the unit-typed interval overload")]
     constructor(aInterval: Integer; aRepeat: Boolean := true; aCallback: block(aTimer: Timer));
+    constructor(aInterval: Milliseconds; aRepeat: Boolean := true; aCallback: block(aTimer: Timer));
     method Start;
     method Stop;
-    property Interval: Integer read fInterval;
+    property Interval: Milliseconds read fInterval;
     property &Repeat: Boolean read fRepeat;
     property Enabled: Boolean read fEnabled;
   end;
@@ -25,6 +30,11 @@ type
 implementation
 
 constructor Timer(aInterval: Integer; aRepeat: Boolean := true; aCallback: block(aTimer: Timer));
+begin
+  constructor(Milliseconds(aInterval), aRepeat, aCallback);
+end;
+
+constructor Timer(aInterval: Milliseconds; aRepeat: Boolean := true; aCallback: block(aTimer: Timer));
 begin
   fInterval := aInterval;
   fRepeat := aRepeat;
@@ -46,17 +56,17 @@ begin
   if fEnabled then exit;
   {$IF COOPER}
   if fRepeat then
-    fTimer.scheduleAtFixedRate(new FixedTimerTask(self), fInterval, fInterval)
+    fTimer.scheduleAtFixedRate(new FixedTimerTask(self), Int64(fInterval), Int64(fInterval))
   else
-    fTimer.schedule(new FixedTimerTask(self), fInterval);
+    fTimer.schedule(new FixedTimerTask(self), Int64(fInterval));
   {$ELSEIF TOFFEE}
-  fTimer := PlatformTimer.scheduledTimerWithTimeInterval(fInterval / 1000) repeats(fRepeat) &block(() -> fCallback(Self));
+  fTimer := PlatformTimer.scheduledTimerWithTimeInterval(Double(Seconds(fInterval))) repeats(fRepeat) &block(() -> fCallback(Self));
   {$ELSEIF ECHOES}
   fTimer.AutoReset := fRepeat;
-  fTimer.Interval := fInterval;
+  fTimer.Interval := Double(fInterval);
   fTimer.Start;
   {$ELSEIF ISLAND}
-  fTimer.Interval := fInterval;
+  fTimer.Interval := Int32(fInterval);
   fTimer.Repeat := fRepeat;
   fTimer.Start;
   {$ENDIF}

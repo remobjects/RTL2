@@ -2,7 +2,8 @@
 
 uses
   RemObjects.Elements.EUnit,
-  RemObjects.Elements.RTL;
+  RemObjects.Elements.RTL,
+  RemObjects.Elements.RTL.Units;
 
 type
   HttpProxyTests = public class(Test)
@@ -108,7 +109,7 @@ type
       var request := new HttpRequest(Url.UrlWithString('https://example.com'));
       request.Cancel();
       Check.AreEqual(request.Url.ToString, 'https://example.com');
-      Check.AreEqual(request.Timeout, 10.0);
+      Check.AreEqual(Double(request.Timeout), Double(10 Seconds));
     end;
 
   end;

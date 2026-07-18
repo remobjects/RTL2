@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Url.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Convert.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Event.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Paths.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Strings.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Xml.pas" />

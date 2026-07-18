@@ -2,6 +2,7 @@
 
 uses
   RemObjects.Elements.RTL,
+  RemObjects.Elements.RTL.Units,
   RemObjects.Elements.EUnit;
 
 type
@@ -9,6 +10,43 @@ type
   private
   protected
   public
+    method TestAddTimeUnits;
+    begin
+      var lStart := new DateTime(2000, 1, 1);
+
+      {$IF COOPER}
+      // java.util.Calendar only stores millisecond precision.
+      Check.AreEqual(lStart.Add(100 Shakes).Ticks-lStart.Ticks, Int64(0));
+      Check.AreEqual(lStart.Add(1 Microseconds).Ticks-lStart.Ticks, Int64(0));
+      {$ELSE}
+      Check.AreEqual(lStart.Add(100 Shakes).Ticks-lStart.Ticks, Int64(10));
+      Check.AreEqual(lStart.Add(1 Microseconds).Ticks-lStart.Ticks, Int64(10));
+      {$ENDIF}
+      Check.AreEqual(lStart.Add(1 Milliseconds).Ticks-lStart.Ticks, TimeSpan.TicksPerMillisecond);
+      Check.AreEqual(lStart.Add(1 Seconds).Ticks-lStart.Ticks, TimeSpan.TicksPerSecond);
+      Check.AreEqual(lStart.Add(1 Minutes).Ticks-lStart.Ticks, TimeSpan.TicksPerMinute);
+      Check.AreEqual(lStart.Add(1 Hours).Ticks-lStart.Ticks, TimeSpan.TicksPerHour);
+      Check.AreEqual(lStart.Add(2 Days).Ticks-lStart.Ticks, TimeSpan.TicksPerDay*2);
+      Check.AreEqual(lStart.Add(1 Weeks).Ticks-lStart.Ticks, TimeSpan.TicksPerDay*7);
+      Check.AreEqual(lStart.Add(1 Fortnights).Ticks-lStart.Ticks, TimeSpan.TicksPerDay*14);
+    end;
+
+    method TestTimeSpanFactoriesUseUnits;
+    begin
+      Check.AreEqual(TimeSpan.FromDays(2 Days).Ticks, TimeSpan.TicksPerDay*2);
+      Check.AreEqual(TimeSpan.FromMinutes(2 Minutes).Ticks, TimeSpan.TicksPerMinute*2);
+      Check.AreEqual(TimeSpan.FromHours(5 Hours).Ticks, TimeSpan.TicksPerHour*5);
+    end;
+
+    method TestUnixTimeSecondsSupportsInt64;
+    begin
+      var lDate := new DateTime(2100, 1, 1);
+      var lUnixTime := lDate.ToUnixTimeSeconds;
+
+      Check.IsTrue(lUnixTime > 2147483647);
+      Check.AreEqual(lUnixTime, DateTime.FromUnixTimeSeconds(lUnixTime).ToUnixTimeSeconds);
+    end;
+
     method TestOADate;
     begin
       var lToTest: Double := -36518.3785891204; // 5 - 1 - 1800 09:05:10 100ns <-- OADate;

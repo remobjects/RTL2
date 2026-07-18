@@ -37,7 +37,7 @@ type
     method &Set;
     method Reset;
     method WaitFor;
-    [Obsolete]
+    [Obsolete("Use the unit-typed timeout overload")]
     method WaitFor(aTimeoutInMilliseconds: Int32): Boolean;
     method WaitFor(aTimeout: Milliseconds): Boolean;
     method WaitFor(aTimeout: TimeSpan): Boolean;
@@ -118,28 +118,20 @@ end;
 
 method &Event.WaitFor(aTimeout: Milliseconds): Boolean;
 begin
-  {$IF COOPER}
-  fPlatformEvent.lock();
-  if not fState then
-    result := fCond.await(aTimeout as Double as Integer, java.util.concurrent.TimeUnit.MILLISECONDS)
-  else
-    result :=  true;
-  if fMode = EventMode.AutoReset then
-    fState := false;
-  fPlatformEvent.unlock();
-  {$ELSEIF TOFFEE}
-  result := WaitFor(TimeSpan.FromMilliseconds(aTimeout as Double as Integer));
-  {$ELSEIF ECHOES}
-  result := fPlatformEvent.WaitOne(aTimeout as Double as Integer);
-  {$ELSEIF ISLAND}
-  result := fPlatformEvent.Wait(aTimeout as Double as Integer);
-  {$ENDIF}
+  result := WaitFor(TimeSpan.From(aTimeout));
 end;
 
 method &Event.WaitFor(aTimeout: Timespan): Boolean;
 begin
   {$IF COOPER}
-  result := WaitFor(aTimeout);
+  fPlatformEvent.lock();
+  if not fState then
+    result := fCond.await(Int64(aTimeout.TotalMilliSeconds), java.util.concurrent.TimeUnit.MILLISECONDS)
+  else
+    result := true;
+  if result and (fMode = EventMode.AutoReset) then
+    fState := false;
+  fPlatformEvent.unlock();
   {$ELSEIF TOFFEE}
   fPlatformEvent.lock();
   var lWaitTime := DateTime.UtcNow.Add(aTimeout);
@@ -147,13 +139,13 @@ begin
     result := fPlatformEvent.waitUntilDate(lWaitTime)
   else
     result :=  true;
-  if fMode = EventMode.AutoReset then
+  if result and (fMode = EventMode.AutoReset) then
     fState := false;
   fPlatformEvent.unlock();
   {$ELSEIF ECHOES}
   result := fPlatformEvent.WaitOne(aTimeout);
   {$ELSEIF ISLAND}
-  result := fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds as Double));
+  result := fPlatformEvent.Wait(Int32(aTimeout.TotalMilliSeconds));
   {$ENDIF}
 end;
 

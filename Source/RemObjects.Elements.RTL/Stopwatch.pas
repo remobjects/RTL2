@@ -23,7 +23,7 @@ type
     [ToString]
     method ToString: String; override;
     begin
-      result := Convert.MillisecondsToTimeString(ElapsedTime)+"s";
+      result := Convert.DurationToTimeString(ElapsedTime)+"s";
 
     end;
 

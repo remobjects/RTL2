@@ -2,6 +2,7 @@
 
 uses
   RemObjects.Elements.RTL,
+  RemObjects.Elements.RTL.Units,
   RemObjects.Elements.EUnit;
 
 type
@@ -47,6 +48,14 @@ type
   ProcessTests = public class(Test)
   public
 
+    method WaitForAcceptsTypedTimeouts;
+    begin
+      using lTask := RemObjects.Elements.RTL.Process.RunAsync("/bin/sh", ["-c", "/bin/sleep 1"]) do begin
+        Check.IsFalse(lTask.WaitFor(100 Milliseconds));
+        Check.IsTrue(lTask.WaitFor(2 Seconds));
+      end;
+    end;
+
     method RunAsyncFinishesWhenChildKeepsStdOutOpen;
     begin
       var lFinished := new &Event;
@@ -66,8 +75,8 @@ type
             lExitCode := aExitCode;
             lFinished.Set();
           end) do begin
-        Check.IsTrue(lSawOutput:WaitFor(1000));
-        Check.IsTrue(lFinished:WaitFor(3000));
+        Check.IsTrue(lSawOutput:WaitFor(1 Seconds));
+        Check.IsTrue(lFinished:WaitFor(3 Seconds));
         Check.AreEqual(0, lExitCode);
       end;
     end;

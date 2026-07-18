@@ -2,6 +2,9 @@
 
 interface
 
+uses
+  RemObjects.Elements.RTL.Units;
+
 type
   DateParserOption = public enum(UseCurrentForMissing, IgnoreWhiteSpaces, IgnoreTInIso8601) of Integer;
   DateParserOptions = public set of DateParserOption;
@@ -244,7 +247,7 @@ begin
   if aSecond = -1 then
     aSecond := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Second else 0;
   if aMSec = -1 then
-    aMSec := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Second else 0;
+    aMSec := if [DateParserOption.UseCurrentForMissing] in aOptions then DateTime.Today.Millisecond else 0;
 
   result := new DateTime(aYear, aMonth, aDay, aHour, aMin, aSecond, aMSec);
 end;
@@ -461,7 +464,7 @@ begin
   end;
   output := CheckAndSetDateTime(lYear, lMonth, lDay, lHour, lMin, lSec, lMSec, aOptions);
   if lOffset ≠ 0 then
-    output := output.AddHours(lOffset);
+    output := output.Add(Hours(lOffset));
   result := true;
 end;
 

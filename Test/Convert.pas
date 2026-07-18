@@ -2,6 +2,7 @@
 
 uses
   RemObjects.Elements.RTL,
+  RemObjects.Elements.RTL.Units,
   RemObjects.Elements.EUnit;
 
 type
@@ -89,6 +90,12 @@ type
       Check.AreEqual(Convert.TryBinaryStringToUInt64("10"), 2);
       Check.AreEqual(Convert.TryBinaryStringToUInt64("100"), 4);
       Check.AreEqual(Convert.TryBinaryStringToUInt64("1001"), 9);
+    end;
+
+    method TestDurationFormatting;
+    begin
+      Check.AreEqual("2 days 1:00:00.000", Convert.DurationToTimeString(176400000 Milliseconds));
+      Check.AreEqual("1 month", Convert.DurationToPrettyString(40 Days));
     end;
 
 
