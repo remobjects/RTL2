@@ -51,11 +51,25 @@ type
     method Subtract(ts: TimeSpan): TimeSpan;
     method Negate: TimeSpan;
 
-    class method FromDays(d: Double): TimeSpan;
-    class method FromHours(d: Double): TimeSpan;
-    class method FromMinutes(d: Double): TimeSpan;
-    class method FromSeconds(d: Double): TimeSpan;
-    class method FromMilliseconds(d: Double): TimeSpan;
+    class method &From(aDuration: Shakes): TimeSpan;
+    class method &From(aDuration: Microseconds): TimeSpan;
+    class method &From(aDuration: Milliseconds): TimeSpan;
+    class method &From(aDuration: Seconds): TimeSpan;
+    class method &From(aDuration: Minutes): TimeSpan;
+    class method &From(aDuration: Hours): TimeSpan;
+    class method &From(aDuration: Days): TimeSpan;
+    class method &From(aDuration: Weeks): TimeSpan;
+    class method &From(aDuration: Fortnights): TimeSpan;
+    [Obsolete("Use From with a unit value")]
+    class method FromDays(aDuration: Days): TimeSpan;
+    [Obsolete("Use From with a unit value")]
+    class method FromHours(aDuration: Hours): TimeSpan;
+    [Obsolete("Use From with a unit value")]
+    class method FromMinutes(aDuration: Minutes): TimeSpan;
+    [Obsolete("Use From with a unit value")]
+    class method FromSeconds(aDuration: Seconds): TimeSpan;
+    [Obsolete("Use From with a unit value")]
+    class method FromMilliseconds(aDuration: Milliseconds): TimeSpan;
     class method FromTicks(d: Int64): TimeSpan;
 
     class operator Equal(a,b: TimeSpan): Boolean;
@@ -199,29 +213,74 @@ begin
   {$ENDIF}
 end;
 
-class method TimeSpan.FromDays(d: Double): TimeSpan;
+class method TimeSpan.From(aDuration: Shakes): TimeSpan;
 begin
-  exit FromTicks(Int64(d * TicksPerDay));
+  exit &From(Milliseconds(aDuration));
 end;
 
-class method TimeSpan.FromHours(d: Double): TimeSpan;
+class method TimeSpan.From(aDuration: Microseconds): TimeSpan;
 begin
-  exit FromTicks(Int64(d * TicksPerHour));
+  exit &From(Milliseconds(aDuration));
 end;
 
-class method TimeSpan.FromMinutes(d: Double): TimeSpan;
+class method TimeSpan.From(aDuration: Milliseconds): TimeSpan;
 begin
-  exit FromTicks(Int64(d * TicksPerMinute));
+  exit FromTicks(Int64(Double(aDuration) * TicksPerMillisecond));
 end;
 
-class method TimeSpan.FromSeconds(d: Double): TimeSpan;
+class method TimeSpan.From(aDuration: Seconds): TimeSpan;
 begin
-  exit FromTicks(Int64(d * TicksPerSecond));
+  exit &From(Milliseconds(aDuration));
 end;
 
-class method TimeSpan.FromMilliseconds(d: Double): TimeSpan;
+class method TimeSpan.From(aDuration: Minutes): TimeSpan;
 begin
-  exit FromTicks(Int64(d * TicksPerMillisecond));
+  exit &From(Milliseconds(aDuration));
+end;
+
+class method TimeSpan.From(aDuration: Hours): TimeSpan;
+begin
+  exit &From(Milliseconds(aDuration));
+end;
+
+class method TimeSpan.From(aDuration: Days): TimeSpan;
+begin
+  exit &From(Milliseconds(aDuration));
+end;
+
+class method TimeSpan.From(aDuration: Weeks): TimeSpan;
+begin
+  exit &From(Milliseconds(aDuration));
+end;
+
+class method TimeSpan.From(aDuration: Fortnights): TimeSpan;
+begin
+  exit &From(Milliseconds(aDuration));
+end;
+
+class method TimeSpan.FromDays(aDuration: Days): TimeSpan;
+begin
+  exit &From(aDuration);
+end;
+
+class method TimeSpan.FromHours(aDuration: Hours): TimeSpan;
+begin
+  exit &From(aDuration);
+end;
+
+class method TimeSpan.FromMinutes(aDuration: Minutes): TimeSpan;
+begin
+  exit &From(aDuration);
+end;
+
+class method TimeSpan.FromSeconds(aDuration: Seconds): TimeSpan;
+begin
+  exit &From(aDuration);
+end;
+
+class method TimeSpan.FromMilliseconds(aDuration: Milliseconds): TimeSpan;
+begin
+  exit &From(aDuration);
 end;
 
 class method TimeSpan.FromTicks(d: Int64): TimeSpan;
