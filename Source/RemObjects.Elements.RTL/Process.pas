@@ -263,15 +263,18 @@ begin
   var lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   (lTask as PlatformProcess).StartInfo.RedirectStandardOutput := true;
   (lTask as PlatformProcess).StartInfo.RedirectStandardError := true;
-  lTask.Start();
-  lTask.WaitFor();
-  using m := new MemoryStream do begin
-    (lTask as PlatformProcess).StandardOutput.BaseStream.CopyTo(m);
-    aStdOut := m.ToArray;
-  end;
-  using m := new MemoryStream do begin
-    (lTask as PlatformProcess).StandardError.BaseStream.CopyTo(m);
-    aStdErr := m.ToArray;
+  using lStdOut := new MemoryStream do
+  using lStdErr := new MemoryStream do begin
+    lTask.Start();
+    var lStdOutThread := new System.Threading.Thread(() -> (lTask as PlatformProcess).StandardOutput.BaseStream.CopyTo(lStdOut));
+    var lStdErrThread := new System.Threading.Thread(() -> (lTask as PlatformProcess).StandardError.BaseStream.CopyTo(lStdErr));
+    lStdOutThread.Start();
+    lStdErrThread.Start();
+    lTask.WaitFor();
+    lStdOutThread.Join();
+    lStdErrThread.Join();
+    aStdOut := lStdOut.ToArray;
+    aStdErr := lStdErr.ToArray;
   end;
   result := lTask.ExitCode;
   {$ELSEIF ISLAND}

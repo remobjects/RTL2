@@ -44,13 +44,42 @@ type
 
   end;
 
+{$IF ECHOES}
+  ProcessByteOutputTests = public class(Test)
+  public
+
+    method RunDrainsLargeStdOutAndStdErrWhileProcessIsRunning;
+    begin
+      var lCommand: String;
+      var lArguments: List<String>;
+      if Environment.OS = OperatingSystem.Windows then begin
+        lCommand := "cmd.exe";
+        lArguments := ["/d", "/c", "for /L %i in (1,1,20000) do @(echo stdout-012345678901234567890123456789& echo stderr-012345678901234567890123456789 1>&2)"].ToList;
+      end
+      else begin
+        lCommand := "/bin/sh";
+        lArguments := ["-c", "i=0; while [ $i -lt 20000 ]; do echo stdout-012345678901234567890123456789; echo stderr-012345678901234567890123456789 >&2; i=$((i+1)); done"].ToList;
+      end;
+
+      var lStdOut: array of Byte;
+      var lStdErr: array of Byte;
+      var lExitCode := RemObjects.Elements.RTL.Process.Run(lCommand, lArguments, nil, nil, out lStdOut, out lStdErr);
+
+      Check.AreEqual(0, lExitCode);
+      Check.IsTrue(length(lStdOut) > 500000);
+      Check.IsTrue(length(lStdErr) > 500000);
+    end;
+
+  end;
+{$ENDIF}
+
 {$IF TOFFEE AND MACOS}
   ProcessTests = public class(Test)
   public
 
     method WaitForAcceptsTypedTimeouts;
     begin
-      using lTask := RemObjects.Elements.RTL.Process.RunAsync("/bin/sh", ["-c", "/bin/sleep 1"]) do begin
+      using lTask := RemObjects.Elements.RTL.Process.RunAsync("/bin/sh", ["-c", "/bin/sleep 1"].ToList, nil, nil, nil) do begin
         Check.IsFalse(lTask.WaitFor(100 Milliseconds));
         Check.IsTrue(lTask.WaitFor(2 Seconds));
       end;
