@@ -271,8 +271,9 @@ begin
   end;
   using m := new MemoryStream do begin
     (lTask as PlatformProcess).StandardError.BaseStream.CopyTo(m);
-    aStdOut := m.ToArray;
+    aStdErr := m.ToArray;
   end;
+  result := lTask.ExitCode;
   {$ELSEIF ISLAND}
   raise new NotImplementedException("Process.Run(aStdOut: array of Byte) is not implemented for Island yet.")
   //result := PlatformProcess.Run(aCommand, aArguments, aEnvironment, aWorkingDirectory, out aStdOut, out aStdErr);
