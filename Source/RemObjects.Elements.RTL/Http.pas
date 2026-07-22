@@ -195,6 +195,7 @@ begin
         end;
     end;
     var lClient := new System.Net.Http.HttpClient(lHandler);
+    lClient.Timeout := TimeSpan.From(aRequest.Timeout);
     var lResponseOwnsClient := false;
     var cts: System.Threading.CancellationTokenSource;
     try
@@ -520,6 +521,7 @@ begin
         end;
     end;
     var lClient := new System.Net.Http.HttpClient(lHandler);
+    lClient.Timeout := TimeSpan.From(aRequest.Timeout);
     var lResponseOwnsClient := false;
     var lCts: System.Threading.CancellationTokenSource;
     try
