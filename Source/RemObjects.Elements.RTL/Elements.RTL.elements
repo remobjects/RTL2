@@ -12,7 +12,7 @@
     <AllowLegacyWith>False</AllowLegacyWith>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
     <AllowLegacyCreate>False</AllowLegacyCreate>
-    <AllowUnsafeCode>False</AllowUnsafeCode>
+    <AllowUnsafeCode>True</AllowUnsafeCode>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <CrossPlatform>True</CrossPlatform>
@@ -351,7 +351,6 @@
     <Reference Include="UIKit" />
     <Reference Include="Security" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.targets" />
   <Import Project="Elements.RTL.Shared.projitems" Label="Shared" />
 </Project>

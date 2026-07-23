@@ -246,5 +246,8 @@
       <VirtualFolder>Http</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Units.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)KeychainHelper.pas">
+      <VirtualFolder>Dates &amp; Co</VirtualFolder>
+    </Compile>
   </ItemGroup>
 </Project>
