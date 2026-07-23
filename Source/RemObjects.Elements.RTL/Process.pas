@@ -258,6 +258,7 @@ begin
     aStdErr := new Byte[lStdErrData.length];
     lStdErrData.getBytes(@aStdErr[0]) length(lStdErrData.length);
     stdErr.closeAndReturnError(var error);
+    result := lTask.ExitCode;
   end;
   {$ELSEIF ECHOES}
   var lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory);
