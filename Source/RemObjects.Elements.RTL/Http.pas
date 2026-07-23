@@ -649,8 +649,8 @@ begin
       raise new RTLException('Unable to connect to ' + aRequest.Url.Host);
 
     try
-      var lMethod := RemObjects.Elements.System.String(aRequest.Method.ToHttpString);
-      var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString);
+      var lMethod := RemObjects.Elements.System.String(aRequest.Method.ToHttpString + #0);
+      var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString + #0);
       var lRequest := rtl.WinHttpOpenRequest(lConnect, LMethod.FirstChar, lPath.FirstChar, nil, nil, nil, lFlags);
       if lRequest = nil then
         raise new RTLException('Can not open request to ' + aRequest.Url.Host);
