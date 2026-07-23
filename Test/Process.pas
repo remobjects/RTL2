@@ -77,6 +77,22 @@ type
   ProcessTests = public class(Test)
   public
 
+    method RunByteOutputReturnsExitCode;
+    begin
+      var lStdOut: array of Byte;
+      var lStdErr: array of Byte;
+      var lExitCode := RemObjects.Elements.RTL.Process.Run("/bin/sh",
+          ["-c", "printf stdout-value; printf stderr-value >&2; exit 7"].ToList,
+          nil,
+          nil,
+          out lStdOut,
+          out lStdErr);
+
+      Check.AreEqual(7, lExitCode);
+      Check.IsTrue(length(lStdOut) > 0);
+      Check.IsTrue(length(lStdErr) > 0);
+    end;
+
     method WaitForAcceptsTypedTimeouts;
     begin
       using lTask := RemObjects.Elements.RTL.Process.RunAsync("/bin/sh", ["-c", "/bin/sleep 1"].ToList, nil, nil, nil) do begin
