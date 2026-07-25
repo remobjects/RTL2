@@ -644,7 +644,8 @@ begin
     else
       if lFlags <> 0 then
         lPort := 443;
-    var lConnect := rtl.WinHttpConnect(lSession, RemObjects.Elements.System.String(aRequest.Url.Host).FirstChar, lPort, 0);
+    var lHost := RemObjects.Elements.System.String(aRequest.Url.Host + #0);
+    var lConnect := rtl.WinHttpConnect(lSession, lHost.FirstChar, lPort, 0);
     if lConnect = nil then
       raise new RTLException('Unable to connect to ' + aRequest.Url.Host);
 
