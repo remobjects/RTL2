@@ -72,7 +72,7 @@ begin
 
     HttpProxyMode.Custom:
       begin
-        var lProxyString := RemObjects.Elements.System.String(aProxy.Host + ':' + aProxy.Port.ToString);
+        var lProxyString := RemObjects.Elements.System.String(aProxy.Host + ':' + aProxy.Port.ToString + #0);
         result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NAMED_PROXY, lProxyString.FirstChar, nil, 0);
       end;
   end;
@@ -664,7 +664,7 @@ begin
         var lHeader: RemObjects.Elements.System.String;
         for each k in aRequest.Headers.Keys do begin
           lHeader := k + ':' + aRequest.Headers[k];
-          if not rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, high(Cardinal), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA) then
+          if not rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, rtl.DWORD(lHeader.Length), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA) then
             raise new RTLException('Error adding headers to request');
         end;
 
