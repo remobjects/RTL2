@@ -124,12 +124,18 @@
   <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
     <Mode>Island</Mode>
     <SubMode>Android</SubMode>
+    <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.WebAssembly' ">
     <Mode>Island</Mode>
     <SubMode>WebAssembly</SubMode>
+    <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
-  <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Fuchsia' ">
+    <Mode>Island</Mode>
+    <SubMode>Fuchsia</SubMode>
+    <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.iOS' ">
     <Mode>Toffee</Mode>
     <SDK>iOS</SDK>

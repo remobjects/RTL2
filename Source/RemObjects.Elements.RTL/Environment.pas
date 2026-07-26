@@ -708,6 +708,7 @@ begin
   case Environment.OS of
     OperatingSystem.Windows: result := {$IF arm64}"arm64"{$ELSEIF i386}"i386"{$ELSEIF x86_64}"x86_64"{$ELSE}nil{$ENDIF};
     OperatingSystem.Linux: result := {$IF x86_64}"x86_64"{$ELSEIF aarch64}"aarch64"{$ELSEIF armv7}"armv7"{$ELSE}nil{$ENDIF};
+    OperatingSystem.Fuchsia: result := {$IF x86_64}"x86_64"{$ELSEIF aarch64}"aarch64"{$ELSE}nil{$ENDIF};
     OperatingSystem.Android: result := {$IF arm64_v8a}"arm64-v8a"{$ELSEIF armeabi}"armeabi"{$ELSEIF armeabi_v7a}"armeabi-v7a"{$ELSEIF x86}"x86"{$ELSEIF x86_64}"x86_64"{$ELSE}nil{$ENDIF}
     OperatingSystem.Browser: result := "wasm32";
   end;
@@ -819,6 +820,7 @@ begin
   case Environment.OS of
     OperatingSystem.Linux: result := nil;//Process.Run("/bin/uname", ["-m"], out result);
     OperatingSystem.Android: result := nil;
+    OperatingSystem.Fuchsia: result := {$IF x86_64}"x86_64"{$ELSEIF aarch64}"aarch64"{$ELSE}nil{$ENDIF};
     OperatingSystem.Browser: result := "wasm32";
   end;
   {$ENDIF}

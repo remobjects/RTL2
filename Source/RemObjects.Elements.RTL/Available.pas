@@ -52,7 +52,7 @@ begin
     "fuchsia": begin
         if defined("FUCHSIA") then
           exit __ElementsPlatformVersionAtLeast(aMaj, aMin, aRev);
-        if (defined("ECHOES") or defined("COOPER")) and (Environment.OS = OperatingSystem.Windows) then
+        if (defined("ECHOES") or defined("COOPER")) and (Environment.OS = OperatingSystem.Fuchsia) then
           exit __ElementsPlatformVersionAtLeast(aMaj, aMin, aRev);
       end;
 
