@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.RTL;
 
+{$IF NOT TOFFEEV2}
+
 interface
 
 type
@@ -342,6 +344,8 @@ begin
   else
     result := new HashSet<T>(Foundation.NSMutableSet<T>(aSet.mutableCopy));
 end;
+{$ENDIF}
+
 {$ENDIF}
 
 end.
