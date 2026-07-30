@@ -655,22 +655,13 @@ end;
 
 method Environment.GetOSBitness: Int32;
 begin
-  if GetProcessBitness = 64 then exit 64;
-  {$IF COOPER}
-  result := 0;
-  {$ELSEIF TOFFEE}
-    {$IF OSX OR UIKITFORMAC OR IOS OR TVOS OR VISIONOS}
-    result := 64;
-    {$ELSEIF WATCHOS}
-    result := 32;
-    {$ELSE}
-    {$ERROR Unsupported Toffee platform}
-    {$ENDIF}
-  {$ELSEIF ECHOES}
-  result := if System.Environment.Is64BitOperatingSystem then 64 else 32;
-  {$ELSEIF ISLAND}
-  result := 0;
-  {$ENDIF}
+  if GetProcessBitness = 64 then 
+    exit 64;
+  var lArchitecture := OSArchitecture:ToLowerInvariant:Trim;
+  case lArchitecture of
+    "x86_64", "amd64", "aarch64", "arm64", "ia64", "ppc64", "ppc64le", "s390x", "riscv64", "mips64", "mips64el", "loongarch64": result := 64;
+    "i386", "i486", "i586", "i686", "x86", "arm", "armv5l", "armv6l", "armv7", "armv7k", "armv7l", "armv8l", "arm64_32", "armeabi", "armeabi-v7a", "mips", "mipsel", "ppc", "s390": result := 32;
+  end;
 end;
 
 method Environment.GetProcessArchitecture: String;
