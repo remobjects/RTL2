@@ -344,48 +344,6 @@ AllowBeta=1
 AllowFull=1
 
 DisplayName=RTL2 Contributor License, Hydrogene/Island
-ProjectName=Elements.RTL.Island.Darwin.watchOS
-ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Oxygene
-Platform=Island
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Oxygene/Island
-ProjectName=Elements.RTL.Island.Darwin.watchOS
-ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Silver
-Platform=Island
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Silver/Island
-ProjectName=Elements.RTL.Island.Darwin.watchOS
-ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Hydrogene
-Platform=Island
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Hydrogene/Island
 ProjectName=Elements.RTL.Island.Linux
 ProjectFileName=Elements.RTL.Island.Linux.elements
 ProjectGuid=163f84dc-dc6b-4535-994f-0865d3a84d20

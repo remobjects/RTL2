@@ -19,8 +19,6 @@ Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.
 EndProject
 Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.visionOS", "RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.visionOS.elements", "{b1fcdf7e-df65-4ad5-8727-c67d92755b32}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Darwin.watchOS", "RemObjects.Elements.RTL\Elements.RTL.Island.Darwin.watchOS.elements", "{28817723-bb33-4c5f-8705-a7b3dff15174}"
-EndProject
 Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.Linux", "RemObjects.Elements.RTL\Elements.RTL.Island.Linux.elements", "{163f84dc-dc6b-4535-994f-0865d3a84d20}"
 EndProject
 Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.Island.WebAssembly", "RemObjects.Elements.RTL\Elements.RTL.Island.WebAssembly.elements", "{e663418d-2453-4c69-8362-02cc6abeafa7}"
@@ -93,10 +91,6 @@ Global
 		{b1fcdf7e-df65-4ad5-8727-c67d92755b32}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{b1fcdf7e-df65-4ad5-8727-c67d92755b32}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
 		{b1fcdf7e-df65-4ad5-8727-c67d92755b32}.Release|AnyCPU.Build.0 = Release|AnyCPU
-		{28817723-bb33-4c5f-8705-a7b3dff15174}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
-		{28817723-bb33-4c5f-8705-a7b3dff15174}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
-		{28817723-bb33-4c5f-8705-a7b3dff15174}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
-		{28817723-bb33-4c5f-8705-a7b3dff15174}.Release|AnyCPU.Build.0 = Release|AnyCPU
 		{163f84dc-dc6b-4535-994f-0865d3a84d20}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{163f84dc-dc6b-4535-994f-0865d3a84d20}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{163f84dc-dc6b-4535-994f-0865d3a84d20}.Release|AnyCPU.ActiveCfg = Release|AnyCPU

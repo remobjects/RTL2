@@ -69,12 +69,6 @@
     <SDK>tvOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.watchOS' ">
-    <Mode>Island</Mode>
-    <SubMode>Darwin</SubMode>
-    <SDK>watchOS</SDK>
-    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
     <Mode>Island</Mode>
     <SubMode>Android</SubMode>
@@ -244,11 +238,6 @@
     <Reference Include="gc" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Darwin.tvOS'">
-    <Reference Include="Island" />
-    <Reference Include="rtl" />
-    <Reference Include="gc" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Target)' == 'Island.Darwin.watchOS'">
     <Reference Include="Island" />
     <Reference Include="rtl" />
     <Reference Include="gc" />
