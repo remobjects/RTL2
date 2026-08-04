@@ -45,8 +45,6 @@ Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.tvOS"
 EndProject
 Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.visionOS", "RemObjects.Elements.RTL\Elements.RTL.ToffeeV2.visionOS.elements", "{3a9be265-62f6-481d-a909-0535a0750b67}"
 EndProject
-Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Elements.RTL.ToffeeV2.watchOS", "RemObjects.Elements.RTL\Elements.RTL.ToffeeV2.watchOS.elements", "{686655b4-6e7a-40e4-98d1-b44700641d87}"
-EndProject
 Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Serialization", "RemObjects.Elements.Serialization\Serialization.elements", "{c0fa7d07-304e-4005-9745-c9263230b2ad}"
 EndProject
 Global
@@ -139,10 +137,6 @@ Global
 		{3a9be265-62f6-481d-a909-0535a0750b67}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{3a9be265-62f6-481d-a909-0535a0750b67}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
 		{3a9be265-62f6-481d-a909-0535a0750b67}.Release|AnyCPU.Build.0 = Release|AnyCPU
-		{686655b4-6e7a-40e4-98d1-b44700641d87}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
-		{686655b4-6e7a-40e4-98d1-b44700641d87}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
-		{686655b4-6e7a-40e4-98d1-b44700641d87}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
-		{686655b4-6e7a-40e4-98d1-b44700641d87}.Release|AnyCPU.Build.0 = Release|AnyCPU
 		{c0fa7d07-304e-4005-9745-c9263230b2ad}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{c0fa7d07-304e-4005-9745-c9263230b2ad}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{c0fa7d07-304e-4005-9745-c9263230b2ad}.Release|AnyCPU.ActiveCfg = Release|AnyCPU

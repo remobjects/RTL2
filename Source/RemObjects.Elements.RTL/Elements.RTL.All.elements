@@ -120,13 +120,6 @@
     <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.watchOS' ">
-    <Mode>Toffee</Mode>
-    <SDK>watchOS</SDK>
-    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
-    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-    <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
     <DefineConstants>DEBUG;TRACE;</DefineConstants>

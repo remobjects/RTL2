@@ -924,48 +924,6 @@ ProjectGuid={1b12e76c-4171-46a5-ad85-fd80c335299d}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 
-[License]
-LicenseType=Project
-Product=Hydrogene
-Platform=Toffee
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Hydrogene/Toffee
-ProjectName=Elements.RTL.ToffeeV2.watchOS
-ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
-ProjectGuid={686655b4-6e7a-40e4-98d1-b44700641d87}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Oxygene
-Platform=Toffee
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Oxygene/Toffee
-ProjectName=Elements.RTL.ToffeeV2.watchOS
-ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
-ProjectGuid={686655b4-6e7a-40e4-98d1-b44700641d87}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Silver
-Platform=Toffee
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Silver/Toffee
-ProjectName=Elements.RTL.ToffeeV2.watchOS
-ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
-ProjectGuid={686655b4-6e7a-40e4-98d1-b44700641d87}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
 [SignatureInfo]
 LicenseFileStartDate=2022-12-04
 LicenseFileEndDate=2023-12-06
