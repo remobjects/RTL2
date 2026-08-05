@@ -48,7 +48,7 @@ type
     end;
 
     {$IF NOT TOFFEEV2}
-    method UniqueCopy: InstanceType; override;
+    method UniqueCopy: not nullable InstanceType; override;
     begin
       result := self;
     end;
@@ -91,7 +91,7 @@ type
       result := sb.ToString as not nullable;
     end;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     begin
       result := RenderString(Value);
     end;
@@ -164,7 +164,7 @@ type
 
     property NodeKind: JsonNodeKind read JsonNodeKind.Integer; override;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     begin
       result := Convert.ToString(Value);
     end;
@@ -239,7 +239,7 @@ type
 
   //JsonUnsignedIntegerValue = public class(JsonValue<UInt64>)
   //public
-    //method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    //method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     //operator Implicit(aValue: UInt64): JsonUnsignedIntegerValue;
     //operator Implicit(aValue: UInt32): JsonUnsignedIntegerValue;
     //operator Implicit(aValue: JsonUnsignedIntegerValue): JsonFloatValue;
@@ -262,7 +262,7 @@ type
 
     property NodeKind: JsonNodeKind read JsonNodeKind.Float; override;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     begin
       result := Convert.ToStringInvariant(Value).Replace(",","");
       if not result.Contains(".") and not result.Contains("E") and not result.Contains("N") and not result.Contains("I") then result := result+".0";
@@ -330,7 +330,7 @@ type
 
     property NodeKind: JsonNodeKind read JsonNodeKind.Boolean; override;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     begin
       result := if Value as Boolean then JsonConsts.TRUE_VALUE else JsonConsts.FALSE_VALUE;
     end;
@@ -389,7 +389,7 @@ type
 
     property NodeKind: JsonNodeKind read JsonNodeKind.Null; override;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String; override;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     begin
       result := JsonConsts.NULL_VALUE;
     end;

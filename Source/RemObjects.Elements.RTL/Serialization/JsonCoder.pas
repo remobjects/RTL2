@@ -45,7 +45,7 @@ type
       result := fJson;
     end;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String;
     begin
       result := fJson.ToJsonString(aFormat);
     end;

@@ -28,7 +28,7 @@ type
       result := lCoder.ToJson as JsonObject;
     end;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String;
     begin
       result := ToJson.ToJsonString(aFormat);
     end;

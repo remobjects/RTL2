@@ -274,7 +274,7 @@ type
     method GetCanRead: Boolean;
     method GetCanSeek: Boolean;
     method GetCanWrite: Boolean;
-    method GetBytes: array of Byte; virtual;
+    method GetBytes: not nullable array of Byte; virtual;
   public
     constructor;
     constructor(aCapacity: Integer);
@@ -294,13 +294,13 @@ type
     property Length: Int64 read GetLength; override;
     property Position: Int64 read GetPosition write SetPosition; override;
     {$ENDIF}
-    method ToArray: array of Byte;
+    method ToArray: not nullable array of Byte;
     method Close; override;
     method Flush; override;
     method Clear;
     method WriteTo(Destination: Stream);
 
-    property Bytes: array of Byte read GetBytes;
+    property Bytes: not nullable array of Byte read GetBytes;
     property CanRead: Boolean read GetCanRead; override;
     property CanSeek: Boolean read GetCanSeek; override;
     property CanWrite: Boolean read GetCanWrite; override;
@@ -526,7 +526,7 @@ end;
 
 {$ENDIF}
 
-method MemoryStream.GetBytes: array of Byte;
+method MemoryStream.GetBytes: not nullable array of Byte;
 begin
   {$IF COOPER}
   result := fInternalStream.toByteArray;

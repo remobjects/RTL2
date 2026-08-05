@@ -89,7 +89,7 @@ type
 
     //
 
-    class method ToJsonString(aObject: IEncodable; aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+    class method ToJsonString(aObject: IEncodable; aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String;
     begin
       {$IF NOT TOFFEEV2}
       var lTemp := new JsonCoder();
@@ -224,7 +224,7 @@ type
       result := lTemp.ToJson;
     end;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String;
     begin
       var lTemp := new JsonCoder();
       lTemp.Encode(self);
@@ -245,7 +245,7 @@ type
         result.Add(v.ToJson);
     end;
 
-    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): String;
+    method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String;
     begin
       result := ToJson.ToJsonString(aFormat);
     end;

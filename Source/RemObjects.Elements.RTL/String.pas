@@ -1148,7 +1148,7 @@ type
     //
     //
 
-    method Truncate(aLength: Integer; aEllipsis: String := "…"; aStyle: StringTruncationStyle := StringTruncationStyle.End): String;
+    method Truncate(aLength: Integer; aEllipsis: String := "…"; aStyle: StringTruncationStyle := StringTruncationStyle.End): not nullable String;
     begin
       result := self;
       var lEllipsisLength := aEllipsis.Length;

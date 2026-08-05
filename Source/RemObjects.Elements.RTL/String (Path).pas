@@ -18,13 +18,13 @@ type
     property FileOrFolderExists: Boolean read File.Exists(File(self)) or Folder.Exists(Folder(self)); inline;
     {$ENDIF}
 
-    property LastPathComponent: String read Path.GetFileName(self); inline;                                 // uses the platform-specific folder separator
-    property LastUnixPathComponent: String read Path.GetUnixFileName(self); inline;
-    property LastWindowsPathComponent: String read Path.GetWindowsFileName(self); inline;
+    property LastPathComponent: not nullable String read Path.GetFileName(self); inline;  // uses the platform-specific folder separator
+    property LastUnixPathComponent: not nullable String read Path.GetUnixFileName(self); inline;
+    property LastWindowsPathComponent:not nullable  String read Path.GetWindowsFileName(self); inline;
 
-    property LastPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(self); inline; // uses the platform-specific folder separator
-    property LastUnixPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastUnixPathComponent); inline;
-    property LastWindowsPathComponentWithoutExtension: String read Path.GetFileNameWithoutExtension(LastWindowsPathComponent); inline;
+    property LastPathComponentWithoutExtension: not nullable String read Path.GetFileNameWithoutExtension(self); inline; // uses the platform-specific folder separator
+    property LastUnixPathComponentWithoutExtension: not nullable String read Path.GetFileNameWithoutExtension(LastUnixPathComponent); inline;
+    property LastWindowsPathComponentWithoutExtension: not nullable String read Path.GetFileNameWithoutExtension(LastWindowsPathComponent); inline;
 
     property PathWithoutExtension: String read Path.GetPathWithoutExtension(self); inline;
     property PathExtension: String read Path.GetExtension(self); inline;
