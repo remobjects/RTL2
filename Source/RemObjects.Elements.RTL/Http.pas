@@ -7,13 +7,28 @@ interface
 { Handy test URLs: http://httpbin.org, http://requestb.in }
 
 type
+  {$IF ISLAND AND WINDOWS}
+  HttpSystemProxyConfiguration = assembly class
+  public
+    property AutoDetect: Boolean;
+    property AutoConfigUrl: nullable String;
+    property Proxy: nullable String;
+    property ProxyBypass: nullable String;
+  end;
+  {$ENDIF}
+
   Http = public static class
   private
     {$IF DARWIN}
     //property Session := NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration); lazy;
     {$ENDIF}
     {$IF ISLAND AND WINDOWS}
-    class method CreateSessionForProxy(aProxy: HttpProxySettings): rtl.HINTERNET;
+    class method CreateSessionForProxy(aProxy: HttpProxySettings; aUrl: Url): rtl.HINTERNET;
+    class method CreateSystemProxySession(aUrl: Url): rtl.HINTERNET;
+    class method CreateNamedProxySession(aProxy: String; aBypass: nullable String): rtl.HINTERNET;
+    class method GetSystemProxyConfiguration: nullable HttpSystemProxyConfiguration;
+    class method WinHttpFailure(aAction: String; aHost: String): RTLException;
+    class method FreeWinHttpString(aValue: rtl.LPWSTR);
     {$ENDIF}
     {$IF ECHOES AND HTTPCLIENT}
     method HandleEchoesHttpClientException(aException: not nullable Exception; aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
@@ -21,6 +36,11 @@ type
     {$ENDIF}
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
   public
+    {$IF ISLAND AND WINDOWS}
+    {$IFDEF DEBUG}
+    class property SystemProxyForTesting: nullable HttpProxySettings := nil;
+    {$ENDIF}
+    {$ENDIF}
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequest(aRequest: not nullable HttpRequest; aResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
@@ -59,7 +79,142 @@ uses
   RemObjects.Elements;
 
 {$IF ISLAND AND WINDOWS}
-class method Http.CreateSessionForProxy(aProxy: HttpProxySettings): rtl.HINTERNET;
+const
+  WINHTTP_AUTOPROXY_AUTO_DETECT = $00000001;
+  WINHTTP_AUTOPROXY_CONFIG_URL = $00000002;
+  WINHTTP_AUTO_DETECT_TYPE_DHCP = $00000001;
+  WINHTTP_AUTO_DETECT_TYPE_DNS_A = $00000002;
+  ERROR_WINHTTP_AUTODETECTION_FAILED = 12180;
+
+class method Http.FreeWinHttpString(aValue: rtl.LPWSTR);
+begin
+  if assigned(aValue) then
+    rtl.GlobalFree(aValue);
+end;
+
+class method Http.WinHttpFailure(aAction: String; aHost: String): RTLException;
+begin
+  var lError := rtl.GetLastError;
+  result := new RTLException($"{aAction} {aHost} (WinHTTP error {lError})");
+end;
+
+class method Http.CreateNamedProxySession(aProxy: String; aBypass: nullable String): rtl.HINTERNET;
+begin
+  var lProxy := RemObjects.Elements.System.String(aProxy + #0);
+  var lBypass := if String.IsNullOrEmpty(aBypass) then nil else RemObjects.Elements.System.String(aBypass + #0);
+  result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NAMED_PROXY, lProxy.FirstChar,
+    if assigned(lBypass) then lBypass.FirstChar else nil, 0);
+end;
+
+class method Http.GetSystemProxyConfiguration: nullable HttpSystemProxyConfiguration;
+begin
+  {$IFDEF DEBUG}
+  if assigned(SystemProxyForTesting) then begin
+    result := new HttpSystemProxyConfiguration();
+    result.Proxy := SystemProxyForTesting.Host + ':' + SystemProxyForTesting.Port.ToString;
+    exit;
+  end;
+  {$ENDIF}
+
+  var lConfig: rtl.WINHTTP_CURRENT_USER_IE_PROXY_CONFIG;
+  lConfig.fAutoDetect := false;
+  lConfig.lpszAutoConfigUrl := nil;
+  lConfig.lpszProxy := nil;
+  lConfig.lpszProxyBypass := nil;
+
+  if not rtl.WinHttpGetIEProxyConfigForCurrentUser(@lConfig) then
+    exit nil;
+
+  try
+    result := new HttpSystemProxyConfiguration();
+    result.AutoDetect := lConfig.fAutoDetect;
+    if assigned(lConfig.lpszAutoConfigUrl) then
+      result.AutoConfigUrl := RemObjects.Elements.System.String(lConfig.lpszAutoConfigUrl);
+    if assigned(lConfig.lpszProxy) then
+      result.Proxy := RemObjects.Elements.System.String(lConfig.lpszProxy);
+    if assigned(lConfig.lpszProxyBypass) then
+      result.ProxyBypass := RemObjects.Elements.System.String(lConfig.lpszProxyBypass);
+  finally
+    FreeWinHttpString(lConfig.lpszAutoConfigUrl);
+    FreeWinHttpString(lConfig.lpszProxy);
+    FreeWinHttpString(lConfig.lpszProxyBypass);
+  end;
+end;
+
+class method Http.CreateSystemProxySession(aUrl: Url): rtl.HINTERNET;
+begin
+  var lConfig := GetSystemProxyConfiguration();
+  if not assigned(lConfig) then
+    exit rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0);
+
+  if lConfig.AutoDetect or not String.IsNullOrEmpty(lConfig.AutoConfigUrl) then begin
+      var lResolverSession := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0);
+      if lResolverSession = nil then begin
+        if not String.IsNullOrEmpty(lConfig.Proxy) then
+          exit CreateNamedProxySession(lConfig.Proxy, lConfig.ProxyBypass);
+        exit rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0);
+      end;
+
+      try
+        var lOptions: rtl.WINHTTP_AUTOPROXY_OPTIONS;
+        var lProxyInfo: rtl.WINHTTP_PROXY_INFO;
+        var lAutoConfigUrl: RemObjects.Elements.System.String := nil;
+        lOptions.dwFlags := 0;
+        lOptions.dwAutoDetectFlags := 0;
+        lOptions.lpszAutoConfigUrl := nil;
+        lOptions.lpvReserved := nil;
+        lOptions.dwReserved := 0;
+        lOptions.fAutoLogonIfChallenged := false;
+        lProxyInfo.dwAccessType := 0;
+        lProxyInfo.lpszProxy := nil;
+        lProxyInfo.lpszProxyBypass := nil;
+
+        if lConfig.AutoDetect then
+          lOptions.dwFlags := lOptions.dwFlags or WINHTTP_AUTOPROXY_AUTO_DETECT;
+        if not String.IsNullOrEmpty(lConfig.AutoConfigUrl) then begin
+          lOptions.dwFlags := lOptions.dwFlags or WINHTTP_AUTOPROXY_CONFIG_URL;
+          lAutoConfigUrl := RemObjects.Elements.System.String(lConfig.AutoConfigUrl + #0);
+          lOptions.lpszAutoConfigUrl := lAutoConfigUrl.FirstChar;
+        end;
+        lOptions.dwAutoDetectFlags := WINHTTP_AUTO_DETECT_TYPE_DHCP or WINHTTP_AUTO_DETECT_TYPE_DNS_A;
+        lOptions.fAutoLogonIfChallenged := true;
+
+        var lUrl := RemObjects.Elements.System.String(aUrl.ToString + #0);
+        if (lOptions.dwFlags = 0) or
+           ((lOptions.dwFlags and WINHTTP_AUTOPROXY_AUTO_DETECT <> 0) and (lOptions.dwAutoDetectFlags = 0)) or
+           ((lOptions.dwFlags and WINHTTP_AUTOPROXY_CONFIG_URL <> 0) and not assigned(lOptions.lpszAutoConfigUrl)) or
+           assigned(lOptions.lpvReserved) or (lOptions.dwReserved <> 0) or
+           not lOptions.fAutoLogonIfChallenged then
+          exit rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0);
+
+        if rtl.WinHttpGetProxyForUrl(lResolverSession, lUrl.FirstChar, @lOptions, @lProxyInfo) then begin
+          try
+            case lProxyInfo.dwAccessType of
+              rtl.WINHTTP_ACCESS_TYPE_NAMED_PROXY:
+                if assigned(lProxyInfo.lpszProxy) then
+                  exit CreateNamedProxySession(RemObjects.Elements.System.String(lProxyInfo.lpszProxy),
+                    if assigned(lProxyInfo.lpszProxyBypass) then RemObjects.Elements.System.String(lProxyInfo.lpszProxyBypass) else nil);
+              rtl.WINHTTP_ACCESS_TYPE_NO_PROXY:
+                exit rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0);
+            end;
+          finally
+            FreeWinHttpString(lProxyInfo.lpszProxy);
+            FreeWinHttpString(lProxyInfo.lpszProxyBypass);
+          end;
+        end
+        else if (rtl.GetLastError = ERROR_WINHTTP_AUTODETECTION_FAILED) and not String.IsNullOrEmpty(lConfig.Proxy) then
+          exit CreateNamedProxySession(lConfig.Proxy, lConfig.ProxyBypass);
+      finally
+        rtl.WinHttpCloseHandle(lResolverSession);
+      end;
+  end
+  else if not String.IsNullOrEmpty(lConfig.Proxy) then
+    exit CreateNamedProxySession(lConfig.Proxy, lConfig.ProxyBypass);
+
+  result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0);
+end;
+
+class method Http.CreateSessionForProxy(aProxy: HttpProxySettings; aUrl: Url): rtl.HINTERNET;
 begin
   var lProxyMode := if assigned(aProxy) then aProxy.Mode else HttpProxyMode.System;
 
@@ -68,13 +223,10 @@ begin
       result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NO_PROXY, nil, nil, 0);
 
     HttpProxyMode.System:
-      result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, nil, nil, 0);
+      result := CreateSystemProxySession(aUrl);
 
     HttpProxyMode.Custom:
-      begin
-        var lProxyString := RemObjects.Elements.System.String(aProxy.Host + ':' + aProxy.Port.ToString + #0);
-        result := rtl.WinHTTPOpen('', rtl.WINHTTP_ACCESS_TYPE_NAMED_PROXY, lProxyString.FirstChar, nil, 0);
-      end;
+      result := CreateNamedProxySession(aProxy.Host + ':' + aProxy.Port.ToString, nil);
   end;
 end;
 {$ENDIF}
@@ -632,9 +784,9 @@ begin
     end;
     {$ENDIF}
   {$ELSEIF ISLAND AND WINDOWS}
-  var lSession := CreateSessionForProxy(aRequest.Proxy);
+  var lSession := CreateSessionForProxy(aRequest.Proxy, aRequest.Url);
   if lSession = nil then
-    raise new RTLException('Unable to create HTTP session');
+    raise WinHttpFailure('Unable to create HTTP session for', aRequest.Url.Host);
 
   try
     var lFlags := if aRequest.Url.Scheme.EqualsIgnoringCase('https') then rtl.WINHTTP_FLAG_SECURE else 0;
@@ -647,25 +799,25 @@ begin
     var lHost := RemObjects.Elements.System.String(aRequest.Url.Host + #0);
     var lConnect := rtl.WinHttpConnect(lSession, lHost.FirstChar, lPort, 0);
     if lConnect = nil then
-      raise new RTLException('Unable to connect to ' + aRequest.Url.Host);
+      raise WinHttpFailure('Unable to connect to', aRequest.Url.Host);
 
     try
       var lMethod := RemObjects.Elements.System.String(aRequest.Method.ToHttpString + #0);
       var lPath := RemObjects.Elements.System.String(aRequest.Url.PathAndQueryString + #0);
       var lRequest := rtl.WinHttpOpenRequest(lConnect, LMethod.FirstChar, lPath.FirstChar, nil, nil, nil, lFlags);
       if lRequest = nil then
-        raise new RTLException('Can not open request to ' + aRequest.Url.Host);
+        raise WinHttpFailure('Can not open request to', aRequest.Url.Host);
 
       try
-        var lTimeoutMs: rtl.DWORD := rtl.DWORD(aRequest.Timeout * 1000);
-        rtl.WinHttpSetOption(lRequest, 5 {WINHTTP_OPTION_SEND_TIMEOUT}, @lTimeoutMs, sizeOf(lTimeoutMs));
-        rtl.WinHttpSetOption(lRequest, 8 {WINHTTP_OPTION_RECEIVE_TIMEOUT}, @lTimeoutMs, sizeOf(lTimeoutMs));
+        var lTimeoutMs: rtl.INT := rtl.INT(aRequest.Timeout * 1000);
+        if not rtl.WinHttpSetTimeouts(lRequest, 0, 60000, lTimeoutMs, lTimeoutMs) then
+          raise WinHttpFailure('Can not set request timeouts for', aRequest.Url.Host);
 
         var lHeader: RemObjects.Elements.System.String;
         for each k in aRequest.Headers.Keys do begin
           lHeader := k + ':' + aRequest.Headers[k];
           if not rtl.WinHttpAddRequestHeaders(lRequest, lHeader.FirstChar, rtl.DWORD(lHeader.Length), rtl.WINHTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA) then
-            raise new RTLException('Error adding headers to request');
+            raise WinHttpFailure('Error adding headers to request for', aRequest.Url.Host);
         end;
 
         var lTotalLength := 0;
@@ -677,44 +829,46 @@ begin
 
         if not aRequest.FollowRedirects then begin
           var lValue: rtl.DWORD := rtl.WINHTTP_DISABLE_REDIRECTS;
-          rtl.WinHttpSetOption(LRequest, rtl.WINHTTP_OPTION_DISABLE_FEATURE, @lValue, sizeOf(lValue));
+          if not rtl.WinHttpSetOption(LRequest, rtl.WINHTTP_OPTION_DISABLE_FEATURE, @lValue, sizeOf(lValue)) then
+            raise WinHttpFailure('Can not disable redirects for', aRequest.Url.Host);
         end;
 
         locking aRequest.Monitor do aRequest.fCancelHandle := lRequest;
 
         if not rtl.WinHttpSendRequest(lRequest, nil, 0, nil, 0, lTotalLength, 0) then
-          raise new RTLException('Can not send request to ' + aRequest.Url.Host);
+          raise WinHttpFailure('Can not send request to', aRequest.Url.Host);
 
         if lTotalLength > 0 then begin
           var lPassed := 0;
           var lBytes: rtl.DWORD := 0;
           while lPassed < lTotalLength do begin
             if not rtl.WinHttpWriteData(lRequest, @lData[lPassed], lTotalLength, @lBytes) then
-              raise new RTLException('Error sending data to ' + aRequest.Url.Host);
+              raise WinHttpFailure('Error sending data to', aRequest.Url.Host);
             inc(lPassed, lBytes);
           end;
         end;
 
         if not rtl.WinHttpReceiveResponse(lRequest, nil) then
-          raise new RTLException('Can not receive data from ' + aRequest.Url.Host);
+          raise WinHttpFailure('Can not receive data from', aRequest.Url.Host);
 
         var lStatusCode: rtl.DWORD := 0;
         var lSize: rtl.DWORD := sizeOf(lStatusCode);
 
-        rtl.WinHttpQueryHeaders(lRequest, rtl.WINHTTP_QUERY_STATUS_CODE or rtl.WINHTTP_QUERY_FLAG_NUMBER,
-          nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lStatusCode, @lSize, nil {rtl.WINHTTP_NO_HEADER_INDEX});
+        if not rtl.WinHttpQueryHeaders(lRequest, rtl.WINHTTP_QUERY_STATUS_CODE or rtl.WINHTTP_QUERY_FLAG_NUMBER,
+          nil {WINHTTP_HEADER_NAME_BY_INDEX}, @lStatusCode, @lSize, nil {rtl.WINHTTP_NO_HEADER_INDEX}) then
+          raise WinHttpFailure('Can not read the response status from', aRequest.Url.Host);
 
         var lStream := new MemoryStream();
         var lBuffered: rtl.DWORD := 0;
         if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
-          raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+          raise WinHttpFailure('Can not get data from', aRequest.Url.Host);
         while lSize <> 0 do begin
           var lBuffer := new Byte[lSize];
           if not rtl.WinHttpReadData(lRequest, @lBuffer[0], lSize, @lBuffered) then
-            raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+            raise WinHttpFailure('Can not read data from', aRequest.Url.Host);
           lStream.Write(lBuffer, lBuffered);
           if not rtl.WinHttpQueryDataAvailable(lRequest, @lSize) then
-            raise new RTLException('Can not get data from ' + aRequest.Url.Host);
+            raise WinHttpFailure('Can not get data from', aRequest.Url.Host);
         end;
 
         try

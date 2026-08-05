@@ -3,7 +3,10 @@
 uses
   RemObjects.Elements.EUnit,
   RemObjects.Elements.RTL,
-  RemObjects.Elements.RTL.Units;
+  RemObjects.Elements.RTL.Units
+  {$IF ISLAND AND WINDOWS},
+  RemObjects.Elements.System
+  {$ENDIF};
 
 type
   HttpProxyTests = public class(Test)
@@ -113,5 +116,82 @@ type
     end;
 
   end;
+
+  {$IF ISLAND AND WINDOWS}
+  {$IFDEF DEBUG}
+  LoopbackHttpProxy = private class(IDisposable)
+  private
+    fFinished: &Event := new &Event;
+    fListener: Socket;
+    fPort: Integer;
+    fStopping: Boolean;
+    fFailure: Exception;
+  public
+    constructor;
+    begin
+      fListener := new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+      fListener.Bind(new IPEndPoint(IPAddress.Parse('127.0.0.1'), 0));
+
+      var lAddress := new Byte[sizeOf(rtl.SOCKADDR_IN)];
+      var lAddressSize := lAddress.Length;
+      if rtl.getsockname(fListener.Handle, @lAddress[0], @lAddressSize) <> 0 then
+        raise new RTLException($"Could not get the loopback proxy port (Windows error {rtl.WSAGetLastError}).");
+      fPort := rtl.ntohs(^rtl.SOCKADDR_IN(@lAddress[0])^.sin_port);
+      fListener.Listen(1);
+
+      async begin
+        try
+          using lClient := fListener.Accept() do begin
+            var lRequestBuffer := new Byte[4096];
+            lClient.Receive(lRequestBuffer);
+            lClient.Send(Encoding.UTF8.GetBytes('HTTP/1.1 200 OK' + #13#10 + 'Content-Length: 9' + #13#10 + 'Connection: close' + #13#10 + #13#10 + 'via-proxy'));
+          end;
+        except
+          on E: Exception do
+            if not fStopping then
+              fFailure := E;
+        finally
+          fFinished.Set();
+        end;
+      end;
+    end;
+
+    method Dispose;
+    begin
+      fStopping := true;
+      if assigned(fListener) then begin
+        fListener.Close();
+        fListener := nil;
+      end;
+      fFinished.WaitFor(5 Seconds);
+      if assigned(fFailure) then
+        raise fFailure;
+    end;
+
+    property Port: Integer read fPort;
+  end;
+
+  WindowsSystemProxyTests = public class(Test)
+  public
+    method TestSystemProxyUsesResolvedStaticProxy;
+    begin
+      var lPreviousProxy := Http.SystemProxyForTesting;
+      try
+        using lProxy := new LoopbackHttpProxy() do begin
+          Http.SystemProxyForTesting := new HttpProxySettings('127.0.0.1', lProxy.Port);
+
+          var lRequest := new HttpRequest(Url.UrlWithString('http://system-proxy-test.invalid/through-proxy'));
+          lRequest.Proxy := new HttpProxySettings(HttpProxyMode.System);
+          lRequest.Timeout := 5 Seconds;
+          using lResponse := Http.ExecuteRequestSynchronous(lRequest) do
+            Check.AreEqual(lResponse.GetContentAsStringSynchronous, 'via-proxy');
+        end;
+      finally
+        Http.SystemProxyForTesting := lPreviousProxy;
+      end;
+    end;
+  end;
+  {$ENDIF}
+  {$ENDIF}
 
 end.
