@@ -344,48 +344,6 @@ AllowBeta=1
 AllowFull=1
 
 DisplayName=RTL2 Contributor License, Hydrogene/Island
-ProjectName=Elements.RTL.Island.Darwin.watchOS
-ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Oxygene
-Platform=Island
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Oxygene/Island
-ProjectName=Elements.RTL.Island.Darwin.watchOS
-ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Silver
-Platform=Island
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Silver/Island
-ProjectName=Elements.RTL.Island.Darwin.watchOS
-ProjectFileName=Elements.RTL.Island.Darwin.watchOS.elements
-ProjectGuid={28817723-bb33-4c5f-8705-a7b3dff15174}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Hydrogene
-Platform=Island
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Hydrogene/Island
 ProjectName=Elements.RTL.Island.Linux
 ProjectFileName=Elements.RTL.Island.Linux.elements
 ProjectGuid=163f84dc-dc6b-4535-994f-0865d3a84d20
@@ -963,48 +921,6 @@ DisplayName=RTL2 Contributor License, Silver/Toffee
 ProjectName=Elements.RTL.ToffeeV2.tvOS
 ProjectFileName=Elements.RTL.ToffeeV2.tvOS.elements
 ProjectGuid={1b12e76c-4171-46a5-ad85-fd80c335299d}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Hydrogene
-Platform=Toffee
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Hydrogene/Toffee
-ProjectName=Elements.RTL.ToffeeV2.watchOS
-ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
-ProjectGuid={686655b4-6e7a-40e4-98d1-b44700641d87}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Oxygene
-Platform=Toffee
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Oxygene/Toffee
-ProjectName=Elements.RTL.ToffeeV2.watchOS
-ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
-ProjectGuid={686655b4-6e7a-40e4-98d1-b44700641d87}
-ProjectAssemblyName=Elements
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Silver
-Platform=Toffee
-AllowBeta=1
-AllowFull=1
-
-DisplayName=RTL2 Contributor License, Silver/Toffee
-ProjectName=Elements.RTL.ToffeeV2.watchOS
-ProjectFileName=Elements.RTL.ToffeeV2.watchOS.elements
-ProjectGuid={686655b4-6e7a-40e4-98d1-b44700641d87}
 ProjectAssemblyName=Elements
 ProjectOutputType=StaticLibrary
 

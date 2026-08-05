@@ -69,12 +69,6 @@
     <SDK>tvOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.watchOS' ">
-    <Mode>Island</Mode>
-    <SubMode>Darwin</SubMode>
-    <SDK>watchOS</SDK>
-    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
     <Mode>Island</Mode>
     <SubMode>Android</SubMode>
@@ -125,13 +119,6 @@
     <SDK>watchOS</SDK>
     <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.watchOS' ">
-    <Mode>Toffee</Mode>
-    <SDK>watchOS</SDK>
-    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
-    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-    <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Optimize>false</Optimize>
@@ -244,11 +231,6 @@
     <Reference Include="gc" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Darwin.tvOS'">
-    <Reference Include="Island" />
-    <Reference Include="rtl" />
-    <Reference Include="gc" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Target)' == 'Island.Darwin.watchOS'">
     <Reference Include="Island" />
     <Reference Include="rtl" />
     <Reference Include="gc" />

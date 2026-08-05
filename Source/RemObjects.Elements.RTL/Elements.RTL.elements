@@ -105,14 +105,6 @@
     <DefaultUses>Foundation</DefaultUses>
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.watchOS' ">
-    <Mode>Island</Mode>
-    <SubMode>Darwin</SubMode>
-    <SDK>watchOS</SDK>
-    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
-    <DefaultUses>Foundation</DefaultUses>
-    <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.visionOS' ">
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
@@ -187,13 +179,6 @@
     <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.watchOS' ">
-    <Mode>Toffee</Mode>
-    <SDK>watchOS</SDK>
-    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
-    <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
-    <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.visionOS' ">
     <Mode>Toffee</Mode>
@@ -314,14 +299,6 @@
     <Reference Include="UIKit" />
     <Reference Include="Security" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Target)' == 'Island.Darwin.watchOS'">
-    <Reference Include="Island" />
-    <Reference Include="rtl" />
-    <Reference Include="gc" />
-    <Reference Include="UIKit" />
-    <Reference Include="Security" />
-    <Reference Include="WatchKit" />
-  </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'Island.Android'">
     <Reference Include="rtl" />
     <Reference Include="gc" />
@@ -334,11 +311,6 @@
   <ItemGroup Condition="'$(Target)' == 'ToffeeV2.tvOS'">
     <Reference Include="Security" />
     <Reference Include="UIKit" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Target)' == 'ToffeeV2.watchOS'">
-    <Reference Include="Security" />
-    <Reference Include="CoreFoundation" />
-    <Reference Include="WatchKit" />
   </ItemGroup>
   <ItemGroup Condition="'$(Target)' == 'ToffeeV2.visionOS'">
     <Reference Include="Security" />
