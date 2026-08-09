@@ -213,29 +213,38 @@ type
         if ImplementEnumEncoding(lBody, p, lParameterName, lPosition) then
           continue;
 
-        var (lEncoderFunction, lEncoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Encode);
-        //Log($"{p.Name}: {lEncoderFunction}");
+        var lEncoderFunction: String;
+        var lEncoderType: IType;
+        var lErrorType: IType;
+        var lMeasureScalarType: IType;
+        if TryGetMeasureCoderFunction(p.Type, Direction.Encode, out lEncoderFunction, out lMeasureScalarType) then begin
+          lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new UnaryValue(new IdentifierValue(p.Name), UnaryOperator.Cast, lMeasureScalarType)]);
+        end
+        else begin
+          (lEncoderFunction, lEncoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Encode);
+          //Log($"{p.Name}: {lEncoderFunction}");
 
-        var lEncoderTypeRef: Value := if assigned(lEncoderType) then
-          (if fServices.Platform = Platform.Toffee then
-             new NewValue(fServices.GetType("RemObjects.Elements.RTL.Reflection.Type"), [new ProcValue(new TypeValue(lEncoderType), "class")], nil, ["withPlatformType"])
-           else
-             new TypeOfValue(lEncoderType));
+          var lEncoderTypeRef: Value := if assigned(lEncoderType) then
+            (if fServices.Platform = Platform.Toffee then
+               new NewValue(fServices.GetType("RemObjects.Elements.RTL.Reflection.Type"), [new ProcValue(new TypeValue(lEncoderType), "class")], nil, ["withPlatformType"])
+             else
+               new TypeOfValue(lEncoderType));
 
-        case lEncoderFunction of
-          "Object": begin
-              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef]);
-            end;
-          "Array", "List", "StringDictionary": begin
-              if (lEncoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper, Platform.Island]) then begin
-                fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
-                continue;
+          case lEncoderFunction of
+            "Object": begin
+                lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef]);
               end;
-              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, [lEncoderType], [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef])
-            end;
-          else begin
-              lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name)]);
-            end;
+            "Array", "List", "StringDictionary": begin
+                if (lEncoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper, Platform.Island]) then begin
+                  fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
+                  continue;
+                end;
+                lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, [lEncoderType], [lParameterName, new IdentifierValue(p.Name), lEncoderTypeRef])
+              end;
+            else begin
+                lValue := new ProcValue(new ParamValue(0), "Encode"+lEncoderFunction, nil, [lParameterName, new IdentifierValue(p.Name)]);
+              end;
+          end;
         end;
 
         if not assigned(lEncoderFunction) then begin
@@ -334,7 +343,13 @@ type
         if ImplementEnumDecoding(lBody, p, lParameterName, lPosition) then
           continue;
 
-        var (lDecoderFunction, lDecoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Decode);
+        var lDecoderFunction: String;
+        var lDecoderType: IType;
+        var lErrorType: IType;
+        var lMeasureScalarType: IType;
+        var lIsMeasureDecode := TryGetMeasureCoderFunction(p.Type, Direction.Decode, out lDecoderFunction, out lMeasureScalarType);
+        if not lIsMeasureDecode then
+          (lDecoderFunction, lDecoderType, lErrorType) := GetCoderFunctionName(p.Type, Direction.Decode);
 
         if not assigned(lDecoderFunction) then begin
           if not fImplementingEncodeAndDecode then
@@ -371,30 +386,35 @@ type
           end;
         end;
 
-        var lDecoderTypeRef: Value := if assigned(lDecoderType) then
-          (if fServices.Platform = Platform.Toffee then
-             new NewValue(fServices.GetType("RemObjects.Elements.RTL.Reflection.Type"), [new ProcValue(new TypeValue(lDecoderType), "class")], nil, ["withPlatformType"])
-           else
-             new TypeOfValue(lDecoderType));
+        if lIsMeasureDecode then begin
+          lValue := new UnaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, nil, [lParameterName]), UnaryOperator.Cast, p.Type);
+        end
+        else begin
+          var lDecoderTypeRef: Value := if assigned(lDecoderType) then
+            (if fServices.Platform = Platform.Toffee then
+               new NewValue(fServices.GetType("RemObjects.Elements.RTL.Reflection.Type"), [new ProcValue(new TypeValue(lDecoderType), "class")], nil, ["withPlatformType"])
+             else
+               new TypeOfValue(lDecoderType));
 
-        case lDecoderFunction of
-          "Object": begin
-              lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, nil, [lParameterName, lDecoderTypeRef]),
-                                        new TypeValue(p.Type),
-                                        BinaryOperator.As)
-            end;
-          "Array", "List", "StringDictionary": begin
-              if (lDecoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper, Platform.Island]) then begin
-                fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
-                continue;
+          case lDecoderFunction of
+            "Object": begin
+                lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, nil, [lParameterName, lDecoderTypeRef]),
+                                          new TypeValue(p.Type),
+                                          BinaryOperator.As)
               end;
-              lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName, lDecoderTypeRef]),
-                                        new TypeValue(p.Type),
-                                        BinaryOperator.As)
-            end;
-          else begin
-              lValue := new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, nil, [lParameterName]);
-            end;
+            "Array", "List", "StringDictionary": begin
+                if (lDecoderFunction = "Array") and (fServices.Platform in [Platform.Toffee, Platform.Cooper, Platform.Island]) then begin
+                  fServices.EmitWarning(p, $"Arrays are not supported for serialization on this platform yet.");
+                  continue;
+                end;
+                lValue := new BinaryValue(new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, [lDecoderType], [lParameterName, lDecoderTypeRef]),
+                                          new TypeValue(p.Type),
+                                          BinaryOperator.As)
+              end;
+            else begin
+                lValue := new ProcValue(new ParamValue(0), "Decode"+lDecoderFunction, nil, [lParameterName]);
+              end;
+          end;
         end;
 
         var lStatement := new AssignmentStatement(new IdentifierValue(p.Name), lValue);
@@ -422,6 +442,31 @@ type
         end;
       end;
       result := aType;
+    end;
+
+    method GetMeasureInfo(aType: IType): IMeasureTypeInfo;
+    begin
+      var lType := FlattenType(aType);
+      if lType is var lMeasureType: IMeasureType then
+        exit lMeasureType.MeasureInfo
+    end;
+
+    method TryGetMeasureCoderFunction(aType: IType; aDirection: Direction; out aCoderFunction: String; out aScalarType: IType): Boolean;
+    begin
+      aCoderFunction := nil;
+      aScalarType := nil;
+
+      var lMeasureInfo := GetMeasureInfo(aType);
+      if (lMeasureInfo = nil) or (lMeasureInfo.Kind <> MeasureTypeKind.&Unit) or (lMeasureInfo.ScalarType = nil) then
+        exit false;
+
+      var lCoderInfo := GetCoderFunctionName(lMeasureInfo.ScalarType, aDirection);
+      if not assigned(lCoderInfo[0]) then
+        exit false;
+
+      aCoderFunction := lCoderInfo[0];
+      aScalarType := lMeasureInfo.ScalarType;
+      result := true
     end;
 
     method ImplementEnumEncoding(aBody: BeginStatement; aProperty: IPropertyDefinition; aParameterName: String; aPosition: IPosition): Boolean;
