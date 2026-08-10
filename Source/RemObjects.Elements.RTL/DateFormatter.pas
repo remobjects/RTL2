@@ -97,8 +97,46 @@ end;
 
 class method DateFormatter.Format(Value: String): String;
 begin
-  // right now we use the "native" format, which afaict works everywhere. If we ever need per-platfor adjsutments, we'll add them here.
+  {$IF COOPER OR TOFFEE}
+  var lResult := new StringBuilder;
+  var lIndex := 0;
+  var lInsideLiteral := false;
+
+  while lIndex < Value.Length do begin
+    var lCharacter := Value[lIndex];
+
+    if lCharacter = "'" then begin
+      lResult.Append(lCharacter);
+      inc(lIndex);
+
+      if (lIndex < Value.Length) and (Value[lIndex] = "'") then begin
+        lResult.Append(Value[lIndex]);
+        inc(lIndex);
+      end
+      else
+        lInsideLiteral := not lInsideLiteral;
+
+      continue;
+    end;
+
+    if not lInsideLiteral and (lCharacter = 'd') then begin
+      var lStart := lIndex;
+      while (lIndex < Value.Length) and (Value[lIndex] = 'd') do
+        inc(lIndex);
+
+      var lLength := lIndex-lStart;
+      lResult.Append(if lLength >= 3 then 'E' else 'd', lLength);
+      continue;
+    end;
+
+    lResult.Append(lCharacter);
+    inc(lIndex);
+  end;
+
+  result := lResult.ToString;
+  {$ELSE}
   result := Value;
+  {$ENDIF}
 (*
   if Value = nil then
     raise new ArgumentNullException('Value');

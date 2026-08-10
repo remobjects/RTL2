@@ -38,6 +38,16 @@ type
       Check.AreEqual(TimeSpan.From(5 Hours).Ticks, TimeSpan.TicksPerHour*5);
     end;
 
+    method TestPortableDayFormatting;
+    begin
+      var lDate := new DateTime(2026, 8, 9);
+
+      Check.AreEqual(lDate.ToString('dd', 'en-US', TimeZone.Utc), '09');
+      Check.AreEqual(lDate.ToString('ddd', 'en-US', TimeZone.Utc), 'Sun');
+      Check.AreEqual(lDate.ToString('dddd', 'en-US', TimeZone.Utc), 'Sunday');
+      Check.AreEqual(lDate.ToString("'ddd' ddd", 'en-US', TimeZone.Utc), 'ddd Sun');
+    end;
+
     method TestUnixTimeSecondsSupportsInt64;
     begin
       var lDate := new DateTime(2100, 1, 1);
