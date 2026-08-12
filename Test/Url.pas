@@ -212,8 +212,8 @@ type
       Check.AreEqual(Url.UrlWithFilePath("/Users/mh/").UnixPathRelativeToUrl(lUnixUrl) Always(true), "..");
       Check.AreEqual(Url.UrlWithFilePath("/Users/mh/Library").UnixPathRelativeToUrl(lUnixUrl) Always(true), "../Library");
       Check.AreEqual(Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), "Test");
-      Check.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), nil);
-      Check.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), nil);
+      Check.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPath);
+      Check.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPath);
       //Check.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), "C:\Users\mh\Desktop\Test");
       //Check.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lUnixUrl) Always(true), "\\RIBBONS\Users\mh\Desktop\Test");
 
@@ -224,16 +224,16 @@ type
       Check.AreEqual(Url.UrlWithWindowsPath("C:\Users\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "../..");
       Check.AreEqual(Url.UrlWithWindowsPath("C:\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "../../..");
       Check.AreEqual(Url.UrlWithWindowsPath("c:\Users\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "../..");
-      Check.AreEqual(Url.UrlWithWindowsPath("D:\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), nil);
-      Check.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), nil);
-      Check.AreEqual(Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), nil);
+      Check.AreEqual(Url.UrlWithWindowsPath("D:\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), Url.UrlWithWindowsPath("D:\").UnixPath);
+      Check.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPath);
+      Check.AreEqual(Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPath);
       //Check.AreEqual(Url.UrlWithWindowsPath("D:\").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "D:\");
       //Check.AreEqual(Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "\\RIBBONS\Users\mh\Desktop\Test");
       //Check.AreEqual(Url.UrlWithUnixPath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsDriveLetterUrl) Always(true), "/Users/mh/Desktop/Test");
 
       var lWindowsDriveLetterUrl2 := Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Really\Long\Path");
       Check.AreEqual(Url.UrlWithWindowsPath("C:\Users\Different\Path").WindowsPathRelativeToUrl(lWindowsDriveLetterUrl2) Threshold(2), "C:\Users\Different\Path");
-      Check.AreEqual(Url.UrlWithWindowsPath("D:\Different\Drive").WindowsPathRelativeToUrl(lWindowsDriveLetterUrl2) Always(true), nil);
+      Check.AreEqual(Url.UrlWithWindowsPath("D:\Different\Drive").WindowsPathRelativeToUrl(lWindowsDriveLetterUrl2) Always(true), Url.UrlWithWindowsPath("D:\Different\Drive").WindowsPath);
       Check.AreEqual(Url.UrlWithWindowsPath("D:\Different\Drive").WindowsPathRelativeToUrl(lWindowsDriveLetterUrl2) Always(false), "D:\Different\Drive");
 
       var lWindowsNetworkUrl := Url.UrlWithWindowsPath("\\RIBBONS\Users\mh\Desktop");
@@ -244,14 +244,14 @@ type
       Check.AreEqual(Url.UrlWithWindowsPath("\\Ribbons\Users\").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "../..");
 
       Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").WindowsPathRelativeToUrl(lWindowsNetworkUrl) Always(false), "\\FLOORSHOW\");
-      Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").WindowsPathRelativeToUrl(lWindowsNetworkUrl) Always(true), nil);
-      Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(false), "\\FLOORSHOW\");
-      Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), nil);
+      Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").WindowsPathRelativeToUrl(lWindowsNetworkUrl) Always(true), Url.UrlWithWindowsPath("\\FLOORSHOW\").WindowsPath);
+      Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(false), Url.UrlWithWindowsPath("\\FLOORSHOW\").FilePath);
+      Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), Url.UrlWithWindowsPath("\\FLOORSHOW\").UnixPath);
 
 
-      Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\Users\mh\Desktop").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), nil);
-      Check.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), nil);
-      Check.AreEqual(Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), nil);
+      Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\Users\mh\Desktop").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), Url.UrlWithWindowsPath("\\FLOORSHOW\Users\mh\Desktop").UnixPath);
+      Check.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPath);
+      Check.AreEqual(Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), Url.UrlWithFilePath("/Users/mh/Desktop/Test").UnixPath);
       //Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "\\FLOORSHOW\");
       //Check.AreEqual(Url.UrlWithWindowsPath("\\FLOORSHOW\Users\mh\Desktop").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "\\FLOORSHOW\Users\mh\Desktop");
       //Check.AreEqual(Url.UrlWithWindowsPath("C:\Users\mh\Desktop\Test").UnixPathRelativeToUrl(lWindowsNetworkUrl) Always(true), "C:\Users\mh\Desktop\Test");

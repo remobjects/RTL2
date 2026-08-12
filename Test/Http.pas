@@ -111,7 +111,7 @@ type
       // Properties on the request should still be readable after Cancel()
       var request := new HttpRequest(Url.UrlWithString('https://example.com'));
       request.Cancel();
-      Check.AreEqual(request.Url.ToString, 'https://example.com');
+      Check.AreEqual(request.Url.ToString, 'https://example.com/');
       Check.AreEqual(Double(request.Timeout), Double(10 Seconds));
     end;
 
