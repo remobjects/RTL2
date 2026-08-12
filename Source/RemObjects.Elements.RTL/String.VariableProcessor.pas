@@ -4,28 +4,47 @@ type
   VariableStyle = public enum(Percent, DoubleCurly, EBuild, EBuildCurly);
   VariableStatus = public enum(Keep, &Skip);
 
+  VariableReplacement = private class
+  public
+    constructor(aValue: nullable String; aStatus: VariableStatus);
+    begin
+      Value := aValue;
+      Status := aStatus;
+    end;
+
+    property Value: nullable String;
+    property Status: VariableStatus;
+  end;
+
   String = public partial class
   public
 
     method ProcessVariables(aStyle: VariableStyle; aValues: Dictionary<String,String>): not nullable String;
     begin
-      result := ProcessVariables(aStyle, method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aValues:[aVariable] end);
+      result := ProcessVariablesInternal(aStyle, method (aVariable: not nullable String; aStatus: VariableStatus); begin
+        result := new VariableReplacement(aValues:[aVariable], aStatus)
+      end);
     end;
 
     method ProcessVariables(aStyle: VariableStyle; aCallback: block(aVariable: not nullable String): nullable String): not nullable String;
     begin
-      result := case aStyle of
-        // E26889: Oxygene: cannot use "var" in lambda
-        //VariableStyle.Percent: ProcessPlaceholders_PercentStyle((aVariable, aStatus) -> aCallback(aVariable));
-        VariableStyle.Percent: ProcessPlaceholders_PercentStyle(method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
-        VariableStyle.DoubleCurly: ProcessPlaceholders_DoubleCurlyStyle(method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
-        VariableStyle.EBuild: ProcessPlaceholders_EBuildStyle(['(', ')'], method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
-        VariableStyle.EBuildCurly: ProcessPlaceholders_EBuildStyle(['{', '}'], method (aVariable: not nullable String; var aNewStatus: VariableStatus); begin result := aCallback(aVariable) end);
-        else raise new Exception($"Unknown variable style {aStyle}");
-      end;
+      result := ProcessVariablesInternal(aStyle, method (aVariable: not nullable String; aStatus: VariableStatus); begin
+        result := new VariableReplacement(aCallback(aVariable), aStatus)
+      end);
     end;
 
     method ProcessVariables(aStyle: VariableStyle; aCallback: block(aVariable: not nullable String; var aNewStatus: VariableStatus): nullable String): not nullable String;
+    begin
+      result := ProcessVariablesInternal(aStyle, method (aVariable: not nullable String; aStatus: VariableStatus); begin
+        var lNewStatus := aStatus;
+        var lValue := aCallback(aVariable, var lNewStatus);
+        result := new VariableReplacement(lValue, lNewStatus)
+      end);
+    end;
+
+  private
+
+    method ProcessVariablesInternal(aStyle: VariableStyle; aCallback: block(aVariable: not nullable String; aStatus: VariableStatus): not nullable VariableReplacement): not nullable String;
     begin
       result := case aStyle of
         VariableStyle.Percent: ProcessPlaceholders_PercentStyle(aCallback);
@@ -36,9 +55,7 @@ type
       end;
     end;
 
-  private
-
-    method ProcessPlaceholders_EBuildStyle(aParens: array [0..1] of Char; aCallback: block(aVariable: not nullable String; var aNewStatus: VariableStatus): nullable String): not nullable String;
+    method ProcessPlaceholders_EBuildStyle(aParens: array [0..1] of Char; aCallback: block(aVariable: not nullable String; aStatus: VariableStatus): not nullable VariableReplacement): not nullable String;
     begin
 
       var lCurrentStart := 0;
@@ -75,7 +92,9 @@ type
             while i < self.Length do begin
               if self[i] = aParens[1] then begin
                 var lVariableName := self.Substring(lCurrentStart+2, i-lCurrentStart-2);
-                var lValue := aCallback(lVariableName, var lStatus);
+                var lReplacement := aCallback(lVariableName, lStatus);
+                lStatus := lReplacement.Status;
+                var lValue := lReplacement.Value;
                 if assigned(lValue) then begin
                   AppendResult(lValue);
                   inc(i);
@@ -98,7 +117,7 @@ type
       result := coalesce(lResult:ToString, self);
     end;
 
-    method ProcessPlaceholders_DoubleCurlyStyle(aCallback: block(aVariable: not nullable String; var aNewStatus: VariableStatus): nullable String): not nullable String;
+    method ProcessPlaceholders_DoubleCurlyStyle(aCallback: block(aVariable: not nullable String; aStatus: VariableStatus): not nullable VariableReplacement): not nullable String;
     begin
 
       var lCurrentStart := 0;
@@ -135,7 +154,9 @@ type
               if self[i] = '}' then begin
                 if self[i+1] = '}' then begin
                   var lVariableName := self.Substring(lCurrentStart+2, i-lCurrentStart-2);
-                  var lValue := aCallback(lVariableName, var lStatus);
+                  var lReplacement := aCallback(lVariableName, lStatus);
+                  lStatus := lReplacement.Status;
+                  var lValue := lReplacement.Value;
                   if assigned(lValue) then begin
                     AppendResult(lValue);
                     inc(i,2);
@@ -157,7 +178,7 @@ type
       result := coalesce(lResult:ToString, self);
     end;
 
-    method ProcessPlaceholders_PercentStyle(aCallback: block(aVariable: not nullable String; var aNewStatus: VariableStatus): nullable String): not nullable String;
+    method ProcessPlaceholders_PercentStyle(aCallback: block(aVariable: not nullable String; aStatus: VariableStatus): not nullable VariableReplacement): not nullable String;
     begin
 
       var lCurrentStart := 0;
@@ -192,7 +213,9 @@ type
           while i < self.Length do begin
             if self[i] = '%' then begin
               var lVariableName := self.Substring(lCurrentStart+1, i-lCurrentStart-1);
-              var lValue := aCallback(lVariableName, var lStatus);
+              var lReplacement := aCallback(lVariableName, lStatus);
+              lStatus := lReplacement.Status;
+              var lValue := lReplacement.Value;
               if assigned(lValue) then begin
                 AppendResult(lValue);
                 inc(i);
