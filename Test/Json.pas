@@ -5,6 +5,12 @@ uses
   RemObjects.Elements.EUnit;
 
 type
+  {$IF ISLAND AND DARWIN}
+  JsonTestException = Foundation.Exception;
+  {$ELSE}
+  JsonTestException = Exception;
+  {$ENDIF}
+
   JsonTests = public class(Test)
   public
 
@@ -47,7 +53,7 @@ type
 
     method TryFromStringOutExceptionRejectsIncompleteJson;
     begin
-      var lException: Exception;
+      var lException: JsonTestException;
       var lJson := JsonDocument.TryFromString('{"name":"value"', out lException);
       Check.IsNil(lJson);
       Check.IsNotNil(lException);
@@ -96,7 +102,7 @@ type
 
     method TryFromStringOutExceptionRejectsMalformedObjectSyntax;
     begin
-      var lException: Exception;
+      var lException: JsonTestException;
       var lJson := JsonDocument.TryFromString('{:', out lException);
       Check.IsNil(lJson);
       Check.IsNotNil(lException);
@@ -119,7 +125,7 @@ type
 
     method TryFromStringOutExceptionFormatsExpectedTokensForMalformedObjectSyntax;
     begin
-      var lException: Exception;
+      var lException: JsonTestException;
       var lJson := JsonDocument.TryFromString('{:', out lException);
       Check.IsNil(lJson);
       Check.IsNotNil(lException);
@@ -136,7 +142,7 @@ type
 
     method TryFromStringParsesTopLevelStringValue;
     begin
-      var lException: Exception;
+      var lException: JsonTestException;
       var lJson := JsonDocument.TryFromString('"hello"', out lException);
       if assigned(lException) then
         raise new Exception($"Parser failed: {lException.Message}");
@@ -150,7 +156,7 @@ type
 
     method TryFromStringParsesTopLevelPrimitiveValues;
     begin
-      var lException: Exception;
+      var lException: JsonTestException;
 
       var lJson := JsonDocument.TryFromString('123', out lException);
       if assigned(lException) then
@@ -224,7 +230,7 @@ type
 
     method TryFromStringRejectsExtraTokensAfterTopLevelPrimitive;
     begin
-      var lException: Exception;
+      var lException: JsonTestException;
 
       var lJson := JsonDocument.TryFromString('"hello" 1', out lException);
       Check.IsNil(lJson);
@@ -253,7 +259,7 @@ type
 
     method TryFromStringParsesWhitespaceWrappedTopLevelStringValue;
     begin
-      var lException: Exception;
+      var lException: JsonTestException;
       var lJson := JsonDocument.TryFromString('  "trimmed"  ', out lException);
       if assigned(lException) then
         raise new Exception($"Parser failed for whitespace-wrapped string root: {lException.Message}");
@@ -295,7 +301,7 @@ type
 
     method TryFromStringRejectsExtraTokensAfterTopLevelContainer;
     begin
-      var lException: Exception;
+      var lException: JsonTestException;
 
       var lJson := JsonDocument.TryFromString('{"name":5} xyz', out lException);
       Check.IsNil(lJson);
@@ -315,7 +321,7 @@ type
 
       lJsonText := lJsonText.Replace(String(#13), "").Replace(String(#10), "");
 
-      var lException: Exception;
+      var lException: JsonTestException;
       var lJson := JsonDocument.TryFromString(lJsonText, out lException);
       if assigned(lException) then
         raise new Exception($"Parser failed: {lException.Message}");

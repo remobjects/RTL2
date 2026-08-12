@@ -86,11 +86,7 @@ type
         if Tokenizer.Token = Item then
           exit;
 
-      {$IF COOPER}
-      raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}.");
-      {$ELSE}
       raise new JsonUnexpectedTokenException($"Unexpected token at {Tokenizer.Row}/{Tokenizer.Column}; expected '{ExpectedTokensString(Values)}', got '{TokenKindString(Tokenizer.Token)}'.");
-      {$ENDIF}
     end;
 
 
