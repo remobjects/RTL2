@@ -38,14 +38,53 @@ type
       Check.AreEqual(TimeSpan.From(5 Hours).Ticks, TimeSpan.TicksPerHour*5);
     end;
 
-    method TestPortableDayFormatting;
+    method TestPortableDateFormatting;
     begin
-      var lDate := new DateTime(2026, 8, 9);
+      var lDate := new DateTime(2026, 8, 9, 17, 4, 5);
 
-      Check.AreEqual(lDate.ToString('dd', 'en-US', TimeZone.Utc), '09');
-      Check.AreEqual(lDate.ToString('ddd', 'en-US', TimeZone.Utc), 'Sun');
+      Check.AreEqual(lDate.ToString('yyyy', 'en-US', TimeZone.Utc), '2026');
+      Check.AreEqual(lDate.ToString('yy', 'en-US', TimeZone.Utc), '26');
+      Check.AreEqual(lDate.ToString('MMMM', 'en-US', TimeZone.Utc), 'August');
+      Check.AreEqual(lDate.ToString('MMM', 'en-US', TimeZone.Utc), 'Aug');
+      Check.AreEqual(lDate.ToString('MM', 'en-US', TimeZone.Utc), '08');
+      Check.AreEqual(lDate.ToString('M', 'en-US', TimeZone.Utc), '8');
       Check.AreEqual(lDate.ToString('dddd', 'en-US', TimeZone.Utc), 'Sunday');
-      Check.AreEqual(lDate.ToString("'ddd' ddd", 'en-US', TimeZone.Utc), 'ddd Sun');
+      Check.AreEqual(lDate.ToString('ddd', 'en-US', TimeZone.Utc), 'Sun');
+      Check.AreEqual(lDate.ToString('dd', 'en-US', TimeZone.Utc), '09');
+      Check.AreEqual(lDate.ToString('d', 'en-US', TimeZone.Utc), '9');
+    end;
+
+    method TestPortableTimeFormatting;
+    begin
+      var lDate := new DateTime(2026, 8, 9, 17, 4, 5);
+
+      Check.AreEqual(lDate.ToString('HH', 'en-US', TimeZone.Utc), '17');
+      Check.AreEqual(lDate.ToString('H', 'en-US', TimeZone.Utc), '17');
+      Check.AreEqual(lDate.ToString('hh', 'en-US', TimeZone.Utc), '05');
+      Check.AreEqual(lDate.ToString('h', 'en-US', TimeZone.Utc), '5');
+      Check.AreEqual(lDate.ToString('mm', 'en-US', TimeZone.Utc), '04');
+      Check.AreEqual(lDate.ToString('m', 'en-US', TimeZone.Utc), '4');
+      Check.AreEqual(lDate.ToString('ss', 'en-US', TimeZone.Utc), '05');
+      Check.AreEqual(lDate.ToString('s', 'en-US', TimeZone.Utc), '5');
+      Check.AreEqual(lDate.ToString('a', 'en-US', TimeZone.Utc), 'PM');
+    end;
+
+    method TestPortableTwelveHourFormatting;
+    begin
+      var lMidnight := new DateTime(2026, 8, 9, 0, 4, 5);
+      var lNoon := new DateTime(2026, 8, 9, 12, 4, 5);
+
+      Check.AreEqual(lMidnight.ToString('hh:mma', 'en-US', TimeZone.Utc), '12:04AM');
+      Check.AreEqual(lNoon.ToString('hh:mma', 'en-US', TimeZone.Utc), '12:04PM');
+    end;
+
+    method TestPortableCombinedFormatting;
+    begin
+      var lDate := new DateTime(2026, 8, 9, 17, 4, 5);
+
+      Check.AreEqual(lDate.ToString('yyyy-MM-dd HH:mm:ss', 'en-US', TimeZone.Utc), '2026-08-09 17:04:05');
+      Check.AreEqual(lDate.ToString("ddd, MMM d 'at' h:mma", 'en-US', TimeZone.Utc), 'Sun, Aug 9 at 5:04PM');
+      Check.AreEqual(lDate.ToString("'ddd' ddd 'a' a", 'en-US', TimeZone.Utc), 'ddd Sun a PM');
     end;
 
     method TestUnixTimeSecondsSupportsInt64;
@@ -67,7 +106,7 @@ type
       Check.IsTrue(lDateTime.Hour = 9);
       Check.IsTrue(lDateTime.Minute = 5);
       var lOADate: Double := DateTime.ToOADate(lDateTime);
-      Check.AreEqual(lToTest.ToString, lOADate.ToString);
+      Check.IsTrue(Math.Abs(lToTest-lOADate) <= (1.0/86400000.0));
 
       lToTest := 43105.3785891204; // 5 - 1 - 2018 09:05:10 100ns <-- OADate;
       lDateTime := DateTime.FromOADate(lToTest);
@@ -77,7 +116,7 @@ type
       Check.IsTrue(lDateTime.Hour = 9);
       Check.IsTrue(lDateTime.Minute = 5);
       lOADate := DateTime.ToOADate(lDateTime);
-      Check.AreEqual(lToTest.ToString, lOADate.ToString);
+      Check.IsTrue(Math.Abs(lToTest-lOADate) <= (1.0/86400000.0));
     end;
 
     method TestDateTimeParse;

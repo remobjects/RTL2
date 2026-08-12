@@ -130,8 +130,12 @@ begin
   fDateTimeFormat.LongDatePattern := lFormat.toPattern;
   lFormat := java.text.SimpleDateFormat(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT, aLocaleID));
   fDateTimeFormat.ShortDatePattern := lFormat.toPattern;
-  fDateTimeFormat.LongTimePattern := 'hh:mm:ss';
-  fDateTimeFormat.ShortTimePattern := 'hh:mm';
+  if aLocaleID = java.util.Locale.ROOT then begin
+    fDateTimeFormat.LongDatePattern := 'dddd, dd MMMM yyyy';
+    fDateTimeFormat.ShortDatePattern := 'MM/dd/yyyy';
+  end;
+  fDateTimeFormat.LongTimePattern := 'HH:mm:ss';
+  fDateTimeFormat.ShortTimePattern := 'HH:mm';
   var lDateSymbols := lFormat.getDateFormatSymbols;
   fDateTimeFormat.ShortDayNames := lDateSymbols.getShortWeekdays();
   fDateTimeFormat.LongDayNames := lDateSymbols.getWeekdays();

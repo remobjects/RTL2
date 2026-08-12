@@ -97,8 +97,8 @@ end;
 
 class method DateFormatter.Format(Value: String): String;
 begin
-  {$IF COOPER OR TOFFEE}
   var lResult := new StringBuilder;
+  var lFormatters := GetFormatters;
   var lIndex := 0;
   var lInsideLiteral := false;
 
@@ -119,13 +119,15 @@ begin
       continue;
     end;
 
-    if not lInsideLiteral and (lCharacter = 'd') then begin
+    if not lInsideLiteral then begin
       var lStart := lIndex;
-      while (lIndex < Value.Length) and (Value[lIndex] = 'd') do
+      while (lIndex < Value.Length) and (Value[lIndex] = lCharacter) do
         inc(lIndex);
 
       var lLength := lIndex-lStart;
-      lResult.Append(if lLength >= 3 then 'E' else 'd', lLength);
+      var lToken := Value.Substring(lStart, lLength);
+      var lFormatter := lFormatters.FirstOrDefault(aFormatter -> aFormatter.Supports(lToken));
+      lResult.Append(if assigned(lFormatter) then lFormatter.Convert(lToken) else lToken);
       continue;
     end;
 
@@ -134,9 +136,6 @@ begin
   end;
 
   result := lResult.ToString;
-  {$ELSE}
-  result := Value;
-  {$ENDIF}
 (*
   if Value = nil then
     raise new ArgumentNullException('Value');
