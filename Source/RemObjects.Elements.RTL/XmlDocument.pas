@@ -1697,7 +1697,7 @@ begin
   if (lBracePos = 0) then begin
     var lClosingBracePos := aName.IndexOf('}');
     if lClosingBracePos > lBracePos then begin
-      lNamespace := &Namespace[aName.Substring(1, lClosingBracePos-1)];
+      lNamespace := GetNamespaceByUri(aName.Substring(1, lClosingBracePos-1));
       if assigned(lNamespace) then
         aName := aName.Substring(lClosingBracePos+1, aName.Length-lClosingBracePos-1)
     end;
