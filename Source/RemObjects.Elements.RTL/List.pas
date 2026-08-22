@@ -44,7 +44,9 @@ type
     method ForEach(Action: Action<T>);
 
     method IndexOf(aItem: T): Integer;
+    method IndexOf(aCallback: not nullable block (aItem: T): Boolean): Integer;
     method LastIndexOf(aItem: T): Integer;
+    method LastIndexOf(aCallback: not nullable block (aItem: T): Boolean): Integer;
 
     {$IF TOFFEEV2}
     method GetSequence: sequence of T;
@@ -451,6 +453,14 @@ begin
   {$ENDIF}
 end;
 
+method ImmutableList<T>.IndexOf(aCallback: not nullable block (aItem: T): Boolean): Integer;
+begin
+  for i := 0 to Count-1 do
+    if aCallback(self[i]) then
+      exit i;
+end;
+
+
 method List<T>.Insert(&Index: Integer; aItem: T);
 begin
   {$IF COOPER}
@@ -487,6 +497,13 @@ begin
   {$ELSEIF ECHOES OR ISLAND}
   exit mapped.LastIndexOf(aItem);
   {$ENDIF}
+end;
+
+method ImmutableList<T>.LastIndexOf(aCallback: not nullable block (aItem: T): Boolean): Integer;
+begin
+  for i := Count-1 downto 0 do
+    if aCallback(self[i]) then
+      exit i;
 end;
 
 method List<T>.Remove(aItem: T): Boolean;
