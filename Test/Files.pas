@@ -19,6 +19,17 @@ type
       Check.AreEqual(lFilename.FileExists, false);
       Check.AreEqual(File.Exists(lFilename), false);
     end;
+
+    method UserCachesFolder;
+    begin
+      if Environment.OS ≠ OperatingSystem.Linux then
+        exit;
+
+      var lExpected := Environment.EnvironmentVariable["XDG_CACHE_HOME"];
+      if length(lExpected) = 0 then
+        lExpected := Path.Combine(Environment.UserHomeFolder.FullPath, ".cache");
+      Check.AreEqual(Environment.UserCachesFolder.FullPath, lExpected);
+    end;
   end;
 
 end.

@@ -71,7 +71,7 @@ type
     property UserDesktopFolder: nullable Folder read GetUserDesktopFolder;
     property UserDocumentsFolder: nullable Folder read GetUserDocumentsFolder;
     property UserApplicationSupportFolder: nullable Folder read GetUserApplicationSupportFolder; // Mac and Windows only
-    property UserCachesFolder: nullable Folder read GetUserCachesFolder; // Mac only
+    property UserCachesFolder: nullable Folder read GetUserCachesFolder; // Mac and Linux only
     property UserLibraryFolder: nullable Folder read GetUserLibraryFolder; // Mac only
     property UserDownloadsFolder: nullable Folder read GetUserDownloadsFolder;
     property SystemApplicationSupportFolder: nullable Folder read GetSystemApplicationSupportFolder; // Mac only
@@ -438,6 +438,12 @@ begin
   {$IF ECHOES}
   case OS of
     OperatingSystem.macOS: result := Folder(MacFolders.GetFolder(MacDomains.kUserDomain, MacFolderTypes.kCachedDataFolderType));
+    OperatingSystem.Linux: begin
+      var lFolder := GetEnvironmentVariable("XDG_CACHE_HOME");
+      if length(lFolder) = 0 then
+        lFolder := Path.Combine(GetUserHomeFolder.FullPath, ".cache");
+      result := Folder(lFolder);
+    end;
   end;
   {$ELSEIF DARWIN}
   result := Folder(NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true).objectAtIndex(0));
