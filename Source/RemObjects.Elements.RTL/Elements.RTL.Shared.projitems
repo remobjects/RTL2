@@ -78,6 +78,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)XmlDocument.pas">
       <VirtualFolder>Xml</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)RegexNode.pas">
+      <VirtualFolder>Regex</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)RegexParser.pas">
+      <VirtualFolder>Regex</VirtualFolder>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Regex.pas">
+      <VirtualFolder>Regex</VirtualFolder>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Convert.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Broadcasts.swift" />
     <Compile Include="$(MSBuildThisFileDirectory)Dictionary.pas">
@@ -249,5 +258,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)KeychainHelper.pas">
       <VirtualFolder>Dates &amp; Co</VirtualFolder>
     </Compile>
+    <Folder Include="$(MSBuildThisFileDirectory)Regex\">
+      <Virtual>True</Virtual>
+    </Folder>
   </ItemGroup>
 </Project>

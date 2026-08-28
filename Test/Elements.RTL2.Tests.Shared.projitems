@@ -35,5 +35,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Http.pas" />
     <None Include="$(MSBuildThisFileDirectory)HashSet.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Codable.Enums.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Regex.pas" />
   </ItemGroup>
 </Project>
