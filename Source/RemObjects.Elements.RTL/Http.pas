@@ -375,16 +375,11 @@ begin
 
         var lRepsonseMessage := await lClient.SendAsync(lRequestMessage, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cts.Token);
         locking aRequest.Monitor do aRequest.fCancelSource := nil;
-        if lRepsonseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect then begin
-          var lResponse := new HttpResponse(lRepsonseMessage, new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest), cts, lClient);
-          lResponseOwnsClient := true;
-          aResponseCallback(lResponse);
-        end
-        else begin
-          var lResponse := new HttpResponse(lRepsonseMessage, cts, lClient);
-          lResponseOwnsClient := true;
-          aResponseCallback(lResponse);
-        end;
+        var lResponse := new HttpResponse(lRepsonseMessage, cts, lClient);
+        lResponseOwnsClient := true;
+        if lRepsonseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect then
+          lResponse.Exception := new HttpException(lRepsonseMessage.StatusCode as Integer, aRequest, lResponse);
+        aResponseCallback(lResponse);
       except
         on E: System.OperationCanceledException do
           aResponseCallback(new HttpResponse withException(new HttpException('Request timed out', aRequest)));
@@ -701,10 +696,10 @@ begin
       try
         var lResponseMessage := lClient.SendAsync(lRequestMessage, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, lCts.Token).Result;
         locking aRequest.Monitor do aRequest.fCancelSource := nil;
-        if (lResponseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect) and aThrowOnError then
-          raise new HttpException(Integer(lResponseMessage.StatusCode), aRequest);
         result := new HttpResponse(lResponseMessage, lCts, lClient);
         lResponseOwnsClient := true;
+        if (lResponseMessage.StatusCode ≥ System.Net.HttpStatusCode.Redirect) and aThrowOnError then
+          raise new HttpException(Integer(lResponseMessage.StatusCode), aRequest, result);
       except
         on E: Exception do
           exit HandleEchoesHttpClientException(E, aRequest, aThrowOnError);
