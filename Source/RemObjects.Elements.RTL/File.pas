@@ -371,7 +371,10 @@ end;
 class method File.WriteBytes(aFileName: String; Content: array of Byte);
 begin
   {$IF TOFFEE}
-  (new Binary(Content) as NSData).writeToURL(NSURL.fileURLWithPath(aFileName)) atomically(true);
+  if length(Content) > 0 then
+    (new Binary(Content) as NSData).writeToURL(NSURL.fileURLWithPath(aFileName)) atomically(true)
+  else
+    NSData.data.writeToURL(NSURL.fileURLWithPath(aFileName)) atomically(true);
   {$ELSE}
   var Handle := new FileHandle(aFileName, FileOpenMode.Create);
   try
