@@ -102,6 +102,7 @@ type
 
     method &Remove(aItem: T): Boolean;
     method &Remove(aItems: sequence of T);
+    method &Remove(aMatch: Predicate<T>);
     method RemoveAll;
     method RemoveAt(aIndex: Integer);
     method RemoveRange(aIndex: Integer; aCount: Integer);
@@ -135,6 +136,7 @@ type
     method &Remove(aItem: T): Boolean; inline;
     method &Remove(aItems: ImmutableList<T>); inline;
     method &Remove(aItems: sequence of T); inline;
+    method &Remove(aMatch: Predicate<T>); inline;
     method RemoveAll; inline;
     method RemoveAt(aIndex: Integer); inline;
     method RemoveRange(aIndex: Integer; aCount: Integer); inline;
@@ -548,6 +550,16 @@ method List<T>.Remove(aItems: sequence of T);
 begin
   for each i in aItems do
     &Remove(i);
+end;
+
+method List<T>.Remove(aMatch: Predicate<T>);
+begin
+  if aMatch = nil then
+    exit;
+
+  for i := Count-1 downto 0 do
+    if aMatch(self[i]) then
+      RemoveAt(i);
 end;
 
 method List<T>.RemoveRange(aIndex: Integer; aCount: Integer);
