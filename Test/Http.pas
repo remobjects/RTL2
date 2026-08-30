@@ -117,6 +117,183 @@ type
 
   end;
 
+  {$IF ECHOES}
+  LoopbackHttpErrorServer = private class(IDisposable)
+  private
+
+    fListener: System.Net.Sockets.TcpListener;
+    fWorker: System.Threading.Thread;
+    fReleaseBody := new System.Threading.ManualResetEventSlim;
+    fStatusCode: Integer;
+    fStopping: Boolean;
+    fFailure: Exception;
+
+    method Serve;
+    begin
+      try
+        using lClient := fListener.AcceptTcpClient do
+          using lStream := lClient.GetStream do begin
+            lStream.ReadTimeout := 5000;
+            lStream.WriteTimeout := 5000;
+            using lReader := new System.IO.StreamReader(lStream, System.Text.Encoding.ASCII, false, 1024, true) do begin
+              var lLine := lReader.ReadLine;
+              while length(lLine) > 0 do
+                lLine := lReader.ReadLine;
+            end;
+
+            var lBody := Encoding.UTF8.GetBytes(Body);
+            var lHeaders := Encoding.UTF8.GetBytes($"HTTP/1.1 {fStatusCode} Test" + #13#10 +
+              'Content-Type: application/json' + #13#10 +
+              'X-Request-Id: local-http-test' + #13#10 +
+              $"Content-Length: {lBody.Length}" + #13#10 +
+              'Connection: close' + #13#10#13#10);
+            lStream.Write(lHeaders, 0, lHeaders.Length);
+            lStream.Flush;
+
+            // Send the body only after the caller receives the response or exception.
+            if not fReleaseBody.Wait(5000) then
+              raise new Exception('Timed out waiting to release the test response body.');
+            lStream.Write(lBody, 0, lBody.Length);
+          end;
+      except
+        on E: Exception do
+          if not fStopping then
+            fFailure := E;
+      end;
+    end;
+
+  public
+
+    constructor(aStatusCode: Integer);
+    begin
+      fStatusCode := aStatusCode;
+      fListener := new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+      fListener.Start;
+      Port := (fListener.LocalEndpoint as System.Net.IPEndPoint).Port;
+      fWorker := new System.Threading.Thread(-> Serve);
+      fWorker.IsBackground := true;
+      fWorker.Start;
+    end;
+
+    property Port: Integer read private write;
+    property Body: String read '{"error":{"message":"declined"}}';
+
+    method CreateRequest: HttpRequest;
+    begin
+      result := new HttpRequest(Url.UrlWithString($"http://127.0.0.1:{Port}/error"));
+      result.Proxy := new HttpProxySettings(HttpProxyMode.None);
+      result.Timeout := 5 Seconds;
+    end;
+
+    method ReleaseBody;
+    begin
+      fReleaseBody.Set;
+    end;
+
+    method Dispose;
+    begin
+      fStopping := true;
+      fReleaseBody.Set;
+      fListener.Stop;
+      if not fWorker.Join(5000) then
+        raise new Exception('The loopback HTTP server did not stop.');
+      fReleaseBody.Dispose;
+      if assigned(fFailure) then
+        raise fFailure;
+    end;
+
+  end;
+
+  HttpErrorResponseTests = public class(Test)
+  public
+
+    method TestSynchronousExceptionPreservesResponse;
+    begin
+      using lServer := new LoopbackHttpErrorServer(402) do begin
+        var lRequest := lServer.CreateRequest;
+        var lException: HttpException;
+        try
+          using lResponse := Http.ExecuteRequestSynchronous(lRequest) do;
+        except
+          on E: HttpException do
+            lException := E;
+        end;
+        lServer.ReleaseBody;
+        Check.IsNotNil(lException);
+        if not assigned(lException) then
+          exit;
+        Check.AreEqual(lException.Request, lRequest);
+        Check.AreEqual(lException.Code, 402);
+        Check.IsNotNil(lException.Response);
+        if not assigned(lException.Response) then
+          exit;
+        using lResponse := lException.Response do begin
+          Check.AreEqual(lResponse.Code, 402);
+          Check.IsFalse(lResponse.Success);
+          var lRequestId: String;
+          for each k in lResponse.Headers.Keys do
+            if k.EqualsIgnoringCase('X-Request-Id') then
+              lRequestId := lResponse.Headers[k];
+          Check.AreEqual(lRequestId, 'local-http-test');
+          Check.AreEqual(lResponse.GetContentAsJsonSynchronous['error']['message'].StringValue, 'declined');
+        end;
+      end;
+    end;
+
+    method TestTryExecutePreservesErrorResponse;
+    begin
+      using lServer := new LoopbackHttpErrorServer(402) do
+        using lResponse := Http.TryExecuteRequestSynchronous(lServer.CreateRequest) do begin
+          lServer.ReleaseBody;
+          Check.IsNotNil(lResponse);
+          Check.AreEqual(lResponse.Code, 402);
+          Check.IsFalse(lResponse.Success);
+          Check.AreEqual(lResponse.GetContentAsStringSynchronous, lServer.Body);
+        end;
+    end;
+
+    method TestSuccessfulResponseRemainsReadable;
+    begin
+      using lServer := new LoopbackHttpErrorServer(200) do
+        using lResponse := Http.ExecuteRequestSynchronous(lServer.CreateRequest) do begin
+          lServer.ReleaseBody;
+          Check.IsTrue(lResponse.Success);
+          Check.AreEqual(lResponse.GetContentAsStringSynchronous, lServer.Body);
+        end;
+    end;
+
+    method TestAsynchronousExceptionReferencesReturnedResponse;
+    begin
+      using lServer := new LoopbackHttpErrorServer(500) do
+        using lFinished := new System.Threading.ManualResetEventSlim do begin
+          var lRequest := lServer.CreateRequest;
+          var lResponse: HttpResponse;
+          Http.ExecuteRequest(lRequest, response -> begin
+            lResponse := response;
+            lServer.ReleaseBody;
+            lFinished.Set;
+          end);
+          Check.IsTrue(lFinished.Wait(5000));
+          Check.IsNotNil(lResponse);
+          using lResponse do begin
+            Check.IsFalse(lResponse.Success);
+            Check.IsTrue(lResponse.Exception is HttpException);
+            if not (lResponse.Exception is HttpException) then
+              exit;
+            var lException := lResponse.Exception as HttpException;
+            Check.AreEqual(lException.Request, lRequest);
+            Check.AreEqual(lException.Response, lResponse);
+            if not assigned(lException.Response) then
+              exit;
+            Check.AreEqual(lException.Code, 500);
+            Check.AreEqual(lException.Response.GetContentAsJsonSynchronous['error']['message'].StringValue, 'declined');
+          end;
+        end;
+    end;
+
+  end;
+  {$ENDIF}
+
   {$IF ISLAND AND WINDOWS}
   {$IFDEF DEBUG}
   LoopbackHttpProxy = private class(IDisposable)
