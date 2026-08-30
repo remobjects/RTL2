@@ -469,6 +469,8 @@ type
       {$IF WEBASSEMBLY}
       raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
       {$ELSE}
+      if Code ≥ 300 then
+        exit;
       var lBinary := TryGetContentAsBinarySynchronous(); // try?
       if assigned(lBinary) then
         result := JsonDocument.TryFromBinary(lBinary);
