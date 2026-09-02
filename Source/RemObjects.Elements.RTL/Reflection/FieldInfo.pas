@@ -18,7 +18,7 @@ type
   private
     {$IF TOFFEE AND NOT ISLAND}
     fField: ^Void;
-    //fType: &Type;
+    fType: &Type;
     fClass: &Type;
     method get_Type: &Type;
     {$ENDIF}
@@ -27,7 +27,7 @@ type
     constructor withClass(aClass: &Type) field(aField: ^Void);
     method GetValue(aInstance: Object): Object;
     method SetValue(aInstance: Object; aValue: Object);
-    property Name: String read raise new NotImplementedException("Reflection for Fields is not implemented yet for Cocoa");//NSString.stringWithUTF8String(rtl.property_getName(fField));
+    property Name: String read NSString.stringWithUTF8String(rtl.ivar_getName(fField));
     property &Type: &Type read get_Type;
     property DeclaringType: &Type read fClass;
     property FieldClass: ^Void read fField;
@@ -83,21 +83,11 @@ end;
 
 method Field.get_Type: &Type;
 begin
-  raise new NotImplementedException("Reflection for Fields is not implemented yet for Cocoa")
-  //if fType = nil then begin
-    //var lStringType: String := NSString.stringWithUTF8String(property_getAttributes(fField));
-    //lStringType := lStringType.Substring(1);
-    //var lPos := lStringType.IndexOf(',');
-    //if lPos ≥ 0 then
-      //lStringType := lStringType.Substring(0, lPos);
-    //if (lStringType ≠ '^?') and (lStringType.length > 1) then begin
-      //var lClass := NSClassFromString(lStringType);
-      //fType := new &Type withClass(lClass);
-    //end
-    //else
-      //fType := new &Type withSimpleType(lStringType);
-  //end;
-  //result := fType;
+  if fType = nil then begin
+    var lTypeEncoding := NSString.stringWithUTF8String(rtl.ivar_getTypeEncoding(fField));
+    fType := new &Type withSimpleType(lTypeEncoding);
+  end;
+  result := fType;
 end;
 {$ENDIF}
 

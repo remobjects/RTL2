@@ -351,13 +351,17 @@ end;
 
 method &Type.Get_Fields: ImmutableList<Field>;
 begin
-  raise new NotImplementedException("Reflection for Fields is not implemented yet for Cocoa")
-  //var propInfos: ^rtl.Method;
-  //var propCount: UInt32;
-  //propInfos := class_copyPropertyList(fClass, var propCount);
-  //result := NSMutableArray<&Property>.arrayWithCapacity(propCount);
-  //for i: Int32 := 0 to propCount-1 do
-    //NSMutableArray<&Property>(result).addObject(new &Property withClass(self) &property(propInfos[i]));
+  var lFieldInfos: ^rtl.Ivar;
+  var lFieldCount: UInt32;
+  lFieldInfos := class_copyIvarList(fClass, var lFieldCount);
+  result := NSMutableArray<Field>.arrayWithCapacity(lFieldCount);
+  if assigned(lFieldInfos) then try
+    if lFieldCount > 0 then
+      for i: Int32 := 0 to lFieldCount-1 do
+        NSMutableArray<Field>(result).addObject(new Field withClass(self) field(lFieldInfos[i]));
+  finally
+    rtl.free(lFieldInfos);
+  end;
 end;
 
 method &Type.IsSubclassOf(aType: &Type): Boolean;
