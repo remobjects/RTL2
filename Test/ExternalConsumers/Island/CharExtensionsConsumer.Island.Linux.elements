@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>Elements.RTL2.ExternalConsumers.Island</RootNamespace>
+    <ProjectGuid>{B72C40EF-6186-4645-A5F8-B5B02D79BDCD}</ProjectGuid>
+    <OutputType>Executable</OutputType>
+    <AssemblyName>Elements.RTL2.ExternalConsumers.Island.Linux</AssemblyName>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <DefaultUses>RemObjects.Elements.RTL</DefaultUses>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>False</Optimize>
+    <OutputPath>Bin\Debug</OutputPath>
+    <Architecture>x86_64</Architecture>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Elements.RTL2">
+      <HintPath>..\..\..\Bin\Island\Ubuntu\x86_64\Elements.fx</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CharExtensionsConsumer.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Linux.targets" />
+</Project>

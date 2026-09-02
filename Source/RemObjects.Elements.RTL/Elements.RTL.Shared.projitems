@@ -173,6 +173,8 @@
       <VirtualFolder>Collections</VirtualFolder>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Char.Unicode.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnicodeSupport.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Culture.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)CaseInsensitiveString.pas">
       <VirtualFolder>String</VirtualFolder>

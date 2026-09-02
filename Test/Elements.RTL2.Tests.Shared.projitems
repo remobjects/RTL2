@@ -33,8 +33,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Formatter.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Variables.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Http.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)List.pas" />
     <None Include="$(MSBuildThisFileDirectory)HashSet.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Codable.Enums.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Regex.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection.pas" />
   </ItemGroup>
 </Project>

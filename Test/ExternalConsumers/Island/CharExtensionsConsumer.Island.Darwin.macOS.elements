@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>Elements.RTL2.ExternalConsumers.Island</RootNamespace>
+    <ProjectGuid>{7020493D-BD06-4F31-89A4-4D0B5EE9C843}</ProjectGuid>
+    <OutputType>Executable</OutputType>
+    <AssemblyName>Elements.RTL2.ExternalConsumers.Island.macOS</AssemblyName>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Architecture>arm64</Architecture>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
+    <DefaultUses>RemObjects.Elements.RTL</DefaultUses>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>False</Optimize>
+    <OutputPath>Bin\Debug</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Elements.RTL2">
+      <HintPath>..\..\..\Bin\Island\macOS\arm64\Elements.fx</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CharExtensionsConsumer.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Darwin.targets" />
+</Project>
