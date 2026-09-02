@@ -77,6 +77,24 @@ type
   ProcessTests = public class(Test)
   public
 
+    method RunStringOutputDrainsLargeStdOutAndStdErrWhileProcessIsRunning;
+    begin
+      var lStdOut: String;
+      var lStdErr: String;
+      var lExitCode := RemObjects.Elements.RTL.Process.Run("/bin/sh",
+          ["-c", "i=0; while [ $i -lt 20000 ]; do echo stdout-012345678901234567890123456789; echo stderr-012345678901234567890123456789 >&2; i=$((i+1)); done; exit 7"].ToList,
+          nil,
+          nil,
+          out lStdOut,
+          out lStdErr);
+
+      Check.AreEqual(7, lExitCode);
+      Check.IsTrue(length(lStdOut) > 500000);
+      Check.IsTrue(length(lStdErr) > 500000);
+      Check.IsTrue(lStdOut.Contains("stdout-012345678901234567890123456789"));
+      Check.IsTrue(lStdErr.Contains("stderr-012345678901234567890123456789"));
+    end;
+
     method RunByteOutputReturnsExitCode;
     begin
       var lStdOut: array of Byte;
@@ -91,6 +109,22 @@ type
       Check.AreEqual(7, lExitCode);
       Check.IsTrue(length(lStdOut) > 0);
       Check.IsTrue(length(lStdErr) > 0);
+    end;
+
+    method RunByteOutputDrainsLargeStdOutAndStdErrWhileProcessIsRunning;
+    begin
+      var lStdOut: array of Byte;
+      var lStdErr: array of Byte;
+      var lExitCode := RemObjects.Elements.RTL.Process.Run("/bin/sh",
+          ["-c", "i=0; while [ $i -lt 20000 ]; do echo stdout-012345678901234567890123456789; echo stderr-012345678901234567890123456789 >&2; i=$((i+1)); done; exit 7"].ToList,
+          nil,
+          nil,
+          out lStdOut,
+          out lStdErr);
+
+      Check.AreEqual(7, lExitCode);
+      Check.IsTrue(length(lStdOut) > 500000);
+      Check.IsTrue(length(lStdErr) > 500000);
     end;
 
     method WaitForAcceptsTypedTimeouts;

@@ -55,6 +55,9 @@ type
   private
 
     class method SetUpTask(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableStringDictionary; aWorkingDirectory: String): Process;
+    {$IF TOFFEE}
+    class method RunToData(aCommand: not nullable String; aArguments: ImmutableList<String>; aEnvironment: nullable ImmutableStringDictionary; aWorkingDirectory: nullable String; out aStdOut: Foundation.NSData; out aStdErr: Foundation.NSData): Integer;
+    {$ENDIF}
 
   end;
 
@@ -167,28 +170,11 @@ end;
 class method Process.Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
 begin
   {$IF TOFFEE}
-  using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
-    (lTask as NSTask).standardOutput := NSPipe.pipe();
-    (lTask as NSTask).standardError := NSPipe.pipe();
-    var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
-    var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
-    lTask.Start();
-    lTask.WaitFor();
-    aStdOut := "";
-    aStdErr := "";
-    var d := stdOut.availableData();
-    while (d ≠ nil) and (d.length() > 0) do begin
-      aStdOut := aStdOut+new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
-      d := stdOut.availableData();
-    end;
-    stdOut.closeFile();
-    d := stdErr.availableData();
-    while (d ≠ nil) and (d.length() > 0) do begin
-      aStdErr := aStdErr+new NSString withData(d) encoding(NSStringEncoding.NSUTF8StringEncoding);
-      d := stdErr.availableData();
-    end;
-    stdErr.closeFile();
-  end;
+  var lStdOutData: NSData;
+  var lStdErrData: NSData;
+  result := RunToData(aCommand, aArguments, aEnvironment, aWorkingDirectory, out lStdOutData, out lStdErrData);
+  aStdOut := new NSString withData(lStdOutData) encoding(NSStringEncoding.NSUTF8StringEncoding);
+  aStdErr := new NSString withData(lStdErrData) encoding(NSStringEncoding.NSUTF8StringEncoding);
   {$ELSEIF ECHOES}
   using lDone := new System.Threading.AutoResetEvent(false) do begin
     var lStdOut := new StringBuilder;
@@ -212,54 +198,75 @@ begin
   {$ENDIF}
 end;
 
-class method Process.Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: array of Byte; out aStdErr: array of Byte): Integer;
+{$IF TOFFEE}
+class method Process.RunToData(aCommand: not nullable String; aArguments: ImmutableList<String>; aEnvironment: nullable ImmutableStringDictionary; aWorkingDirectory: nullable String; out aStdOut: Foundation.NSData; out aStdErr: Foundation.NSData): Integer;
 begin
-  {$IF TOFFEE}
   using lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory) do begin
-    (lTask as NSTask).standardOutput := NSPipe.pipe();
-    (lTask as NSTask).standardError := NSPipe.pipe();
-    var stdOut := (lTask as NSTask).standardOutput.fileHandleForReading;
-    var stdErr := (lTask as NSTask).standardError.fileHandleForReading;
-    var lStdOutData: NSData;
-    var lStdErrData: NSData;
+    var lStdOutPipe := NSPipe.pipe();
+    var lStdErrPipe := NSPipe.pipe();
+    (lTask as NSTask).standardOutput := lStdOutPipe;
+    (lTask as NSTask).standardError := lStdErrPipe;
+    var lStdOutHandle := lStdOutPipe.fileHandleForReading;
+    var lStdErrHandle := lStdErrPipe.fileHandleForReading;
+    var lStdOutData := NSMutableData.data();
+    var lStdErrData := NSMutableData.data();
     var lStdOutFinished := new &Event;
     var lStdErrFinished := new &Event;
+    var lCommandName := aCommand.LastPathComponent;
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
+    method ReadOutput(aCommandName: String; aName: String; aTask: NSTask; aHandle: NSFileHandle; aData: NSMutableData; aFinished: &Event);
+    begin
       try
-        var error: NSError;
-        lStdOutData := stdOut.readDataToEndOfFileAndReturnError(var error);
+        loop begin
+          var lData := aHandle.availableData;
+          if not assigned(lData) or (lData.length = 0) then begin
+            if not aTask.isRunning then
+              break;
+            NSRunLoop.currentRunLoop().runUntilDate(NSDate.date);
+            continue;
+          end;
+          aData.appendData(lData);
+        end;
       finally
-        lStdOutFinished.Set();
-      end;
-    end;
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
-      try
-        var error: NSError;
-        lStdErrData := stdErr.readDataToEndOfFileAndReturnError(var error);
-      finally
-        lStdErrFinished.Set();
+        aFinished.Set();
       end;
     end;
 
     lTask.Start();
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
+      ReadOutput(lCommandName, "stdout", lTask as NSTask, lStdOutHandle, lStdOutData, lStdOutFinished)
+    end;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) begin
+      ReadOutput(lCommandName, "stderr", lTask as NSTask, lStdErrHandle, lStdErrData, lStdErrFinished)
+    end;
+
     lTask.WaitFor();
-
-    var error: NSError;
     lStdOutFinished.WaitFor();
-    //aStdOut := new array of Byte withNSData(stdOutData);
-    aStdOut := new Byte[lStdOutData.length];
-    lStdOutData.getBytes(@aStdOut[0]) length(lStdOutData.length);
-    stdOut.closeAndReturnError(var error);
-
     lStdErrFinished.WaitFor();
-    //aStdErr := new array of Byte withNSData(stdErrData);
-    aStdErr := new Byte[lStdErrData.length];
-    lStdErrData.getBytes(@aStdErr[0]) length(lStdErrData.length);
-    stdErr.closeAndReturnError(var error);
+
+    var lError: NSError;
+    lStdOutHandle.closeAndReturnError(var lError);
+    lStdErrHandle.closeAndReturnError(var lError);
+    aStdOut := lStdOutData;
+    aStdErr := lStdErrData;
     result := lTask.ExitCode;
   end;
+end;
+{$ENDIF}
+
+class method Process.Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableStringDictionary := nil; aWorkingDirectory: nullable String := nil; out aStdOut: array of Byte; out aStdErr: array of Byte): Integer;
+begin
+  {$IF TOFFEE}
+  var lStdOutData: NSData;
+  var lStdErrData: NSData;
+  result := RunToData(aCommand, aArguments, aEnvironment, aWorkingDirectory, out lStdOutData, out lStdErrData);
+  aStdOut := new Byte[lStdOutData.length];
+  if lStdOutData.length > 0 then
+    lStdOutData.getBytes(@aStdOut[0]) length(lStdOutData.length);
+  aStdErr := new Byte[lStdErrData.length];
+  if lStdErrData.length > 0 then
+    lStdErrData.getBytes(@aStdErr[0]) length(lStdErrData.length);
   {$ELSEIF ECHOES}
   var lTask := SetUpTask(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   (lTask as PlatformProcess).StartInfo.RedirectStandardOutput := true;
