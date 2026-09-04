@@ -34,7 +34,7 @@ type
     method HandleEchoesHttpClientException(aException: not nullable Exception; aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
     method UnwrapAggregateException(aException: not nullable System.AggregateException): not nullable Exception;
     {$ENDIF}
-    method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
+    method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): not nullable HttpResponse;
   public
     {$IF ISLAND AND WINDOWS}
     {$IFDEF DEBUG}
@@ -44,7 +44,7 @@ type
     //method ExecuteRequest(aUrl: not nullable Url; ResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequest(aRequest: not nullable HttpRequest; aResponseCallback: not nullable HttpResponseBlock);
     method ExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
-    method TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
+    method TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 
     method ExecuteRequestAsString(aEncoding: Encoding := nil; aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<String>);
     method ExecuteRequestAsBinary(aRequest: not nullable HttpRequest; contentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
@@ -577,22 +577,27 @@ begin
   {$IF ISLAND AND WEBASSEMBLY}
   raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSE}
-  result := ExecuteRequestSynchronous(aRequest, true) as not nullable;
+  result := ExecuteRequestSynchronous(aRequest, true);
   {$ENDIF}
 end;
 
 {$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
-method Http.TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): nullable HttpResponse;
+method Http.TryExecuteRequestSynchronous(aRequest: not nullable HttpRequest): not nullable HttpResponse;
 begin
   {$IF ISLAND AND WEBASSEMBLY}
   raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSE}
-  result := ExecuteRequestSynchronous(aRequest, false);
+  try
+    result := ExecuteRequestSynchronous(aRequest, false);
+  except
+    on E: Exception do
+      result := new HttpResponse withException(E);
+  end;
   {$ENDIF}
 end;
 
 {$IF WEBASSEMBLY}[Warning("Synchronous requests are not supported on WebAssembly")]{$ENDIF}
-method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): nullable HttpResponse;
+method Http.ExecuteRequestSynchronous(aRequest: not nullable HttpRequest; aThrowOnError: Boolean): not nullable HttpResponse;
 begin
   aRequest.ApplyAuthentication;
   aRequest.DebugLog;
@@ -636,8 +641,8 @@ begin
 
     result := new HttpResponse(lConnection);
     if lConnection.ResponseCode >= 300 then begin
-      if not aThrowOnError then exit nil;
-      raise new HttpException(Integer(lConnection.responseCode), aRequest, result)
+      if aThrowOnError then
+        raise new HttpException(Integer(lConnection.responseCode), aRequest, result)
     end;
   finally
     locking aRequest.Monitor do aRequest.fCancelConnection := nil;
@@ -869,13 +874,15 @@ begin
         try
           result := new HttpResponse(lRequest, lStatusCode, lStream);
           if lStatusCode >= 300 then begin
-            if not aThrowOnError then exit nil;
-            raise new RTLException(String.Format("Unable to complete request. Error code: {0}", lStatusCode), result)
+            if aThrowOnError then
+              raise new RTLException(String.Format("Unable to complete request. Error code: {0}", lStatusCode), result)
           end;
         except
           on E: Exception do begin
-            if not aThrowOnError then exit nil;
-            raise new RTLException(E.Message);
+            if not aThrowOnError then
+              result := new HttpResponse withException(E)
+            else
+              raise;
           end;
         end;
       finally
@@ -979,19 +986,22 @@ begin
     try
       result := new HttpResponse(lStatusCode, lStream, lHeaders);
       if lStatusCode >= 300 then begin
-        if not aThrowOnError then exit nil;
-        raise new RTLException(String.Format("Unable to complete request. HTTP Error code: {0}", lStatusCode), result)
+        if aThrowOnError then
+          raise new RTLException(String.Format("Unable to complete request. HTTP Error code: {0}", lStatusCode), result)
       end;
 
     except
       on E: Exception do begin
-        if not aThrowOnError then exit nil;
-        raise new RTLException(E.Message);
+        if not aThrowOnError then
+          result := new HttpResponse withException(E)
+        else
+          raise;
       end;
     end;
   end
   else begin
-    if not aThrowOnError then exit nil;
+    if not aThrowOnError then
+      exit new HttpResponse withException(new RTLException(String.Format("Unable to complete request. LibCurl Error code: {0}", lResult)));
     raise new RTLException(String.Format("Unable to complete request. LibCurl Error code: {0}", lResult), result);
   end;
   {$ELSEIF DARWIN}
@@ -1067,14 +1077,20 @@ begin
     end;
   end
   else if assigned(lError) then begin
-    if not aThrowOnError then exit nil;
+    if not aThrowOnError then
+      exit new HttpResponse withException(new RTLException withError(lError));
     if assigned(nsHttpUrlResponse) then
       raise new HttpException(lError.description, aRequest, new HttpResponse(nil, nsHttpUrlResponse))
     else
       raise new RTLException withError(lError);
   end
   else begin
-    if not aThrowOnError then exit nil;
+    if not aThrowOnError then begin
+      if assigned(nsHttpUrlResponse) then
+        exit new HttpResponse withException(new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, new HttpResponse(nil, nsHttpUrlResponse)))
+      else
+        exit new HttpResponse withException(new RTLException("Request failed without providing an error."));
+    end;
     if assigned(nsHttpUrlResponse) then
       raise new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, new HttpResponse(nil, nsHttpUrlResponse))
     else
