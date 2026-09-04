@@ -42,9 +42,15 @@ type
     method &Join(aTimeout: Milliseconds);
     {$ENDIF}
 
+    // Cooper has no Abort: java.lang.Thread.stop() (the only forced-kill
+    // primitive the JVM ever had) was removed outright in modern JDKs, with
+    // no safe replacement — interrupt() is cooperative, not a forced stop,
+    // so it's not an equivalent mapping.
+    {$IF NOT COOPER}
     {$HIDE W28}
-    method Abort; mapped to {$IF COOPER}stop{$ELSEIF TOFFEE}cancel{$ELSEIF ECHOES OR ISLAND}Abort{$ENDIF};
+    method Abort; mapped to {$IF TOFFEE}cancel{$ELSEIF ECHOES OR ISLAND}Abort{$ENDIF};
     {$SHOW W28}
+    {$ENDIF}
 
     [Obsolete("Use the unit-typed timeout overload")]
     class method Sleep(aTimeoutInMillisconds: Integer); mapped to {$IF NOT TOFFEE}Sleep(aTimeoutInMillisconds){$ELSEIF TOFFEE}sleepForTimeInterval(aTimeoutInMillisconds / 1000){$ENDIF};
