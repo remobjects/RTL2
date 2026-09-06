@@ -76,7 +76,8 @@ uses
   {$IF ECHOES}
   System.Net,
   {$ENDIF}
-  RemObjects.Elements;
+  RemObjects.Elements,
+  RemObjects.Elements.RTL.Units;
 
 {$IF ISLAND AND WINDOWS}
 const
@@ -1047,54 +1048,39 @@ begin
       end;
   end;
 
-  // Use NSURLSession with semaphore to make sync call
-  var lSemaphore := dispatch_semaphore_create(0);
-  var lResponseData: NSData;
-  var lUrlResponse: NSURLResponse;
-  var lError: NSError;
-
-  var lSession := NSURLSession.sessionWithConfiguration(lConfig);
-  var lTask := lSession.dataTaskWithRequest(nsUrlRequest) completionHandler((data, response, error) -> begin
-    lResponseData := data;
-    lUrlResponse := response;
-    lError := error;
-    dispatch_semaphore_signal(lSemaphore);
-  end);
-  aRequest.fCancelTask := lTask;
+  // Keep synchronous callers on the same delegate path as asynchronous
+  // callers. Besides preserving upload/download progress callbacks, this
+  // gives the wait a real, cancelable request deadline instead of waiting
+  // forever when NSURLSession never completes a stalled task.
+  var lResponse := new HttpResponse(aRequest, nil);
+  var lSession := NSURLSession.sessionWithConfiguration(lConfig) &delegate(lResponse) delegateQueue(nil);
+  var lTask := lSession.dataTaskWithRequest(nsUrlRequest);
+  lResponse.SetTask(lTask, lSession);
+  locking aRequest.Monitor do
+    aRequest.fCancelTask := lTask;
   lTask.resume();
-  dispatch_semaphore_wait(lSemaphore, DISPATCH_TIME_FOREVER);
-  aRequest.fCancelTask := nil;
+  if not lResponse.WaitForCompletion(aRequest.Timeout as Milliseconds) then begin
+    aRequest.Cancel;
+    var lTimeoutException := new RTLException($"The request timed out after {aRequest.Timeout as Double} seconds.");
+    if aThrowOnError then
+      raise lTimeoutException;
+    exit new HttpResponse withException(lTimeoutException);
+  end;
+  locking aRequest.Monitor do
+    aRequest.fCancelTask := nil;
 
-  var nsHttpUrlResponse := NSHTTPURLResponse(lUrlResponse);
-  if assigned(lResponseData) and assigned(nsHttpUrlResponse) then begin
-    if defined("TOFFEE") then
-      result := new HttpResponse(lResponseData, nsHttpUrlResponse)
-    else
-      result := new HttpResponse(lResponseData, nsHttpUrlResponse);
-    if nsHttpUrlResponse.statusCode >= 300 then begin
-      if aThrowOnError then
-        raise new HttpException(nsHttpUrlResponse.statusCode, aRequest, result);
-    end;
-  end
-  else if assigned(lError) then begin
+  if assigned(lResponse.Exception) then begin
     if not aThrowOnError then
-      exit new HttpResponse withException(new RTLException withError(lError));
-    if assigned(nsHttpUrlResponse) then
-      raise new HttpException(lError.description, aRequest, new HttpResponse(nil, nsHttpUrlResponse))
-    else
-      raise new RTLException withError(lError);
-  end
-  else begin
+      exit lResponse;
+    raise lResponse.Exception as not nullable;
+  end;
+  result := lResponse;
+  if result.Code >= 300 then begin
     if not aThrowOnError then begin
-      if assigned(nsHttpUrlResponse) then
-        exit new HttpResponse withException(new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, new HttpResponse(nil, nsHttpUrlResponse)))
-      else
-        exit new HttpResponse withException(new RTLException("Request failed without providing an error."));
+      result.Exception := new HttpException(result.Code, aRequest, result);
+      exit;
     end;
-    if assigned(nsHttpUrlResponse) then
-      raise new HttpException(String.Format("Request failed without providing an error. Error code: {0}", nsHttpUrlResponse.statusCode), aRequest, new HttpResponse(nil, nsHttpUrlResponse))
-    else
-      raise new RTLException("Request failed without providing an error.");
+    raise new HttpException(result.Code, aRequest, result);
   end;
   {$ELSE}
   raise new NotImplementedException("Http.ExecuteRequestSynchronous is not implemented for this platform")

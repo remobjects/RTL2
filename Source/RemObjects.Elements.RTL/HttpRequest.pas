@@ -167,9 +167,12 @@ begin
     rtl.WinHttpCloseHandle(h);
   {$ELSEIF DARWIN}
   var task: NSURLSessionDataTask;
-  task := fCancelTask;
-  fCancelTask := nil;
-  task:cancel();
+  locking Monitor do begin
+    task := fCancelTask;
+    fCancelTask := nil;
+  end;
+  if assigned(task) then
+    task:cancel();
   {$ELSEIF ECHOES}
   var src: System.Threading.CancellationTokenSource;
   var req: System.Net.HttpWebRequest;

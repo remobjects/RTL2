@@ -1,7 +1,9 @@
 ﻿namespace RemObjects.Elements.RTL;
 
 {$IF DARWIN}
-uses Foundation;
+uses
+  Foundation,
+  RemObjects.Elements.RTL.Units;
 
 type
   HttpResponse = public partial class(INSURLSessionDelegate, INSURLSessionDataDelegate, INSURLSessionTaskDelegate)
@@ -20,6 +22,11 @@ type
         fTask := aTask;
         fSession := aSession;
       end;
+    end;
+
+    method WaitForCompletion(aTimeout: Milliseconds): Boolean;
+    begin
+      result := fIncomingDataComplete.WaitFor(aTimeout);
     end;
 
   private
