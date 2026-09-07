@@ -477,10 +477,11 @@ begin
     nsUrlRequest.timeoutInterval := aRequest.Timeout as Double;
 
     if assigned(aRequest.Content) then begin
-      if defined("TOFFEE") then
-        nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary()
-      else
-        nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary().ToNSData; {$HINT OPTIMIZE?}
+      {$IF TOFFEE}
+      nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary().ToArray.AsNSData;
+      {$ELSE}
+      nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary().ToNSData;
+      {$ENDIF}
     end;
 
     for each k in aRequest.Headers.Keys do
@@ -522,7 +523,7 @@ begin
         end;
     end;
     var lSession := NSURLSession.sessionWithConfiguration(lConfig) &delegate(lResponse) delegateQueue(nil);
-    var lRequest := lSession.dataTaskWithRequest(nsUrlRequest);// completionHandler((data, nsUrlResponse, error) -> begin
+    var lRequest := lSession.dataTaskWithRequest(nsUrlRequest);
     lResponse.SetTask(lRequest, lSession);
     locking aRequest.Monitor do
       aRequest.fCancelTask := lRequest;
@@ -1014,10 +1015,11 @@ begin
   nsUrlRequest.timeoutInterval := aRequest.Timeout as Double;
 
   if assigned(aRequest.Content) then begin
-    if defined("TOFFEE") then
-      nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary()
-    else
-      nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary().ToNSData; {$HINT OPTIMIZE?}
+    {$IF TOFFEE}
+    nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary().ToArray.AsNSData;
+    {$ELSE}
+    nsUrlRequest.HTTPBody := (aRequest.Content as IHttpRequestContent).GetContentAsBinary().ToNSData;
+    {$ENDIF}
   end;
 
   for each k in aRequest.Headers.Keys do
@@ -1048,26 +1050,20 @@ begin
       end;
   end;
 
-  // Keep synchronous callers on the same delegate path as asynchronous
-  // callers. Besides preserving upload/download progress callbacks, this
-  // gives the wait a real, cancelable request deadline instead of waiting
-  // forever when NSURLSession never completes a stalled task.
-  var lResponse := new HttpResponse(aRequest, nil);
-  var lSession := NSURLSession.sessionWithConfiguration(lConfig) &delegate(lResponse) delegateQueue(nil);
-  var lTask := lSession.dataTaskWithRequest(nsUrlRequest);
-  lResponse.SetTask(lTask, lSession);
-  locking aRequest.Monitor do
-    aRequest.fCancelTask := lTask;
-  lTask.resume();
-  if not lResponse.WaitForCompletion(aRequest.Timeout as Milliseconds) then begin
-    aRequest.Cancel;
-    var lTimeoutException := new RTLException($"The request timed out after {aRequest.Timeout as Double} seconds.");
-    if aThrowOnError then
-      raise lTimeoutException;
-    exit new HttpResponse withException(lTimeoutException);
-  end;
-  locking aRequest.Monitor do
-    aRequest.fCancelTask := nil;
+  // NSURLSession delegate and completion callbacks can both stall after the
+  // body is sent. The synchronous Cocoa API returns status, headers, and body
+  // together, and this method is called from a background worker.
+  var lError: NSError;
+  var lUrlResponse: NSURLResponse;
+  var lData := NSURLConnection.sendSynchronousRequest(nsUrlRequest) returningResponse(var lUrlResponse) error(var lError);
+  var lResponse: HttpResponse;
+  if assigned(lUrlResponse) then begin
+    lResponse := new HttpResponse(lData, lUrlResponse as NSHTTPURLResponse);
+    if assigned(lError) then
+      lResponse.Exception := new Exception(lError.description);
+  end
+  else
+    lResponse := new HttpResponse withException(new Exception(if assigned(lError) then lError.description else "The HTTP request completed without a response."));
 
   if assigned(lResponse.Exception) then begin
     if not aThrowOnError then

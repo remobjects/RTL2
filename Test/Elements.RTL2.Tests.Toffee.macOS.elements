@@ -42,12 +42,9 @@
     <Reference Include="libxml2" />
     <Reference Include="libToffee" />
     <Reference Include="rtl" />
-    <ProjectReference Include="..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.macOS.elements">
-      <Name>Elements.RTL.Toffee.macOS</Name>
-      <HintPath>..\Source\bin\Debug\macOS\libElements.fx</HintPath>
-      <Project>{58D52FE5-E87E-4D9C-8FBB-280980F6762B}</Project>
-      <ProjectFile>..\Source\RemObjects.Elements.RTL\Elements.RTL.Toffee.macOS.elements</ProjectFile>
-    </ProjectReference>
+    <Reference Include="libElements">
+      <HintPath>..\Bin\Toffee\macOS\libElements.fx</HintPath>
+    </Reference>
     <Reference Include="RemObjects.Elements.Serialization">
       <HintPath>..\Bin\Echoes\NETStandard2.0\RemObjects.Elements.Serialization.dll</HintPath>
       <Cirrus>True</Cirrus>

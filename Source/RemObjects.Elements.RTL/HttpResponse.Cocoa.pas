@@ -109,6 +109,8 @@ type
         fBytesExpectedToReceive := aResponse.expectedContentLength;
       Headers := LoadHeaders(aResponse as NSHTTPURLResponse);
       try
+        if assigned(Request.ResponseHeadersReceived) then
+          Request.ResponseHeadersReceived(Code, Headers, fBytesExpectedToReceive);
         if assigned(Request.DownloadProgress) then
           Request.DownloadProgress(0, fBytesExpectedToReceive);
         if assigned(fGotResponseCallback) then
@@ -157,6 +159,8 @@ type
           var lData := LoadData(aData);
           fIncomingData.Write(lData.ToArray);
           inc(fBytesReceived, aData.length);
+          if assigned(Request.ResponseDataReceived) then
+            Request.ResponseDataReceived(lData);
           if assigned(Request.DownloadProgress) then
             Request.DownloadProgress(fBytesReceived, fBytesExpectedToReceive);
           if assigned(fIncomingDataCallback) then

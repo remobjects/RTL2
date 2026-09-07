@@ -44,6 +44,8 @@ type
     property Timeout: Seconds := 10s;
     property UploadProgress: HttpProgressBlock;
     property DownloadProgress: HttpProgressBlock;
+    property ResponseHeadersReceived: HttpResponseHeadersBlock;
+    property ResponseDataReceived: HttpResponseDataBlock;
 
     constructor(aUrlString: not nullable String; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
     constructor(aUrl: not nullable Url; aMethod: HttpRequestMethod := HttpRequestMethod.Get);
@@ -97,6 +99,8 @@ type
 
   HttpVerifyUntrustedCertificateBlock nested in httpRequest = public block(aCertificateInfo: HttpCertificateInfo): Boolean;
   HttpProgressBlock nested in httpRequest = public block(aBytesDone: Int64; aBytesTotal: nullable Int64);
+  HttpResponseHeadersBlock nested in httpRequest = public block(aStatusCode: Integer; aHeaders: not nullable ImmutableDictionary<String,String>; aContentLength: nullable Int64);
+  HttpResponseDataBlock nested in httpRequest = public block(aData: not nullable ImmutableBinary);
 
   HttpRequestMethod = public enum (Get, Post, Head, Put, Delete, Patch, Options, Trace);
 
