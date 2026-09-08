@@ -1062,8 +1062,9 @@ begin
     if assigned(lError) then
       lResponse.Exception := new Exception(lError.description);
   end
-  else
-    lResponse := new HttpResponse withException(new Exception(if assigned(lError) then lError.description else "The HTTP request completed without a response."));
+  else begin
+    lResponse := new HttpResponse withException(new Exception(if assigned(lError) then lError.description as String else "The HTTP request completed without a response."));
+  end;
 
   if assigned(lResponse.Exception) then begin
     if not aThrowOnError then
