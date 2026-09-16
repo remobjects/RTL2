@@ -31,19 +31,27 @@ fileprivate class RemObjects.Elements.RTL.BroadcastManagerSubscription {
 	weak var receiver: Object?
 	weak var object: Object?
 	var token: id;
-	init (_ receiver: Object, _ object: Object?, _ token: id) {
+	let receiverKey: String
+	let broadcast: String
+	init (_ receiver: Object, _ object: Object?, _ token: id, _ broadcast: String) {
 		self.receiver = receiver
 		self.object = object
 		self.token = token
+		self.receiverKey = receiver.GetHashCode().ToString()
+		self.broadcast = broadcast
 	}
 	#else
 	var receiver: Object
 	var object: Object?
 	var block: (Notification)->()
-	init (_ receiver: Object, _ object: Object?, _ block: (Notification)->()) {
+	let receiverKey: String
+	let broadcast: String
+	init (_ receiver: Object, _ object: Object?, _ block: (Notification)->(), _ broadcast: String) {
 		self.receiver = receiver
 		self.object = object
 		self.block = block
+		self.receiverKey = receiver.GetHashCode().ToString()
+		self.broadcast = broadcast
 	}
 	#endif
 }
@@ -52,6 +60,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 
 	private typealias SubscriptionList = List<BroadcastManagerSubscription>
 	private let subscriptions = Dictionary<String,SubscriptionList>()
+	private let subscriptionsByReceiver = Dictionary<String,SubscriptionList>()
 
 	#if ECHOES
 	private let lock = System.Threading.ReaderWriterLockSlim(System.Threading.LockRecursionPolicy.SupportsRecursion)
@@ -94,7 +103,14 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 				subs = SubscriptionList()
 				subscriptions[broadcast] = subs
 			}
-			subs!.Add(BroadcastManagerSubscription(receiver, object, token))
+			let subscription = BroadcastManagerSubscription(receiver, object, token, broadcast)
+			subs!.Add(subscription)
+			var receiverSubscriptions = subscriptionsByReceiver[subscription.receiverKey]
+			if receiverSubscriptions == nil {
+				receiverSubscriptions = SubscriptionList()
+				subscriptionsByReceiver[subscription.receiverKey] = receiverSubscriptions
+			}
+			receiverSubscriptions!.Add(subscription)
 		}
 		#else
 		lockWrite() {
@@ -103,7 +119,14 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 				subs = SubscriptionList()
 				subscriptions[broadcast] = subs
 			}
-			subs!.Add(BroadcastManagerSubscription(receiver, object, block))
+			let subscription = BroadcastManagerSubscription(receiver, object, block, broadcast)
+			subs!.Add(subscription)
+			var receiverSubscriptions = subscriptionsByReceiver[subscription.receiverKey]
+			if receiverSubscriptions == nil {
+				receiverSubscriptions = SubscriptionList()
+				subscriptionsByReceiver[subscription.receiverKey] = receiverSubscriptions
+			}
+			receiverSubscriptions!.Add(subscription)
 		}
 		#endif
 	}
@@ -133,6 +156,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 					if s.receiver == nil || (s.receiver == receiver && (s.object == object || s.object == nil || object == nil)) {
 						NSNotificationCenter.defaultCenter.removeObserver(s.token)
 						subs.Remove(s)
+						removeFromReceiverIndex(s)
 					}
 				}
 				if subs.Count == 0 {
@@ -146,6 +170,7 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 				for s in subs.UniqueCopy() {
 					if s.receiver == receiver {
 						subs.Remove(s)
+						removeFromReceiverIndex(s)
 					}
 				}
 				if subs.Count == 0 {
@@ -160,36 +185,45 @@ public static class RemObjects.Elements.RTL.BroadcastManager {
 		#if TOFFEE
 		NSNotificationCenter.defaultCenter.removeObserver(receiver)
 		__lock self {
-			for k in subscriptions.Keys {
-				if let subs = subscriptions[k] {
-					for s in subs.UniqueCopy() {
-						if s.receiver == receiver || s.receiver == nil {
-							NSNotificationCenter.defaultCenter.removeObserver(s.token)
-							subs.Remove(s)
-						}
-					}
-					if subs.Count == 0 {
-						subscriptions.Remove(k)
-					}
-				}
+			removeReceiverSubscriptions(receiver) { subscription in
+				NSNotificationCenter.defaultCenter.removeObserver(subscription.token)
 			}
 		}
 		#else
 		lockWrite() {
-			for k in subscriptions.Keys {
-				if let subs = subscriptions[k] {
-					for s in subs.UniqueCopy() {
-						if s.receiver == receiver {
-							subs.Remove(s)
-						}
-					}
-					if subs.Count == 0 {
-						subscriptions.Remove(k)
-					}
-				}
-			}
+			removeReceiverSubscriptions(receiver) { _ in }
 		}
 		#endif
+	}
+
+	private func removeFromReceiverIndex(_ subscription: BroadcastManagerSubscription) {
+		if let receiverSubscriptions = subscriptionsByReceiver[subscription.receiverKey] {
+			receiverSubscriptions.Remove(subscription)
+			if receiverSubscriptions.Count == 0 {
+				subscriptionsByReceiver.Remove(subscription.receiverKey)
+			}
+		}
+	}
+
+	private func removeReceiverSubscriptions(_ receiver: Object, _ removeToken: (BroadcastManagerSubscription) -> ()) {
+		let receiverKey = receiver.GetHashCode().ToString()
+		guard let receiverSubscriptions = subscriptionsByReceiver[receiverKey] else { return }
+		for subscription in receiverSubscriptions.UniqueCopy() {
+			if subscription.receiver != receiver {
+				continue
+			}
+			removeToken(subscription)
+			if let subs = subscriptions[subscription.broadcast] {
+				subs.Remove(subscription)
+				if subs.Count == 0 {
+					subscriptions.Remove(subscription.broadcast)
+				}
+			}
+			receiverSubscriptions.Remove(subscription)
+		}
+		if receiverSubscriptions.Count == 0 {
+			subscriptionsByReceiver.Remove(receiverKey)
+		}
 	}
 
 	@inline(always)
