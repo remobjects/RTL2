@@ -1050,20 +1050,24 @@ begin
       end;
   end;
 
-  // NSURLSession delegate and completion callbacks can both stall after the
-  // body is sent. The synchronous Cocoa API returns status, headers, and body
-  // together, and this method is called from a background worker.
-  var lError: NSError;
-  var lUrlResponse: NSURLResponse;
-  var lData := NSURLConnection.sendSynchronousRequest(nsUrlRequest) returningResponse(var lUrlResponse) error(var lError);
-  var lResponse: HttpResponse;
-  if assigned(lUrlResponse) then begin
-    lResponse := new HttpResponse(lData, lUrlResponse as NSHTTPURLResponse);
-    if assigned(lError) then
-      lResponse.Exception := new Exception(lError.description);
+  // Use the cancellable NSURLSession transport even for synchronous callers.
+  // NSURLConnection's synchronous API can outlive NSMutableURLRequest's
+  // timeout interval and gives HttpRequest.Cancel no transport to stop.
+  var lResponse: nullable HttpResponse := nil;
+  var lResponseStarted := new &Event;
+  ExecuteRequest(aRequest, (aResponse) -> begin
+    lResponse := aResponse;
+    lResponseStarted.Set;
+  end);
+
+  var lWaitTimeout := Milliseconds(aRequest.Timeout * 1000);
+  if not lResponseStarted.WaitFor(lWaitTimeout) then begin
+    aRequest.Cancel();
+    lResponse := new HttpResponse withException(new RTLException("HTTP request timed out before receiving response headers."));
   end
-  else begin
-    lResponse := new HttpResponse withException(new Exception(if assigned(lError) then lError.description as String else "The HTTP request completed without a response."));
+  else if not (lResponse as not nullable).WaitForCompletion(lWaitTimeout) then begin
+    aRequest.Cancel();
+    (lResponse as not nullable).Exception := new RTLException("HTTP request timed out while receiving the response.");
   end;
 
   if assigned(lResponse.Exception) then begin
