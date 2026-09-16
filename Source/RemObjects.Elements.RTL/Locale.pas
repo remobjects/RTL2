@@ -198,6 +198,16 @@ begin
   lDateFormatter.timeStyle := NSDateFormatterStyle.NSDateFormatterShortStyle;
   fDateTimeFormat.ShortTimePattern := lDateFormatter.dateFormat;
 
+  // NSDateFormatter's POSIX short-date pattern uses a two-digit year token.
+  // Keep the RTL invariant locale deterministic and compatible with the
+  // conventional four-digit invariant date representation.
+  if aLocaleID.localeIdentifier = "en_US_POSIX" then begin
+    fDateTimeFormat.LongDatePattern := 'dddd, dd MMMM yyyy';
+    fDateTimeFormat.ShortDatePattern := 'MM/dd/yyyy';
+    fDateTimeFormat.LongTimePattern := 'HH:mm:ss';
+    fDateTimeFormat.ShortTimePattern := 'HH:mm';
+  end;
+
   for i:Integer := 0 to 6 do begin
     fDateTimeFormat.ShortDayNames[i] := lDateFormatter.shortWeekdaySymbols[i];
     fDateTimeFormat.LongDayNames[i] := lDateFormatter.weekdaySymbols[i];
@@ -242,7 +252,7 @@ begin
   {$ELSEIF ECHOES}
   result := new Locale(System.Globalization.CultureInfo.InvariantCulture);
   {$ELSEIF TOFFEE}
-  result := new Locale(NSLocale.systemLocale);
+  result := new Locale(NSLocale.localeWithLocaleIdentifier("en_US_POSIX"));
   {$ELSEIF ISLAND}
   result := new Locale(RemObjects.Elements.System.Locale.Invariant);
   {$ENDIF}

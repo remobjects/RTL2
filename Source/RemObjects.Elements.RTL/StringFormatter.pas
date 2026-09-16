@@ -229,6 +229,16 @@ end;
 
 class method StringFormatter.NumberValueToString(aArg: NativePlatformObject; aDigits: Integer; aLocale: Locale): String;
 begin
+  {$IF TOFFEE}
+  var lFormatter := new Foundation.NSNumberFormatter();
+  lFormatter.locale := aLocale;
+  lFormatter.numberStyle := Foundation.NSNumberFormatterStyle.DecimalStyle;
+  lFormatter.usesGroupingSeparator := false;
+  var lTotal := if aDigits >= 0 then aDigits else 2;
+  lFormatter.maximumFractionDigits := lTotal;
+  lFormatter.minimumFractionDigits := lTotal;
+  exit lFormatter.stringFromNumber(Foundation.NSNumber(aArg));
+  {$ELSE}
   var lType := typeOf(aArg);
   CheckIsNumberType(lType, true);
 
@@ -247,6 +257,7 @@ begin
     end;
   end;
   exit lStr;
+  {$ENDIF}
 end;
 
 class method StringFormatter.ProcessStandardNumericFormat(aFormat: String; aArg: NativePlatformObject; aLocale: Locale): String;
@@ -283,6 +294,16 @@ begin
       CheckIsNumberType(lType, true);
       var lStr: String;
       var lTotal := if lDigits >= 0 then lDigits else 2;
+      {$IF TOFFEE}
+      var lFormatter := new Foundation.NSNumberFormatter();
+      lFormatter.locale := aLocale;
+      lFormatter.numberStyle := Foundation.NSNumberFormatterStyle.DecimalStyle;
+      lFormatter.usesGroupingSeparator := false;
+      lFormatter.maximumFractionDigits := lTotal;
+      lFormatter.minimumFractionDigits := lTotal;
+      lFormatter.multiplier := Foundation.NSNumber.numberWithInt(100);
+      lStr := lFormatter.stringFromNumber(Foundation.NSNumber(aArg));
+      {$ELSE}
       if lType in [Double, Single] then begin
         var lDouble := Double(aArg) * 100;
         lStr := Convert.ToString(lDouble, lTotal, 0, aLocale);
@@ -295,6 +316,7 @@ begin
           lStr := lStr.PadEnd(lTotal, '0');
         end;
       end;
+      {$ENDIF}
       lStr := lStr + ' %';
       exit lStr;
     end;

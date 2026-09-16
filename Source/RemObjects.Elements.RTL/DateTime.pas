@@ -196,7 +196,9 @@ type
     {$IF TOFFEE}
     method GetComponent(Component: NSCalendarUnit): Integer;
     begin
-      var lComponents := NSCalendar.currentCalendar.components(Component) fromDate(self);
+      var lCalendar := NSCalendar.calendarWithIdentifier(NSCalendarIdentifierGregorian);
+      lCalendar.setTimeZone(NSTimeZone.timeZoneWithAbbreviation("UTC"));
+      var lComponents := lCalendar.components(Component) fromDate(self);
       case Component of
         NSCalendarUnit.WeekdayCalendarUnit: result := lComponents.weekday;
         NSCalendarUnit.DayCalendarUnit: result := lComponents.day;
