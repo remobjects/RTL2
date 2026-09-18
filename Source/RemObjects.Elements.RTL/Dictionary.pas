@@ -42,6 +42,12 @@ type
     method UniqueMutableCopy: not nullable Dictionary<T,U>;
     method MutableVersion: not nullable Dictionary<T,U>;
 
+    method ToList: not nullable List<KeyValuePair<T,U>>;
+    begin
+      // Cocoa's native dictionary enumeration yields keys, not key/value pairs.
+      exit GetSequence.ToList;
+    end;
+
     //[&Sequence]
     method GetSequence: sequence of KeyValuePair<T,U>;
     begin
