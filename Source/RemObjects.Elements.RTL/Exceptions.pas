@@ -258,6 +258,16 @@ type
   {$ENDIF}
 
   RTLErrorMessages = /*unit*/ assembly static class
+  {$IF TOFFEE}
+  private
+
+    // LLD can emit a conflicting no-unwind entry for an empty code section.
+    // Keep this class's code section nonempty so it cannot shadow the next method.
+    class method LinkerWorkaround;
+    begin
+    end;
+
+  {$ENDIF}
   public
     class const FORMAT_ERROR = "Input string was not in a correct format";
     class const OUT_OF_RANGE_ERROR = "Range ({0},{1}) exceeds data length {2}";
