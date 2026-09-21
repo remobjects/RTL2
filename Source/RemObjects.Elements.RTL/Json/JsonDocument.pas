@@ -47,6 +47,12 @@ type
       result := new JsonDeserializer(aString).Deserialize;
     end;
 
+    // Strict parsing is opt-in; the existing overload retains its lenient behavior.
+    class method FromString(aString: not nullable String; aStrict: Boolean): not nullable JsonDocument;
+    begin
+      result := new JsonDeserializer(aString, false, aStrict).Deserialize;
+    end;
+
     {$IF NOT WEBASSEMBLY}
     class method TryFromFile(aFile: nullable File): nullable JsonDocument;
     begin

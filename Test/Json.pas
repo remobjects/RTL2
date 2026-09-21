@@ -14,6 +14,44 @@ type
   JsonTests = public class(Test)
   public
 
+    method StrictJsonAcceptsStandardValues;
+    begin
+      // Strict parsing accepts every JSON root kind, empty keys, and valid escapes.
+      for each lText in ['{}', '[]', 'null', 'true', 'false', '"text"', '0', '-0', '1.25e-3',
+                        '{"":1,"nested":[true,null,{"x":"\\\"\/\b\f\n\r\t\u0041"}]}',
+                        '{"x":1,"x":2}', '"\uD834\uDD1E"', #9#13#10' {"a": [1, 2]} '#9] do
+        Check.IsNotNil(JsonDocument.FromString(lText, true));
+    end;
+
+    method StrictJsonRejectsNonstandardSyntax;
+    begin
+      // Validation must reject extensions and malformed tokens instead of accepting partial data.
+      for each lText in ['{"a":1,}', '[1,]', '{a:1}', '{"a":word}', '[word]',
+                        '{"a":1 "b":2}', '[1 2]', '{"a":}', '{"a":',
+                        '01', '-01', '[01]', '+1', '.1', '1.', '1e', '1e+', '-',
+                        '"\q"', '"\u12xz"', '"\u123"', '"unterminated', '"\',
+                        '"line'#10'break"', '"tab'#9'char"', '"nul'#0'char"',
+                        'null'#0, 'null true', '{}[]', '/* comment */{}', '// comment'#10'{}', '', ' '] do begin
+        var lRejected := false;
+        try
+          JsonDocument.FromString(lText, true);
+        except
+          on E: JsonParserException do
+            lRejected := true;
+        end;
+        Check.IsTrue(lRejected, $"Strict parsing must reject: {lText}");
+      end;
+    end;
+
+    method StrictJsonPreservesLenientDefault;
+    begin
+      // Adding strict validation must not change callers that rely on the default parser extensions.
+      for each lText in ['{"a":1,}', '[1,]', '{a:1}', '{"a":word}', '[word]', '{"a":1 "b":2}', '[1 2]', '01'] do begin
+        Check.IsNotNil(JsonDocument.FromString(lText));
+        Check.IsNotNil(JsonDocument.FromString(lText, false));
+      end;
+    end;
+
     method Floats;
     begin
       var f := JsonFloatValue(12.18688);

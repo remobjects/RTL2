@@ -4,9 +4,9 @@ type
   JsonDeserializer = assembly class
   assembly
 
-    constructor (JsonString: String; aAllowPartialJson: Boolean := false);
+    constructor (JsonString: String; aAllowPartialJson: Boolean := false; aStrict: Boolean := false);
     begin
-      Tokenizer := new JsonTokenizer(JsonString, true, AllowPartialJson := aAllowPartialJson);
+      Tokenizer := new JsonTokenizer(JsonString, true, AllowPartialJson := aAllowPartialJson, Strict := aStrict);
     end;
 
     method Deserialize: not nullable JsonNode;
@@ -141,8 +141,12 @@ type
 
         if not Tokenizer.IsPartialJson and (Tokenizer.Token = JsonTokenKind.ValueSeperator) then begin
           Tokenizer.Next;
+          if Tokenizer.Strict then
+            Expected(JsonTokenKind.String);
           continue;
         end;
+        if Tokenizer.Strict then
+          Expected(JsonTokenKind.ObjectEnd);
       until Tokenizer.IsPartialJson or (Tokenizer.Token = JsonTokenKind.EOF) or (Tokenizer.Token = JsonTokenKind.ObjectEnd);
 
       exit List;
@@ -152,15 +156,18 @@ type
     begin
       var lKey := ReadKey;
       Expected(JsonTokenKind.NameSeperator);
-      if Tokenizer.Next then
+      if Tokenizer.Next or Tokenizer.Strict then
         result := new KeyValuePair<String,JsonNode>(lKey, ReadValue);
     end;
 
     method ReadKey: String;
     begin
-      Expected(JsonTokenKind.String, JsonTokenKind.Identifier);
+      if Tokenizer.Strict then
+        Expected(JsonTokenKind.String)
+      else
+        Expected(JsonTokenKind.String, JsonTokenKind.Identifier);
 
-      if String.IsNullOrEmpty(Tokenizer.Value) then
+      if not Tokenizer.Strict and String.IsNullOrEmpty(Tokenizer.Value) then
         raise new JsonParserException("Invalid propery key. Key can not be empty.");
 
       result := Tokenizer.Value;
@@ -176,8 +183,12 @@ type
 
         if Tokenizer.Token = JsonTokenKind.ValueSeperator then begin
           Tokenizer.Next;
+          if Tokenizer.Strict then
+            Expected(JsonTokenKind.String, JsonTokenKind.Number, JsonTokenKind.Null, JsonTokenKind.True, JsonTokenKind.False, JsonTokenKind.ArrayStart, JsonTokenKind.ObjectStart);
           continue;
         end;
+        if Tokenizer.Strict then
+          Expected(JsonTokenKind.ArrayEnd);
       until (Tokenizer.Token = JsonTokenKind.EOF) or (Tokenizer.Token = JsonTokenKind.ArrayEnd);
 
       exit List;
@@ -190,7 +201,10 @@ type
 
     method ReadValue: JsonNode;
     begin
-      Expected(JsonTokenKind.String, JsonTokenKind.Number, JsonTokenKind.Null, JsonTokenKind.True, JsonTokenKind.False, JsonTokenKind.ArrayStart, JsonTokenKind.ObjectStart, JsonTokenKind.Identifier);
+      if Tokenizer.Strict then
+        Expected(JsonTokenKind.String, JsonTokenKind.Number, JsonTokenKind.Null, JsonTokenKind.True, JsonTokenKind.False, JsonTokenKind.ArrayStart, JsonTokenKind.ObjectStart)
+      else
+        Expected(JsonTokenKind.String, JsonTokenKind.Number, JsonTokenKind.Null, JsonTokenKind.True, JsonTokenKind.False, JsonTokenKind.ArrayStart, JsonTokenKind.ObjectStart, JsonTokenKind.Identifier);
 
       case Tokenizer.Token of
         JsonTokenKind.String: result := new JsonStringValue(Tokenizer.Value);

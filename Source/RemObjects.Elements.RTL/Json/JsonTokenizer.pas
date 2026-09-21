@@ -37,6 +37,7 @@ type
     property Token: JsonTokenKind read private write;
     property IgnoreWhitespaces: Boolean read write; readonly;
 
+    property Strict: Boolean;
     property AllowPartialJson: Boolean;
     property IsPartialJson: Boolean;
   end;
@@ -109,6 +110,8 @@ begin
       '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.': ParseNumber;
       JsonConsts.STRING_QUOTE: ParseString;
       #0: begin
+            if Strict then
+              raise new JsonInvalidTokenException($"Unexpected null character at {PositionString(fPos)}.");
             fLength := 0;
             Value := nil;
             Token := JsonTokenKind.EOF;
@@ -184,7 +187,10 @@ begin
   var lPosition := fPos;
   if fData[lPosition] = '-' then
     inc(lPosition);
+  var lIntegerStart := lPosition;
   lPosition := ParseDigits(lPosition);
+  if Strict and (lPosition > lIntegerStart + 1) and (fData[lIntegerStart] = '0') then
+    raise new JsonInvalidTokenException($"Leading zero in number at {PositionString(lIntegerStart)}.");
   if Token = JsonTokenKind.SyntaxError then
     exit;
   if (lPosition < length(fData)) and (fData[lPosition] = '.') then begin
@@ -214,6 +220,8 @@ begin
   while (aPos < length(fData)) and ((fData[aPos] >= '0') and (fData[aPos]<='9')) do
     inc(aPos);
   if aPos = lStartPos then begin
+    if Strict then
+      raise new JsonInvalidTokenException($"Expected a digit at {PositionString(aPos)}.");
     Token := JsonTokenKind.SyntaxError;
     fPos := aPos;
     Value := new String(fData, aPos, 1);
@@ -257,8 +265,30 @@ begin
 
   while (lPosition < length(fData)) and (fData[lPosition] <> #0) and (fData[lPosition] <> '"') do begin
 
+    if Strict and (fData[lPosition] < #32) then
+      raise new JsonInvalidTokenException($"Unescaped control character at {PositionString(lPosition)}.");
+
     if fData[lPosition] = '\' then begin
       inc(lPosition);
+
+      if Strict then begin
+        if lPosition >= length(fData) then
+          raise new JsonUnexpectedEndOfFileException($"Incomplete escape at {PositionString(lPosition)}.");
+        case fData[lPosition] of
+          '\', '"', '/', 'b', 'f', 'r', 'n', 't': ;
+          'u': begin
+            if lPosition + 4 >= length(fData) then
+              raise new JsonUnexpectedEndOfFileException($"Incomplete Unicode escape at {PositionString(lPosition)}.");
+            for i := lPosition + 1 to lPosition + 4 do
+              if not (((fData[i] >= '0') and (fData[i] <= '9')) or
+                      ((fData[i] >= 'a') and (fData[i] <= 'f')) or
+                      ((fData[i] >= 'A') and (fData[i] <= 'F'))) then
+                raise new JsonInvalidTokenException($"Invalid Unicode escape at {PositionString(i)}.");
+          end;
+          else
+            raise new JsonInvalidTokenException($"Invalid escape at {PositionString(lPosition)}.");
+        end;
+      end;
 
       case fData[lPosition] of
         '\': sb.Append("\");
@@ -282,6 +312,9 @@ begin
 
     inc(lPosition);
   end;
+
+  if Strict and (lPosition < length(fData)) and (fData[lPosition] = #0) then
+    raise new JsonInvalidTokenException($"Unescaped null character at {PositionString(lPosition)}.");
 
   if lPosition ≥ length(fData) then begin
     if AllowPartialJson then
