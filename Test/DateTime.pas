@@ -1,4 +1,9 @@
-﻿namespace RemObjects.Elements.RTL.Tests;
+﻿// Positive guard: TestPortableDateFormatting keeps year, month and day tokens portable, including single tokens.
+// Positive guard: TestPortableTimeFormatting keeps single time tokens from expanding into standard formats.
+// Positive guard: TestPortableTwelveHourFormatting checks midnight and noon use 12 with the correct AM/PM marker.
+// Positive guard: TestPortableCombinedFormatting preserves quoted literals while converting adjacent tokens.
+// Positive guard: TestDateTimeParse accepts invariant dates and times independently of native locale patterns.
+namespace RemObjects.Elements.RTL.Tests;
 
 uses
   RemObjects.Elements.RTL,
@@ -52,6 +57,7 @@ type
       Check.AreEqual(lDate.ToString('ddd', 'en-US', TimeZone.Utc), 'Sun');
       Check.AreEqual(lDate.ToString('dd', 'en-US', TimeZone.Utc), '09');
       Check.AreEqual(lDate.ToString('d', 'en-US', TimeZone.Utc), '9');
+      Check.AreEqual(new DateTime(2006, 8, 9).ToString('yy', 'en-US', TimeZone.Utc), '06');
     end;
 
     method TestPortableTimeFormatting;
@@ -121,14 +127,17 @@ type
 
     method TestDateTimeParse;
     begin
+      Check.AreEqual(Locale.Invariant.DateTimeFormat.ShortDatePattern, 'MM/dd/yyyy');
+      Check.AreEqual(Locale.Invariant.DateTimeFormat.ShortTimePattern, 'HH:mm');
+      Check.AreEqual(Locale.Invariant.DateTimeFormat.LongTimePattern, 'HH:mm:ss');
       var lDateTime := DateTime.TryParse('12/04/2019', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Assert.AreEqual(lDateTime.Month, 12);
       Check.AreEqual(lDateTime.Day, 4);
       Check.AreEqual(lDateTime.Year, 2019);
 
       lDateTime := DateTime.TryParse('11/20/2019 17:34', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 11);
       Check.AreEqual(lDateTime.Day, 20);
       Check.AreEqual(lDateTime.Year, 2019);
@@ -136,7 +145,7 @@ type
       Check.AreEqual(lDateTime.Minute, 34);
 
       lDateTime := DateTime.TryParse('11/20/2019 17:34:45', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 11);
       Check.AreEqual(lDateTime.Day, 20);
       Check.AreEqual(lDateTime.Year, 2019);
@@ -145,18 +154,18 @@ type
       Check.AreEqual(lDateTime.Second, 45);
 
       lDateTime := DateTime.TryParse('17:34', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Hour, 17);
       Check.AreEqual(lDateTime.Minute, 34);
 
       lDateTime := DateTime.TryParse('17:34:45', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Hour, 17);
       Check.AreEqual(lDateTime.Minute, 34);
       Check.AreEqual(lDateTime.Second, 45);
 
       lDateTime := DateTime.TryParse('20190814-125000', 'yyyyMMdd-HHmmss', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 8);
       Check.AreEqual(lDateTime.Day, 14);
       Check.AreEqual(lDateTime.Year, 2019);
@@ -165,7 +174,7 @@ type
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParse('2020-01-26T23:34:00.1+1:00', 'yyyy-MM-ddTHH:mm:ss.fK', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
       Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
@@ -174,7 +183,7 @@ type
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParse('2020-01-26T23:34:00+1:00', 'yyyy-MM-ddTHH:mm:ssK', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
       Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
@@ -183,7 +192,7 @@ type
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParse('2020-01-26T23:34:00.6175425+1:00', 'yyyy-MM-ddTHH:mm:ss.fffffffK', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
       Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
@@ -192,7 +201,7 @@ type
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParse('2020-01-26T23:34:00.6175425+1:00', 'yyyy-MM-ddTHH:mm:ss.fffffffzzz', Locale.Invariant);
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
       Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);
@@ -201,7 +210,7 @@ type
       Check.AreEqual(lDateTime.Second, 00);
 
       lDateTime := DateTime.TryParseISO8601('2020-01-26T23:34:00.6175425+1:00');
-      Check.IsNotNil(lDateTime);
+      Assert.IsNotNil(lDateTime);
       Check.AreEqual(lDateTime.Month, 1);
       Check.AreEqual(lDateTime.Day, 26);
       Check.AreEqual(lDateTime.Year, 2020);

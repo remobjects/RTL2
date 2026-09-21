@@ -105,11 +105,11 @@ begin
   while lIndex < Value.Length do begin
     var lCharacter := Value[lIndex];
 
-    if lCharacter = "'" then begin
+    if lCharacter = chr(39) then begin
       lResult.Append(lCharacter);
       inc(lIndex);
 
-      if (lIndex < Value.Length) and (Value[lIndex] = "'") then begin
+      if (lIndex < Value.Length) and (Value[lIndex] = chr(39)) then begin
         lResult.Append(Value[lIndex]);
         inc(lIndex);
       end
@@ -249,7 +249,7 @@ end;
 
 method SimpleFormatSpecifier.Convert(Value: String): String;
 begin
-  {$IF ECHOES}
+  {$IF ECHOES OR ISLAND}
   if Value.Length = 1 then
     exit "%"+Value;
   {$ENDIF}
@@ -259,7 +259,7 @@ end;
 
 method DayFormatSpecifier.Convert(Value: String): String;
 begin
-  {$IF ECHOES}
+  {$IF ECHOES OR ISLAND}
   exit inherited Convert(Value);
   {$ELSE}
   if Value.Length <= 2 then
@@ -271,7 +271,7 @@ end;
 
 method PeriodFormatSpecifier.Convert(Value: String): String;
 begin
-  {$IF ECHOES}exit "tt";{$ELSE}exit Value;{$ENDIF}
+  {$IF ECHOES OR ISLAND}exit "tt";{$ELSE}exit Value;{$ENDIF}
 end;
 
 method YearFormatSpecifier.Supports(Value: String): Boolean;

@@ -382,7 +382,7 @@ begin
   else
     result := lDateInTimeZone.ToString(DateFormatter.Format(Format), new System.Globalization.CultureInfo(Culture)) as not nullable;
   {$ELSEIF ISLAND}
-  result := fDateTime.ToString(Format, Culture, aTimeZone);
+  result := fDateTime.ToString(DateFormatter.Format(Format), Culture, aTimeZone);
   {$ENDIF}
 end;
 

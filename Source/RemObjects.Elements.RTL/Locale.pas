@@ -229,6 +229,13 @@ begin
   fDateTimeFormat.ShortDatePattern := aLocaleID.DateTimeFormat.ShortDatePattern;
   fDateTimeFormat.LongTimePattern := aLocaleID.DateTimeFormat.LongTimePattern;
   fDateTimeFormat.ShortTimePattern := aLocaleID.DateTimeFormat.ShortTimePattern;
+  // Keep RTL invariant parsing independent of the native platform's date patterns.
+  if aLocaleID = RemObjects.Elements.System.Locale.Invariant then begin
+    fDateTimeFormat.LongDatePattern := 'dddd, dd MMMM yyyy';
+    fDateTimeFormat.ShortDatePattern := 'MM/dd/yyyy';
+    fDateTimeFormat.LongTimePattern := 'HH:mm:ss';
+    fDateTimeFormat.ShortTimePattern := 'HH:mm';
+  end;
   fDateTimeFormat.PMString := aLocaleID.DateTimeFormat.PMString;
   fDateTimeFormat.AMString := aLocaleID.DateTimeFormat.AMString;
   fDateTimeFormat.DateSeparator := aLocaleID.DateTimeFormat.DateSeparator;
