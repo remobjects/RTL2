@@ -118,7 +118,9 @@ end;
 
 method &Method.Invoke(aInstance: Object; params aArgs: array of Object): Object;
 begin
-  mapped.invoke(aInstance, aArgs);
+  if not java.lang.reflect.Modifier.isPublic(mapped.getModifiers) then
+    mapped.setAccessible(true);
+  result := mapped.invoke(aInstance, aArgs);
 end;
 
 method &Method.getParameters: array of Parameter;

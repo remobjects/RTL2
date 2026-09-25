@@ -5,6 +5,28 @@ uses
   RemObjects.Elements.RTL,
   RemObjects.Elements.RTL.Reflection;
 
+{$IF COOPER}
+type
+  ReflectionMethodSample = public class
+  public
+
+    property Name: String := 'sample';
+  end;
+
+  ReflectionMethodsTest = public class(Test)
+  public
+
+    method ReturnsInvokedGetterValue;
+    begin
+      var lSample := new ReflectionMethodSample;
+      var lType := &Type.TypeOf(lSample);
+      var lGetter := lType.Methods.FirstOrDefault(aMethod -> (aMethod.Name = 'get_Name') or (aMethod.Name = 'getName'));
+      Check.IsNotNil(lGetter);
+      Check.AreEqual(lGetter.Invoke(lSample), 'sample');
+    end;
+  end;
+{$ENDIF}
+
 {$IF TOFFEE AND NOT ISLAND}
 type
   ReflectionFieldSample = public class
