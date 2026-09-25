@@ -127,7 +127,10 @@ begin
       var lLength := lIndex-lStart;
       var lToken := Value.Substring(lStart, lLength);
       var lFormatter := lFormatters.FirstOrDefault(aFormatter -> aFormatter.Supports(lToken));
-      lResult.Append(if assigned(lFormatter) then lFormatter.Convert(lToken) else lToken);
+      if (lToken = 'T') and (Value.Length > 1) then
+        lResult.Append("'T'")
+      else
+        lResult.Append(if assigned(lFormatter) then lFormatter.Convert(lToken) else lToken);
       continue;
     end;
 

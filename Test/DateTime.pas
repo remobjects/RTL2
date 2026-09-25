@@ -89,6 +89,8 @@ type
       var lDate := new DateTime(2026, 8, 9, 17, 4, 5);
 
       Check.AreEqual(lDate.ToString('yyyy-MM-dd HH:mm:ss', 'en-US', TimeZone.Utc), '2026-08-09 17:04:05');
+      // A literal T between date and time tokens must not truncate the time on Cocoa.
+      Check.AreEqual(lDate.ToString('yyyy-MM-ddTHH:mm:ss', 'en-US', TimeZone.Utc), '2026-08-09T17:04:05');
       Check.AreEqual(lDate.ToString("ddd, MMM d 'at' h:mma", 'en-US', TimeZone.Utc), 'Sun, Aug 9 at 5:04PM');
       Check.AreEqual(lDate.ToString("'ddd' ddd 'a' a", 'en-US', TimeZone.Utc), 'ddd Sun a PM');
     end;
