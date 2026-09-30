@@ -311,8 +311,12 @@ begin
   {$IF COOPER}
   result := fData.toByteArray as not nullable;
   {$ELSEIF TOFFEE}
-  result := new Byte[mapped.length];
-  mapped.getBytes(result) length(mapped.length);
+  if mapped.length = 0 then
+    exit []
+  else begin
+    result := new Byte[mapped.length];
+    mapped.getBytes(result) length(mapped.length);
+  end;
   {$ELSEIF ECHOES OR ISLAND}
   result := mapped.ToArray as not nullable;
   {$ENDIF}
