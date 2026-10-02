@@ -87,7 +87,7 @@ type
       result := self[0];
     end;
 
-    method FirstOrDefault: nullable T;
+    method FirstOrDefault: T;
     begin
       result := if Count > 0 then self[0];
     end;
@@ -97,7 +97,7 @@ type
       result := self[Count-1];
     end;
 
-    method LstOrDefault: nullable T;
+    method LastOrDefault: T;
     begin
       result := if Count > 0 then self[Count-1];
     end;
