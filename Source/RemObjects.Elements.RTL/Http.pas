@@ -1065,17 +1065,21 @@ begin
     aRequest.Cancel();
     lResponse := new HttpResponse withException(new RTLException("HTTP request timed out before receiving response headers."));
   end
-  else if not (lResponse as not nullable).WaitForCompletion(lWaitTimeout) then begin
+  else if not assigned(lResponse) then begin
     aRequest.Cancel();
-    (lResponse as not nullable).Exception := new RTLException("HTTP request timed out while receiving the response.");
+    lResponse := new HttpResponse withException(new RTLException("HTTP request did not provide a response."));
+  end
+  else if not lResponse.WaitForCompletion(lWaitTimeout) then begin
+    aRequest.Cancel();
+    lResponse.Exception := new RTLException("HTTP request timed out while receiving the response.");
   end;
 
   if assigned(lResponse.Exception) then begin
     if not aThrowOnError then
-      exit lResponse;
+      exit lResponse as not nullable ;
     raise lResponse.Exception as not nullable;
   end;
-  result := lResponse;
+  result := lResponse as not nullable ;
   if result.Code >= 300 then begin
     if not aThrowOnError then begin
       result.Exception := new HttpException(result.Code, aRequest, result);
