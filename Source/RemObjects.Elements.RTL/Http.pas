@@ -494,11 +494,9 @@ begin
       nsUrlRequest.setValue(aRequest.Content.ContentType) forHTTPHeaderField("Content-Type");
 
     var lResponse: HttpResponse;
-    lResponse := new HttpResponse(aRequest, (aResponse) -> begin
+    lResponse := new HttpResponse(aRequest, -> begin
       locking aRequest.Monitor do
         aRequest.fCancelTask := nil;
-      var nsHttpUrlResponse := NSHTTPURLResponse(aResponse);
-      lResponse.Code := nsHttpUrlResponse.statusCode;
       dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), () -> begin
         aResponseCallback(lResponse)
       end);

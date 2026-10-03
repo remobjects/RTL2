@@ -9,7 +9,7 @@ type
   HttpResponse = public partial class(INSURLSessionDelegate, INSURLSessionDataDelegate, INSURLSessionTaskDelegate)
   assembly
 
-    constructor(aRequest: HttpRequest; aGotResponseCallback: block(aResponse: NSHTTPURLResponse));
+    constructor(aRequest: HttpRequest; aGotResponseCallback: block);
     begin
       Headers := new;
       Request := aRequest;
@@ -34,7 +34,7 @@ type
     property Request: HttpRequest read private write;
     var fTask: NSURLSessionDataTask;
     var fSession: NSURLSession;
-    var fGotResponseCallback: block(aResponse: NSHTTPURLResponse); private;
+    var fGotResponseCallback: block; private;
 
     var fIncomingData: Binary;
     var fBytesReceived: Int64;
@@ -43,6 +43,18 @@ type
     var fIncomingDataCallback: block(aData: not nullable ImmutableBinary): HttpStreamCallbackResult;
     var fIncomingDataCompleteCallback: block(aException: nullable Exception);
     var fIncomingDataComplete := new &Event;
+
+    method notifyResponseAvailable;
+    begin
+      var lCallback: block;
+      locking self do begin
+        lCallback := fGotResponseCallback;
+        fGotResponseCallback := nil;
+      end;
+      // Deliver once, including failures before headers, and outside the response lock.
+      if assigned(lCallback) then
+        lCallback();
+    end;
 
     method completeWithException(aException: nullable Exception);
     begin
@@ -113,8 +125,7 @@ type
           Request.ResponseHeadersReceived(Code, Headers, fBytesExpectedToReceive);
         if assigned(Request.DownloadProgress) then
           Request.DownloadProgress(0, fBytesExpectedToReceive);
-        if assigned(fGotResponseCallback) then
-          fGotResponseCallback(aResponse as NSHTTPURLResponse);
+        notifyResponseAvailable;
       except
         on e: Exception do
           completeWithException(e);
@@ -145,9 +156,11 @@ type
       locking self do begin
         fTask := nil;
         fSession := nil;
-        Data := fIncomingData;
+        if assigned(fIncomingData) then
+          Data := fIncomingData;
         completeWithException(if assigned(error) then new Exception(error.description));
       end;
+      notifyResponseAvailable;
     end;
 
     method URLSession(session: NSURLSession) dataTask(dataTask: NSURLSessionDataTask) didReceiveData(aData: NSData);
