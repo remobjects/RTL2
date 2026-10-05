@@ -1,4 +1,5 @@
-﻿namespace Elements.RTL2.Tests.Shared;
+﻿// Regression guards: rounding and IEEE remainder follow their platform contracts.
+namespace Elements.RTL2.Tests.Shared;
 
 interface
 
@@ -12,6 +13,7 @@ type
   protected
   public
     method RoundTest;
+    method IEEERemainderSemantics;
   end;
 
 implementation
@@ -36,6 +38,21 @@ begin
   Assert.AreEqual(Math.Round(a,15), 3.141592653589793);
  {$ENDIF}
 
+end;
+
+// Negative guard: the platform mapping must preserve IEEE ties and signed zero
+// for both overloads, rather than rounding a quotient halfway away from zero.
+method MathTest.IEEERemainderSemantics;
+begin
+  Assert.AreEqual(Math.IEEERemainder(Double(5), Double(2)), Double(1));
+  Assert.AreEqual(Math.IEEERemainder(Double(7), Double(2)), Double(-1));
+  Assert.AreEqual(Math.IEEERemainder(Single(5), Single(2)), Single(1));
+  Assert.AreEqual(Math.IEEERemainder(Single(-7), Single(-2)), Single(1));
+  Assert.AreEqual(1.0 / Math.IEEERemainder(Double(-6), Double(2)), Consts.NegativeInfinity);
+  Assert.AreEqual(1.0 / Double(Math.IEEERemainder(Single(-6), Single(2))), Consts.NegativeInfinity);
+  Assert.IsTrue(Consts.IsNaN(Math.IEEERemainder(Double(1), Double(0))));
+  Assert.IsTrue(Consts.IsNaN(Math.IEEERemainder(Consts.PositiveInfinity, Double(2))));
+  Assert.AreEqual(Math.IEEERemainder(Double(3), Consts.PositiveInfinity), Double(3));
 end;
 
 end.
