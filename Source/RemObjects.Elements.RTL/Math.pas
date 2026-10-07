@@ -631,6 +631,8 @@ end;
 {$ENDIF}
 
 {$IF COOPER OR ECHOES OR TOFFEE OR ISLAND}
+// Prefer the platform's Single API, including its rounding rules and digit limits.
+// If it has none, reuse Double rather than maintain a second implementation.
 class method Math.Round(a: Single; digits: Integer): Single;
 begin
   {$IF ECHOES}
