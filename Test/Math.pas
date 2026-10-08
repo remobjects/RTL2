@@ -1,5 +1,6 @@
 ﻿// Positive guards: Single math uses native float APIs where available and
-// Double fallbacks otherwise, without routing floating-point Round through Int64.
+// Double fallbacks otherwise. Both one-argument Round overloads return Int64.
+// Island rounds halfway away and saturates; decimal-place overloads return floats.
 namespace Elements.RTL2.Tests.Shared;
 
 interface
@@ -11,9 +12,19 @@ uses
 type
   MathTest = public class(Test)
   private
+    {$IF ISLAND}
+    [DisableInlining]
+    class method RoundValues(aInput: array of Double; aOutput: array of Int64);
+    [DisableInlining]
+    class method RoundValues(aInput: array of Single; aOutput: array of Int64);
+    {$ENDIF}
   protected
   public
     method RoundTest;
+    {$IF ISLAND}
+    method RoundDoubleSaturation;
+    method RoundSingleSaturation;
+    {$ENDIF}
     method SingleOverloads;
     method SingleRoundRange;
     method SingleMinMaxSemantics;
@@ -65,20 +76,28 @@ begin
   Assert.Throws(()-> Math.Round(lA, -1));
 end;
 
+// Positive guard: Single rounding returns the same integer type as Double;
+// overloads with a decimal-place argument intentionally remain floating point.
 method MathTest.SingleRoundRange;
 begin
-  // These finite Singles are already integral, but lie outside Int64's range.
-  var lLarge: Single := 1.0e30;
-  Assert.AreEqual(Math.Round(lLarge), lLarge);
-  Assert.AreEqual(Math.Round(-lLarge), -lLarge);
-  Assert.IsTrue(Consts.IsNaN(Math.Round(Single(Consts.NaN))));
-  Assert.AreEqual(Math.Round(Single(Consts.PositiveInfinity)), Single(Consts.PositiveInfinity));
-  Assert.AreEqual(Math.Round(Single(Consts.NegativeInfinity)), Single(Consts.NegativeInfinity));
-  {$IF ECHOES}
-  // Match the platform's floating-point rounding, including halfway values.
-  Assert.AreEqual(Math.Round(Single(-2.5)), Single(-2.0));
-  {$ELSEIF TOFFEE}
-  Assert.AreEqual(Math.Round(Single(-2.5)), rtl.roundf(Single(-2.5)));
+  var lRounded := Math.Round(Single(2.5));
+  var lDoubleRounded := Math.Round(Double(2.5));
+  Assert.AreEqual(typeOf(Int64), typeOf(lRounded));
+  Assert.AreEqual(typeOf(Int64), typeOf(lDoubleRounded));
+  {$IF ISLAND}
+  Assert.AreEqual(Math.Round(Single(-2.5)), Int64(-3));
+  Assert.AreEqual(Math.Round(Single(2.5)), Int64(3));
+  Assert.AreEqual(Math.Round(Single(1.0e30)), Consts.MaxInt64);
+  Assert.AreEqual(Math.Round(Single(-1.0e30)), Consts.MinInt64);
+  Assert.AreEqual(Math.Round(Single(Consts.NaN)), Int64(0));
+  Assert.AreEqual(Math.Round(Single(Consts.PositiveInfinity)), Consts.MaxInt64);
+  Assert.AreEqual(Math.Round(Single(Consts.NegativeInfinity)), Consts.MinInt64);
+  {$ELSE}
+  for each lValue in [Single(-2.5), Single(2.5), Single(-0.5), Single(0.5)] do
+    Assert.AreEqual(Math.Round(lValue), Math.Round(Double(lValue)));
+  Assert.Throws(()-> Math.Round(Single(Consts.NaN)));
+  Assert.Throws(()-> Math.Round(Single(Consts.PositiveInfinity)));
+  Assert.Throws(()-> Math.Round(Single(Consts.NegativeInfinity)));
   {$ENDIF}
 end;
 
@@ -139,5 +158,82 @@ begin
   Assert.IsTrue(Consts.IsNaN(Math.IEEERemainder(Consts.PositiveInfinity, Double(2))));
   Assert.AreEqual(Math.IEEERemainder(Double(3), Consts.PositiveInfinity), Double(3));
 end;
+
+{$IF ISLAND}
+// Positive guard: the public RTL call retains its Int64 return and vectorizes
+// safely across NaN, infinity, overflow, halfway values, and scalar tails.
+class method MathTest.RoundValues(aInput: array of Double; aOutput: array of Int64);
+begin
+  for i := 0 to length(aInput) - 1 do
+    aOutput[i] := Math.Round(aInput[i]);
+end;
+
+class method MathTest.RoundValues(aInput: array of Single; aOutput: array of Int64);
+begin
+  for i := 0 to length(aInput) - 1 do
+    aOutput[i] := Math.Round(aInput[i]);
+end;
+
+// Positive guard: Single rounds before conversion, including adjacent Int64
+// boundary values and the 2^23 boundary where adding 0.5 can change integers.
+method MathTest.RoundSingleSaturation;
+begin
+  var lValues: array of Single := [Single(1.25), Single(-2.5), Single(2.5),
+    Single(-0.5), Single(0.5), Single(0.0), Single(-0.0),
+    Single(0.4999999701976776), Single(-0.4999999701976776),
+    Single(0.5000000596046448), Single(-0.5000000596046448),
+    Single(Consts.NaN), Single(Consts.PositiveInfinity), Single(Consts.NegativeInfinity),
+    Single(9223371487098961920.0), Single(9223372036854775808.0), Single(9223373136366403584.0),
+    Single(-9223371487098961920.0), Single(-9223372036854775808.0), Single(-9223373136366403584.0),
+    Single(1.0e30), Single(-1.0e30), Single(8388607.5), Single(-8388607.5),
+    Single(8388609.0), Single(-8388609.0)];
+  var lExpected: array of Int64 := [1, -3, 3, -1, 1, 0, 0, 0, 0, 1, -1,
+    0, Consts.MaxInt64, Consts.MinInt64,
+    9223371487098961920, Consts.MaxInt64, Consts.MaxInt64,
+    -9223371487098961920, Consts.MinInt64, Consts.MinInt64,
+    Consts.MaxInt64, Consts.MinInt64, 8388608, -8388608, 8388609, -8388609];
+  for n := 0 to 65 do begin
+    var lInput := new Single[n];
+    var lOutput := new Int64[n];
+    for offset := 0 to length(lValues) - 1 do begin
+      for i := 0 to n - 1 do
+        lInput[i] := lValues[(i + offset) mod length(lValues)];
+      RoundValues(lInput, lOutput);
+      for i := 0 to n - 1 do
+        Assert.AreEqual(lExpected[(i + offset) mod length(lValues)], lOutput[i]);
+    end;
+  end;
+end;
+
+method MathTest.RoundDoubleSaturation;
+begin
+  // Neighbours of both Int64 boundaries catch rounded constants and poison casts.
+  // Values around 2^52 catch the legacy floor(x + 0.5) double-rounding problem.
+  var lValues: array of Double := [1.25, -2.5, 2.5, -0.5, 0.5, 0.0, -0.0,
+    0.49999999999999994, -0.49999999999999994, 0.5000000000000001, -0.5000000000000001,
+    Consts.NaN, Consts.PositiveInfinity, Consts.NegativeInfinity,
+    9223372036854774784.0, 9223372036854775808.0, 9223372036854777856.0,
+    -9223372036854774784.0, -9223372036854775808.0, -9223372036854777856.0,
+    1.0e300, -1.0e300, 4503599627370495.5, -4503599627370495.5,
+    4503599627370497.0, -4503599627370497.0];
+  var lExpected: array of Int64 := [1, -3, 3, -1, 1, 0, 0, 0, 0, 1, -1,
+    0, Consts.MaxInt64, Consts.MinInt64,
+    9223372036854774784, Consts.MaxInt64, Consts.MaxInt64,
+    -9223372036854774784, Consts.MinInt64, Consts.MinInt64,
+    Consts.MaxInt64, Consts.MinInt64, 4503599627370496, -4503599627370496,
+    4503599627370497, -4503599627370497];
+  for n := 0 to 65 do begin
+    var lInput := new Double[n];
+    var lOutput := new Int64[n];
+    for offset := 0 to length(lValues) - 1 do begin
+      for i := 0 to n - 1 do
+        lInput[i] := lValues[(i + offset) mod length(lValues)];
+      RoundValues(lInput, lOutput);
+      for i := 0 to n - 1 do
+        Assert.AreEqual(lExpected[(i + offset) mod length(lValues)], lOutput[i]);
+    end;
+  end;
+end;
+{$ENDIF}
 
 end.

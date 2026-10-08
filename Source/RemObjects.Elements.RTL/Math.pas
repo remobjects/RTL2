@@ -92,6 +92,13 @@ type
   end;
   {$ELSEIF ECHOES OR ISLAND}
   Math = public partial class mapped to PlatformMath
+  {$IF ISLAND}
+  private
+    [SymbolName('llvm.fptosi.sat.i64.f64'), MemoryNone, NoExcept, WillReturn]
+    class method SaturateInt64(aValue: Double): Int64; external;
+    [SymbolName('llvm.fptosi.sat.i64.f32'), MemoryNone, NoExcept, WillReturn]
+    class method SaturateInt64(aValue: Single): Int64; external;
+  {$ENDIF}
   public
     class method Abs(d: Double): Double; mapped to Abs(d);
     class method Abs(i: Int64): Int64; mapped to Abs(i);
@@ -120,7 +127,7 @@ type
     class method Min(a,b: Integer): Integer; mapped to Min(a,b);
     class method Min(a,b: Int64): Int64; mapped to Min(a,b);
     class method Pow(x, y: Double): Double; mapped to Pow(x,y);
-    class method Round(a: Double): Int64;
+    class method Round(a: Double): Int64; {$IF ISLAND}inline;{$ENDIF}
     class method Round(a : Double; digits :  Integer) : Double;
     class method Sign(d: Double): Integer; mapped to Sign(d);
     class method Sign(d: Single): Integer; mapped to Sign(d);
@@ -152,7 +159,7 @@ type
     class method Log2(d: Single): Single; mapped to Log2(d);
     class method Log10(d: Single): Single; mapped to Log10(d);
     class method Pow(x,y: Single): Single; mapped to Pow(x,y);
-    class method Round(d: Single): Single; mapped to Round(d);
+    class method Round(d: Single): Int64; inline;
     class method Sin(d: Single): Single; mapped to Sin(d);
     class method Sinh(d: Single): Single; mapped to Sinh(d);
     class method Sqrt(d: Single): Single; mapped to Sqrt(d);
@@ -191,7 +198,7 @@ type
     class method Log2(d: Single): Single;
     class method Log10(d: Single): Single;
     class method Pow(x,y: Single): Single;
-    class method Round(d: Single): Single;
+    class method Round(d: Single): Int64;
     class method Sin(d: Single): Single;
     class method Sinh(d: Single): Single;
     class method Sqrt(d: Single): Single;
@@ -606,11 +613,26 @@ end;
  {$ELSEIF ECHOES OR ISLAND}
 class method Math.Round(a: Double): Int64;
 begin
+  {$IF ISLAND}
+  // Match native floating Round's halfway-away rule, then convert without poison:
+  // NaN becomes zero; infinities and finite overflow clamp to the Int64 bounds.
+  // Keeping this as intrinsics lets LLVM combine and vectorize both operations.
+  exit SaturateInt64(PlatformMath.Round(a));
+  {$ELSE}
   if Consts.IsNaN(a) or Consts.IsInfinity(a) then
     raise new ArgumentException("Value can not be rounded to Int64");
 
   exit Int64(Floor(a + 0.499999999999999999));
+  {$ENDIF}
 end;
+
+{$IF ISLAND}
+class method Math.Round(d: Single): Int64;
+begin
+  // Round in Single precision; convert directly to Int64 with the Double policy.
+  exit SaturateInt64(PlatformMath.Round(d));
+end;
+{$ENDIF}
 
 class method Math.Round(a : Double; digits :  Integer) : Double;
 begin
@@ -844,18 +866,10 @@ begin
   {$ENDIF}
 end;
 
-class method Math.Round(d: Single): Single;
+class method Math.Round(d: Single): Int64;
 begin
-  {$IF ECHOES}
-  if exists(System.MathF.Round) then
-    exit System.MathF.Round(d)
-  else
-    exit Single(System.Math.Round(Double(d)));
-  {$ELSEIF TOFFEE}
-  exit rtl.roundf(d);
-  {$ELSE}
-  exit Single(Round(Double(d), 0));
-  {$ENDIF}
+  // Preserve the integer-returning RTL API and the existing platform policy.
+  exit Round(Double(d));
 end;
 
 class method Math.Sin(d: Single): Single;
