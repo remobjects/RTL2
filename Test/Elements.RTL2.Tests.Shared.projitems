@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Files.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Stream.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Timer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stopwatch.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Url.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Convert.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas" />
