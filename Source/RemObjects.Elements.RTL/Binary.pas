@@ -23,8 +23,8 @@ type
     fData: java.io.ByteArrayOutputStream := new java.io.ByteArrayOutputStream();
   {$ENDIF}
   public
-    {$IF TOFFEE OR ECHOES}constructor; mapped to constructor();{$ENDIF}
-    {$IF NOT (TOFFEE OR ECHOES)}constructor; empty;{$ENDIF}
+    {$IF TOFFEE OR ECHOES OR ISLAND}constructor; mapped to constructor();{$ENDIF}
+    {$IF COOPER}constructor; empty;{$ENDIF}
     constructor(aArray: not nullable array of Byte; aOffset: Integer; aCount: Integer);
     constructor(aArray: not nullable array of Byte; aCount: Integer);
     constructor(aArray: not nullable array of Byte);

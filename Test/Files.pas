@@ -1,4 +1,6 @@
-﻿namespace Elements.RTL2.Tests.Shared;
+﻿// EmptyBinary: negative regression guard for the missing Island backing stream in a new empty binary.
+// EmptyFileReadText: negative regression guard for zero-byte reads, with a positive one-byte content control.
+namespace Elements.RTL2.Tests.Shared;
 
 uses
   RemObjects.Elements.RTL,
@@ -7,6 +9,27 @@ uses
 type
   Files = public class(Test)
   public
+
+    method EmptyBinary;
+    begin
+      var lBinary := new ImmutableBinary;
+      Check.AreEqual(lBinary.Length, 0);
+      Check.AreEqual(length(lBinary.ToArray), 0);
+    end;
+
+    method EmptyFileReadText;
+    begin
+      var lFilename := Path.Combine(Environment.TempFolder.FullPath, Guid.NewGuid.ToString+".txt");
+      try
+        File.WriteBytes(lFilename, new Byte[0]);
+        Check.AreEqual(File.ReadText(lFilename), "");
+        Check.AreEqual(length(File.ReadBytes(lFilename)), 0);
+        File.WriteText(lFilename, "x");
+        Check.AreEqual(File.ReadText(lFilename), "x");
+      finally
+        File.Delete(lFilename);
+      end;
+    end;
 
     method FileExist;
     begin
