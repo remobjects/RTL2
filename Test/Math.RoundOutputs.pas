@@ -1,7 +1,7 @@
 // Positive guards: public Round returns Int64 for both precisions and remains
 // correct when callers store that result in integer or floating-point arrays.
-// Negative regression guard: saturation, signed zero and large integral floats
-// must survive vector bodies and scalar tails. Promoted from the IsotopeLab
+// Negative regression guard: nearest-even midpoints, saturation, signed zero
+// and large integral floats must survive vector bodies and scalar tails. Promoted from the IsotopeLab
 // RoundOutputs experiment; fixed seeds make the raw-bit guards reproducible.
 namespace Elements.RTL2.Tests.Shared;
 uses RemObjects.Elements.RTL, RemObjects.Elements.EUnit;
@@ -33,13 +33,14 @@ type
     method SingleOutputEdges;
     begin
       var lValues: array of Single := [Single(-0.0), Single(-0.25), Single(-0.5), Single(-1.5), Single(-2.5),
+          Single(0.5), Single(1.5), Single(2.5),
           Single(Consts.NaN), Single(Consts.PositiveInfinity), Single(Consts.NegativeInfinity),
           Single(9223372036854775808.0), Single(-9223372036854775808.0),
           Single(18446744073709551616.0), Single(-18446744073709551616.0),
           Single(8388607.5), Single(8388609.0), Single(-8388609.0),
           Single(0.4999999701976776), Single(-0.4999999701976776),
           Single(9223371487098961920.0), Single(-9223371487098961920.0)];
-      var lExpected: array of Int64 := [0, 0, -1, -2, -3, 0, Consts.MaxInt64, Consts.MinInt64,
+      var lExpected: array of Int64 := [0, 0, 0, -2, -2, 0, 2, 2, 0, Consts.MaxInt64, Consts.MinInt64,
           Consts.MaxInt64, Consts.MinInt64, Consts.MaxInt64, Consts.MinInt64,
           8388608, 8388609, -8388609, 0, 0, 9223371487098961920, -9223371487098961920];
       for n := 0 to 65 do begin
@@ -79,6 +80,7 @@ type
     method DoubleOutputEdges;
     begin
       var lValues: array of Double := [Double(-0.0), Double(-0.25), Double(-0.5), Double(-1.5), Double(-2.5),
+          Double(0.5), Double(1.5), Double(2.5),
           Double(Consts.NaN), Double(Consts.PositiveInfinity), Double(Consts.NegativeInfinity),
           Double(9223372036854775808.0), Double(-9223372036854775808.0),
           Double(18446744073709551616.0), Double(-18446744073709551616.0),
@@ -86,7 +88,7 @@ type
           Double(0.49999999999999994), Double(-0.49999999999999994),
           Double(9223372036854774784.0), Double(-9223372036854774784.0),
           Double(4503599627370495.5), Double(4503599627370497.0)];
-      var lExpected: array of Int64 := [0, 0, -1, -2, -3, 0, Consts.MaxInt64, Consts.MinInt64,
+      var lExpected: array of Int64 := [0, 0, 0, -2, -2, 0, 2, 2, 0, Consts.MaxInt64, Consts.MinInt64,
           Consts.MaxInt64, Consts.MinInt64, Consts.MaxInt64, Consts.MinInt64,
           8388608, 8388609, -8388609, 0, 0, 9223372036854774784, -9223372036854774784,
           4503599627370496, 4503599627370497];

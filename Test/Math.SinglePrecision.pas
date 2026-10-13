@@ -27,7 +27,6 @@ type
     class var fCeil: FuncD_D;
     class var fFloor: FuncD_D;
     class var fTrunc: FuncD_D;
-    class var fRound: FuncD_D;
     class var fSin: FuncD_D;
     class var fCos: FuncD_D;
     class var fTan: FuncD_D;
@@ -59,7 +58,6 @@ type
       fCeil := FuncD_D(rtl.GetProcAddress(fUCRT, 'ceil'));
       fFloor := FuncD_D(rtl.GetProcAddress(fUCRT, 'floor'));
       fTrunc := FuncD_D(rtl.GetProcAddress(fUCRT, 'trunc'));
-      fRound := FuncD_D(rtl.GetProcAddress(fUCRT, 'round'));
       fSin := FuncD_D(rtl.GetProcAddress(fUCRT, 'sin'));
       fCos := FuncD_D(rtl.GetProcAddress(fUCRT, 'cos'));
       fTan := FuncD_D(rtl.GetProcAddress(fUCRT, 'tan'));
@@ -77,7 +75,7 @@ type
       fFmod := FuncDD_D(rtl.GetProcAddress(fUCRT, 'fmod'));
       fSqrt := FuncD_D(rtl.GetProcAddress(fUCRT, 'sqrt'));
 
-      if (fAbs = nil) or (fCeil = nil) or (fFloor = nil) or (fTrunc = nil) or (fRound = nil) or (fSin = nil) or (fCos = nil) or (fTan = nil) or (fAsin = nil) or (fAcos = nil) or (fAtan = nil) or (fAtan2 = nil) or (fSinh = nil) or (fCosh = nil) or (fTanh = nil) or (fExp = nil) or (fLog = nil) or (fLog10 = nil) or (fPow = nil) or (fFmod = nil) or (fSqrt = nil) then begin
+      if (fAbs = nil) or (fCeil = nil) or (fFloor = nil) or (fTrunc = nil) or (fSin = nil) or (fCos = nil) or (fTan = nil) or (fAsin = nil) or (fAcos = nil) or (fAtan = nil) or (fAtan2 = nil) or (fSinh = nil) or (fCosh = nil) or (fTanh = nil) or (fExp = nil) or (fLog = nil) or (fLog10 = nil) or (fPow = nil) or (fFmod = nil) or (fSqrt = nil) then begin
         Console.WriteLine('ERROR: Could not load math functions from ucrtbase.dll');
         Unload;
         exit false;
@@ -96,7 +94,6 @@ type
       fCeil := FuncD_D(rtl.dlsym(fLibM, 'ceil'));
       fFloor := FuncD_D(rtl.dlsym(fLibM, 'floor'));
       fTrunc := FuncD_D(rtl.dlsym(fLibM, 'trunc'));
-      fRound := FuncD_D(rtl.dlsym(fLibM, 'round'));
       fSin := FuncD_D(rtl.dlsym(fLibM, 'sin'));
       fCos := FuncD_D(rtl.dlsym(fLibM, 'cos'));
       fTan := FuncD_D(rtl.dlsym(fLibM, 'tan'));
@@ -114,7 +111,7 @@ type
       fFmod := FuncDD_D(rtl.dlsym(fLibM, 'fmod'));
       fSqrt := FuncD_D(rtl.dlsym(fLibM, 'sqrt'));
 
-      if (fAbs = nil) or (fCeil = nil) or (fFloor = nil) or (fTrunc = nil) or (fRound = nil) or (fSin = nil) or (fCos = nil) or (fTan = nil) or (fAsin = nil) or (fAcos = nil) or (fAtan = nil) or (fAtan2 = nil) or (fSinh = nil) or (fCosh = nil) or (fTanh = nil) or (fExp = nil) or (fLog = nil) or (fLog10 = nil) or (fPow = nil) or (fFmod = nil) or (fSqrt = nil) then begin
+      if (fAbs = nil) or (fCeil = nil) or (fFloor = nil) or (fTrunc = nil) or (fSin = nil) or (fCos = nil) or (fTan = nil) or (fAsin = nil) or (fAcos = nil) or (fAtan = nil) or (fAtan2 = nil) or (fSinh = nil) or (fCosh = nil) or (fTanh = nil) or (fExp = nil) or (fLog = nil) or (fLog10 = nil) or (fPow = nil) or (fFmod = nil) or (fSqrt = nil) then begin
         Console.WriteLine('ERROR: Could not load math functions from libSystem.B.dylib');
         Unload;
         exit false;
@@ -147,7 +144,20 @@ type
     class method Ceil(x: Double): Double; begin exit fCeil(x); end;
     class method Floor(x: Double): Double; begin exit fFloor(x); end;
     class method Trunc(x: Double): Double; begin exit fTrunc(x); end;
-    class method Round(x: Double): Double; begin exit fRound(x); end;
+    // C round is ties-away and cannot serve as the public nearest-even oracle.
+    // Build the reference from independently loaded fabs/floor instead.
+    class method RoundToEven(x: Double): Double;
+    begin
+      var magnitude := fAbs(x);
+      if not (magnitude < 4503599627370496.0) or (x = 0) then
+        exit x;
+      var integral := fFloor(magnitude);
+      var fraction := magnitude - integral;
+      if (fraction > 0.5) or
+         ((fraction = 0.5) and ((Int64(integral) and 1) <> 0)) then
+        integral := integral + 1;
+      exit if x < 0 then -integral else integral;
+    end;
     class method Sin(x: Double): Double; begin exit fSin(x); end;
     class method Cos(x: Double): Double; begin exit fCos(x); end;
     class method Tan(x: Double): Double; begin exit fTan(x); end;
@@ -311,7 +321,7 @@ type
       allPassed := Check('Tanh', resultValues, referenceValues, 2.0) and allPassed;
 
       for i: Integer := 0 to TEST_SIZE-1 do resultValues[i] := Math.Round(Single(signedInput[i] * 10.0));
-      for i: Integer := 0 to TEST_SIZE-1 do referenceValues[i] := Single(SystemMathReference.Round(Double(Single(signedInput[i] * 10.0))));
+      for i: Integer := 0 to TEST_SIZE-1 do referenceValues[i] := Single(SystemMathReference.RoundToEven(Double(Single(signedInput[i] * 10.0))));
       allPassed := Check('Round', resultValues, referenceValues, 0.0) and allPassed;
 
       for i: Integer := 0 to TEST_SIZE-1 do resultValues[i] := Math.Abs(signedInput[i]);
