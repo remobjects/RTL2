@@ -85,7 +85,7 @@ type
     property Mode: String read GetMode;
     property Platform: String read GetPlatform;
 
-    [Obsolete]
+    [Obsolete("Use OSArchitecture or ProcessArchitecture")]
     property Architecture: String read GetOSArchitecture;
     property OSArchitecture: String read GetOSArchitecture;
     property ProcessArchitecture: String read GetProcessArchitecture;
@@ -661,7 +661,7 @@ end;
 
 method Environment.GetOSBitness: Int32;
 begin
-  if GetProcessBitness = 64 then 
+  if GetProcessBitness = 64 then
     exit 64;
   var lArchitecture := OSArchitecture:ToLowerInvariant:Trim;
   case lArchitecture of
@@ -687,7 +687,7 @@ begin
     {$IF OSX OR UIKITFORMAC OR IOS OR TVOS OR VISIONOS}
     result := {$IF __arm64__}"arm64"{$ELSE}"x86_64"{$ENDIF};
     {$ELSEIF WATCHOS}
-    result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF};
+    result := {$IF __arm64__}"arm64"{$ELSEIF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF};
     {$ELSE}
     {$ERROR Unsupported Toffee platform}
     {$ENDIF}
@@ -732,7 +732,7 @@ begin
     {$ELSEIF VISIONOS}
     result := "arm64";
     {$ELSEIF WATCHOS}
-    result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF}; // tecnically impreccise
+    result := {$IF __arm64__}"arm64"{$ELSEIF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF}; // tecnically impreccise
     {$ELSE}
       {$ERROR Unsupported Toffee platform}
     {$ENDIF}
