@@ -24,7 +24,6 @@
     <StartMode>Project</StartMode>
     <CpuType>x86</CpuType>
     <RuntimeVersion>v25</RuntimeVersion>
-    <Architecture>x86_64</Architecture>
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
