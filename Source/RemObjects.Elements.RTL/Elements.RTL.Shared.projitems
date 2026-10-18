@@ -111,6 +111,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonConsts.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonDeserializer.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonDocument.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Json\JsonQuery.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonExceptions.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonObject.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json\JsonSerializer.pas" />
