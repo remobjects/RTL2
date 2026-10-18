@@ -52,6 +52,81 @@ type
       end;
     end;
 
+    method LenientJsonAcceptsEmptyMemberNames;
+    begin
+      var lText := '{"":1}';
+      for each lJson in [JsonObject.TryFromString(lText), JsonDocument.TryFromString(lText),
+                        JsonDocument.FromString(lText), JsonDocument.FromString(lText, false)] do begin
+        Check.IsNotNil(lJson);
+        Check.AreEqual(lJson.NodeKind, JsonNodeKind.Object);
+        Check.IsTrue((lJson as JsonObject).ContainsKey(""));
+        Check.AreEqual(lJson[""].NodeKind, JsonNodeKind.Integer);
+        Check.AreEqual(lJson[""].IntegerValue, 1);
+      end;
+    end;
+
+    method LenientJsonAcceptsNestedEmptyMemberNames;
+    begin
+      var lText := '{"o":{"":["a"]}}';
+      for each lJson in [JsonObject.TryFromString(lText), JsonDocument.TryFromString(lText),
+                        JsonDocument.FromString(lText)] do begin
+        Check.IsNotNil(lJson);
+        Check.AreEqual(lJson["o"].NodeKind, JsonNodeKind.Object);
+        Check.IsTrue((lJson["o"] as JsonObject).ContainsKey(""));
+        var lArray := lJson["o"][""];
+        Check.AreEqual(lArray.NodeKind, JsonNodeKind.Array);
+        Check.AreEqual((lArray as JsonArray).Count, 1);
+        Check.AreEqual(lArray[0].NodeKind, JsonNodeKind.String);
+        Check.AreEqual(lArray[0].StringValue, "a");
+      end;
+    end;
+
+    method LenientJsonAcceptsArrayForEmptyMemberName;
+    begin
+      var lText := '{"":[1,2]}';
+      for each lJson in [JsonObject.TryFromString(lText), JsonDocument.TryFromString(lText),
+                        JsonDocument.FromString(lText)] do begin
+        Check.IsNotNil(lJson);
+        Check.IsTrue((lJson as JsonObject).ContainsKey(""));
+        var lArray := lJson[""];
+        Check.AreEqual(lArray.NodeKind, JsonNodeKind.Array);
+        Check.AreEqual((lArray as JsonArray).Count, 2);
+        Check.AreEqual(lArray[0].NodeKind, JsonNodeKind.Integer);
+        Check.AreEqual(lArray[0].IntegerValue, 1);
+        Check.AreEqual(lArray[1].NodeKind, JsonNodeKind.Integer);
+        Check.AreEqual(lArray[1].IntegerValue, 2);
+      end;
+    end;
+
+    method EmptyMemberNameRoundTrips;
+    begin
+      var lOriginal := new JsonObject;
+      lOriginal[""] := new JsonIntegerValue(42);
+      var lJson := JsonObject.TryFromString(lOriginal.ToJsonString);
+      Check.IsNotNil(lJson);
+      Check.AreEqual(lJson.Count, 1);
+      Check.IsTrue(lJson.ContainsKey(""));
+      Check.AreEqual(lJson[""].NodeKind, JsonNodeKind.Integer);
+      Check.AreEqual(lJson[""].IntegerValue, 42);
+    end;
+
+    method LenientJsonRejectsMissingMemberNames;
+    begin
+      for each lText in ['{:1}', '{ :1}', '{"a":1,:2}'] do begin
+        Check.IsNil(JsonObject.TryFromString(lText));
+        Check.IsNil(JsonDocument.TryFromString(lText));
+        var lRejected := false;
+        try
+          JsonDocument.FromString(lText);
+        except
+          on E: JsonParserException do
+            lRejected := true;
+        end;
+        Check.IsTrue(lRejected, $"Lenient parsing must reject a missing member name: {lText}");
+      end;
+      Check.AreEqual(JsonObject.FromString('{key:1}')["key"].IntegerValue, 1);
+    end;
+
     method Floats;
     begin
       var f := JsonFloatValue(12.18688);
