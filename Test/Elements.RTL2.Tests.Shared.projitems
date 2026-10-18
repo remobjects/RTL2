@@ -30,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Unicode.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Json.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)JsonQueryTests.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Strings.Formatter.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Variables.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Http.pas" />

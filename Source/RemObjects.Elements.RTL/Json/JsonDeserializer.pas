@@ -167,8 +167,8 @@ type
       else
         Expected(JsonTokenKind.String, JsonTokenKind.Identifier);
 
-      if not Tokenizer.Strict and String.IsNullOrEmpty(Tokenizer.Value) then
-        raise new JsonParserException("Invalid propery key. Key can not be empty.");
+      if (Tokenizer.Token = JsonTokenKind.Identifier) and (length(Tokenizer.Value) = 0) then
+        raise new JsonParserException("Invalid property key. Key can not be empty.");
 
       result := Tokenizer.Value;
       Tokenizer.Next;
