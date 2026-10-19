@@ -1,6 +1,7 @@
 // Positive regression guard: public Single and Double min/max must produce
 // the expected values across every vector-body and scalar-tail length 0..256.
 // Promoted from IsotopeLab Workloads without its timing machinery.
+// Only Island defines the attribute used to keep its vector wrappers out of line.
 namespace Elements.RTL2.Tests.Shared;
 
 uses RemObjects.Elements.RTL, RemObjects.Elements.EUnit;
@@ -9,28 +10,36 @@ type
   MathVectorMinMaxTest = public class(Test)
   public
 
+    {$IF ISLAND}
     [DisableInlining]
+    {$ENDIF}
     class method MinDouble(aInput, aOutput: array of Double);
     begin
       for i := 0 to length(aInput) - 1 do
         aOutput[i] := Math.Min(aInput[i], Double(0.7));
     end;
 
+    {$IF ISLAND}
     [DisableInlining]
+    {$ENDIF}
     class method MaxDouble(aInput, aOutput: array of Double);
     begin
       for i := 0 to length(aInput) - 1 do
         aOutput[i] := Math.Max(aInput[i], Double(0.7));
     end;
 
+    {$IF ISLAND}
     [DisableInlining]
+    {$ENDIF}
     class method MinSingle(aInput, aOutput: array of Single);
     begin
       for i := 0 to length(aInput) - 1 do
         aOutput[i] := Math.Min(aInput[i], Single(0.7));
     end;
 
+    {$IF ISLAND}
     [DisableInlining]
+    {$ENDIF}
     class method MaxSingle(aInput, aOutput: array of Single);
     begin
       for i := 0 to length(aInput) - 1 do
