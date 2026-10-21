@@ -100,67 +100,77 @@
 	internal class MacFolders
 	{
 
-		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		[StructLayout(LayoutKind.Sequential)]
 		private struct CFRange
 		{
 			public IntPtr location;
 			public IntPtr length;
 		}
-		[StructLayout(LayoutKind.Explicit, Size = 80)]
-		private struct FSRef
-		{
-		}
 
-		private const Int32 kCFURLPOSIXPathStyle = 0;
+		[DllImport("/usr/lib/libobjc.A.dylib")]
+		private extern static IntPtr objc_autoreleasePoolPush();
 
-		private const string CoreServices = "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices";
+		[DllImport("/usr/lib/libobjc.A.dylib")]
+		private extern static void objc_autoreleasePoolPop(IntPtr pool);
 
-		[DllImport(CoreServices, EntryPoint = "FSFindFolder")]
-		private extern static short FSFindFolder(MacDomains vRefNum, uint folderType, bool createFolder, out FSRef foundRef);
+		[DllImport(Foundation.FoundationLib)]
+		private extern static IntPtr NSSearchPathForDirectoriesInDomains(UIntPtr directory, UIntPtr domainMask, [MarshalAs(UnmanagedType.I1)] bool expandTilde);
 
-		[DllImport(CoreFoundation.CFLib, EntryPoint = "CFURLCreateFromFSRef")]
-		private extern static IntPtr CFURLCreateFromFSRef(IntPtr allocator, ref FSRef fsRef);
+		[DllImport(CoreFoundation.CFLib)]
+		private extern static IntPtr CFArrayGetCount(IntPtr array);
 
-		[DllImport(CoreFoundation.CFLib, EntryPoint = "CFURLCopyFileSystemPath")]
-		private extern static IntPtr CFURLCopyFileSystemPath(IntPtr anURL, int pathStyle);
+		[DllImport(CoreFoundation.CFLib)]
+		private extern static IntPtr CFArrayGetValueAtIndex(IntPtr array, IntPtr index);
 
-		[DllImport(CoreFoundation.CFLib, EntryPoint = "CFStringGetLength")]
-		private extern static int CFStringGetLength(IntPtr theString);
+		[DllImport(CoreFoundation.CFLib)]
+		private extern static IntPtr CFStringGetLength(IntPtr theString);
 
-		[DllImport(CoreFoundation.CFLib, EntryPoint = "CFStringGetCharacters", CharSet = CharSet.Unicode)]
+		[DllImport(CoreFoundation.CFLib, CharSet = CharSet.Unicode)]
 		private extern static void CFStringGetCharacters(IntPtr theString, CFRange range, [Out]char[] buffer);
-
-		[DllImport(CoreFoundation.CFLib, EntryPoint = "CFInitialize")]
-		public extern static void CFInitialize();
 
 		public static string GetFolder(MacDomains domain, uint folderType)
 		{
-			FSRef reference;
-			int no = FSFindFolder(domain, folderType, false, out reference);
+			UIntPtr directory;
+			if (folderType == MacFolderTypes.kApplicationSupportFolderType)
+				directory = new UIntPtr(14); // NSApplicationSupportDirectory
+			else if (folderType == MacFolderTypes.kCachedDataFolderType)
+				directory = new UIntPtr(13); // NSCachesDirectory
+			else if (folderType == MacFolderTypes.kDomainLibraryFolderType)
+				directory = new UIntPtr(5); // NSLibraryDirectory
+			else
+				throw new ArgumentOutOfRangeException("folderType");
 
-			if (no != 0) throw new Exception(string.Format("domain: {0} type: {1} return: {2}", domain, folderType, no));
+			UIntPtr domainMask;
+			switch (domain)
+			{
+				case MacDomains.kUserDomain: domainMask = new UIntPtr(1); break;
+				case MacDomains.kLocalDomain: domainMask = new UIntPtr(2); break;
+				case MacDomains.kNetworkDomain: domainMask = new UIntPtr(4); break;
+				case MacDomains.kSystemDomain: domainMask = new UIntPtr(8); break;
+				default: throw new ArgumentOutOfRangeException("domain");
+			}
 
-			if (no != 0) return null;
-
-			IntPtr url = IntPtr.Zero;
-			IntPtr str = IntPtr.Zero;
+			// FSFindFolder registers a volume observer even for a local folder lookup.
+			// Its background volume inspection can block process exit on a stuck mount.
+			var pool = objc_autoreleasePoolPush();
 			try
 			{
-				url = CFURLCreateFromFSRef(IntPtr.Zero, ref reference);
-				str = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+				var paths = NSSearchPathForDirectoriesInDomains(directory, domainMask, true);
+				if (paths == IntPtr.Zero || CFArrayGetCount(paths) == IntPtr.Zero)
+					throw new InvalidOperationException(string.Format("No folder for domain: {0} type: {1}", domain, folderType));
 
-				CFRange range = new CFRange();
-				range.location = (IntPtr)0;
-				range.length = (IntPtr)CFStringGetLength(str);
-
-				char[] strdata = new char[(int)range.length];
+				var str = CFArrayGetValueAtIndex(paths, IntPtr.Zero);
+				var range = new CFRange();
+				range.location = IntPtr.Zero;
+				range.length = CFStringGetLength(str);
+				var strdata = new char[range.length.ToInt32()];
 				CFStringGetCharacters(str, range, strdata);
 				return new String(strdata);
 			}
 			finally
 			{
-				if (url != IntPtr.Zero) CoreFoundation.Release(url);
-				if (str != IntPtr.Zero) CoreFoundation.Release(str);
+				// The array and its strings are borrowed; copy the string before draining.
+				objc_autoreleasePoolPop(pool);
 			}
 		}
 	}
