@@ -9,9 +9,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)DateTime.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math.RoundOutputs.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math.VectorMinMax.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math.SinglePrecision.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Files.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Stream.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Timer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stopwatch.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Url.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Convert.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas" />
