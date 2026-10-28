@@ -58,7 +58,7 @@ type
         if aData:Length > 0 then begin
           lPendingData.Write(aData.ToArray);
           try
-            var s := aEncoding.GetString(lPendingData);
+            var s := aEncoding.TryGetString(lPendingData);
             if assigned(s) then begin
               lPendingData.Clear;
               result := aContentCallback(s, false);
@@ -77,7 +77,7 @@ type
         if aDone then begin
           if lPendingData.Length > 0 then begin
             try
-              var s := aEncoding.GetString(lPendingData);
+              var s := aEncoding.TryGetString(lPendingData);
               if assigned(s) then
                 result := aContentCallback(s, false);
               if result = HttpStreamCallbackResult.StopReading then begin
@@ -292,7 +292,7 @@ type
         fIncomingDataComplete.WaitFor;
         if assigned(Data) then
           exit Data as not nullable;
-        raise new HttpException($"No data received");
+        raise new HttpException($"No data received", nil);
       {$ELSEIF ECHOES}
         if not assigned(Response) then
           raise coalesce(Exception, new Exception($"No response received from server"));
