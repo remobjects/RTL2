@@ -6,7 +6,7 @@ type
     property Headers: not nullable ImmutableDictionary<String,String> read private write;
     property Code: Int32 read assembly write;
     property Success: Boolean read (Exception = nil) and (Code < 300);
-    property Exception: nullable Exception public read unit write;
+    property Exception: nullable Exception public read assembly write;
 
     property ContentType: nullable String read Headers["Content-Type"];
     property ContentEncoding: nullable String read Headers["Content-Encoding"];
