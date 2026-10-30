@@ -700,7 +700,7 @@ begin
 end;
 {$ENDIF}
 
-method MemoryStream.ToArray: array of Byte;
+method MemoryStream.ToArray: not nullable array of Byte;
 begin
   result := GetBytes;
 end;
