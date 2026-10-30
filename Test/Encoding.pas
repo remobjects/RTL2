@@ -18,6 +18,31 @@ type
       Check.AreEqual("hello", Encoding.UTF8.TryGetString(new ImmutableBinary(lBytes)));
     end;
 
+    // A stream may split a UTF-8 character at any byte. Failed partial
+    // decoding must return nil so the caller can retain bytes without throwing.
+    method TryGetStringRetainsSplitUTF8Characters;
+    begin
+      {$IF TOFFEE}
+      for each lText in ["café", "a€b", "a😀b"] do begin
+        var lBytes := Encoding.UTF8.GetBytes(lText);
+        for lSplit: Integer := 1 to length(lBytes)-1 do begin
+          var lPending := new Binary;
+          lPending.Write(lBytes, lSplit);
+          var lPrefix := Encoding.UTF8.TryGetString(lPending);
+          var lDecoded := "";
+          if assigned(lPrefix) then begin
+            lDecoded := lPrefix;
+            lPending.Clear;
+          end;
+          lPending.Write(lBytes, lSplit, length(lBytes)-lSplit);
+          var lTail := Encoding.UTF8.TryGetString(lPending);
+          Check.IsNotNil(lTail);
+          Check.AreEqual(lText, lDecoded+lTail);
+        end;
+      end;
+      {$ENDIF}
+    end;
+
     method TryGetStringReturnsNilForInvalidCocoaData;
     begin
       {$IF TOFFEE}
