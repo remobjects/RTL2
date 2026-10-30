@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{44DD020F-A6EE-411B-8644-2B1B6B1E671B}</ProjectGuid>
+    <RootNamespace>Elements.RTL2.ExternalConsumers.Echoes</RootNamespace>
+    <OutputType>Executable</OutputType>
+    <AssemblyName>MacFoldersNativeOracle</AssemblyName>
+    <SDK>macOS</SDK>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <OutputPath>Bin\Native</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Foundation" />
+    <Reference Include="rtl" />
+    <Reference Include="libToffee" />
+  </ItemGroup>
+  <ItemGroup><Compile Include="MacFoldersNativeOracle.pas" /></ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Toffee.targets" />
+</Project>
