@@ -1,4 +1,5 @@
-﻿// Positive guard: TestPortableDateFormatting keeps year, month and day tokens portable, including single tokens.
+﻿// Negative regression guard: TestCooperCompareTo checks time zones and milliseconds against tick-based operators.
+// Positive guard: TestPortableDateFormatting keeps year, month and day tokens portable, including single tokens.
 // Positive guard: TestPortableTimeFormatting keeps single time tokens from expanding into standard formats.
 // Positive guard: TestPortableTwelveHourFormatting checks midnight and noon use 12 with the correct AM/PM marker.
 // Positive guard: TestPortableCombinedFormatting preserves quoted literals while converting adjacent tokens.
@@ -15,6 +16,24 @@ type
   private
   protected
   public
+    {$IF COOPER}
+    method TestCooperCompareTo;
+    begin
+      var lDate := new DateTime(2020, 1, 15);
+      java.util.Calendar(lDate).setTimeZone(java.util.TimeZone.getTimeZone('Europe/Belgrade'));
+      Check.AreEqual(lDate.CompareTo(lDate), 0);
+      Check.AreEqual(DateTime.Compare(lDate, lDate), 0);
+      Check.IsTrue(lDate = lDate);
+
+      var lEarlier := new DateTime(2020, 1, 15, 10, 0, 0, 0);
+      var lLater := new DateTime(2020, 1, 15, 10, 0, 0, 500);
+      Check.IsTrue(lEarlier < lLater);
+      Check.AreEqual(lEarlier.CompareTo(lLater), -1);
+      Check.AreEqual(lLater.CompareTo(lEarlier), 1);
+      Check.AreEqual(DateTime.Compare(lEarlier, lLater), -1);
+    end;
+    {$ENDIF}
+
     method TestAddTimeUnits;
     begin
       var lStart := new DateTime(2000, 1, 1);
