@@ -85,7 +85,7 @@ type
     method WriteSingle(value: Single);
     begin
       {$IF ECHOES}
-      WriteUInt32LE(BitConverter.DoubleToInt64Bits(value));
+      WriteUInt32LE(BitConverter.ToUInt32(BitConverter.GetBytes(value), 0));
       {$ELSEIF COOPER}
       WriteInt32LE(Single.floatToIntBits(value));
       {$ELSE}

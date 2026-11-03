@@ -208,7 +208,7 @@ type
     method ReadSingle(var aOffset: UInt64): Single;
     begin
       {$IF ECHOES}
-      result := BitConverter.Int64BitsToDouble(ReadInt64LE(var aOffset));
+      result := BitConverter.ToSingle(BitConverter.GetBytes(ReadUInt32LE(var aOffset)), 0);
       {$ELSEIF COOPER}
       result := Float.intBitsToFloat(ReadInt32LE(var aOffset));
       {$ELSE}

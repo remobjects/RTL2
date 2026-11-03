@@ -666,7 +666,9 @@ end;
 method DateTime.CompareTo(aValue: DateTime): Integer;
 begin
   {$IF COOPER}
-  result := mapped.compareTo(new DateTime(aValue.Year, aValue.Month, aValue.Day, aValue.Hour, aValue.Minute, aValue.Second));
+  var lTicks := Ticks;
+  var lOtherTicks := aValue.Ticks;
+  result := if lTicks < lOtherTicks then -1 else if lTicks > lOtherTicks then 1 else 0;
   {$ELSEIF TOFFEE}
   result := mapped.compare(new DateTime(aValue.Year, aValue.Month, aValue.Day, aValue.Hour, aValue.Minute, aValue.Second));
   {$ELSEIF ECHOES OR ISLAND}

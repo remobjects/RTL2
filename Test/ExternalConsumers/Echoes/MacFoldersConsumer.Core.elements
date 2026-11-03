@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{6F487C95-0775-477F-9762-72B8870018C9}</ProjectGuid>
+    <RootNamespace>Elements.RTL2.ExternalConsumers.Echoes</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>MacFoldersConsumer</AssemblyName>
+    <TargetFramework>.NETCore6.0</TargetFramework>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <OutputPath>Bin\Core</OutputPath>
+    <DefaultUses>RemObjects.Elements.RTL</DefaultUses>
+    <RTL2Assembly Condition="'$(RTL2Assembly)' == ''">..\..\..\Bin\Echoes\NETCore6.0\Elements.dll</RTL2Assembly>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Echoes"><Private>True</Private></Reference>
+    <Reference Include="Elements"><HintPath>$(RTL2Assembly)</HintPath><Private>True</Private></Reference>
+  </ItemGroup>
+  <ItemGroup><Compile Include="MacFoldersConsumer.pas" /></ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Echoes.targets" />
+</Project>
