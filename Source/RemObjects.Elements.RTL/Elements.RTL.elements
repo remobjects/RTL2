@@ -23,6 +23,7 @@
     <OutputType>StaticLibrary</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <EnableLTO>False</EnableLTO>
     <Optimize>False</Optimize>
     <EnableAsserts>True</EnableAsserts>
     <RegisterForComInterop>False</RegisterForComInterop>
@@ -31,6 +32,8 @@
     <ConditionalDefines>DEBUG;TRACE</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <!-- Windows Release keeps native code and LTO IR; other targets disable LTO. -->
+    <EnableLTO>True</EnableLTO>
     <Optimize>True</Optimize>
     <EnableAsserts>False</EnableAsserts>
     <GeneratePDB>False</GeneratePDB>
@@ -40,6 +43,7 @@
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Echoes.Classic' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Echoes</Mode>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
@@ -49,6 +53,7 @@
     <KnownConditionalDefines>SERIALIZATION;HTTPCLIENT</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Echoes.Core' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Echoes</Mode>
     <TargetFramework>.NETCore6.0</TargetFramework>
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
@@ -56,6 +61,7 @@
     <ConditionalDefines>NETCORE;NETSTANDARD;SERIALIZATION;HTTPCLIENT</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Echoes.Standard' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Echoes</Mode>
     <TargetFramework>.NETStandard2.0</TargetFramework>
     <DefaultUses>System.Linq;System.Net;System.Xml.Linq</DefaultUses>
@@ -63,6 +69,7 @@
     <ConditionalDefines>NETSTANDARD;SERIALIZATION;HTTPCLIENT</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Cooper' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Cooper</Mode>
     <SubMode>Java</SubMode>
     <DefaultUses>remobjects.elements.linq</DefaultUses>
@@ -76,11 +83,13 @@
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Linux' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Island</Mode>
     <SubMode>Linux</SubMode>
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.macOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>macOS</SDK>
@@ -89,6 +98,7 @@
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.iOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>iOS</SDK>
@@ -98,6 +108,7 @@
     <DefaultUses>Foundation</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.tvOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>tvOS</SDK>
@@ -106,6 +117,7 @@
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.visionOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Island</Mode>
     <SubMode>Darwin</SubMode>
     <SDK>visionOS</SDK>
@@ -114,21 +126,25 @@
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Android' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Island</Mode>
     <SubMode>Android</SubMode>
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.WebAssembly' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Island</Mode>
     <SubMode>WebAssembly</SubMode>
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Island.Fuchsia' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Island</Mode>
     <SubMode>Fuchsia</SubMode>
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.iOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>iOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
@@ -137,6 +153,7 @@
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.iOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>iOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
@@ -145,6 +162,7 @@
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.macOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>macOS</SDK>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
@@ -153,6 +171,7 @@
     <ConditionalDefines>SERIALIZATION</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.macOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>macOS</SDK>
     <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
@@ -160,6 +179,7 @@
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.tvOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>tvOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
@@ -167,6 +187,7 @@
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.tvOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>tvOS</SDK>
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
@@ -174,6 +195,7 @@
     <UseLegacyToffeeMode>False</UseLegacyToffeeMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.watchOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>watchOS</SDK>
     <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
@@ -181,6 +203,7 @@
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'Toffee.visionOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>visionOS</SDK>
     <DeploymentTargetVersion>1.0</DeploymentTargetVersion>
@@ -188,6 +211,7 @@
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.visionOS' ">
+    <EnableLTO>False</EnableLTO>
     <Mode>Toffee</Mode>
     <SDK>visionOS</SDK>
     <DeploymentTargetVersion>1.0</DeploymentTargetVersion>
