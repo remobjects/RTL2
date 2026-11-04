@@ -245,6 +245,13 @@ type
     end;
 
     method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; abstract;
+
+    /// Serializes with per-object key ordering, without modifying the document.
+    method ToJsonString(aCallback: not nullable JsonObjectSerializationCallback; aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String;
+    begin
+      result := new JsonSerializer(self, aFormat, aCallback).Serialize;
+    end;
+
     method ToYamlString: not nullable String;
     begin
       result := ToYamlString(nil);
@@ -254,6 +261,16 @@ type
     method ToJsonBytes(aFormat: JsonFormat := JsonFormat.Minimal; aEncoding: Encoding := Encoding.UTF8; aIncludeBOM: Boolean := false): not nullable array of Byte;
     begin
       result := aEncoding.GetBytes(ToJsonString(aFormat)) includeBOM(aIncludeBOM);
+    end;
+
+    method ToJsonBytes(aCallback: not nullable JsonObjectSerializationCallback; aFormat: JsonFormat := JsonFormat.Minimal; aEncoding: Encoding := Encoding.UTF8; aIncludeBOM: Boolean := false): not nullable array of Byte;
+    begin
+      result := aEncoding.GetBytes(ToJsonString(aCallback, aFormat)) includeBOM(aIncludeBOM);
+    end;
+
+    method ToJsonBinary(aCallback: not nullable JsonObjectSerializationCallback; aFormat: JsonFormat := JsonFormat.Minimal; aEncoding: Encoding := Encoding.UTF8; aIncludeBOM: Boolean := false): not nullable ImmutableBinary;
+    begin
+      result := new ImmutableBinary(ToJsonBytes(aCallback, aFormat, aEncoding, aIncludeBOM));
     end;
 
     method ToJsonBinary(aFormat: JsonFormat := JsonFormat.Minimal; aEncoding: Encoding := Encoding.UTF8; aIncludeBOM: Boolean := false): not nullable ImmutableBinary;
@@ -270,6 +287,13 @@ type
     method SaveToFile(aFileName: not nullable File; aFormat: JsonFormat; aEncoding: Encoding := nil; aIncludeBOM: Boolean := false);
     begin
       File.WriteText(aFileName, ToJsonString(aFormat), coalesce(aEncoding, Encoding.UTF8), aIncludeBOM);
+    end;
+
+    method SaveToFile(aFileName: not nullable File; aCallback: not nullable JsonObjectSerializationCallback; aFormat: JsonFormat := JsonFormat.HumanReadable; aEncoding: Encoding := Encoding.UTF8; aIncludeBOM: Boolean := false);
+    begin
+      // Finish callbacks and validation before opening the destination file.
+      var lText := ToJsonString(aCallback, aFormat);
+      File.WriteText(aFileName, lText, aEncoding, aIncludeBOM);
     end;
     {$ENDIF}
 
