@@ -1,6 +1,10 @@
 ﻿namespace RemObjects.Elements.RTL;
 
 type
+  {$IF ISLAND AND NOT TOFFEE}
+  // Foundation's default imports must not select NSException for native Island code.
+  Exception = public RemObjects.Elements.System.Exception;
+  {$ENDIF}
   /*{$IF ECHOES}
   PlatformException = public System.Exception;
   {$ELSEIF TOFFEE}

@@ -152,14 +152,17 @@ type
 
     method URLSession(session: NSURLSession) task(task: NSURLSessionTask) didCompleteWithError(error: nullable NSError);
     begin
-      //Log($"didCompleteWithError {error}");
+      var lSession: NSURLSession;
       locking self do begin
         fTask := nil;
+        lSession := fSession;
         fSession := nil;
         if assigned(fIncomingData) then
           Data := fIncomingData;
         completeWithException(if assigned(error) then new Exception(error.description));
       end;
+      // Each request owns its session, which retains this delegate until invalidation.
+      lSession:finishTasksAndInvalidate();
       notifyResponseAvailable;
     end;
 
