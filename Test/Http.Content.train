@@ -1,0 +1,4 @@
+include("$(Train)/ci2test.train");
+
+// Run from the RTL2 root; this uses the existing Echoes suite, including the HTTP content regressions.
+afterRun("Test/Http.Content.xml", "RTL2 HTTP content regressions");

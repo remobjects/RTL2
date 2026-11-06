@@ -23,6 +23,12 @@ begin
 		var lEndpoint := if length(aArguments) > 2 then aArguments[2] else "https://api.elevenlabs.io/v1/music/upload";
 		exit HttpMultipartUploadProbe.RunFileUpload(lEndpoint, aArguments[1]);
 	end;
+  {$IF ECHOES OR DARWIN}
+  if (length(aArguments) > 0) and aArguments[0].EqualsIgnoringCase("--http-content-failures") then begin
+    var lResult := Runner.RunTests(Discovery.FromType(typeOf(HttpContentFailureTests))) withListener(Runner.DefaultListener);
+    exit if lResult.State = TestState.Succeeded then 0 else 1;
+  end;
+  {$ENDIF}
 	var lTests := Discovery.DiscoverTests();
   var lTestResult := Runner.RunTests(lTests) withListener(Runner.DefaultListener);
   result := if lTestResult.State = TestState.Succeeded then 0 else 1;

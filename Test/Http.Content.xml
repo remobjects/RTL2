@@ -1,0 +1,1 @@
+<Afterhours><Modules><Module><Name>RTL2 Echoes HTTP regressions</Name><Runner>EUnitRunner</Runner><Parameters>/run:./Test/Elements.RTL2.Tests.Echoes.elements /root:./Test</Parameters><MaxTime>600</MaxTime></Module></Modules></Afterhours>

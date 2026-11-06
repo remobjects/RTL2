@@ -150,7 +150,13 @@ type
     {$IF WEBASSEMBLY}[Warning("Binary data is not supported on WebAssembly")]{$ENDIF}
     method GetContentAsBinary(aContentCallback: not nullable HttpContentResponseBlock<ImmutableBinary>);
     begin
-      // maybe delegsate to GetContentAsBinarySynchronous?
+      {$IF NOT WEBASSEMBLY}
+      // A failure before HTTP headers has no body on any transport.
+      if (Code = 0) and assigned(Exception) then begin
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Exception := Exception));
+        exit;
+      end;
+      {$ENDIF}
       {$IF COOPER}
       async begin
         var allData := new Binary;
@@ -164,13 +170,12 @@ type
         aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := allData));
       end;
       {$ELSEIF DARWIN}
-      if assigned(Data) then begin
-        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := new ImmutableBinary(Data)));
-      end
-      else begin
+      if not assigned(Data) then
         fIncomingDataComplete.WaitFor;
-        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := new ImmutableBinary(Data)));
-      end;
+      if assigned(Data) then
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Content := new ImmutableBinary(Data)))
+      else
+        aContentCallback(new HttpResponseContent<ImmutableBinary>(Exception := coalesce(Exception, new HttpException("No data received", nil))));
       {$ELSEIF ECHOES}
       async begin
         var allData := new System.IO.MemoryStream();
