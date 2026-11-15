@@ -389,21 +389,24 @@ end;
 
 method Url.ToAbsoluteString: String;
 begin
-  if not assigned(fCachedAbsoluteString) then begin
-    var lResult := new StringBuilder();
-    lResult.Append(fScheme);
-    lResult.Append("://");
-    if length(fUser) > 0 then begin
-      lResult.Append(fUser);
-      if length(fPassword) > 0 then
-        lResult.Append(":"+fPassword);
-      lResult.Append("@");
+  // URLs can be hashed concurrently when used as dictionary keys.
+  locking self do begin
+    if not assigned(fCachedAbsoluteString) then begin
+      var lResult := new StringBuilder();
+      lResult.Append(fScheme);
+      lResult.Append("://");
+      if length(fUser) > 0 then begin
+        lResult.Append(fUser);
+        if length(fPassword) > 0 then
+          lResult.Append(":"+fPassword);
+        lResult.Append("@");
+      end;
+      lResult.Append(GetHostNameAndPort());
+      lResult.Append(GetPathAndQueryString());
+      fCachedAbsoluteString := lResult.ToString();
     end;
-    lResult.Append(GetHostNameAndPort());
-    lResult.Append(GetPathAndQueryString());
-    fCachedAbsoluteString := lResult.ToString();
+    result := fCachedAbsoluteString;
   end;
-  result := fCachedAbsoluteString;
 end;
 
 method Url.GetHostNameAndPort: nullable String;
