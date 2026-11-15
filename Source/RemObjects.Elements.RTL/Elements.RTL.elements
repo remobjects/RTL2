@@ -151,6 +151,8 @@
     <SupportMacCatalyst>True</SupportMacCatalyst>
     <DefaultUses>Foundation;RemObjects.Elements.Linq</DefaultUses>
     <KnownConditionalDefines>SERIALIZATION</KnownConditionalDefines>
+    <ConditionalDefines Condition=" '$(Configuration)' == 'Debug' ">DEBUG;SERIALIZATION;TRACE</ConditionalDefines>
+    <ConditionalDefines Condition=" '$(Configuration)' != 'Debug' ">SERIALIZATION</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Target)' == 'ToffeeV2.iOS' ">
     <EnableLTO>False</EnableLTO>
