@@ -678,7 +678,7 @@ type
             for each k: String in lArray do begin
               var lPos := k.IndexOf(':');
               if lPos > 0 then begin
-                var lKey := k.Substring(0, lPos - 1).Trim;
+                var lKey := k.Substring(0, lPos).Trim;
                 var lValue := k.Substring(lPos + 1).Trim;
                 // Allow multiple Set-Cookie
                 if (lKey = 'Set-Cookie') and Headers.ContainsKey(lKey) then

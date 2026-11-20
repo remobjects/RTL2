@@ -842,7 +842,7 @@ begin
           var lPassed := 0;
           var lBytes: rtl.DWORD := 0;
           while lPassed < lTotalLength do begin
-            if not rtl.WinHttpWriteData(lRequest, @lData[lPassed], lTotalLength, @lBytes) then
+            if not rtl.WinHttpWriteData(lRequest, @lData[lPassed], lTotalLength - lPassed, @lBytes) or (lBytes = 0) then
               raise WinHttpFailure('Error sending data to', aRequest.Url.Host);
             inc(lPassed, lBytes);
           end;
@@ -904,105 +904,123 @@ begin
   raise new NotImplementedException("Synchronous requests are not supported on WebAssembly")
   {$ELSEIF ISLAND AND LINUX}
   var lRequest := CurlHelper.EasyInit();
-  var lStream := new MemoryStream();
-  var lHeaders := new Dictionary<String, String>();
-  var lUploadHelper: CurlUploadHelper;
-  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEFUNCTION, ^void(@CurlHelper.ReceiveData));
-  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEDATA, ^void(InternalCalls.Cast(lStream)));
-  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERFUNCTION, ^void(@CurlHelper.ReceiveHeaders));
-  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERDATA, ^Void(InternalCalls.Cast(lHeaders)));
-  CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_TCP_KEEPALIVE, 1);
-  CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOPROGRESS, 1);
-  var lUrl := RemObjects.Elements.System.String(aRequest.Url.ToString).ToAnsiChars(true);
-  CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_URL, @lUrl[0]);
-
-  // Configure proxy settings
-  var lProxyUrl: array of AnsiChar;
-  var lNoProxy: array of AnsiChar;
-  var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
-  case lProxyMode of
-    HttpProxyMode.None: begin
-      // Disable proxy by setting NOPROXY to "*" (all hosts bypass proxy)
-      lNoProxy := RemObjects.Elements.System.String('*').ToAnsiChars(true);
-      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_NOPROXY, @lNoProxy[0]);
-    end;
-    HttpProxyMode.System:
-      ; // libcurl automatically uses http_proxy/https_proxy environment variables
-    HttpProxyMode.Custom: begin
-      // Set custom proxy as "host:port" (libcurl defaults to HTTP proxy type)
-      lProxyUrl := RemObjects.Elements.System.String(aRequest.Proxy.Host + ':' + aRequest.Proxy.Port.ToString).ToAnsiChars(true);
-      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_PROXY, @lProxyUrl[0]);
-    end;
-  end;
-
-  if aRequest.FollowRedirects then
-    CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_FOLLOWLOCATION, 1);
-
-  var lHeader: RemObjects.Elements.System.String;
-  var lHeaderBytes: array of AnsiChar;
+  if lRequest = nil then
+    raise new RTLException('Could not create the LibCurl request.');
   var lHeaderList: ^curl_slist := nil;
-  for each k in aRequest.Headers.Keys do begin
-    lHeader := k + ':' + aRequest.Headers[k];
-    lHeaderBytes := lHeader.ToAnsiChars(true);
-    lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
-  end;
-  if assigned(aRequest.Accept) then begin
-    lHeader := 'Accept:' + aRequest.Accept;
-    lHeaderBytes := lHeader.ToAnsiChars(true);
-    lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
-  end;
+  try
+    var lStream := new MemoryStream();
+    var lHeaders := new Dictionary<String, String>();
+    var lUploadHelper: CurlUploadHelper;
+    CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEFUNCTION, ^void(@CurlHelper.ReceiveData));
+    CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_WRITEDATA, ^void(InternalCalls.Cast(lStream)));
+    CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERFUNCTION, ^void(@CurlHelper.ReceiveHeaders));
+    CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HEADERDATA, ^Void(InternalCalls.Cast(lHeaders)));
+    CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_TCP_KEEPALIVE, 1);
+    CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOPROGRESS, 1);
+    CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOSIGNAL, 1);
+    CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_TIMEOUT_MS, Integer(aRequest.Timeout * 1000));
+    var lUrl := RemObjects.Elements.System.String(aRequest.Url.ToString).ToAnsiChars(true);
+    CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_URL, @lUrl[0]);
 
-  var lTotalLength := 0;
-  var lData: array of Byte;
-  if assigned(aRequest.Content) then begin
-    lData := (aRequest.Content as IHttpRequestContent).GetContentAsArray;
-    lTotalLength := lData.Length;
-  end;
-
-  case aRequest.Method of
-    HttpRequestMethod.Get, HttpRequestMethod.Put, HttpRequestMethod.Delete, HttpRequestMethod.Patch,
-    HttpRequestMethod.Options, HttpRequestMethod.Trace:
-      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_HTTPGET, 1);
-
-    HttpRequestMethod.Head: begin
-      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOBODY, 1);
-      var lMethod := Encoding.UTF8.GetBytes(aRequest.Method.ToHttpString);
-      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_CUSTOMREQUEST, @lMethod[0]);
-    end;
-
-    HttpRequestMethod.Post: begin
-      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POST, 1);
-      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READFUNCTION, ^void(@CurlHelper.SendData));
-      lUploadHelper := new CurlUploadHelper(lData);
-      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READDATA, ^void(InternalCalls.Cast(lUploadHelper)));
-      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POSTFIELDSIZE, lTotalLength);
-    end;
-  end;
-
-  var lResult := CurlHelper.EasyPerform(lRequest);
-  if lResult = CURLCode.CURLE_OK then begin
-    var lStatusCode: NativeInt;
-    CurlHelper.EasyGetInfo1(lRequest, CURLINFO.CURLINFO_RESPONSE_CODE, @lStatusCode);
-    try
-      result := new HttpResponse(lStatusCode, lStream, lHeaders);
-      if lStatusCode >= 300 then begin
-        if aThrowOnError then
-          raise new RTLException(String.Format("Unable to complete request. HTTP Error code: {0}", lStatusCode), result)
+    // Configure proxy settings
+    var lProxyUrl: array of AnsiChar;
+    var lNoProxy: array of AnsiChar;
+    var lProxyMode := if assigned(aRequest.Proxy) then aRequest.Proxy.Mode else HttpProxyMode.System;
+    case lProxyMode of
+      HttpProxyMode.None: begin
+        // Disable proxy by setting NOPROXY to "*" (all hosts bypass proxy)
+        lNoProxy := RemObjects.Elements.System.String('*').ToAnsiChars(true);
+        CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_NOPROXY, @lNoProxy[0]);
       end;
-
-    except
-      on E: Exception do begin
-        if not aThrowOnError then
-          result := new HttpResponse withException(E)
-        else
-          raise;
+      HttpProxyMode.System:
+        ; // libcurl automatically uses http_proxy/https_proxy environment variables
+      HttpProxyMode.Custom: begin
+        // Set custom proxy as "host:port" (libcurl defaults to HTTP proxy type)
+        lProxyUrl := RemObjects.Elements.System.String(aRequest.Proxy.Host + ':' + aRequest.Proxy.Port.ToString).ToAnsiChars(true);
+        CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_PROXY, @lProxyUrl[0]);
       end;
     end;
-  end
-  else begin
-    if not aThrowOnError then
-      exit new HttpResponse withException(new RTLException(String.Format("Unable to complete request. LibCurl Error code: {0}", lResult)));
-    raise new RTLException(String.Format("Unable to complete request. LibCurl Error code: {0}", lResult), result);
+
+    if aRequest.FollowRedirects then
+      CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_FOLLOWLOCATION, 1);
+
+    var lHeader: RemObjects.Elements.System.String;
+    var lHeaderBytes: array of AnsiChar;
+    for each k in aRequest.Headers.Keys do begin
+      lHeader := k + ':' + aRequest.Headers[k];
+      lHeaderBytes := lHeader.ToAnsiChars(true);
+      lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
+    end;
+    if assigned(aRequest.Accept) then begin
+      lHeader := 'Accept:' + aRequest.Accept;
+      lHeaderBytes := lHeader.ToAnsiChars(true);
+      lHeaderList := CurlHelper.SListAppend(lHeaderList, @lHeaderBytes[0]);
+    end;
+
+    if lHeaderList <> nil then
+      CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_HTTPHEADER, lHeaderList);
+
+    var lTotalLength := 0;
+    var lData: array of Byte;
+    if assigned(aRequest.Content) then begin
+      lData := (aRequest.Content as IHttpRequestContent).GetContentAsArray;
+      lTotalLength := lData.Length;
+    end;
+
+    case aRequest.Method of
+      HttpRequestMethod.Get, HttpRequestMethod.Put, HttpRequestMethod.Patch,
+      HttpRequestMethod.Options, HttpRequestMethod.Trace:
+        CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_HTTPGET, 1);
+
+      HttpRequestMethod.Delete: begin
+        var lMethod := RemObjects.Elements.System.String('DELETE').ToAnsiChars(true);
+        CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_CUSTOMREQUEST, @lMethod[0]);
+      end;
+
+      HttpRequestMethod.Head: begin
+        CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_NOBODY, 1);
+        var lMethod := Encoding.UTF8.GetBytes(aRequest.Method.ToHttpString);
+        CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_CUSTOMREQUEST, @lMethod[0]);
+      end;
+
+      HttpRequestMethod.Post: begin
+        CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POST, 1);
+        CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READFUNCTION, ^void(@CurlHelper.SendData));
+        lUploadHelper := new CurlUploadHelper(lData);
+        CurlHelper.EasySetOptPointer(lRequest, CURLOption.CURLOPT_READDATA, ^void(InternalCalls.Cast(lUploadHelper)));
+        CurlHelper.EasySetOptInteger(lRequest, CURLOption.CURLOPT_POSTFIELDSIZE, lTotalLength);
+      end;
+    end;
+
+    var lResult := CurlHelper.EasyPerform(lRequest);
+    if lResult = CURLCode.CURLE_OK then begin
+      var lStatusCode: NativeInt;
+      CurlHelper.EasyGetInfo1(lRequest, CURLINFO.CURLINFO_RESPONSE_CODE, @lStatusCode);
+      try
+        result := new HttpResponse(lStatusCode, lStream, lHeaders);
+        if lStatusCode >= 300 then begin
+          if aThrowOnError then
+            raise new RTLException(String.Format("Unable to complete request. HTTP Error code: {0}", lStatusCode), result)
+        end;
+
+      except
+        on E: Exception do begin
+          if not aThrowOnError then
+            result := new HttpResponse withException(E)
+          else
+            raise;
+        end;
+      end;
+    end
+    else begin
+      if not aThrowOnError then
+        exit new HttpResponse withException(new RTLException(String.Format("Unable to complete request. LibCurl Error code: {0}", lResult)));
+      raise new RTLException(String.Format("Unable to complete request. LibCurl Error code: {0}", lResult), result);
+    end;
+  finally
+    CurlHelper.EasyCleanUp(lRequest);
+    if lHeaderList <> nil then
+      CurlHelper.SListFreeAll(lHeaderList);
   end;
   {$ELSEIF DARWIN}
   var nsUrlRequest := new NSMutableURLRequest withURL(aRequest.Url) cachePolicy(NSURLRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData) timeoutInterval(30);

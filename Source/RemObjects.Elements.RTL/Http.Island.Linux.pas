@@ -199,7 +199,11 @@ end;
 
 class constructor CurlHelper;
 begin
-  fLib := rtl.dlopen(@LibCurl.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
+  // Linux runtime packages provide the versioned SONAME.
+  var lRuntimeName := RemObjects.Elements.System.String('libcurl.so.4').ToAnsiChars(true);
+  fLib := rtl.dlopen(@lRuntimeName[0], rtl.RTLD_LAZY);
+  if fLib = nil then
+    fLib := rtl.dlopen(@LibCurl.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
   if fLib = nil then
     raise new CurlException('libcurl.so is missing');
   GlobalInit := CurlGlobalInitFunc(GetSymbol('curl_global_init'));
@@ -260,8 +264,10 @@ begin
   result := 0;
   if UserData <> nil then begin
     var lHelper := InternalCalls.Cast<CurlUploadHelper>(UserData);
-    if lHelper.TotalData < length(lHelper.Data) then begin
-      result := aSize * Nmemb;
+    var lRemaining := length(lHelper.Data) - lHelper.TotalData;
+    if lRemaining > 0 then begin
+      var lCapacity := aSize * Nmemb;
+      result := if lCapacity < rtl.size_t(lRemaining) then lCapacity else rtl.size_t(lRemaining);
       rtl.memcpy(Buffer, @lHelper.Data[lHelper.TotalData], result);
       inc(lHelper.TotalData, result);
     end;
