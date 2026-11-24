@@ -60,7 +60,7 @@ type
   //
   //
 
-  JsonStringValue = public class(JsonValue<not nullable String>)
+  JsonStringValue = public readonly class(JsonValue<not nullable String>)
   public
 
     property NodeKind: JsonNodeKind read JsonNodeKind.String; override;
@@ -159,7 +159,7 @@ type
   //
   //
 
-  JsonIntegerValue = public class(JsonValue<Int64>)
+  JsonIntegerValue = public readonly class(JsonValue<Int64>)
   public
 
     property NodeKind: JsonNodeKind read JsonNodeKind.Integer; override;
@@ -237,7 +237,7 @@ type
   //
   //
 
-  //JsonUnsignedIntegerValue = public class(JsonValue<UInt64>)
+  //JsonUnsignedIntegerValue = public readonly class(JsonValue<UInt64>)
   //public
     //method ToJsonString(aFormat: JsonFormat := JsonFormat.HumanReadable): not nullable String; override;
     //operator Implicit(aValue: UInt64): JsonUnsignedIntegerValue;
@@ -257,7 +257,7 @@ type
   //
   //
 
-  JsonFloatValue = public class(JsonValue<Double>)
+  JsonFloatValue = public readonly class(JsonValue<Double>)
   public
 
     property NodeKind: JsonNodeKind read JsonNodeKind.Float; override;
@@ -325,7 +325,7 @@ type
   //
   //
 
-  JsonBooleanValue = public class(JsonValue<Boolean>)
+  JsonBooleanValue = public readonly class(JsonValue<Boolean>)
   public
 
     property NodeKind: JsonNodeKind read JsonNodeKind.Boolean; override;
@@ -384,7 +384,7 @@ type
   //
   //
 
-  JsonNullValue = public class(JsonValue<Boolean>)
+  JsonNullValue = public readonly class(JsonValue<Boolean>)
   public
 
     property NodeKind: JsonNodeKind read JsonNodeKind.Null; override;
