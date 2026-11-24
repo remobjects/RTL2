@@ -9,6 +9,7 @@
     <RootNamespace>RemObjects.Elements.RTL</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Terminal.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Stream.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String.pas">
       <VirtualFolder>String</VirtualFolder>
